@@ -281,15 +281,11 @@ class OptionsPage {
         if (Object.prototype.hasOwnProperty.call(items, key)) {
           const dataSize = this.calculateDataSize(items[key]);
 
-          if (key.startsWith('ThinkBotContent_')) {
-            pageCacheCount++;
-            totalCacheCount++;
-            totalCacheSize += dataSize;
-          } else if (key.startsWith('ThinkBotChat_')) {
+          if (key.startsWith(CACHE_KEYS.CHAT_PREFIX)) {
             chatHistoryCount++;
             totalCacheCount++;
             totalCacheSize += dataSize;
-          } else if (key.startsWith('ThinkBotPage_')) {
+          } else if (key.startsWith(CACHE_KEYS.PAGE_PREFIX)) {
             // New unified page data storage (includes content, metadata, and pageState)
             totalCacheCount++;
             totalCacheSize += dataSize;
@@ -336,10 +332,9 @@ class OptionsPage {
       const items = await chrome.storage.local.get(null);
       const keysToRemove = [];
       for (const key in items) {
-        if (key.startsWith('ThinkBotContent_') ||
-            key.startsWith('ThinkBotChat_') ||
-            key.startsWith('ThinkBotPage_') ||
-            key === 'ThinkBotRecentUrls') {
+        if (key.startsWith(CACHE_KEYS.CHAT_PREFIX) ||
+            key.startsWith(CACHE_KEYS.PAGE_PREFIX) ||
+            key === CACHE_KEYS.RECENT_URLS) {
           keysToRemove.push(key);
         }
       }
