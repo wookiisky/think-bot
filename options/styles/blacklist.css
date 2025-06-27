@@ -1,0 +1,62 @@
+/* Blacklist Configuration Styles */
+
+/* Import shared styles */
+@import url('./variables.css');
+@import url('./base.css');
+@import url('./components.css');
+@import url('./forms.css');
+@import url('./buttons.css');
+@import url('./modal.css');
+@import url('./table.css');
+@import url('./test.css');
+
+/* Blacklist Section */
+.blacklist-description {
+  margin-bottom: 0.8rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.blacklist-description p {
+  margin: 0;
+}
+
+.blacklist-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.blacklist-controls .secondary-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+}
+
+.blacklist-controls .secondary-btn .material-icons {
+  font-size: 16px;
+}
+
+/* Blacklist Table - extends table.css */
+.blacklist-table-container {
+  /* Inherits from .table-container in table.css */
+}
+
+.blacklist-table {
+  /* Inherits from .table in table.css */
+}
+
+/* Blacklist-specific responsive styles */
+@media (max-width: 600px) {
+  .blacklist-controls {
+    gap: 0.3rem;
+  }
+
+  .blacklist-controls .secondary-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}

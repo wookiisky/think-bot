@@ -1,0 +1,84 @@
+/* Header Styles - Top navigation and title area */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* Extraction controls container */
+.extraction-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.extraction-methods {
+  display: flex;
+  gap: 4px;
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background-color: var(--border-color);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+/* Quick inputs section */
+.quick-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+/* Quick input button styles */
+.quick-input-btn {
+  background-color: var(--light-gray);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin: 0;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-input-btn:hover {
+  background-color: var(--hover-color);
+  transform: translateY(-1px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.quick-input-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Responsive header adjustments */
+@media (max-width: 280px) {
+  .header {
+    padding: 6px 8px;
+  }
+  
+  .quick-inputs {
+    padding: 4px 8px;
+  }
+} 

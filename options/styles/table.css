@@ -1,0 +1,230 @@
+/* Table Styles */
+
+.table-container {
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  overflow: hidden;
+  background: var(--bg-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.7rem;
+}
+
+.table thead {
+  background: var(--light-gray);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.table th {
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-color);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-right: 1px solid var(--border-color);
+}
+
+.table th:last-child {
+  border-right: none;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--divider-color);
+  transition: background-color var(--transition-fast) ease;
+}
+
+.table tbody tr:hover {
+  background: var(--hover-color);
+}
+
+.table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.table td {
+  padding: 0.2rem 0.2rem;
+  vertical-align: middle;
+  border-right: 1px solid var(--divider-color);
+  font-size: 0.7rem;
+}
+
+.table td:last-child {
+  border-right: none;
+}
+
+/* Single Column Table Cell Styles */
+.pattern-row-cell {
+  padding: 0.1rem 0rem;
+}
+
+.pattern-row-content {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  width: 100%;
+}
+
+.pattern-checkbox-container {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.pattern-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.pattern-text {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 0.65rem;
+  background: var(--code-bg);
+  padding: 0.2rem 0.35rem;
+  border-radius: 3px;
+  border: 1px solid var(--border-color);
+  word-break: break-all;
+  display: block;
+  line-height: 1.2;
+}
+
+.pattern-status {
+  font-size: 0.6rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pattern-info.enabled .pattern-status {
+  color: var(--success-color);
+}
+
+.pattern-info.disabled .pattern-status {
+  color: var(--error-color);
+}
+
+.pattern-info.disabled .pattern-text {
+  opacity: 0.6;
+}
+
+.pattern-actions {
+  display: flex;
+  gap: 0.3rem;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+/* Action buttons in pattern rows */
+.pattern-actions .icon-btn {
+  margin: 0;
+  padding: 0.15rem;
+  border-radius: 3px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px !important;
+  height: 18px;
+}
+
+.pattern-actions .icon-btn:hover {
+  background: var(--hover-color);
+  transform: scale(1.05);
+}
+
+.pattern-actions .icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pattern-actions .icon-btn .material-icons {
+  font-size: 14px;
+}
+
+.pattern-actions .edit-btn:hover {
+  background: var(--success-bg);
+  color: var(--success-color);
+}
+
+.pattern-actions .delete-btn:hover {
+  background: var(--error-bg);
+  color: var(--error-color);
+}
+
+/* Disabled state */
+.disabled .pattern-text,
+.disabled .description-text {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.disabled .pattern-text {
+  background: var(--divider-color);
+  border-color: var(--divider-color);
+}
+
+/* Table Responsive */
+@media (max-width: 600px) {
+  .pattern-row-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+
+  .pattern-checkbox-container {
+    align-self: flex-start;
+  }
+
+  .pattern-actions {
+    justify-content: flex-end;
+    padding-top: 0.3rem;
+    border-top: 1px solid var(--divider-color);
+  }
+
+  .pattern-text {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    border-radius: 3px;
+  }
+
+  .table {
+    min-width: 400px;
+    font-size: 0.6rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.25rem 0.3rem;
+  }
+
+  .pattern-row-cell {
+    padding: 0.25rem 0.3rem;
+  }
+
+  .pattern-actions .icon-btn {
+    width: 16px;
+    height: 16px;
+    padding: 0.1rem;
+  }
+
+  .pattern-actions .icon-btn .material-icons {
+    font-size: 11px;
+  }
+}

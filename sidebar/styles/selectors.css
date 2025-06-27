@@ -1,0 +1,190 @@
+/* Selector Styles - Unified selector components with orange accent */
+
+/* Orange color scheme for selectors */
+:root {
+  --selector-orange: #ff6d00;
+  --selector-orange-hover: #e65100;
+  --selector-gray: #9e9e9e;
+  --selector-gray-light: #e0e0e0;
+  --selector-bg-hover: rgba(255, 109, 0, 0.06);
+  --selector-bg-active: rgba(255, 109, 0, 0.1);
+}
+
+/* Base selector button style */
+.selector-btn {
+  position: relative;
+  background-color: transparent;
+  border: 1px solid var(--selector-gray-light);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--text-color);
+  overflow: visible;
+}
+
+/* Bottom border underline effect */
+.selector-btn::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background-color: var(--selector-orange);
+  transition: all 0.25s ease;
+  transform: translateX(-50%);
+  border-radius: 1px;
+}
+
+/* Hover state - only orange border, no color change */
+.selector-btn:hover {
+  border-color: var(--selector-orange);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(255, 109, 0, 0.15);
+}
+
+/* Active/Selected state - orange underline only */
+.selector-btn.active {
+  border-color: var(--selector-gray-light);
+  background-color: transparent;
+  color: var(--text-color);
+}
+
+.selector-btn.active::after {
+  width: 80%;
+  background-color: var(--selector-orange);
+}
+
+/* Click state */
+.selector-btn:active {
+  transform: translateY(0px);
+}
+
+/* Extraction method selector buttons */
+.extraction-methods .selector-btn {
+  width: 26px;
+  height: 26px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+/* Special styling for Jina button */
+.extraction-methods .selector-btn.jina-btn {
+  padding: 2px;
+}
+
+.extraction-methods .selector-btn.jina-btn .jina-icon {
+  width: 16px;
+  height: 16px;
+  transition: all 0.2s ease;
+}
+
+/* Keep original icon color for Jina button */
+.extraction-methods .selector-btn.jina-btn:hover .jina-icon {
+  filter: none;
+}
+
+.extraction-methods .selector-btn.jina-btn.active .jina-icon {
+  filter: none;
+}
+
+/* Include page content selector button */
+.button-icon.selector-btn {
+  width: 26px;
+  height: 26px;
+}
+
+.button-icon.selector-btn .material-icons {
+  font-size: 14px;
+  color: var(--text-color);
+  transition: color 0.2s ease;
+}
+
+/* Keep original icon color on hover and active */
+.button-icon.selector-btn:hover .material-icons {
+  color: var(--text-color);
+}
+
+.button-icon.selector-btn.active .material-icons {
+  color: var(--text-color);
+}
+
+/* Override the default data-enabled styling for selector buttons */
+.button-icon.selector-btn[data-enabled="true"] {
+  border-color: var(--selector-gray-light);
+  background-color: transparent;
+}
+
+.button-icon.selector-btn[data-enabled="true"] .material-icons {
+  color: var(--text-color);
+}
+
+.button-icon.selector-btn[data-enabled="true"]::after {
+  width: 80%;
+  background-color: var(--selector-orange);
+}
+
+.button-icon.selector-btn[data-enabled="true"]:hover {
+  background-color: transparent;
+  border-color: var(--selector-orange);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(255, 109, 0, 0.15);
+}
+
+.button-icon.selector-btn[data-enabled="true"]:hover .material-icons {
+  color: var(--text-color);
+}
+
+.button-icon.selector-btn[data-enabled="true"]:hover::after {
+  width: 80%;
+  background-color: var(--selector-orange);
+}
+
+/* Data-enabled false state (unselected) - no underline */
+.button-icon.selector-btn[data-enabled="false"] {
+  border-color: var(--selector-gray-light);
+  background-color: transparent;
+  color: var(--text-color);
+}
+
+.button-icon.selector-btn[data-enabled="false"] .material-icons {
+  color: var(--text-color);
+}
+
+.button-icon.selector-btn[data-enabled="false"]::after {
+  width: 0;
+}
+
+.button-icon.selector-btn[data-enabled="false"]:hover {
+  border-color: var(--selector-orange);
+}
+
+.button-icon.selector-btn[data-enabled="false"]:hover::after {
+  width: 0;
+}
+
+/* Disabled state */
+.selector-btn:disabled {
+  border-color: var(--selector-gray-light);
+  background-color: transparent;
+  color: var(--selector-gray);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.selector-btn:disabled::after {
+  display: none;
+}
+
+.selector-btn:disabled:hover {
+  border-color: var(--selector-gray-light);
+  background-color: transparent;
+  color: var(--selector-gray);
+  transform: none;
+  box-shadow: none;
+} 

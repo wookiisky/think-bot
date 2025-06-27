@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Think Bot</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/tabs.css">
+  <link rel="stylesheet" href="styles/overlay.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <!-- Header and controls -->
+    <div class="header">
+      <div class="extraction-controls">
+        <div class="extraction-methods">
+          <button id="jinaExtractBtn" class="btn-base extraction-btn selector-btn jina-btn" title="Extract with Jina AI">
+            <img src="../icons/jina32.png" alt="Jina AI" class="jina-icon">
+          </button>
+          <button id="readabilityExtractBtn" class="btn-base extraction-btn selector-btn readability-btn active" title="Extract with Readability.js">R</button>
+        </div>
+        
+        <div class="action-buttons">
+          <button id="copyContentBtn" class="btn-base action-btn" title="Copy extracted content">
+            <i class="material-icons">content_copy</i>
+          </button>
+          <button id="retryExtractBtn" class="btn-base action-btn" title="Retry extraction">
+            <i class="material-icons">refresh</i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Content extraction area -->
+    <div class="content-section" id="contentSection">      
+      <div class="content-container">
+        <div id="extractedContent" class="extracted-content"></div>
+        <div id="loadingIndicator" class="loading-indicator hidden">
+          <div class="loading-dots-container">
+            <div class="loading-dots">
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+            </div>
+            <div class="loading-text">Extracting content...</div>
+          </div>
+        </div>
+        <div id="extractionError" class="extraction-error hidden">Failed to extract content.</div>
+      </div>
+      <div class="resize-handle" id="resizeHandle">
+        <div class="resize-handle-line"></div>
+      </div>
+    </div>
+    
+    <!-- Tab-based Quick Inputs -->
+    <div class="tab-container" id="tabContainer">
+      <!-- Tabs will be generated here dynamically -->
+    </div>
+    
+    <!-- Chat area -->
+    <div class="chat-section">
+      <div id="chatContainer" class="chat-container">
+        <!-- Chat messages will be added here dynamically -->
+      </div>
+      
+      <!-- Image preview area (shown when images are pasted) -->
+      <div id="imagePreviewContainer" class="image-preview-container hidden">
+        <div class="image-preview-header">
+          Image attached
+          <button id="removeImageBtn" class="remove-image-btn">×</button>
+        </div>
+        <div id="imagePreview" class="image-preview"></div>
+      </div>
+      
+      <!-- Input area -->
+      <div class="input-container">
+        <div id="inputResizeHandle" class="input-resize-handle"></div>
+        <div class="input-wrapper">
+          <textarea id="userInput" placeholder="Ask ..." rows="1"></textarea>
+          <div class="model-selector-container">
+            <select id="modelSelector" class="model-selector">
+              <!-- Model options will be populated dynamically -->
+            </select>
+          </div>
+          <div id="inputActions" class="button-group">
+            <button id="sendBtn" class="button-icon primary" title="Send message">
+              <i class="material-icons">send</i>
+            </button>
+            <button id="includePageContentBtn" class="button-icon selector-btn" data-enabled="true" title="Include page content in prompt">
+              <i class="material-icons">description</i>
+            </button>
+            <button id="clearBtn" class="button-icon" title="Stop generating and clear conversation">
+              <i class="material-icons">delete_forever</i>
+            </button>
+            <button id="exportBtn" class="button-icon" title="Export conversation">
+              <i class="material-icons">save_alt</i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Load third-party libraries -->
+  <script src="../js/lib/marked.min.js"></script>
+  
+  <!-- Configure marked.js options -->
+  <script src="js/marked-config.js"></script>
+  
+  <!-- Load Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- Load logger module -->
+  <script src="../js/modules/logger.js"></script>
+
+  <!-- Load storage keys constants -->
+  <script src="../js/modules/storage-keys.js"></script>
+
+  <!-- Load stream monitor module -->
+  <script src="../js/modules/stream_monitor.js"></script>
+  
+  <!-- Load compression utilities -->
+  <script src="../js/lib/pako.min.js"></script>
+  <script src="../js/lib/compression.js"></script>
+  
+  <!-- Load module scripts -->
+  <script src="sidebar.js" type="module"></script>
+</body>
+</html> 

@@ -1,0 +1,204 @@
+/* Layout and Grid Styles */
+
+/* Header Row Styles - Full Width and Compact */
+.header-row {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  margin: 0 0 1rem 0;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid rgba(232, 234, 237, 0.8);
+  box-shadow: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-left h1 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--primary-color);
+  letter-spacing: -0.02em;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.header-actions button {
+  white-space: nowrap;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.6rem;
+  height: 28px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+/* Two Column Layout */
+.main-content-wrapper {
+  display: grid;
+  grid-template-columns: 22% 1fr;
+  grid-gap: 0;
+  align-items: start;
+  padding: 0 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Left Sidebar */
+.left-sidebar {
+  background-color: transparent;
+  padding: 1rem;
+  border-right: 1px solid var(--divider-color);
+  padding-right: 1.5rem;
+  margin-right: 1.5rem;
+}
+
+.sidebar-section {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--divider-color);
+  padding-bottom: 1.5rem;
+}
+
+.sidebar-section:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.sidebar-section h2 {
+  color: var(--primary-color);
+  margin: 0 0 0.6rem 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--divider-color);
+}
+
+/* Right Content Area */
+.right-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0;
+}
+
+.main-section {
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Section Styles */
+.settings-section {
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--transition-slow) ease, border-color var(--transition-slow) ease;
+}
+
+.settings-section:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-color-hover);
+}
+
+/* Section Header */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--divider-color);
+}
+
+.section-header h2 {
+  color: var(--primary-color);
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+/* Vertical Layout for Items */
+.vertical-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Grid Layouts */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+/* Container */
+.container {
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Notification Positioning */
+.notification {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  padding: 12px 16px;
+  background-color: var(--bg-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  opacity: 0;
+  transition: transform var(--transition-slow) ease, opacity var(--transition-slow) ease;
+}
+
+.notification.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* Storage Status */
+.storage-status {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}

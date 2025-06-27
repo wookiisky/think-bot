@@ -1,0 +1,237 @@
+/* Responsive Design */
+
+/* Large screens: dual column with 3 right columns */
+@media (min-width: 1201px) {
+  .main-content-wrapper {
+    grid-template-columns: 22% 1fr;
+  }
+}
+
+/* Medium-large screens: dual column with 2 right columns */
+@media (max-width: 1200px) and (min-width: 901px) {
+  .main-content-wrapper {
+    grid-template-columns: 30% 1fr;
+  }
+}
+
+/* Medium screens: dual column with 1 right column */
+@media (max-width: 900px) and (min-width: 601px) {
+  .main-content-wrapper {
+    grid-template-columns: 45% 1fr;
+  }
+}
+
+/* Small screens: single column */
+@media (max-width: 600px) {
+  .main-content-wrapper {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .left-sidebar {
+    order: 2;
+    border-right: none;
+    border-top: 1px solid var(--divider-color);
+    padding-right: 1rem;
+    padding-top: 1.5rem;
+    margin-right: 0;
+    margin-top: 1.5rem;
+  }
+
+  /* Adjust sidebar section spacing for mobile */
+  .sidebar-section {
+    margin-bottom: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+
+  .sidebar-section:last-child {
+    margin-bottom: 0 !important;
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+  }
+
+  .right-content {
+    order: 1;
+  }
+
+  .header-row {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    padding: 0.5rem 0;
+    box-shadow: none;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0 1rem;
+  }
+
+  .header-left h1 {
+    font-size: 1.1rem;
+  }
+
+  .header-right {
+    margin-top: 0;
+    width: 100%;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    width: 100%;
+  }
+
+  .header-actions button {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.5rem;
+    height: 26px;
+  }
+
+  .header-actions #saveBtn {
+    margin-right: 0.25rem;
+  }
+
+  /* Form controls for mobile */
+  .form-control {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Button adjustments for mobile */
+  .btn-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-group .btn {
+    border-radius: 3px;
+    border-right: 1px solid var(--border-color);
+    margin-bottom: 0.25rem;
+  }
+
+  .btn-group .btn:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .header-content {
+    padding: 0 0.5rem;
+  }
+
+  .main-content-wrapper {
+    padding: 0 0.5rem;
+  }
+
+  .settings-section {
+    padding: 0.75rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.5rem;
+  }
+
+  .btn {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.5rem;
+    height: 26px;
+  }
+
+  .btn-sm {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
+    height: 22px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .header-row,
+  .header-actions,
+  .drag-handle,
+  .icon-btn,
+  .btn {
+    display: none !important;
+  }
+
+  .main-content-wrapper {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .left-sidebar {
+    order: 2;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .right-content {
+    order: 1;
+  }
+
+  .settings-section {
+    border: 1px solid #000;
+    box-shadow: none;
+    margin-bottom: 1rem;
+    break-inside: avoid;
+  }
+
+  body {
+    background: white;
+    color: black;
+    font-size: 12px;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  :root {
+    --border-color: #000000;
+    --divider-color: #000000;
+    --text-secondary: #000000;
+  }
+
+  .btn {
+    border: 2px solid currentColor;
+  }
+
+  .form-control {
+    border: 2px solid currentColor;
+  }
+
+  .settings-section {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .notification {
+    transition: none;
+  }
+
+  .btn {
+    transition: none;
+  }
+
+  .form-control {
+    transition: none;
+  }
+}

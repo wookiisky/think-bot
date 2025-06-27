@@ -1,0 +1,627 @@
+/**
+ * sidebar.js - Main entry point for Think Bot sidebar
+ * Integrates all modules and manages application logic flow
+ */
+
+// Import all modules
+import { createLogger } from './modules/utils.js';
+import * as StateManager from './modules/state-manager.js';
+import * as UIManager from './modules/ui-manager.js';
+import * as MessageHandler from './modules/message-handler.js';
+import * as ChatManager from './modules/chat-manager.js';
+import * as ResizeHandler from './modules/resize-handler.js';
+import * as ImageHandler from './modules/image-handler.js';
+import * as TabManager from './components/tab-manager.js';
+import * as ChatHistory from './modules/chat-history.js';
+import * as PageDataManager from './modules/page-data-manager.js';
+import * as EventHandler from './modules/event-handler.js';
+import { ModelSelector } from './modules/model-selector.js';
+import { confirmationOverlay } from './components/confirmation-overlay.js';
+
+// Create logger
+const logger = createLogger('Sidebar');
+
+// Global variables
+let modelSelector = null;
+let currentRequestTabId = null; // Track current request
+let currentStreamId = null; // Track current stream
+
+// Global utility functions for other modules
+window.StateManager = StateManager;
+window.MessageHandler = MessageHandler;
+window.ChatHistory = ChatHistory;
+window.ImageHandler = ImageHandler;
+window.ChatManager = ChatManager;
+window.TabManager = TabManager;
+
+// Initialize when DOM elements are loaded
+document.addEventListener('DOMContentLoaded', async () => {
+  logger.info('Side panel loaded');
+  
+  // Initialize UI element references
+  const elements = UIManager.initElements();
+  
+  // Apply configured panel size
+  const config = await StateManager.getConfig();
+  ResizeHandler.applyPanelSize(config);
+  
+  // Reset content section height to configured default
+  await ResizeHandler.resetContentSectionHeight(elements.contentSection, config);
+  
+  // Initialize confirmation overlay
+  confirmationOverlay.init();
+
+  // Page data loading will be triggered by handleSidebarOpened message from background
+  // This ensures proper blacklist checking before loading content
+
+  // Set callback to trigger auto inputs after page data is loaded
+  PageDataManager.setOnPageDataLoadedCallback(triggerAutoInputs);
+
+  // Initialize model selector
+  modelSelector = new ModelSelector();
+  
+  // Load tabs with handler
+  await TabManager.loadTabs(
+    elements.tabContainer,
+    elements.chatContainer,
+    (displayText, sendTextTemplate, tabId, isAutoSend, forceIncludePageContent) => handleTabAction(displayText, sendTextTemplate, tabId, isAutoSend, forceIncludePageContent)
+  );
+  
+  // Set up event listeners
+  EventHandler.setupEventListeners(
+    elements,
+    modelSelector,
+    (displayText, sendTextTemplate) => handleTabAction(displayText, sendTextTemplate, TabManager.getActiveTabId(), true, null)
+  );
+  
+  // Set up message listeners
+  setupMessageListeners();
+  
+  // Set up message buttons scroll effect
+  EventHandler.setupMessageButtonsScroll(elements.chatContainer);
+  
+  // Set initial button state
+  elements.includePageContentBtn.setAttribute('data-enabled', StateManager.getStateItem('includePageContent') ? 'true' : 'false');
+  
+  // Initialize icon layout
+  UIManager.updateIconsLayout(elements.userInput.offsetHeight);
+  
+  // Add default layout class
+  elements.buttonGroup.classList.add('layout-row');
+  
+  // Apply theme
+  await applyTheme(config);
+
+  // Auto-trigger will be handled after page data is loaded via callback
+
+  logger.info('Sidebar initialization completed');
+});
+
+/**
+ * Handle tab action (switch or quick input)
+ * @param {string} displayText - Display text
+ * @param {string} sendTextTemplate - Send text template
+ * @param {string} tabId - Tab ID
+ * @param {boolean} isAutoSend - Whether this is an auto-send action
+ * @param {boolean} forceIncludePageContent - Force include page content for first-time quick input
+ */
+const handleTabAction = async (displayText, sendTextTemplate, tabId, isAutoSend, forceIncludePageContent = null) => {
+  const elements = UIManager.getAllElements();
+  
+  // If this is just a tab switch without auto-send, don't send message
+  if (!isAutoSend || !sendTextTemplate) {
+    return;
+  }
+  
+  // For first-time quick input, temporarily override include page content setting
+  let originalIncludePageContent = null;
+  if (forceIncludePageContent !== null) {
+    originalIncludePageContent = StateManager.getStateItem('includePageContent');
+    StateManager.updateStateItem('includePageContent', forceIncludePageContent);
+  }
+  
+  try {
+    // Handle quick input auto-send
+    await ChatManager.handleQuickInputClick(
+      displayText,
+      sendTextTemplate,
+      elements.chatContainer,
+      elements.sendBtn,
+      modelSelector,
+      async () => {
+        // Save chat history for current tab
+        const chatHistory = ChatHistory.getChatHistoryFromDOM(elements.chatContainer);
+        await TabManager.saveCurrentTabChatHistory(chatHistory);
+      }
+    );
+  } finally {
+    // Restore original include page content setting if it was overridden
+    if (originalIncludePageContent !== null) {
+      StateManager.updateStateItem('includePageContent', originalIncludePageContent);
+    }
+  }
+};
+
+/**
+ * Set message listeners
+ */
+function setupMessageListeners() {
+  MessageHandler.setupMessageListeners({
+    onStreamChunk: (chunk, tabId, url) => {
+      // Only process stream chunks for the current active tab and URL
+      const currentUrl = StateManager.getStateItem('currentUrl');
+      const activeTabId = TabManager.getActiveTabId();
+      
+      if (url === currentUrl && tabId === activeTabId) {
+        // Update stream monitor if we have an active stream
+        if (currentStreamId && typeof streamMonitor !== 'undefined') {
+          streamMonitor.updateStream(currentStreamId, chunk);
+        }
+        
+        ChatManager.handleStreamChunk(UIManager.getElement('chatContainer'), chunk, tabId, url);
+        logger.debug(`Stream chunk processed for tab ${tabId}`);
+      } else {
+        logger.debug(`Stream chunk ignored - URL mismatch (${url} vs ${currentUrl}) or tab mismatch (${tabId} vs ${activeTabId})`);
+      }
+    },
+    
+    onStreamEnd: (fullResponse, finishReason, isAbnormalFinish, tabId, url) => {
+      const currentUrl = StateManager.getStateItem('currentUrl');
+      const activeTabId = TabManager.getActiveTabId();
+      
+      // Always update tab loading state regardless of which tab is currently active
+      if (url === currentUrl) {
+        // Update tab loading state to not loading
+        if (window.TabManager && window.TabManager.updateTabLoadingState) {
+          window.TabManager.updateTabLoadingState(tabId, false).catch(error => 
+            logger.warn('Error updating tab loading state after stream end:', error)
+          );
+        }
+      }
+      
+      // Only process stream content for the current active tab and URL
+      if (url === currentUrl && tabId === activeTabId) {
+        // Mark stream as completed in monitor
+        if (currentStreamId && typeof streamMonitor !== 'undefined') {
+          streamMonitor.completeStream(currentStreamId, fullResponse);
+          currentStreamId = null; // Clear current stream
+        }
+        
+        ChatManager.handleStreamEnd(
+          UIManager.getElement('chatContainer'),
+          fullResponse,
+          async (response) => {
+            // Get updated dialog history from DOM
+            const chatHistory = ChatHistory.getChatHistoryFromDOM(UIManager.getElement('chatContainer'));
+            
+            // Save updated chat history for current tab
+            await TabManager.saveCurrentTabChatHistory(chatHistory);
+            
+            // Re-enable send button
+            UIManager.getElement('sendBtn').disabled = false;
+          },
+          finishReason,
+          isAbnormalFinish,
+          tabId,
+          url
+        );
+        
+        logger.info(`Stream ended for tab ${tabId}`);
+      } else {
+        logger.debug(`Stream content processing ignored - URL mismatch (${url} vs ${currentUrl}) or tab mismatch (${tabId} vs ${activeTabId}), but loading state updated`);
+      }
+    },
+    
+    onLlmError: (message) => {
+      const error = message.error || 'Unknown error';
+      const errorDetails = message.errorDetails || null;
+      const tabId = message.tabId;
+      const url = message.url;
+      
+      const currentUrl = StateManager.getStateItem('currentUrl');
+      const activeTabId = TabManager.getActiveTabId();
+      
+      // Check if this is a user cancellation - log as info instead of error
+      const isUserCancellation = error && (
+        error.includes('Request was cancelled by user') ||
+        (typeof error === 'object' && error.message === 'Request was cancelled by user')
+      );
+
+      const logLevel = isUserCancellation ? 'info' : 'error';
+      logger[logLevel]('[Message] Received LLM_ERROR', {
+        error: error,
+        errorType: typeof error,
+        errorLength: error?.length || 0,
+        hasCurrentStream: !!currentStreamId,
+        hasErrorDetails: !!errorDetails,
+        errorStatus: errorDetails?.status,
+        rawResponseLength: errorDetails?.rawResponse?.length || 0,
+        tabId: tabId,
+        activeTabId: activeTabId,
+        urlMatch: url === currentUrl
+      });
+      
+      // Always update tab loading state regardless of which tab is currently active
+      if (url === currentUrl) {
+        // Update tab loading state to not loading
+        if (window.TabManager && window.TabManager.updateTabLoadingState) {
+          window.TabManager.updateTabLoadingState(tabId, false).catch(error => 
+            logger.warn('Error updating tab loading state after error:', error)
+          );
+        }
+      }
+      
+      // Only process error content for the current active tab and URL  
+      if (url === currentUrl && tabId === activeTabId) {
+        // Mark stream as failed in monitor
+        if (currentStreamId && typeof streamMonitor !== 'undefined') {
+          const errorObj = new Error(error);
+          streamMonitor.failStream(currentStreamId, errorObj);
+          currentStreamId = null; // Clear current stream
+        }
+        
+        // Handle JSON formatted error message
+        let processedError = error;
+        try {
+          // Try to parse if it's JSON string
+          const errorObj = JSON.parse(error);
+          processedError = errorObj; // Use parsed object
+        } catch (parseError) {
+          // If not JSON, treat as string
+          processedError = error;
+        }
+        
+        // Always handle error - let ChatManager.handleLlmError decide on duplicates
+        // This ensures send button is always re-enabled
+        ChatManager.handleLlmError(
+          UIManager.getElement('chatContainer'),
+          processedError,
+          null,
+          () => {
+            // Re-enable send button
+            UIManager.getElement('sendBtn').disabled = false;
+          },
+          errorDetails,
+          tabId,
+          url
+        );
+        
+        logger.info(`LLM error processed for tab ${tabId}`);
+      } else {
+
+      }
+    },
+    
+    onLoadingStateUpdate: (message) => {
+      // Handle stream-related loading state updates
+      if (message.status === 'error' && currentStreamId && typeof streamMonitor !== 'undefined') {
+        const errorObj = new Error(message.error || 'Loading state error');
+        streamMonitor.failStream(currentStreamId, errorObj);
+        currentStreamId = null;
+      } else if (message.status === 'completed' && currentStreamId && typeof streamMonitor !== 'undefined') {
+        streamMonitor.completeStream(currentStreamId, message.result);
+        currentStreamId = null;
+      }
+      
+      handleLoadingStateUpdate(message);
+    },
+    
+    onTabChanged: PageDataManager.handleTabChanged,
+    
+    onAutoLoadContent: PageDataManager.handleAutoLoadContent,
+    
+    onAutoExtractContent: PageDataManager.handleAutoExtractContent,
+
+    onTabUpdated: PageDataManager.handleTabUpdated,
+
+    onBlacklistDetected: handleBlacklistDetected,
+
+    onSidebarOpened: handleSidebarOpened
+  });
+}
+
+/**
+ * Handle loading state updates from background script
+ * @param {Object} message - Loading state update message
+ */
+function handleLoadingStateUpdate(message) {
+  try {
+    const { url, tabId, status, result, error, finishReason } = message;
+    const currentUrl = StateManager.getStateItem('currentUrl');
+    const activeTabId = TabManager.getActiveTabId();
+    
+    // Always update tab loading state regardless of which tab is currently active
+    if (url === currentUrl) {
+      // Update tab loading state for completed, error, or cancelled status
+      if (status === 'completed' || status === 'error' || status === 'cancelled') {
+        if (window.TabManager && window.TabManager.updateTabLoadingState) {
+          window.TabManager.updateTabLoadingState(tabId, false).catch(error => 
+            logger.warn('Error updating tab loading state after loading state update:', error)
+          );
+        }
+      }
+    }
+    
+    // Only process content updates for current page and active tab
+    if (url === currentUrl && tabId === activeTabId) {
+      const chatContainer = UIManager.getElement('chatContainer');
+      
+      if (status === 'completed' && result) {
+        // Handle completed LLM response
+        
+        // Check if finishReason indicates abnormal termination
+        const isAbnormalFinish = finishReason && 
+            finishReason !== 'stop' && 
+            finishReason !== 'STOP' && 
+            finishReason !== 'end_turn';
+        
+        ChatManager.handleStreamEnd(
+          chatContainer,
+          result,
+          async (response) => {
+            // Get updated dialog history from DOM
+            const chatHistory = ChatHistory.getChatHistoryFromDOM(chatContainer);
+            
+                      // Save updated chat history for current tab
+          await TabManager.saveCurrentTabChatHistory(chatHistory);
+            
+            // Re-enable send button
+            UIManager.getElement('sendBtn').disabled = false;
+          },
+          finishReason,
+          isAbnormalFinish
+        );
+      } else if (status === 'error' && error) {
+        // Handle error response
+        
+        // Always handle error - let ChatManager.handleLlmError decide on duplicates
+        // This ensures send button is always re-enabled
+        ChatManager.handleLlmError(
+          chatContainer,
+          error,
+          null,
+          () => {
+            // Re-enable send button
+            UIManager.getElement('sendBtn').disabled = false;
+          },
+          message.errorDetails
+        );
+      } else if (status === 'cancelled') {
+        // Handle cancelled response
+        
+        // Find the streaming message and update it
+        const streamingMessage = chatContainer.querySelector('[data-streaming="true"]');
+        if (streamingMessage) {
+          const contentDiv = streamingMessage.querySelector('.message-content');
+          if (contentDiv) {
+            contentDiv.innerHTML = '<span style="color: var(--text-color); font-style: italic;">Response generation stopped by user.</span>';
+          }
+          streamingMessage.removeAttribute('data-streaming');
+        }
+        
+        // Re-enable send button
+        UIManager.getElement('sendBtn').disabled = false;
+      }
+    } else {
+      logger.debug(`Loading state content processing ignored - URL mismatch (${url} vs ${currentUrl}) or tab mismatch (${tabId} vs ${activeTabId}), but tab loading state updated`);
+    }
+  } catch (error) {
+    logger.error('Error handling loading state update:', error);
+  }
+}
+
+/**
+ * Start a new streaming session
+ * @param {Object} requestInfo - Information about the request
+ */
+function startStreamingSession(requestInfo) {
+  if (typeof streamMonitor === 'undefined') {
+    logger.warn('[Stream] Stream monitor not available');
+    return null;
+  }
+  
+  // Generate unique stream ID
+  currentStreamId = `stream_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
+  // Register stream with monitor
+  streamMonitor.registerStream(currentStreamId, {
+    tabId: requestInfo.tabId,
+    url: requestInfo.url,
+    model: requestInfo.model,
+    messageCount: requestInfo.messageCount,
+    hasImage: requestInfo.hasImage,
+    onSilenceDetected: (streamId, silenceDuration) => {
+      logger.warn('[Stream] Stream silence detected by monitor', {
+        streamId,
+        silenceDuration,
+        tabId: requestInfo.tabId
+      });
+      
+      // Could show a warning to user or attempt recovery
+      showStreamWarning(`Stream has been silent for ${Math.round(silenceDuration / 1000)} seconds. Connection may be interrupted.`);
+    },
+    onRecoveryAttempt: (streamId, attempt, originalError) => {
+      // Could attempt to restart the request or show recovery UI
+      showStreamRecovery(streamId, attempt);
+    }
+  });
+  
+  return currentStreamId;
+}
+
+/**
+ * Show stream warning to user
+ * @param {string} message - Warning message
+ */
+function showStreamWarning(message) {
+  // Could implement user notification here
+  logger.warn('[Stream] Stream warning:', message);
+  
+  // For now, just log the warning
+  // In the future, could show a toast notification or status indicator
+}
+
+/**
+ * Show stream recovery UI
+ * @param {string} streamId - Stream ID
+ * @param {number} attempt - Recovery attempt number
+ */
+function showStreamRecovery(streamId, attempt) {
+  // Could implement recovery UI here
+  // For now, just log the recovery attempt
+}
+
+/**
+ * Get current stream statistics
+ * @returns {Object|null} Stream statistics or null
+ */
+function getCurrentStreamStats() {
+  if (!currentStreamId || typeof streamMonitor === 'undefined') {
+    return null;
+  }
+  
+  return streamMonitor.getStreamStats(currentStreamId);
+}
+
+/**
+ * Trigger auto-send for quick inputs with auto-trigger enabled
+ */
+async function triggerAutoInputs() {
+  try {
+    logger.info('Checking for auto-trigger quick inputs');
+
+    // Get current configuration
+    const config = await StateManager.getConfig();
+    if (!config || !config.quickInputs || config.quickInputs.length === 0) {
+      logger.info('No quick inputs configured, skipping auto-trigger');
+      return;
+    }
+
+    // Filter quick inputs with auto-trigger enabled
+    const autoTriggerInputs = config.quickInputs.filter(input => input.autoTrigger === true);
+
+    if (autoTriggerInputs.length === 0) {
+      logger.info('No quick inputs with auto-trigger enabled');
+      return;
+    }
+
+    // Check if content extraction result is empty
+    const currentState = StateManager.getState();
+    const hasExtractedContent = currentState.extractedContent && currentState.extractedContent.trim().length > 0;
+
+    if (!hasExtractedContent) {
+      logger.info('Content extraction result is empty, skipping auto-trigger to prevent sending empty messages');
+      return;
+    }
+
+    logger.info(`Found ${autoTriggerInputs.length} quick inputs with auto-trigger enabled and content is available`);
+
+    let lastTriggeredTabId = null;
+
+    // Trigger each auto-trigger quick input in sequence with delay
+    for (let i = 0; i < autoTriggerInputs.length; i++) {
+      const input = autoTriggerInputs[i];
+      const tabId = input.id;
+
+      logger.info(`Processing auto-trigger for quick input: ${input.displayText} (ID: ${tabId})`);
+
+      try {
+        // Switch to tab and check if we should send the action
+        const { shouldSend } = await TabManager.switchToTabAndCheckAction(tabId, { silent: true });
+
+        if (shouldSend) {
+          // Directly call the action handler
+          logger.info(`Proceeding with auto-send for tab ${tabId}`);
+          const forceIncludePageContent = true;
+          await handleTabAction(input.displayText, input.sendText, tabId, true, forceIncludePageContent);
+          lastTriggeredTabId = tabId;
+        }
+      } catch (error) {
+        logger.error(`Error auto-triggering quick input ${input.displayText}:`, error);
+      }
+    }
+
+    // After all auto-triggers are processed, switch to the chat tab
+    await TabManager.setActiveTab('chat');
+    logger.info('Switched to chat tab after auto-trigger sequence');
+
+    // After all silent updates, render the final UI state once
+    await TabManager.renderCurrentTabsState();
+
+    logger.info('Auto-trigger sequence completed');
+  } catch (error) {
+    logger.error('Error in triggerAutoInputs:', error);
+  }
+}
+
+/**
+ * Apply theme based on configuration
+ * @param {Object} config - The application configuration
+ */
+async function applyTheme(config) {
+  const theme = config.theme || 'system';
+  const body = document.body;
+
+  if (theme === 'dark') {
+    body.classList.add('dark-theme');
+  } else if (theme === 'light') {
+    body.classList.remove('dark-theme');
+  } else {
+    // System theme
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (prefersDark) {
+      body.classList.add('dark-theme');
+    } else {
+      body.classList.remove('dark-theme');
+    }
+  }
+}
+
+/**
+ * Handle sidebar opened message from background script
+ * @param {Object} message - Sidebar opened message
+ */
+async function handleSidebarOpened(message) {
+  try {
+    const { url, tabId } = message;
+    logger.info('Received SIDEBAR_OPENED message for URL:', url);
+
+    // Use the centralized blacklist checking function
+    await PageDataManager.checkBlacklistAndLoadData(url);
+  } catch (error) {
+    logger.error('Error handling sidebar opened:', error);
+    // If there's an error, continue with normal flow
+    PageDataManager.loadCurrentPageData();
+  }
+}
+
+/**
+ * Handle blacklist detection message from background script
+ * @param {Object} message - Blacklist detection message
+ */
+function handleBlacklistDetected(message) {
+  try {
+    const { url, matchedPattern } = message;
+    logger.info('Blacklist detected for URL:', url);
+
+    // Show confirmation overlay
+    confirmationOverlay.show({
+      message: 'This page is in your blacklist. Do you want to continue using Think Bot?',
+      matchedPattern: matchedPattern,
+      onConfirm: () => {
+        logger.info('User confirmed to continue on blacklisted page');
+        // Continue with normal page data loading
+        PageDataManager.loadCurrentPageData();
+      },
+      onCancel: () => {
+        logger.info('User cancelled on blacklisted page');
+        // Close the sidebar
+        window.close();
+      }
+    });
+  } catch (error) {
+    logger.error('Error handling blacklist detection:', error);
+    // If there's an error, continue with normal flow
+    PageDataManager.loadCurrentPageData();
+  }
+}

@@ -1,0 +1,98 @@
+/* Modal Styles */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  background: var(--bg-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+}
+
+.modal-header {
+  padding: 1rem 1.5rem 0.8rem 1.5rem;
+  border-bottom: 1px solid var(--divider-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--light-gray);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--divider-color);
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  background: var(--light-gray);
+}
+
+/* Modal buttons inherit from main buttons.css */
+.modal-footer .primary-btn,
+.modal-footer .secondary-btn {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+}
+
+.form-group .secondary-btn {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.6rem;
+}
+
+/* Modal Responsive */
+@media (max-width: 600px) {
+  .modal-content {
+    width: 95%;
+    margin: 1rem;
+    max-height: 85vh;
+  }
+
+  .modal-header {
+    padding: 0.8rem 1rem;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+    padding: 0.8rem 1rem;
+  }
+
+  .modal-footer button {
+    width: 100%;
+    margin: 0.1rem 0;
+  }
+}

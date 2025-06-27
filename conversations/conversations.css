@@ -1,0 +1,694 @@
+/* Conversations Page Specific Styles */
+
+/* Utility classes */
+.hidden {
+  display: none !important;
+}
+
+.conversations-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+/* Left Column: Page List */
+.page-list-section {
+  flex-shrink: 0;
+  flex-basis: 22%; /* Initial width */
+  min-width: 200px;
+  max-width: 50%; /* Prevent it from taking too much space */
+  background-color: var(--bg-color);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Resizer Handle */
+.resizer {
+  flex-shrink: 0;
+  width: 5px;
+  background: var(--border-color);
+  cursor: col-resize;
+  transition: background-color 0.2s ease;
+}
+
+.resizer:hover {
+  background: var(--accent-color);
+}
+
+.page-list-header {
+  padding: 8px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.page-list-header h2 {
+  margin: 0 0 5px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.page-search-input {
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--input-background, var(--background-color));
+  color: var(--text-color);
+  font-size: 12px;
+  box-sizing: border-box;
+}
+
+.page-search-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-color-alpha);
+}
+
+.page-list-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 3px;
+}
+
+.page-list-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.empty-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-top: 20px;
+}
+
+.empty-message .material-icons {
+  font-size: 36px;
+  opacity: 0.5;
+}
+
+.empty-message p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.empty-subtitle {
+  font-size: 12px !important;
+  opacity: 0.7;
+}
+
+/* Page List Items */
+.page-list-item {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 3px 0px;
+  margin-bottom: 1px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  border-left: 3px solid transparent;
+  height: 22px;
+}
+
+/* 悬停状态 - 使用与选中相同的背景色 */
+.page-list-item:hover {
+  background-color: var(--hover-color);
+  border-left: 3px solid var(--accent-color-alpha);
+}
+
+/* 选中状态 - 扁平化但醒目 */
+.page-list-item.selected {
+  background-color: var(--accent-color-alpha);
+  border-left: 3px solid var(--accent-color);
+}
+
+/* 删除多余的装饰元素 */
+.page-list-item.selected::before,
+.page-list-item.selected::after {
+  display: none;
+}
+
+.page-list-item.selected:hover {
+  background-color: rgba(var(--accent-color-rgb), 0.18);
+}
+
+/* Icon */
+.page-icon {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  background: transparent;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: color 0.15s ease;
+}
+
+.page-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.page-list-item.selected .page-icon {
+  background: transparent;
+}
+
+.page-icon .material-icons {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.page-list-item.selected .page-icon .material-icons {
+  color: var(--accent-color);
+}
+
+.page-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+}
+
+.page-info.single-line {
+  flex-direction: row;
+  align-items: center;
+}
+
+/* Page Title */
+.page-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.1;
+  width: 100%;
+  transition: color 0.15s ease;
+  padding-left: 1px;
+  border-bottom: 1px solid transparent;
+}
+
+/* 为选中项微调视觉效果 */
+.page-list-item.selected .page-title {
+  color: var(--accent-color);
+  font-weight: 600; 
+  padding-bottom: 1px;
+  border-bottom: 1px dotted var(--accent-color-alpha);
+}
+
+/* 悬停时标题效果 */
+.page-list-item:hover .page-title {
+  color: var(--text-color-hover, var(--text-color));
+}
+
+.page-url {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.8;
+}
+
+.page-timestamp {
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+/* Buttons */
+.page-open-btn, 
+.page-delete-btn {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  padding: 0;
+  opacity: 1; /* 始终显示 */
+}
+
+.page-open-btn {
+  margin-right: 1px;
+}
+
+/* 按钮悬停效果 */
+.page-open-btn:hover {
+  color: var(--accent-color);
+}
+
+.page-delete-btn:hover {
+  background-color: rgba(var(--error-color-rgb, 239, 68, 68), 0.12);
+  color: var(--error-color);
+}
+
+/* 按钮图标大小 */
+.page-open-btn .material-icons,
+.page-delete-btn .material-icons {
+  font-size: 14px;
+  padding: 0;
+}
+
+/* 删除多余的伪元素代码 */
+.page-list-item.selected::before,
+.page-list-item.selected::after {
+  display: none;
+}
+
+
+/* 在深色模式下调整悬停效果 */
+.dark-theme .page-list-item.selected:hover {
+  background-color: rgba(var(--accent-color-rgb), 0.22);
+}
+.content-container {
+  padding: 0 0px 1px!important;
+}
+
+/* Tab container constraints to prevent overflow issues */
+.tab-container {
+  flex-shrink: 0;
+  max-height: 120px; /* Limit tab container height */
+  overflow-y: auto; /* Allow scrolling if tabs overflow */
+}
+
+/* Ensure chat section maintains minimum space */
+.chat-section {
+  flex: 1;
+  min-height: 200px; /* Minimum height to ensure input area is visible */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Ensure input container stays at bottom */
+.input-container {
+  flex-shrink: 0; /* Prevent input area from shrinking */
+  margin-top: auto; /* Push to bottom if chat content is small */
+}
+
+/* Override sidebar tab styles for conversations page */
+.conversations-container .tab-container {
+  flex-wrap: wrap;
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 6px;
+  background-color: var(--background-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Ensure chat section in conversations takes remaining space properly */
+.conversations-container .chat-section {
+  flex: 1;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Ensure chat container can scroll when content overflows */
+.conversations-container .chat-container {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0; /* Allow shrinking */
+}
+
+/* Responsive adjustments for tab overflow */
+@media (max-height: 600px) {
+  .conversations-container .tab-container {
+    max-height: 80px; /* Reduce max height on smaller screens */
+  }
+
+  .conversations-container .chat-section {
+    min-height: 150px; /* Reduce minimum height on smaller screens */
+  }
+}
+
+@media (max-height: 400px) {
+  .conversations-container .tab-container {
+    max-height: 60px; /* Further reduce on very small screens */
+  }
+
+  .conversations-container .chat-section {
+    min-height: 120px; /* Further reduce minimum height */
+  }
+}
+
+/* Force input container to always be visible */
+.conversations-container .input-container {
+  position: relative;
+  z-index: 10;
+  background-color: var(--background-color);
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0 !important; /* Force no shrinking */
+  min-height: 40px; /* Ensure minimum height for input area */
+}
+
+/* Ensure main content area uses available space efficiently */
+.conversations-container .main-content-area {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden; /* Prevent content from overflowing the container */
+}
+/* Right Column: Content and Chat */
+.content-chat-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--background-color);
+}
+
+/* Page Info Header */
+.page-info-header {
+  padding: 6px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--background-color);
+}
+
+.page-info-header .page-title {
+  margin: 0 0 6px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-url-container {
+  font-size: 12px;
+}
+
+.page-url {
+  color: var(--accent-color);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.page-url:hover {
+  text-decoration: underline;
+}
+
+/* Welcome Screen */
+.welcome-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.welcome-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.welcome-content .material-icons {
+  font-size: 64px;
+  opacity: 0.3;
+}
+
+.welcome-content h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.welcome-content p {
+  margin: 0;
+  font-size: 16px;
+  opacity: 0.8;
+  max-width: 400px;
+}
+
+/* Main Content Area */
+.main-content-area {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Allow shrinking */
+}
+
+.main-content-area.hidden {
+  display: none;
+}
+
+/* Read-only content modifications */
+.extracted-content.readonly {
+  background-color: var(--readonly-background, rgba(0, 0, 0, 0.02));
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.5;
+}
+
+.content-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  color: var(--error-color);
+  font-style: italic;
+  text-align: center;
+}
+
+/* Tooltip styles */
+.page-list-item[title] {
+  position: relative;
+}
+
+/* Scrollbar styling for page list */
+.page-list-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.page-list-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.page-list-container::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+
+.page-list-container::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .page-list-section {
+    width: 30%;
+    min-width: 200px;
+  }
+  
+  .page-title {
+    font-size: 13px;
+  }
+  
+  .page-url {
+    font-size: 11px;
+  }
+}
+
+/* Dark mode specific adjustments */
+.dark-theme .page-icon {
+  background: var(--icon-background, #333);
+}
+
+.dark-theme .extracted-content.readonly {
+  background-color: var(--readonly-background, rgba(255, 255, 255, 0.02));
+}
+
+.dark-theme .page-list-item:hover {
+  background-color: var(--hover-color);
+  border-left: 3px solid var(--accent-color-alpha);
+}
+
+.dark-theme .page-list-item.selected {
+  background-color: var(--accent-color-alpha);
+  border-left: 3px solid var(--accent-color);
+}
+
+.dark-theme .page-list-item.selected .page-title {
+  border-bottom: 1px dotted var(--accent-color-alpha);
+}
+
+/* Loading and error states */
+.page-list-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  color: var(--text-secondary);
+}
+
+.page-list-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  color: var(--error-color);
+  text-align: center;
+  padding: 16px;
+} 
+
+/* Enhance focus state on keyboard navigation */
+.page-list-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+/* 删除原来设置的动画效果 */
+@keyframes subtle-pop {
+  0% { transform: none; }
+  100% { transform: none; }
+} 
+
+/* Confirmation Dialog Styles */
+.confirmation-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* Deeper overlay */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.confirmation-dialog-overlay:not(.hidden) {
+  opacity: 1;
+}
+
+.confirmation-dialog {
+  background-color: var(--dialog-background, var(--bg-color));
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  padding: 24px;
+  width: 90%;
+  max-width: 600px;
+  text-align: left;
+  transform: scale(0.9) translateY(10px);
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+  border: 1px solid var(--border-color);
+}
+
+.confirmation-dialog-overlay:not(.hidden) .confirmation-dialog {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.confirmation-dialog h3 {
+  margin-top: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+}
+
+.confirmation-dialog p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.confirmation-details {
+  background-color: var(--input-background, var(--background-color));
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 12px;
+  margin: 15px 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-height: 150px;
+  overflow-y: auto;
+  line-height: 1.6;
+}
+
+.confirmation-details strong {
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+.confirmation-dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Reusing button styles from sidebar */
+.confirmation-dialog-buttons button {
+  padding: 8px 16px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.button-danger {
+  background-color: var(--error-color, #d9534f);
+  color: white;
+}
+
+.button-danger:hover {
+  background-color: var(--error-color-hover, #c9302c);
+}
+
+.button-secondary {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+.button-secondary:hover {
+  background-color: var(--hover-color);
+  border-color: var(--border-color-hover, var(--border-color));
+}

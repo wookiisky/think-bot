@@ -1,0 +1,102 @@
+/* CSS Variables and Theme Configuration */
+
+:root {
+  /* Primary Colors - Consistent with sidebar theme */
+  --primary-color: #3B82F6;
+  --accent-color: var(--primary-color);
+  --accent-color-rgb: 59, 130, 246;
+  --accent-color-alpha: rgba(var(--accent-color-rgb), 0.1);
+  --primary-dark: #3367d6;
+  --secondary-color: #fbbc05;
+
+  /* Background Colors */
+  --bg-color: #FFFFFF;
+  --background-color: var(--bg-color);
+  --dialog-background: var(--bg-color);
+  --sidebar-bg: #fafbfc;
+  --light-gray: #F3F4F6;
+  --hover-color: #F3F4F6;
+  --input-bg: #FFFFFF;
+  --input-background: #FFFFFF;
+  --readonly-background: #F9FAFB;
+  --code-bg: #f8f9fa;
+
+  /* Text Colors */
+  --text-color: #1F2937;
+  --text-secondary: #6B7280;
+
+  /* Border and Divider Colors */
+  --border-color: #E5E7EB;
+  --border-color-hover: #D1D5DB;
+  --divider-color: #e8eaed;
+
+  /* Status Colors */
+  --error-color: #EF4444;
+  --error-color-hover: #DC2626;
+  --success-color: #22C55E;
+  --warning-color: #ea8600;
+
+  /* Status Background Colors */
+  --error-bg: #fce8e6;
+  --success-bg: #e8f5e8;
+  --warning-bg: #fef7e0;
+
+  /* Message backgrounds for consistency with sidebar */
+  --user-msg-bg: #DBEAFE;
+  --assistant-msg-bg: #F3F4F6;
+
+  /* Shadow Definitions */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.12);
+
+  /* Animation Durations */
+  --transition-fast: 0.15s;
+  --transition-normal: 0.2s;
+  --transition-slow: 0.3s;
+}
+
+/* Dark Theme Variables - Using class-based approach for consistency */
+.dark-theme {
+  /* Primary Colors - Consistent with sidebar dark theme */
+  --primary-color: #60A5FA;
+  --accent-color: var(--primary-color);
+  --accent-color-rgb: 96, 165, 250;
+  --accent-color-alpha: rgba(var(--accent-color-rgb), 0.15);
+
+  /* Background Colors */
+  --bg-color: #111827;
+  --background-color: var(--bg-color);
+  --dialog-background: #1F2937;
+  --sidebar-bg: #35363a;
+  --light-gray: #374151;
+  --hover-color: #1F2937;
+  --input-bg: #1F2937;
+  --input-background: #1F2937;
+  --readonly-background: rgba(255, 255, 255, 0.05);
+  --code-bg: #35363a;
+
+  /* Text Colors */
+  --text-color: #E5E7EB;
+  --text-secondary: #9CA3AF;
+
+  /* Border and Divider Colors */
+  --border-color: #374151;
+  --border-color-hover: #4B5563;
+  --divider-color: #3c4043;
+
+  /* Status Colors */
+  --error-color: #F87171;
+  --error-color-hover: #EF4444;
+  --success-color: #4ADE80;
+  --warning-color: #fdd663;
+
+  /* Status Background Colors */
+  --error-bg: rgba(217, 48, 37, 0.15);
+  --success-bg: rgba(19, 115, 51, 0.15);
+  --warning-bg: rgba(234, 134, 0, 0.15);
+
+  /* Message backgrounds for consistency with sidebar */
+  --user-msg-bg: #1F2937;
+  --assistant-msg-bg: #374151;
+}

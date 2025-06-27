@@ -1,0 +1,328 @@
+/* Input Styles - User input area with model selector and action buttons */
+
+/* Input container layout */
+.input-container {  
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+/* Model selector */
+.model-selector-container {
+  flex-shrink: 0;
+}
+
+.model-selector {
+  width: 85px;
+  padding: 4px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: inherit;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 28px;
+  box-sizing: border-box;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+  background-size: 12px;
+  padding-right: 18px;
+}
+
+.model-selector:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.1);
+}
+
+.model-selector:hover {
+  border-color: var(--primary-color);
+  background-color: rgba(66, 133, 244, 0.05);
+}
+
+/* Input wrapper with flexible layout */
+.input-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+/* User input textarea */
+#userInput {
+  flex: 1;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 14px;
+  resize: vertical;
+  font-family: inherit;
+  min-height: 28px;
+  max-height: 120px;
+  overflow-y: auto;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+#userInput:focus {
+  outline: 1px solid var(--primary-color);
+}
+
+
+
+/* Image preview section */
+.image-preview-container {
+  padding: 8px 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.image-preview-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: #5f6368;
+}
+
+.remove-image-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.image-preview {
+  height: 80px;
+  display: flex;
+  align-items: center;
+}
+
+.image-preview img {
+  max-height: 100%;
+  max-width: 100%;
+  border-radius: 4px;
+}
+
+/* Input resize handle */
+.input-resize-handle {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  cursor: ns-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+  margin: 0;
+  z-index: 10;
+  border-radius: 0;
+}
+
+.input-resize-handle:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.input-resize-handle::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 2px;
+  background-color: var(--border-color);
+  border-radius: 1px;
+  transition: background-color 0.2s ease;
+}
+
+.input-resize-handle:hover::before {
+  background-color: var(--primary-color);
+  width: 40px;
+}
+
+/* Responsive design for narrow screens */
+@media (max-width: 280px) {
+  .model-selector {
+    width: 70px;
+    font-size: 10px;
+    padding: 3px 4px;
+    padding-right: 16px;
+    background-size: 10px;
+    height: 26px;
+  }
+  
+  .input-wrapper {
+    gap: 3px;
+  }
+  
+  #userInput {
+    font-size: 13px;
+    padding: 3px 6px;
+    min-height: 26px;
+  }
+}
+
+/* Button icon styles for input area buttons - Match extraction area button size */
+.button-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: transparent;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.button-icon:hover {
+  background-color: transparent;
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(66, 133, 244, 0.15);
+}
+
+.button-icon:hover .material-icons {
+  color: var(--primary-color);
+}
+
+.button-icon:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(66, 133, 244, 0.2);
+}
+
+.button-icon .material-icons {
+  font-size: 14px;
+  color: var(--text-color);
+  transition: color 0.2s ease;
+}
+
+/* Primary action buttons (flat style) */
+.button-icon.primary {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  font-weight: 600;
+}
+
+.button-icon.primary:hover {
+  background-color: rgba(66, 133, 244, 0.1);
+  border-color: #3b78e7;
+  color: #3b78e7;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(66, 133, 244, 0.25);
+}
+
+.button-icon.primary .material-icons {
+  color: var(--primary-color);
+  transition: color 0.2s ease;
+}
+
+.button-icon.primary:hover .material-icons {
+  color: #3b78e7;
+}
+
+/* Enabled state (flat style) */
+.button-icon[data-enabled="true"] {
+  background-color: rgba(66, 133, 244, 0.08);
+  border: 1px solid var(--primary-color);
+}
+
+.button-icon[data-enabled="true"] .material-icons {
+  color: var(--primary-color);
+}
+
+.button-icon[data-enabled="true"]:hover {
+  background-color: rgba(66, 133, 244, 0.15);
+  border-color: #3b78e7;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(66, 133, 244, 0.2);
+}
+
+.button-icon[data-enabled="true"]:hover .material-icons {
+  color: #3b78e7;
+}
+
+/* Disabled state */
+.button-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Button group container */
+.button-group {
+  display: flex;
+  gap: 4px;
+  transition: all 0.3s ease;
+}
+
+/* Layout styles - Row layout */
+.button-group.layout-row {
+  flex-direction: row;
+  width: auto;
+  height: 26px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Layout styles - Grid layout */
+.button-group.layout-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 26px);
+  grid-template-rows: repeat(2, 26px);
+  width: 56px;
+  height: 56px;
+  gap: 4px;
+  align-items: center;
+  justify-items: center;
+}
+
+/* Ensure send button displays correctly in grid layout */
+.button-group.layout-grid #sendBtn {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.button-group.layout-grid #includePageContentBtn {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.button-group.layout-grid #clearBtn {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.button-group.layout-grid #exportBtn {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+/* Layout styles - Column layout */
+.button-group.layout-column {
+  flex-direction: column;
+  width: 26px;
+  height: auto;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Layout adaptations for different screen widths */
+@media (max-width: 300px) {
+  .button-group.layout-row {
+    flex-wrap: wrap;
+    height: auto;
+    width: 56px;
+  }
+} 

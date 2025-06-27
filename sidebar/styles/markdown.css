@@ -1,0 +1,480 @@
+/* Markdown Styles - Compact styling optimized for Chrome extension sidebar */
+
+/* Typography - Compact spacing for better content density */
+.message-content h1,
+.message-content h2,
+.message-content h3,
+.message-content h4,
+.message-content h5,
+.message-content h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 8px 0 4px 0;
+}
+
+/* Enhanced styling for h1, h2, h3 with underlines and different blue tones */
+.message-content h1 {
+  font-size: 18px;
+  color: #0b478c;
+  border-bottom: 2px solid #1565c0;
+  padding-bottom: 3px;
+  margin-bottom: 6px;
+}
+
+.message-content h2 {
+  font-size: 16px;
+  color: #0d5bb4;
+  border-bottom: 1.5px solid #1976d2;
+  padding-bottom: 2px;
+  margin-bottom: 5px;
+}
+
+.message-content h3 {
+  font-size: 15px;
+  color: #0f6dd8;
+  border-bottom: 1px solid #42a5f5;
+  padding-bottom: 2px;
+  margin-bottom: 5px;
+}
+
+.message-content h4,
+.message-content h5,
+.message-content h6 { font-size: 13px; }
+
+/* Paragraphs - Ultra minimal spacing */
+.message-content p {
+  margin: 0 0 5px 0;
+  line-height: 1.45;
+  padding: 0;
+}
+
+.message-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Adjacent paragraphs - reduce spacing */
+.message-content p + p {
+  margin-top: 0;
+}
+
+/* Lists - Ultra compact and properly spaced */
+.message-content ol,
+.message-content ul {
+  margin: 5px 0 5px 20px;
+  padding: 0;
+}
+
+.message-content ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+}
+
+.message-content ul {
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.message-content li {
+  margin: 0 0 3px 0;
+  padding: 0;
+  line-height: 1.4;
+}
+
+.message-content li:last-child {
+  padding-bottom: 0;
+}
+
+/* List items containing paragraphs */
+.message-content li p {
+  margin: 0;
+  display: inline;
+  line-height: inherit;
+}
+
+/* Adjacent list items */
+.message-content li + li {
+  margin-top: 0;
+}
+
+/* Nested lists */
+.message-content ol ol,
+.message-content ol ul,
+.message-content ul ol,
+.message-content ul ul {
+  margin: 1px 0 1px 12px;
+}
+
+.message-content ol ul,
+.message-content ul ul {
+  list-style-type: circle;
+}
+
+/* Code styling - Optimized for sidebar */
+.message-content code {
+  background-color: rgba(0, 0, 0, 0.06);
+  color: #d73027;
+  padding: 1.5px 4px;
+  border-radius: 4px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 12.5px;
+  line-height: 1.2;
+}
+
+.message-content pre {
+  background-color: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 8px 10px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 6px 0 8px 0;
+  overflow-x: auto;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.message-content pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+/* Blockquotes - Minimal and clean */
+.message-content blockquote {
+  border-left: 3px solid var(--primary-color);
+  padding: 4px 0 4px 12px;
+  margin: 6px 0 8px 0;
+  color: #5f6368;
+  font-style: italic;
+  font-size: 13px;
+}
+
+.message-content blockquote p {
+  margin: 0;
+}
+
+/* Tables - Compact for sidebar display */
+.message-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 4px 0;
+  font-size: 12px;
+}
+
+.message-content th,
+.message-content td {
+  border: 1px solid var(--border-color);
+  padding: 2px 4px;
+  text-align: left;
+}
+
+.message-content th {
+  background-color: var(--light-gray);
+  font-weight: 600;
+}
+
+/* Links - Chrome extension styling */
+.message-content a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.message-content a:hover {
+  text-decoration: underline;
+}
+
+/* Strong and emphasis */
+.message-content strong,
+.message-content b {
+  font-weight: 600;
+}
+
+.message-content em,
+.message-content i {
+  font-style: italic;
+}
+
+/* Horizontal rules */
+.message-content hr {
+  border: none;
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 6px 0;
+}
+
+/* Remove extra spacing from first and last elements */
+.message-content > *:first-child {
+  margin-top: 0 !important;
+}
+
+.message-content > *:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Force ultra-compact spacing - override inherited styles */
+.message-content * {
+  max-width: 100%;
+}
+
+.message-content p,
+.message-content li,
+.message-content ol,
+.message-content ul {
+  margin-block-start: 0 !important;
+  margin-block-end: 0 !important;
+  padding-block-start: 0 !important;
+  padding-block-end: 0 !important;
+}
+
+/* Re-apply controlled spacing */
+.message-content p:not(:last-child) {
+  margin-bottom: 3px !important;
+}
+
+.message-content ol:not(:last-child),
+.message-content ul:not(:last-child) {
+  margin-bottom: 3px !important;
+}
+
+.message-content li:not(:last-child) {
+  padding-bottom: 1px !important;
+}
+
+/* Special handling for non-markdown content - prevent excessive line spacing */
+.message-content.no-markdown {
+  white-space: pre-wrap;
+  line-height: 1.4 !important;
+  /* Override any paragraph styling that might add excessive spacing */
+}
+
+.message-content.no-markdown * {
+  line-height: inherit !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Ensure streaming content doesn't inherit markdown spacing */
+.message-content[data-streaming="true"] {
+  white-space: pre-wrap;
+  line-height: 1.4 !important;
+}
+
+.message-content[data-streaming="true"] * {
+  line-height: inherit !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* High density mode for maximum content display */
+.message-content.compact {
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.message-content.compact p {
+  margin: 0 0 1px 0;
+}
+
+.message-content.compact h1,
+.message-content.compact h2,
+.message-content.compact h3,
+.message-content.compact h4,
+.message-content.compact h5,
+.message-content.compact h6 {
+  margin: 2px 0 1px 0;
+}
+
+/* Maintain underlines for compact mode */
+.message-content.compact h1 {
+  border-bottom: 2px solid #1565c0;
+  padding-bottom: 1px;
+  margin-bottom: 2px;
+}
+
+.message-content.compact h2 {
+  border-bottom: 1.5px solid #1976d2;
+  padding-bottom: 1px;
+  margin-bottom: 2px;
+}
+
+.message-content.compact h3 {
+  border-bottom: 1px solid #42a5f5;
+  padding-bottom: 1px;
+  margin-bottom: 2px;
+}
+
+.message-content.compact ol,
+.message-content.compact ul {
+  margin: 1px 0 1px 14px;
+}
+
+.message-content.compact li {
+  margin: 0;
+}
+
+.message-content.compact pre {
+  margin: 2px 0 3px 0;
+  padding: 4px 6px;
+}
+
+.message-content.compact blockquote {
+  margin: 2px 0 3px 0;
+  padding: 1px 0 1px 6px;
+}
+
+/* Accessibility improvements */
+.message-content a:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 1px;
+}
+
+.message-content code:focus {
+  outline: 1px solid var(--primary-color);
+  outline-offset: 1px;
+}
+
+/* Responsive text scaling for different sidebar widths */
+@media (max-width: 320px) {
+  .message-content {
+    font-size: 13px;
+  }
+  
+  .message-content h1 { 
+    font-size: 16px; 
+    border-bottom: 1.5px solid #1565c0;
+  }
+  .message-content h2 { 
+    font-size: 15px; 
+    border-bottom: 1px solid #1976d2;
+  }
+  .message-content h3 { 
+    font-size: 14px; 
+    border-bottom: 1px solid #42a5f5;
+  }
+  .message-content h4,
+  .message-content h5,
+  .message-content h6 { font-size: 12px; }
+  
+  .message-content code {
+    font-size: 11px;
+  }
+  
+  .message-content pre {
+    font-size: 10px;
+    padding: 4px 6px;
+  }
+  
+  .message-content ol,
+  .message-content ul {
+    margin-left: 12px;
+  }
+}
+
+/* Print styles for export functionality */
+@media print {
+  .message-content {
+    font-size: 12pt;
+    color: #000;
+  }
+  
+  .message-content a {
+    color: #000;
+    text-decoration: underline;
+  }
+  
+  .message-content pre,
+  .message-content code {
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+  }
+}
+
+/* Error message specific styles */
+.error-message .message-content {
+  white-space: normal !important;
+  line-height: 1.4 !important;
+}
+
+.error-message .message-content pre {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  line-height: 1.3 !important;
+  margin: 0 !important;
+  padding: 12px !important;
+}
+
+/* Ensure error messages don't inherit streaming styles */
+.error-message .message-content[data-streaming] {
+  white-space: normal !important;
+}
+
+/* Error display wrapper styles */
+.error-display {
+  /* Removed border to match inline styles from other error displays */
+  margin: 8px 0;
+  position: relative;
+}
+
+.error-display pre {
+  margin: 0;
+  padding: 12px;
+  background-color: var(--error-bg, #fff5f5);
+  border-left: 4px solid var(--error-color);
+  border-radius: 4px;
+  color: var(--error-color, #d32f2f);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: monospace;
+  font-size: 0.9em;
+  line-height: 1.4;
+  overflow-x: auto;
+}
+
+.error-display span {
+  color: var(--error-color, #d32f2f);
+  font-weight: 500;
+}
+
+/* Dark mode support for error displays */
+@media (prefers-color-scheme: dark) {
+  .error-display {
+    background-color: rgba(211, 47, 47, 0.1);
+    border-color: #f44336;
+  }
+  
+  .error-display pre,
+  .error-display span {
+    color: #f44336;
+  }
+
+  /* Dark mode heading colors - blue tones for better readability */
+  .message-content h1 { 
+    color: #90caf9;
+    border-bottom-color: #90caf9;
+  }
+
+  .message-content h2 { 
+    color: #64b5f6;
+    border-bottom-color: #64b5f6;
+  }
+
+  .message-content h3 { 
+    color: #42a5f5;
+    border-bottom-color: #42a5f5;
+  }
+
+  /* Dark mode compact heading colors */
+  .message-content.compact h1 {
+    border-bottom-color: #90caf9;
+  }
+
+  .message-content.compact h2 {
+    border-bottom-color: #64b5f6;
+  }
+
+  .message-content.compact h3 {
+    border-bottom-color: #42a5f5;
+  }
+} 

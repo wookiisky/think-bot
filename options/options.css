@@ -1,0 +1,22 @@
+/* Think Bot Options Page - Main Styles */
+
+/* Import modular stylesheets */
+@import url('./styles/variables.css');
+@import url('./styles/base.css');
+@import url('./styles/layout.css');
+@import url('./styles/components.css');
+@import url('./styles/forms.css');
+@import url('./styles/buttons.css');
+@import url('./styles/models.css');
+@import url('./styles/quick-inputs.css');
+@import url('./styles/sync.css');
+@import url('./styles/modal.css');
+@import url('./styles/table.css');
+@import url('./styles/test.css');
+@import url('./styles/responsive.css');
+
+/* Legacy compatibility - will be removed in future versions */
+.container {
+  margin: 0 auto;
+  padding: 0;
+}

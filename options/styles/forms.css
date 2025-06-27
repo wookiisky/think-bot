@@ -1,0 +1,255 @@
+/* Form Styles */
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 0.6rem;
+}
+
+.sidebar-section .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.form-grid.two-column {
+  grid-template-columns: 1fr 1fr;
+}
+
+.form-grid.three-column {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+/* Form Controls */
+.form-control {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  background: var(--input-bg);
+  color: var(--text-color);
+  transition: all var(--transition-fast) ease;
+  box-sizing: border-box;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.form-control:hover {
+  border-color: var(--text-secondary);
+}
+
+/* Input Elements */
+input, select, textarea {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  transition: all var(--transition-normal) ease;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+  line-height: 1.3;
+}
+
+/* Specific styles for select elements */
+select {
+  padding: 0.3rem 0.5rem;
+  height: 32px;
+  cursor: pointer;
+}
+
+/* Specific styles for input elements */
+input[type="text"], 
+input[type="number"], 
+input[type="password"],
+input[type="url"],
+input[type="email"] {
+  height: 32px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 50px;
+  padding: 0.4rem 0.5rem;
+  line-height: 1.4;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background-color: var(--input-background);
+  box-shadow: 0 0 0 2px var(--accent-color-alpha), inset 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+input:hover, select:hover, textarea:hover {
+  border-color: var(--border-color-hover);
+}
+
+/* Checkbox and Radio */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: normal;
+  font-size: 0.8rem;
+}
+
+.checkbox-label input[type="checkbox"],
+.checkbox-label input[type="radio"] {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+}
+
+/* Form Text */
+.form-text {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+/* Input Groups */
+.input-group {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.input-group .form-control {
+  border-radius: 0;
+  border-right: none;
+}
+
+.input-group .form-control:first-child {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.input-group .form-control:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-right: 1px solid var(--border-color);
+}
+
+.input-group .btn {
+  border-radius: 0;
+  border-left: none;
+}
+
+.input-group .btn:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+/* Validation States */
+.form-control.is-valid {
+  border-color: var(--success-color);
+}
+
+.form-control.is-valid:focus {
+  border-color: var(--success-color);
+  box-shadow: 0 0 0 2px rgba(15, 157, 88, 0.2);
+}
+
+.form-control.is-invalid {
+  border-color: var(--error-color);
+}
+
+.form-control.is-invalid:focus {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 2px rgba(217, 48, 37, 0.2);
+}
+
+.valid-feedback {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  color: var(--success-color);
+}
+
+.invalid-feedback {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  color: var(--error-color);
+}
+
+/* Fieldset */
+fieldset {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+fieldset legend {
+  padding: 0 0.5rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+/* Disabled State */
+.form-control:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background-color: var(--light-gray);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Required Field Indicator */
+.required::after {
+  content: " *";
+  color: var(--error-color);
+}
+
+/* Form Row */
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* Inline Form */
+.form-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.form-inline .form-group {
+  margin-bottom: 0;
+  flex: 0 0 auto;
+}
+
+.form-inline .form-control {
+  width: auto;
+}

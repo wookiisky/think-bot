@@ -1,0 +1,164 @@
+/* Base Styles - Foundation for Think Bot Sidebar */
+
+/* Modern CSS Reset - Based on normalize.css and modern best practices */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Remove default margin in favour of better control in authored CSS */
+body, h1, h2, h3, h4, h5, h6, p,
+figure, blockquote, dl, dd, ol, ul, li {
+  margin: 0;
+  padding: 0;
+}
+
+/* Prevent font size inflation */
+html {
+  -moz-text-size-adjust: none;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+}
+
+/* Remove list styles on ul, ol elements */
+ul, ol {
+  list-style: none;
+}
+
+/* Make images easier to work with */
+img, picture {
+  max-width: 100%;
+  display: block;
+}
+
+/* Inherit fonts for inputs and buttons */
+input, button, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* CSS Custom Properties - Design tokens for consistent theming */
+:root {
+  /* Flat & Vibrant Light Theme */
+  --primary-color: #3B82F6;
+  --accent-color: var(--primary-color);
+  --accent-color-rgb: 59, 130, 246;
+  --accent-color-alpha: rgba(var(--accent-color-rgb), 0.1);
+
+  --bg-color: #FFFFFF;
+  --background-color: var(--bg-color);
+  --dialog-background: var(--bg-color);
+
+  --text-color: #1F2937;
+  --text-secondary: #6B7280;
+
+  --border-color: #E5E7EB;
+  --border-color-hover: #D1D5DB;
+  --hover-color: #F3F4F6;
+  --light-gray: #F3F4F6;
+  
+  --input-background: #FFFFFF;
+  --readonly-background: #F9FAFB;
+
+  --error-color: #EF4444;
+  --error-color-hover: #DC2626;
+  --success-color: #22C55E;
+
+  --user-msg-bg: #DBEAFE;
+  --assistant-msg-bg: #F3F4F6;
+
+  --scrollbar-thumb: #D1D5DB;
+  --scrollbar-thumb-hover: #9CA3AF;
+  --icon-background: #E5E7EB;
+
+  /* Layout & Sizing */
+  --panel-width: 350px;
+  --sidebar-max-width: 420px;
+  --sidebar-min-width: 280px;
+  --content-density: compact;
+  --text-scale: 0.9;
+  --spacing-unit: 2px;
+}
+
+/* Base document styles */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-color);
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: var(--bg-color);
+}
+
+/* Main container layout */
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+/* Utility classes */
+.hidden {
+  display: none;
+}
+
+/* Material Icons base styling */
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Dark mode styles */
+.dark-theme {
+  /* Flat & Vibrant Dark Theme */
+  --primary-color: #60A5FA;
+  --accent-color: var(--primary-color);
+  --accent-color-rgb: 96, 165, 250;
+  --accent-color-alpha: rgba(var(--accent-color-rgb), 0.15);
+
+  --bg-color: #111827;
+  --background-color: var(--bg-color);
+  --dialog-background: #1F2937;
+
+  --text-color: #E5E7EB;
+  --text-secondary: #9CA3AF;
+
+  --border-color: #374151;
+  --border-color-hover: #4B5563;
+  --hover-color: #1F2937;
+  --light-gray: #374151;
+
+  --input-background: #1F2937;
+  --readonly-background: rgba(255, 255, 255, 0.05);
+
+  --error-color: #F87171;
+  --error-color-hover: #EF4444;
+  --success-color: #4ADE80;
+
+  --user-msg-bg: #1F2937;
+  --assistant-msg-bg: #374151;
+
+  --scrollbar-thumb: #4B5563;
+  --scrollbar-thumb-hover: #6B7280;
+  --icon-background: #374151;
+}
+ 

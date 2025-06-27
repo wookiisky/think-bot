@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "Think Bot",
+  "version": "1.0.0",
+  "description": "Chat with web pages using LLMs",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Think Bot"
+  },
+  "side_panel": {
+    "default_path": "sidebar/sidebar.html"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs",
+    "scripting",
+    "contextMenus",
+    "offscreen",
+    "sidePanel",
+    "notifications"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*.png"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["js/modules/logger.js", "content_scripts/content_script.js"],
+      "run_at": "document_idle"
+    }
+  ]
+} 

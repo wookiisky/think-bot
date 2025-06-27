@@ -1,0 +1,219 @@
+/* Blacklist Confirmation Overlay Styles - Modern Flat Design */
+
+.blacklist-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.blacklist-overlay.visible {
+  opacity: 1;
+}
+
+.overlay-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(3px);
+}
+
+.overlay-content {
+  position: relative;
+  background: var(--bg-color, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  max-width: 420px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  transform: translateY(20px);
+  transition: transform 0.25s ease;
+  border: none;
+}
+
+.blacklist-overlay.visible .overlay-content {
+  transform: translateY(0);
+}
+
+.overlay-header {
+  padding: 20px 20px 0 20px;
+  background: transparent;
+  border: none;
+}
+
+.overlay-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-color, #1a1a1a);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.overlay-header h3::before {
+  content: '⚠️';
+  font-size: 18px;
+}
+
+.overlay-body {
+  padding: 16px 20px 20px 20px;
+}
+
+.overlay-message {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-secondary, #666666);
+}
+
+.overlay-pattern-info {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--info-bg, #f5f7fa);
+  border-radius: 4px;
+  border: none;
+}
+
+.pattern-description {
+  font-size: 12px;
+  color: var(--text-tertiary, #888888);
+  font-style: normal;
+  margin: 0;
+}
+
+.overlay-actions {
+  padding: 0 20px 20px 20px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  border: none;
+  background: transparent;
+}
+
+.overlay-actions button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  min-width: 70px;
+  height: 32px;
+}
+
+.btn-secondary {
+  background: var(--btn-secondary-bg, #f8f9fa);
+  color: var(--btn-secondary-text, #5f6368);
+}
+
+.btn-secondary:hover {
+  background: var(--btn-secondary-hover-bg, #e8eaed);
+}
+
+.btn-secondary:focus {
+  outline: 2px solid var(--focus-color, #4285f4);
+  outline-offset: 1px;
+}
+
+.btn-primary {
+  background: var(--btn-primary-bg, #4285f4);
+  color: var(--btn-primary-text, #ffffff);
+}
+
+.btn-primary:hover {
+  background: var(--btn-primary-hover-bg, #3367d6);
+}
+
+.btn-primary:focus {
+  outline: 2px solid var(--focus-color, #4285f4);
+  outline-offset: 1px;
+}
+
+.btn-primary:active,
+.btn-secondary:active {
+  transform: none;
+  opacity: 0.9;
+}
+
+/* Dark theme support */
+[data-theme="dark"] .blacklist-overlay {
+  --bg-color: #1f1f1f;
+  --text-color: #e8eaed;
+  --text-secondary: #9aa0a6;
+  --text-tertiary: #80868b;
+  --info-bg: #2d2e30;
+  --btn-secondary-bg: #303134;
+  --btn-secondary-text: #e8eaed;
+  --btn-secondary-hover-bg: #3c4043;
+  --btn-primary-bg: #8ab4f8;
+  --btn-primary-text: #202124;
+  --btn-primary-hover-bg: #aecbfa;
+  --focus-color: #8ab4f8;
+}
+
+/* Mobile responsive design */
+@media (max-width: 768px) {
+  .overlay-content {
+    width: 95%;
+    margin: 16px;
+    max-width: none;
+  }
+
+  .overlay-header {
+    padding: 16px 16px 0 16px;
+  }
+
+  .overlay-body {
+    padding: 12px 16px 16px 16px;
+  }
+
+  .overlay-actions {
+    padding: 0 16px 16px 16px;
+    flex-direction: column-reverse;
+    gap: 6px;
+  }
+
+  .overlay-actions button {
+    width: 100%;
+    margin: 0;
+    height: 36px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .blacklist-overlay {
+    --btn-secondary-bg: #ffffff;
+    --btn-secondary-text: #000000;
+    --btn-primary-bg: #0000ff;
+    --btn-primary-text: #ffffff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .blacklist-overlay,
+  .overlay-content,
+  .overlay-actions button {
+    transition: none;
+  }
+}
+
+/* Focus management for accessibility */
+.blacklist-overlay:focus-within .overlay-content {
+  outline: 2px solid var(--focus-color, #4285f4);
+  outline-offset: 2px;
+}

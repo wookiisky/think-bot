@@ -1,0 +1,42 @@
+/* Cloud Sync Styles */
+
+.sync-config-group {
+  margin-top: 16px;
+}
+
+.sync-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+}
+
+.sync-toggle-container {
+  display: flex;
+  align-items: center;
+}
+
+.sync-status {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.sync-config-group .form-group {
+  margin-bottom: 12px;
+}
+
+.sync-config-group .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.sync-config-group .secondary-btn {
+  margin-right: 8px;
+}
+
+.sync-config-group .secondary-btn:last-child {
+  margin-right: 0;
+}

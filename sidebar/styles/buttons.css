@@ -1,0 +1,294 @@
+/* Button Styles - Centralized button system for consistent UI */
+
+/* Base button class for consistent styling */
+.btn-base {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+/* Extraction button styles */
+.extraction-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  background-color: var(--light-gray);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.extraction-btn.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.extraction-btn:hover:not(.active):not(:disabled) {
+  background-color: var(--hover-color);
+  transform: translateY(-1px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.extraction-btn:active:not(.disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.extraction-btn .material-icons {
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+/* Extraction button disabled state */
+.extraction-btn:disabled {
+  background-color: transparent;
+  border-color: #e0e0e0;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.extraction-btn:disabled:hover {
+  background-color: transparent;
+  border-color: #e0e0e0;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Action button styles - Updated to match button-icon exactly */
+.action-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: transparent;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.action-btn:hover {
+  background-color: transparent;
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(66, 133, 244, 0.15);
+}
+
+.action-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(66, 133, 244, 0.2);
+}
+
+.action-btn .material-icons {
+  font-size: 16px;
+  color: var(--text-color);
+  transition: color 0.2s ease;
+}
+
+.action-btn:hover .material-icons {
+  color: var(--primary-color);
+}
+
+/* Specific style for btn-base.action-btn (extraction area buttons) to match original */
+.btn-base.action-btn {
+  width: 26px !important;
+  height: 26px !important;
+  background-color: transparent !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 6px !important;
+  color: var(--text-color) !important;
+  font-size: 14px;
+  font-weight: normal !important;
+  transition: all 0.2s ease;
+}
+
+.btn-base.action-btn:hover {
+  background-color: transparent !important;
+  border-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(66, 133, 244, 0.15);
+}
+
+.btn-base.action-btn:hover .material-icons {
+  color: var(--primary-color) !important;
+}
+
+.btn-base.action-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(66, 133, 244, 0.2);
+}
+
+.btn-base.action-btn .material-icons {
+  font-size: 14px;
+  color: var(--text-color) !important;
+  transition: color 0.2s ease;
+}
+
+/* Action button disabled state */
+.action-btn:disabled,
+.action-btn.disabled {
+  background-color: transparent;
+  border-color: #e0e0e0;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.action-btn:disabled .material-icons,
+.action-btn.disabled .material-icons {
+  color: #9e9e9e;
+}
+
+.action-btn:disabled:hover {
+  background-color: transparent;
+  border-color: #e0e0e0;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Action button enabled state */
+.action-btn.enabled {
+  background-color: rgba(66, 133, 244, 0.08);
+  border: 1px solid var(--primary-color);
+}
+
+.action-btn.enabled .material-icons {
+  color: var(--primary-color);
+}
+
+.action-btn.enabled:hover {
+  background-color: rgba(66, 133, 244, 0.15);
+  border-color: #3b78e7;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(66, 133, 244, 0.2);
+}
+
+.action-btn.enabled:hover .material-icons {
+  color: #3b78e7;
+}
+
+/* Send button - primary action style */
+.send-btn {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  border-radius: 6px;
+  min-width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.send-btn:hover {
+  background-color: rgba(66, 133, 244, 0.1);
+  border-color: #3b78e7;
+  color: #3b78e7;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(66, 133, 244, 0.25);
+}
+
+.send-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(66, 133, 244, 0.2);
+}
+
+.send-btn .material-icons {
+  font-size: 14px;
+}
+
+.send-btn:disabled {
+  background-color: transparent;
+  border-color: #ccc;
+  color: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Message action buttons - small inline buttons */
+.message-action-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  margin: 0;
+  padding: 0;
+}
+
+.message-action-btn:hover {
+  background-color: var(--primary-color);
+}
+
+.message-action-btn:hover .material-icons {
+  color: white;
+}
+
+.message-action-btn:active {
+  background-color: #3b78e7;
+}
+
+.message-action-btn .material-icons {
+  font-size: 12px;
+  color: var(--text-color);
+  transition: color 0.2s ease;
+}
+
+/* Retry button for error states */
+.retry-button {
+  background-color: var(--light-gray);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+  background-color: var(--hover-color);
+  transform: scale(1.05);
+}
+
+.retry-button svg {
+  width: 24px;
+  height: 24px;
+  fill: var(--primary-color);
+}
+
+/* Special styles for specific buttons */
+.jina-btn {
+  padding: 3px;
+  border-radius: 4px;
+}
+
+.jina-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.readability-btn {
+  border-radius: 4px;
+} 

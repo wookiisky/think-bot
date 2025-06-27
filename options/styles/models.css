@@ -1,0 +1,160 @@
+/* Model Configuration Styles */
+
+.models-section {
+  position: relative;
+  margin-top: 0.25rem;
+}
+
+.models-container {
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  min-height: 60px;
+}
+
+.models-container.vertical-layout {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.models-container.vertical-layout .model-config-item {
+  margin-bottom: 0;
+}
+
+.model-config-item {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin-bottom: 0;
+  transition: all var(--transition-normal) ease;
+  padding: 0.75rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.model-config-item:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-color-hover);
+}
+
+.model-config-item.disabled .model-details-column {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Model card header row with handle and actions */
+.model-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--divider-color);
+}
+
+.drag-handle-column {
+  display: flex;
+  align-items: center;
+  cursor: grab;
+}
+
+.drag-handle-column .drag-handle {
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all var(--transition-normal) ease;
+}
+
+.drag-handle-column .drag-handle:hover {
+  background-color: var(--hover-color);
+  color: var(--primary-color);
+}
+
+.drag-handle-column .drag-handle .material-icons {
+  font-size: 18px;
+}
+
+/* Model actions column */
+.model-actions-column {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Model details column */
+.model-details-column {
+  flex: 1;
+}
+
+/* Model form */
+.model-form {
+  width: 100%;
+}
+
+/* Cache item styling */
+.cache-item-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.4rem;
+  padding: 0.3rem 0;
+  line-height: 1;
+}
+
+.cache-item-group label {
+  margin: 0;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  min-width: 120px;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+}
+
+.cache-item-group p {
+  margin: 0;
+  font-size: 0.75rem;
+  flex: 1;
+  text-align: left;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+}
+
+.cache-item-group button {
+  flex-shrink: 0;
+  margin: 0;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Model Configuration Responsive */
+@media (min-width: 1201px) {
+  .models-container.vertical-layout {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1200px) and (min-width: 901px) {
+  .models-container.vertical-layout {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) and (min-width: 601px) {
+  .models-container.vertical-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .models-container.vertical-layout {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,318 @@
+/* Reusable Components */
+
+/* Icon Buttons */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all var(--transition-normal) ease;
+}
+
+.icon-btn:hover {
+  background-color: var(--light-gray);
+  color: var(--error-color);
+}
+
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.icon-btn .material-icons {
+  font-size: 18px;
+}
+
+/* Small Icon Buttons */
+.icon-btn.small {
+  width: 20px;
+  height: 20px;
+  padding: 0.2rem;
+  border-radius: 3px;
+}
+
+.icon-btn.small .material-icons {
+  font-size: 14px;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-color);
+  transition: all var(--transition-slow) ease;
+  border-radius: 12px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  top: 3px;
+  background-color: white;
+  transition: all var(--transition-slow) ease;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.slider:hover {
+  background-color: var(--border-color-hover);
+}
+
+input:checked + .slider {
+  background-color: var(--primary-color);
+}
+
+input:checked + .slider:hover {
+  background-color: var(--primary-dark);
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+input:focus + .slider {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Small Toggle Switch */
+.toggle-switch.small {
+  width: 32px;
+  height: 18px;
+}
+
+.toggle-switch.small .slider {
+  border-radius: 9px;
+}
+
+.toggle-switch.small .slider:before {
+  height: 12px;
+  width: 12px;
+  left: 3px;
+  top: 3px;
+}
+
+.toggle-switch.small input:checked + .slider:before {
+  transform: translateX(14px);
+}
+
+/* Toggle Switch Label */
+.toggle-switch-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-color);
+  user-select: none;
+}
+
+/* Custom Checkbox */
+.custom-checkbox {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  user-select: none;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.custom-checkbox input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: relative;
+  display: inline-block;
+  height: 14px;
+  width: 14px;
+  background-color: var(--bg-color);
+  border: 1.5px solid var(--border-color);
+  border-radius: 2px;
+  transition: all var(--transition-fast) ease;
+}
+
+.custom-checkbox:hover .checkmark {
+  border-color: var(--border-color-hover);
+}
+
+.custom-checkbox input:checked ~ .checkmark {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.custom-checkbox input:focus ~ .checkmark {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 3.5px;
+  top: 0.5px;
+  width: 3px;
+  height: 6px;
+  border: solid white;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+
+.custom-checkbox input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Drag Handle */
+.drag-handle {
+  cursor: grab;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all var(--transition-normal) ease;
+}
+
+.drag-handle:hover {
+  background-color: var(--hover-color);
+  color: var(--primary-color);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle .material-icons {
+  font-size: 18px;
+}
+
+/* Status Indicators */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  transition: all var(--transition-slow) ease;
+}
+
+.status-dot.idle {
+  background-color: var(--text-secondary);
+}
+
+.status-dot.testing {
+  background-color: var(--secondary-color);
+  animation: pulse 1.5s infinite;
+}
+
+.status-dot.syncing {
+  background-color: var(--primary-color);
+  animation: pulse 1.5s infinite;
+}
+
+.status-dot.success {
+  background-color: var(--success-color);
+}
+
+.status-dot.error {
+  background-color: var(--error-color);
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.status-text {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.status-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.status-details small {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.error-message {
+  color: var(--error-color) !important;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 0.8rem;
+}
+
+/* Loading State */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background-color: var(--divider-color);
+  margin: 1rem 0;
+}
+
+.divider.vertical {
+  width: 1px;
+  height: auto;
+  margin: 0 1rem;
+}
