@@ -597,19 +597,33 @@ const openOptionsPage = () => {
 };
 
 /**
- * Open chat page and select chat tab
+ * Open conversations page and select current page if available
  */
 const openChatPage = async () => {
-  logger.info('Opening chat page');
+  logger.info('Opening conversations page');
 
   try {
-    // Switch to chat tab if TabManager is available
-    if (window.TabManager && window.TabManager.switchToTab) {
-      await window.TabManager.switchToTab('chat');
-      logger.info('Switched to chat tab');
+    // Get current page URL from state
+    const currentUrl = StateManager.getStateItem('currentUrl');
+
+    // Build conversations page URL with current page as parameter
+    let conversationsUrl = chrome.runtime.getURL('conversations/conversations.html');
+    if (currentUrl) {
+      // Add current page URL as parameter so conversations page can auto-select it
+      const urlParams = new URLSearchParams();
+      urlParams.set('selectPage', currentUrl);
+      conversationsUrl += '?' + urlParams.toString();
+      logger.info('Opening conversations page with auto-select for URL:', currentUrl);
     }
+
+    // Open conversations page in new tab
+    await chrome.tabs.create({
+      url: conversationsUrl
+    });
+
+    logger.info('Successfully opened conversations page');
   } catch (error) {
-    logger.error('Error opening chat page:', error);
+    logger.error('Error opening conversations page:', error);
   }
 };
 

@@ -131,7 +131,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Apply theme
     await applyTheme(config);
-    
+
+    // Check for URL parameters to auto-select a page
+    await handleUrlParameters();
+
     logger.info('Conversations page initialization completed');
   } catch (error) {
     logger.error('Error initializing conversations page:', error);
@@ -1408,4 +1411,36 @@ async function applyTheme(config) {
       body.classList.remove('dark-theme');
     }
   }
-} 
+}
+
+/**
+ * Handle URL parameters to auto-select a page
+ */
+async function handleUrlParameters() {
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectPageUrl = urlParams.get('selectPage');
+
+    if (selectPageUrl) {
+      logger.info('Auto-selecting page from URL parameter:', selectPageUrl);
+
+      // Wait a bit for page list to be fully loaded
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Check if the page exists in the page list
+      if (pageListManager) {
+        const hasPage = await pageListManager.hasPage(selectPageUrl);
+        if (hasPage) {
+          // Select the page in the page list and load its conversation
+          await pageListManager.selectPage(selectPageUrl);
+          await loadPageConversation(selectPageUrl);
+          logger.info('Successfully auto-selected page:', selectPageUrl);
+        } else {
+          logger.warn('Page not found in page list for auto-selection:', selectPageUrl);
+        }
+      }
+    }
+  } catch (error) {
+    logger.error('Error handling URL parameters:', error);
+  }
+}

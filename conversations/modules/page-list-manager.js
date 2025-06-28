@@ -255,6 +255,15 @@ export class PageListManager {
   }
 
   /**
+   * Check if a page exists in the page list
+   * @param {string} url - Page URL
+   * @returns {boolean} - Whether the page exists
+   */
+  hasPage(url) {
+    return this.pages.some(page => page.url === url);
+  }
+
+  /**
    * Select a page
    * @param {string} url - Page URL
    */
