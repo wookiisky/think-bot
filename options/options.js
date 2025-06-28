@@ -148,7 +148,13 @@ class OptionsPage {
         
         // Update storage usage display after save
         StorageUsageDisplay.updateAllUsageDisplays(this.domElements);
-        
+
+        // Check if auto sync is enabled and perform sync
+        if (syncSettings.enabled && typeof syncManager !== 'undefined') {
+          logger.info('Auto sync enabled, performing sync after save');
+          this.performAutoSyncAfterSave();
+        }
+
         // Reset button state after 2 seconds
         setTimeout(() => {
           if (saveBtn.classList.contains('saved')) {
@@ -191,10 +197,16 @@ class OptionsPage {
     // Set up change listeners for form inputs
     this.setupChangeListeners();
     
-    // Save button click handler
-    this.domElements.saveBtn.addEventListener('click', () => {
-      this.saveSettings();
-    });
+    // Save button click handler with debounce to prevent multiple rapid clicks
+    let saveTimeout;
+    const debouncedSaveSettings = () => {
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        this.saveSettings();
+      }, 300); // 300ms debounce delay
+    };
+
+    this.domElements.saveBtn.addEventListener('click', debouncedSaveSettings);
     
     // Model manager will handle its own event listeners and change notifications
     
@@ -583,6 +595,45 @@ class OptionsPage {
     }
   }
 
+  // Perform auto-sync after saving configuration
+  async performAutoSyncAfterSave() {
+    // Prevent concurrent syncs
+    if (this.isAutoSyncing) {
+      logger.info('Auto sync already in progress, skipping sync after save');
+      return;
+    }
+
+    this.isAutoSyncing = true;
+
+    if (typeof syncManager === 'undefined') {
+      logger.warn('Sync manager not available, skipping auto-sync after save.');
+      this.isAutoSyncing = false;
+      return;
+    }
+
+    logger.info('Performing auto-sync after configuration save');
+    this.updateSyncStatus('syncing', 'Auto-syncing after save...');
+
+    try {
+      const syncResult = await syncManager.fullSync();
+      if (syncResult.success) {
+        this.updateSyncStatus('success', 'Auto-sync completed');
+        logger.info('Auto-sync after save completed successfully');
+      } else {
+        this.updateSyncStatus('error', syncResult.message || 'Auto-sync failed');
+        logger.error('Auto-sync after save failed:', syncResult.error);
+      }
+    } catch (error) {
+      logger.error('An error occurred during auto-sync after save:', error);
+      this.updateSyncStatus('error', 'Sync failed');
+    } finally {
+      // After sync attempt, reload status from storage to reflect the final state
+      const status = await syncManager.getSyncStatus();
+      this.displaySyncStatus(status);
+      this.isAutoSyncing = false; // Reset flag
+    }
+  }
+
   // Load and display current sync status
   async loadSyncStatus() {
     try {
@@ -590,11 +641,9 @@ class OptionsPage {
         const status = await syncManager.getSyncStatus();
         this.displaySyncStatus(status);
 
-        // Automatically run sync if enabled
-        if (status.enabled && status.isConfigured) {
-          // The performAutoSync function has its own guard against concurrent runs
-          this.performAutoSync();
-        }
+        // Note: Removed automatic sync on page load as per user request
+        // Users must manually enable auto sync to trigger sync operations
+        logger.info('Sync status loaded. Auto sync on page load is disabled.');
       }
     } catch (error) {
       logger.error('Error loading sync status:', error);
