@@ -7,11 +7,23 @@ export class QuickInputsManager {
   static _storageUpdateTimeout = null;
   
   /**
-   * Generate a random unique ID for quick input tabs (consistent with config manager)
-   * @returns {string} Random ID string
+   * Generate a UUID-based unique ID with timestamp for quick input tabs
+   * Combines timestamp with UUID v4 format for better uniqueness and traceability
+   * @returns {string} UUID-based ID string with timestamp prefix
    */
   static generateRandomId() {
-    return 'qi_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    // Generate timestamp component
+    const timestamp = Date.now().toString(36);
+
+    // Generate UUID v4 format
+    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+
+    // Combine timestamp with UUID for better traceability
+    return `qi_${timestamp}_${uuid}`;
   }
   
   // Add a new quick input
@@ -71,15 +83,16 @@ export class QuickInputsManager {
       
       if (displayText && sendText) {
         const id = idInput ? idInput.value : this.generateRandomId();
-        
+
         // Get auto-trigger setting directly from the checkbox in this item
         const autoTriggerEnabled = autoTriggerCheckbox ? autoTriggerCheckbox.checked : false;
-        
+
         quickInputs.push({
           id,
           displayText,
           sendText,
-          autoTrigger: autoTriggerEnabled
+          autoTrigger: autoTriggerEnabled,
+          lastModified: Date.now() // Add timestamp for sync merging
         });
       }
     });

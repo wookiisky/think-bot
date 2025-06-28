@@ -514,12 +514,12 @@ dataSerializer.mergeData = function(localData, remoteData) {
 };
 
 /**
- * Merge configuration data - use the most recent overall config
+ * Merge configuration data with intelligent field-level merging for quickInputs
+ * Uses timestamp-based merging for Quick Input Tabs to prevent data loss
  */
 dataSerializer.mergeConfigData = function(localConfig, remoteConfig) {
   try {
-    // For configuration, we use a simple strategy: take the entire config from the most recent source
-    // This avoids partial config inconsistencies
+    serializerLogger.info('Starting config data merge with quickInputs field-level merging');
 
     if (!localConfig && !remoteConfig) {
       return {};
@@ -535,14 +535,122 @@ dataSerializer.mergeConfigData = function(localConfig, remoteConfig) {
       return localConfig;
     }
 
-    // Both configs exist, use the one that was modified more recently
-    // Since we don't have individual timestamps for config, we'll use the overall data timestamp
-    // In practice, this means the config from the more recent sync will be used
-    serializerLogger.info('Using remote config (assuming it\'s from the latest sync)');
-    return remoteConfig;
+    // Start with local config as base
+    const mergedConfig = { ...localConfig };
+
+    // For most config fields, use remote config (latest sync)
+    // But for quickInputs, do intelligent merging based on lastModified timestamps
+    Object.keys(remoteConfig).forEach(key => {
+      if (key === 'quickInputs') {
+        // Special handling for quickInputs - merge by individual items
+        mergedConfig.quickInputs = this.mergeQuickInputs(localConfig.quickInputs, remoteConfig.quickInputs);
+      } else {
+        // For other config fields, use remote config (latest sync)
+        mergedConfig[key] = remoteConfig[key];
+      }
+    });
+
+    serializerLogger.info('Config data merge completed with quickInputs field-level merging');
+    return mergedConfig;
   } catch (error) {
     serializerLogger.error('Error merging config data:', error.message);
     return localConfig || remoteConfig || {};
+  }
+};
+
+/**
+ * Merge quickInputs arrays based on individual item timestamps
+ */
+dataSerializer.mergeQuickInputs = function(localQuickInputs, remoteQuickInputs) {
+  try {
+    serializerLogger.info('Starting quickInputs merge based on lastModified timestamps');
+
+    if (!localQuickInputs && !remoteQuickInputs) {
+      return [];
+    }
+
+    if (!localQuickInputs || localQuickInputs.length === 0) {
+      serializerLogger.info('Using remote quickInputs (no local quickInputs available)');
+      return remoteQuickInputs || [];
+    }
+
+    if (!remoteQuickInputs || remoteQuickInputs.length === 0) {
+      serializerLogger.info('Using local quickInputs (no remote quickInputs available)');
+      return localQuickInputs || [];
+    }
+
+    // Create maps for easier lookup by ID
+    const localMap = new Map();
+    const remoteMap = new Map();
+
+    // Process local quickInputs
+    localQuickInputs.forEach(item => {
+      if (item.id) {
+        // Ensure lastModified exists, use a timestamp that indicates it's older if missing
+        if (!item.lastModified) {
+          item.lastModified = 0; // Use 0 to indicate missing timestamp (older than any real timestamp)
+          serializerLogger.debug(`Added missing lastModified (0) to local quickInput: ${item.id}`);
+        }
+        localMap.set(item.id, item);
+      }
+    });
+
+    // Process remote quickInputs
+    remoteQuickInputs.forEach(item => {
+      if (item.id) {
+        // Ensure lastModified exists, use a timestamp that indicates it's older if missing
+        if (!item.lastModified) {
+          item.lastModified = 0; // Use 0 to indicate missing timestamp (older than any real timestamp)
+          serializerLogger.debug(`Added missing lastModified (0) to remote quickInput: ${item.id}`);
+        }
+        remoteMap.set(item.id, item);
+      }
+    });
+
+    const mergedQuickInputs = [];
+    const processedIds = new Set();
+
+    // Process items that exist in both local and remote
+    localMap.forEach((localItem, id) => {
+      if (remoteMap.has(id)) {
+        const remoteItem = remoteMap.get(id);
+        const localTimestamp = localItem.lastModified || 0;
+        const remoteTimestamp = remoteItem.lastModified || 0;
+
+        if (localTimestamp >= remoteTimestamp) {
+          mergedQuickInputs.push(localItem);
+          serializerLogger.debug(`Using local quickInput: ${id} (local: ${new Date(localTimestamp).toISOString()}, remote: ${new Date(remoteTimestamp).toISOString()})`);
+        } else {
+          mergedQuickInputs.push(remoteItem);
+          serializerLogger.debug(`Using remote quickInput: ${id} (local: ${new Date(localTimestamp).toISOString()}, remote: ${new Date(remoteTimestamp).toISOString()})`);
+        }
+        processedIds.add(id);
+      }
+    });
+
+    // Add items that only exist in local
+    localMap.forEach((localItem, id) => {
+      if (!processedIds.has(id)) {
+        mergedQuickInputs.push(localItem);
+        serializerLogger.debug(`Adding local-only quickInput: ${id}`);
+        processedIds.add(id);
+      }
+    });
+
+    // Add items that only exist in remote
+    remoteMap.forEach((remoteItem, id) => {
+      if (!processedIds.has(id)) {
+        mergedQuickInputs.push(remoteItem);
+        serializerLogger.debug(`Adding remote-only quickInput: ${id}`);
+        processedIds.add(id);
+      }
+    });
+
+    serializerLogger.info(`Merged quickInputs: ${mergedQuickInputs.length} items (local: ${localQuickInputs.length}, remote: ${remoteQuickInputs.length})`);
+    return mergedQuickInputs;
+  } catch (error) {
+    serializerLogger.error('Error merging quickInputs:', error.message);
+    return localQuickInputs || remoteQuickInputs || [];
   }
 };
 

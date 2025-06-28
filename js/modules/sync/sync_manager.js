@@ -261,9 +261,9 @@ syncManager.applyDownloadedData = async function(data) {
   try {
     syncLogger.info('Applying downloaded data...');
     
-    // Apply configuration
+    // Apply configuration (not a user modification, preserve timestamps)
     if (data.config) {
-      await configManager.saveConfig(data.config);
+      await configManager.saveConfig(data.config, false);
       syncLogger.info('Configuration applied');
     }
     

@@ -84,9 +84,20 @@ storageConfigManager.getDefaultQuickInputs = function() {
   ];
 }
 
-// Generate unique ID for quick input
+// Generate unique ID for quick input using UUID with timestamp
 storageConfigManager.generateQuickInputId = function() {
-  return 'qi_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  // Generate timestamp component
+  const timestamp = Date.now().toString(36);
+
+  // Generate UUID v4 format
+  const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+
+  // Combine timestamp with UUID for better traceability
+  return `qi_${timestamp}_${uuid}`;
 }
 
 // Save individual quick input
@@ -95,6 +106,13 @@ storageConfigManager.saveQuickInput = async function(quickInput) {
     // Ensure quick input has an ID
     if (!quickInput.id) {
       quickInput.id = storageConfigManager.generateQuickInputId();
+    }
+
+    // Add lastModified timestamp for sync merging only if not already present
+    // This preserves existing timestamps during sync operations
+    if (!quickInput.lastModified) {
+      quickInput.lastModified = Date.now();
+      storageConfigLogger.debug(`Added lastModified timestamp to quickInput: ${quickInput.id}`);
     }
 
     // Compress quick input using pako compression only
@@ -110,6 +128,37 @@ storageConfigManager.saveQuickInput = async function(quickInput) {
     return quickInput.id;
   } catch (error) {
     storageConfigLogger.error(`Error saving quick input ${quickInput.id}:`, error.message);
+    throw error;
+  }
+}
+
+// Save individual quick input with forced timestamp update (for user modifications)
+storageConfigManager.saveQuickInputWithTimestamp = async function(quickInput) {
+  try {
+    // Ensure quick input has an ID
+    if (!quickInput.id) {
+      quickInput.id = storageConfigManager.generateQuickInputId();
+    }
+
+    // Always update lastModified timestamp for user modifications
+    quickInput.lastModified = Date.now();
+    storageConfigLogger.debug(`Updated lastModified timestamp for quickInput: ${quickInput.id}`);
+
+    // Compress quick input using pako compression only
+    let dataToSave = quickInput;
+    if (typeof quickInputCompression !== 'undefined') {
+      dataToSave = quickInputCompression.compressQuickInput(quickInput);
+    } else {
+      storageConfigLogger.warn(`Pako compression not available for quick input: ${quickInput.id}, storing uncompressed`);
+    }
+
+    const key = KeyHelpers.getQuickInputKey(quickInput.id);
+    await chrome.storage.sync.set({ [key]: dataToSave });
+
+    storageConfigLogger.info(`Quick input saved with updated timestamp: ${quickInput.id}`);
+    return quickInput.id;
+  } catch (error) {
+    storageConfigLogger.error(`Error saving quick input with timestamp ${quickInput.id}:`, error.message);
     throw error;
   }
 }
@@ -200,9 +249,9 @@ storageConfigManager.loadAllQuickInputs = async function() {
 }
 
 // Save all quick inputs (completely replace existing ones)
-storageConfigManager.saveAllQuickInputs = async function(quickInputs) {
+storageConfigManager.saveAllQuickInputs = async function(quickInputs, forceTimestampUpdate = false) {
   try {
-    storageConfigLogger.info(`Saving ${quickInputs.length} quick inputs`);
+    storageConfigLogger.info(`Saving ${quickInputs.length} quick inputs (forceTimestampUpdate: ${forceTimestampUpdate})`);
 
     // Get current index to know which items to delete
     const currentIndex = await storageConfigManager.loadQuickInputsIndex();
@@ -218,7 +267,13 @@ storageConfigManager.saveAllQuickInputs = async function(quickInputs) {
       }
 
       newIds.push(quickInput.id);
-      savePromises.push(storageConfigManager.saveQuickInput(quickInput));
+
+      // Use appropriate save method based on whether we need to force timestamp update
+      if (forceTimestampUpdate) {
+        savePromises.push(storageConfigManager.saveQuickInputWithTimestamp(quickInput));
+      } else {
+        savePromises.push(storageConfigManager.saveQuickInput(quickInput));
+      }
     }
 
     // Save all quick inputs in parallel
@@ -357,7 +412,7 @@ storageConfigManager.getConfig = async function() {
 }
 
 // Save configuration with split storage to avoid quota limits
-storageConfigManager.saveConfig = async function(newConfig) {
+storageConfigManager.saveConfig = async function(newConfig, isUserModification = true) {
   try {
     // Extract main config (without quick inputs and system prompt)
     const mainConfig = {
@@ -398,7 +453,7 @@ storageConfigManager.saveConfig = async function(newConfig) {
         storageConfigLogger.error('Error saving main config:', error.message);
         throw new Error(`Main config save failed: ${error.message}`);
       }),
-      storageConfigManager.saveAllQuickInputs(quickInputs).catch(error => {
+      storageConfigManager.saveAllQuickInputs(quickInputs, isUserModification).catch(error => {
         storageConfigLogger.error('Error saving quick inputs:', error.message);
         throw new Error(`Quick inputs save failed: ${error.message}`);
       }),

@@ -95,7 +95,17 @@ export class UIConfigManager {
       const autoTriggerCheckbox = item.querySelector('.auto-trigger-checkbox');
 
       if (displayText && sendText) {
-        const id = idInput ? idInput.value : ('qi_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9));
+        // Generate UUID-based ID if not present
+        let id = idInput ? idInput.value : null;
+        if (!id) {
+          const timestamp = Date.now().toString(36);
+          const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+          });
+          id = `qi_${timestamp}_${uuid}`;
+        }
 
         // Get auto-trigger setting directly from the checkbox in this item
         const autoTrigger = autoTriggerCheckbox ? autoTriggerCheckbox.checked : false;

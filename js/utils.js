@@ -5,11 +5,22 @@
 var utils = {};
 
 /**
- * Generate a unique ID
+ * Generate a unique ID using UUID with timestamp
  * @returns {string} A unique ID
  */
 utils.generateUniqueId = function() {
-  return Date.now().toString(36) + Math.random().toString(36).substring(2);
+  // Generate timestamp component
+  const timestamp = Date.now().toString(36);
+
+  // Generate UUID v4 format
+  const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+
+  // Combine timestamp with UUID for better traceability
+  return `${timestamp}_${uuid}`;
 }
 
 /**
