@@ -40,6 +40,7 @@ importScripts('handlers/clearLoadingStateHandler.js');
 importScripts('handlers/clearAllLoadingStatesForUrlHandler.js');
 importScripts('handlers/pageStateHandler.js');
 importScripts('handlers/cancelLlmRequestHandler.js');
+importScripts('handlers/cancelAllLlmRequestsHandler.js');
 importScripts('handlers/getAllPageMetadataHandler.js');
 importScripts('handlers/blacklistHandler.js');
 
@@ -236,6 +237,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
         case 'CANCEL_LLM_REQUEST': {
           return await handleCancelLlmRequest(data, serviceLogger, loadingStateCache);
+        }
+        case 'CANCEL_ALL_LLM_REQUESTS': {
+          return await handleCancelAllLlmRequests(serviceLogger, loadingStateCache);
         }
         case 'CLEAR_URL_DATA': {
           return await handleClearUrlData(data, serviceLogger, storage);

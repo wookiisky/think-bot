@@ -146,6 +146,11 @@ const setupEventListeners = (elements, modelSelector, onTabAction) => {
       reExtractContent(StateManager.getStateItem('currentExtractionMethod'));
     }
   });
+
+  // Page management buttons
+  elements.clearPageDataBtn.addEventListener('click', clearAllPageData);
+  elements.openOptionsBtn.addEventListener('click', openOptionsPage);
+  elements.openChatBtn.addEventListener('click', openChatPage);
   
   // Initialize content resize processing
   ResizeHandler.initContentResize(
@@ -440,11 +445,162 @@ const setupMessageButtonsScroll = (chatContainer) => {
   });
 };
 
+/**
+ * Clear all page data
+ */
+const clearAllPageData = async () => {
+  logger.info('Clearing all page data');
+
+  try {
+    // Step 1: Stop all possible LLM requests for all tabs
+    await stopAllTabsLlmRequests();
+
+    // Step 2: Clear page content cache for current URL
+    const currentUrl = StateManager.getStateItem('currentUrl');
+    if (currentUrl) {
+      try {
+        await chrome.runtime.sendMessage({
+          type: 'CLEAR_URL_DATA',
+          url: currentUrl,
+          clearContent: true,
+          clearChat: true,
+          clearMetadata: true,
+          wildcard: true // Use wildcard to clear all related data including tab-specific data
+        });
+        logger.info('Page content cache cleared for current URL');
+      } catch (error) {
+        logger.error('Error clearing page content cache:', error);
+      }
+    }
+
+    // Step 3: Clear extracted content from StateManager
+    StateManager.updateStateItem('extractedContent', '');
+
+    // Step 4: Clear UI
+    const elements = UIManager.getAllElements();
+    UIManager.clearAllStates();
+    elements.extractedContentElem.innerHTML = '';
+
+    // Step 5: Clear chat for all tabs
+    if (window.TabManager && window.TabManager.clearAllTabsData) {
+      await window.TabManager.clearAllTabsData();
+    }
+
+    // Step 6: Clear current chat container
+    ChatManager.clearConversationAndContext(elements.chatContainer);
+
+    // Step 7: Close sidebar after a short delay to ensure all operations complete
+    logger.info('All page data cleared successfully, closing sidebar');
+    setTimeout(() => {
+      try {
+        window.close();
+        logger.info('Sidebar closed successfully');
+      } catch (error) {
+        logger.warn('Failed to close sidebar:', error);
+      }
+    }, 200); // 200ms delay to ensure all cleanup operations complete
+
+  } catch (error) {
+    logger.error('Error clearing page data:', error);
+  }
+};
+
+/**
+ * Stop all LLM requests for all tabs
+ */
+const stopAllTabsLlmRequests = async () => {
+  try {
+    logger.info('Stopping all LLM requests for all tabs');
+
+    // Get all tabs from TabManager
+    const allTabs = window.TabManager ? window.TabManager.getAllTabs() : [];
+
+    if (allTabs.length === 0) {
+      logger.info('No tabs found, checking for default chat tab');
+      // Fallback: try to cancel request for default chat tab
+      await ChatManager.cancelLlmRequest('chat');
+      return;
+    }
+
+    // Cancel LLM requests for all tabs
+    const cancelPromises = allTabs.map(async (tab) => {
+      try {
+        const success = await ChatManager.cancelLlmRequest(tab.id);
+        if (success) {
+          logger.info(`LLM request cancelled for tab: ${tab.id}`);
+        } else {
+          logger.debug(`No active LLM request found for tab: ${tab.id}`);
+        }
+        return success;
+      } catch (error) {
+        logger.error(`Error cancelling LLM request for tab ${tab.id}:`, error);
+        return false;
+      }
+    });
+
+    // Wait for all cancellation attempts to complete
+    const results = await Promise.allSettled(cancelPromises);
+
+    // Count successful cancellations
+    const successCount = results.filter(result =>
+      result.status === 'fulfilled' && result.value === true
+    ).length;
+
+    logger.info(`LLM request cancellation completed: ${successCount}/${allTabs.length} tabs processed`);
+
+    // Also try to cancel all requests via background RequestTracker as a fallback
+    try {
+      await chrome.runtime.sendMessage({
+        type: 'CANCEL_ALL_LLM_REQUESTS'
+      });
+      logger.info('Sent cancel all requests message to background script');
+    } catch (error) {
+      logger.warn('Failed to send cancel all requests message to background:', error);
+    }
+
+  } catch (error) {
+    logger.error('Error stopping all tabs LLM requests:', error);
+  }
+};
+
+/**
+ * Open options page
+ */
+const openOptionsPage = () => {
+  logger.info('Opening options page');
+
+  try {
+    chrome.runtime.openOptionsPage();
+  } catch (error) {
+    logger.error('Error opening options page:', error);
+  }
+};
+
+/**
+ * Open chat page and select chat tab
+ */
+const openChatPage = async () => {
+  logger.info('Opening chat page');
+
+  try {
+    // Switch to chat tab if TabManager is available
+    if (window.TabManager && window.TabManager.switchToTab) {
+      await window.TabManager.switchToTab('chat');
+      logger.info('Switched to chat tab');
+    }
+  } catch (error) {
+    logger.error('Error opening chat page:', error);
+  }
+};
+
 export {
   setupEventListeners,
   switchExtractionMethod,
   reExtractContent,
   copyExtractedContent,
   toggleIncludePageContent,
-  setupMessageButtonsScroll
-}; 
+  setupMessageButtonsScroll,
+  clearAllPageData,
+  openOptionsPage,
+  openChatPage
+};

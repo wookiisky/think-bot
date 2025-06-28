@@ -34,7 +34,10 @@ const initElements = () => {
     resizeHandle: document.getElementById('resizeHandle'),
     includePageContentBtn: document.getElementById('includePageContentBtn'),
     inputResizeHandle: document.getElementById('inputResizeHandle'),
-    buttonGroup: document.getElementById('inputActions')
+    buttonGroup: document.getElementById('inputActions'),
+    clearPageDataBtn: document.getElementById('clearPageDataBtn'),
+    openOptionsBtn: document.getElementById('openOptionsBtn'),
+    openChatBtn: document.getElementById('openChatBtn')
   };
   
 

@@ -14,17 +14,35 @@
   font-size: 16px;
 }
 
-/* Extraction controls container */
-.extraction-controls {
+/* Header controls container */
+.header-controls {
   display: flex;
   align-items: center;
-  gap: 6px;
   width: 100%;
   justify-content: space-between;
 }
 
+/* Left controls group */
+.left-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .extraction-methods {
   display: flex;
+  gap: 4px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+/* Right controls group */
+.right-controls {
+  display: flex;
+  align-items: center;
   gap: 4px;
 }
 
@@ -34,9 +52,42 @@
   background-color: var(--border-color);
 }
 
-.action-buttons {
+/* Page management button styles */
+.page-btn {
+  background-color: var(--light-gray);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 6px;
+  margin: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
   display: flex;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+}
+
+.page-btn:hover {
+  background-color: var(--hover-color);
+  transform: translateY(-1px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.page-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.page-btn .material-icons {
+  font-size: 16px;
+  color: var(--text-color);
 }
 
 /* Quick inputs section */
@@ -73,12 +124,43 @@
 }
 
 /* Responsive header adjustments */
-@media (max-width: 280px) {
+@media (max-width: 320px) {
   .header {
     padding: 6px 8px;
   }
-  
+
+  .left-controls {
+    gap: 4px;
+  }
+
+  .right-controls {
+    gap: 2px;
+  }
+
+  .page-btn {
+    min-width: 24px;
+    height: 24px;
+    padding: 4px;
+  }
+
+  .page-btn .material-icons {
+    font-size: 14px;
+  }
+
   .quick-inputs {
     padding: 4px 8px;
   }
-} 
+}
+
+@media (max-width: 280px) {
+  .header-controls {
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+  }
+
+  .left-controls,
+  .right-controls {
+    justify-content: center;
+  }
+}

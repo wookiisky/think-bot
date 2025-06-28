@@ -402,6 +402,28 @@ const switchToTabAndCheckAction = async (tabId, options = {}) => {
 };
 
 /**
+ * Switch to a specific tab
+ * @param {string} tabId - The ID of the tab to switch to
+ * @returns {Promise<boolean>} - Whether the switch was successful
+ */
+const switchToTab = async (tabId) => {
+  try {
+    const tab = tabs.find(t => t.id === tabId);
+    if (!tab) {
+      logger.error(`Tab not found: ${tabId}`);
+      return false;
+    }
+
+    // Use handleTabClick to switch to the tab
+    await handleTabClick(tabId);
+    return true;
+  } catch (error) {
+    logger.error(`Error switching to tab ${tabId}:`, error);
+    return false;
+  }
+};
+
+/**
  * Handle tab click
  * @param {string} tabId - Tab ID to activate
  */
@@ -834,6 +856,14 @@ const getActiveTabId = () => {
 };
 
 /**
+ * Get all tabs
+ * @returns {Array} Array of all tab objects
+ */
+const getAllTabs = () => {
+  return [...tabs]; // Return a copy to prevent external modification
+};
+
+/**
  * Clear chat history for a specific tab
  * @param {string} tabId - Tab ID (optional, defaults to active tab)
  */
@@ -894,6 +924,34 @@ const clearTabChatHistory = async (tabId = null) => {
     };
     
     logger.error('Exception while clearing tab chat history:', errorInfo);
+    return false;
+  }
+};
+
+/**
+ * Clear chat history for all tabs
+ */
+const clearAllTabsData = async () => {
+  try {
+    logger.info('Clearing chat history for all tabs');
+
+    // Clear chat history for all tabs
+    const clearPromises = tabs.map(tab => clearTabChatHistory(tab.id));
+    await Promise.all(clearPromises);
+
+    // Clear the main chat container
+    const chatContainer = document.getElementById('chatContainer');
+    if (chatContainer) {
+      chatContainer.innerHTML = '';
+    }
+
+    // Reset all tab initialization states
+    resetTabInitializationStates();
+
+    logger.info('Successfully cleared chat history for all tabs');
+    return true;
+  } catch (error) {
+    logger.error('Error clearing all tabs data:', error);
     return false;
   }
 };
@@ -1058,14 +1116,17 @@ export {
   initTabManager,
   loadTabs,
   handleTabClick,
+  switchToTab,
   switchToTabAndCheckAction,
   loadTabChatHistory,
   saveCurrentTabChatHistory,
   getActiveTab,
   getActiveTabId,
+  getAllTabs,
   setActiveTab,
   resetToDefaultTab,
   clearTabChatHistory,
+  clearAllTabsData,
   resetTabInitializationState,
   resetTabInitializationStates,
   resetTabsLoadingStates,

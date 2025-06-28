@@ -343,25 +343,85 @@ loadingStateCache.clearAllLoadingStatesForUrl = async function(url) {
     loadingLogger.error('Cannot clear loading states: URL is empty');
     return false;
   }
-  
+
   try {
     const result = await chrome.storage.local.get(null);
-    const loadingStateKeys = Object.keys(result).filter(key => 
+    const loadingStateKeys = Object.keys(result).filter(key =>
       key.startsWith(LOADING_STATE_PREFIX) && key.includes(normalizeUrl(url))
     );
-    
+
     if (loadingStateKeys.length > 0) {
       await chrome.storage.local.remove(loadingStateKeys);
-      loadingLogger.info('All loading states cleared for URL', { 
-        url, 
-        keysRemoved: loadingStateKeys.length 
+      loadingLogger.info('All loading states cleared for URL', {
+        url,
+        keysRemoved: loadingStateKeys.length
       });
     }
-    
+
     return true;
   } catch (error) {
     loadingLogger.error('Error clearing all loading states for URL:', { url, error: error.message });
     return false;
+  }
+};
+
+/**
+ * Cancel all active loading states
+ * @returns {Promise<number>} Number of loading states cancelled
+ */
+loadingStateCache.cancelAllLoadingStates = async function() {
+  try {
+    loadingLogger.info('Cancelling all active loading states');
+
+    const result = await chrome.storage.local.get(null);
+    const loadingStateKeys = Object.keys(result).filter(key =>
+      key.startsWith(LOADING_STATE_PREFIX)
+    );
+
+    let cancelledCount = 0;
+    const updatePromises = [];
+
+    for (const key of loadingStateKeys) {
+      const state = result[key];
+
+      // Decompress state if needed
+      const loadingState = decompressLoadingStateIfNeeded(state);
+
+      // Only cancel states that are currently loading
+      if (loadingState && loadingState.status === 'loading') {
+        const cancelledState = {
+          ...loadingState,
+          status: 'cancelled',
+          cancelledTimestamp: Date.now()
+        };
+
+        updatePromises.push(
+          chrome.storage.local.set({ [key]: cancelledState })
+        );
+        cancelledCount++;
+
+        loadingLogger.debug('Cancelling loading state', {
+          key,
+          url: loadingState.url,
+          tabId: loadingState.tabId
+        });
+      }
+    }
+
+    // Wait for all updates to complete
+    if (updatePromises.length > 0) {
+      await Promise.all(updatePromises);
+    }
+
+    loadingLogger.info('All active loading states cancelled', {
+      totalStatesChecked: loadingStateKeys.length,
+      cancelledCount
+    });
+
+    return cancelledCount;
+  } catch (error) {
+    loadingLogger.error('Error cancelling all loading states:', error.message);
+    return 0;
   }
 };
 

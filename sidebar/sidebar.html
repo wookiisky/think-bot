@@ -13,20 +13,36 @@
   <div class="container">
     <!-- Header and controls -->
     <div class="header">
-      <div class="extraction-controls">
-        <div class="extraction-methods">
-          <button id="jinaExtractBtn" class="btn-base extraction-btn selector-btn jina-btn" title="Extract with Jina AI">
-            <img src="../icons/jina32.png" alt="Jina AI" class="jina-icon">
-          </button>
-          <button id="readabilityExtractBtn" class="btn-base extraction-btn selector-btn readability-btn active" title="Extract with Readability.js">R</button>
+      <div class="header-controls">
+        <!-- Left group: extraction methods and action buttons -->
+        <div class="left-controls">
+          <div class="extraction-methods">
+            <button id="jinaExtractBtn" class="btn-base extraction-btn selector-btn jina-btn" title="Extract with Jina AI">
+              <img src="../icons/jina32.png" alt="Jina AI" class="jina-icon">
+            </button>
+            <button id="readabilityExtractBtn" class="btn-base extraction-btn selector-btn readability-btn active" title="Extract with Readability.js">R</button>
+          </div>
+
+          <div class="action-buttons">
+            <button id="copyContentBtn" class="btn-base action-btn" title="Copy extracted content">
+              <i class="material-icons">content_copy</i>
+            </button>
+            <button id="retryExtractBtn" class="btn-base action-btn" title="Retry extraction">
+              <i class="material-icons">refresh</i>
+            </button>
+          </div>
         </div>
-        
-        <div class="action-buttons">
-          <button id="copyContentBtn" class="btn-base action-btn" title="Copy extracted content">
-            <i class="material-icons">content_copy</i>
+
+        <!-- Right group: page management buttons -->
+        <div class="right-controls">
+          <button id="clearPageDataBtn" class="btn-base page-btn" title="Clear all page data">
+            <i class="material-icons">clear_all</i>
+          </button>          
+          <button id="openChatBtn" class="btn-base page-btn" title="Open chat page">
+            <i class="material-icons">chat</i>
           </button>
-          <button id="retryExtractBtn" class="btn-base action-btn" title="Retry extraction">
-            <i class="material-icons">refresh</i>
+          <button id="openOptionsBtn" class="btn-base page-btn" title="Open configuration page">
+            <i class="material-icons">settings</i>
           </button>
         </div>
       </div>
