@@ -6,7 +6,9 @@
 async function handleGetPageData(data, serviceLogger, configManager, storage, contentExtractor, safeSendTabMessage) {
   const { url } = data;
   const config = await configManager.getConfig();
-  const defaultMethod = config.defaultExtractionMethod;
+  // Support both old and new config formats
+  const basicConfig = config.basic || config;
+  const defaultMethod = basicConfig.defaultExtractionMethod;
 
   // Get cached content and chat history separately
   const cachedContent = await storage.getPageContent(url, defaultMethod);

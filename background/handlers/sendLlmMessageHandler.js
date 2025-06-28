@@ -5,13 +5,15 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
 
     const config = await configManager.getConfig();
     
-    // Use selected model or fall back to default
+    // Use selected model or fall back to default (support both old and new config formats)
     let llmConfig;
-    if (config.llm?.models && config.llm?.models.length > 0) {
-        const modelId = selectedModel?.id || config.llm.defaultModelId;
-        const defaultModel = config.llm.models.find(m => m.id === modelId && m.enabled) || 
-                            config.llm.models.find(m => m.enabled);
-        
+    const llmModelsConfig = config.llm_models || config.llm;
+
+    if (llmModelsConfig?.models && llmModelsConfig.models.length > 0) {
+        const modelId = selectedModel?.id || llmModelsConfig.defaultModelId;
+        const defaultModel = llmModelsConfig.models.find(m => m.id === modelId && m.enabled) ||
+                            llmModelsConfig.models.find(m => m.enabled);
+
         if (defaultModel) {
             llmConfig = {
                 provider: defaultModel.provider,
@@ -22,7 +24,7 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                 temperature: defaultModel.temperature || 0.7
             };
         }
-        
+
         serviceLogger.info(`SEND_LLM: Using model ${defaultModel.name} (${defaultModel.provider})`);
     } else {
         throw new Error('No LLM models configured');

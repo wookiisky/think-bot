@@ -987,7 +987,9 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
   const config = await window.StateManager.getConfig();
 
   // Default system prompt from config (usually contains {CONTENT})
-  systemPromptTemplateForPayload = config.systemPrompt;
+  // Support both old and new config formats
+  const basicConfig = config.basic || config;
+  systemPromptTemplateForPayload = basicConfig.systemPrompt;
 
   if (window.StateManager.getStateItem('includePageContent')) {
     systemPromptTemplateForPayload = systemPromptTemplateForPayload + '\n\nPage Content:\n' + pageContentForPayload; 
@@ -1152,7 +1154,9 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
   const config = await window.StateManager.getConfig();
 
   // Get system prompt
-  systemPromptTemplateForPayload = config.systemPrompt;
+  // Support both old and new config formats
+  const basicConfig = config.basic || config;
+  systemPromptTemplateForPayload = basicConfig.systemPrompt;
 
   if (state.includePageContent) {
     logger.info('Including page content in quick input message');

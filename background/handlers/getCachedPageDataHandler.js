@@ -8,7 +8,9 @@ async function handleGetCachedPageData(data, serviceLogger, configManager, stora
     
     // Get current config to determine default extraction method
     const config = await configManager.getConfig();
-    const defaultMethod = config.defaultExtractionMethod;
+    // Support both old and new config formats
+    const basicConfig = config.basic || config;
+    const defaultMethod = basicConfig.defaultExtractionMethod;
     
     // Try to get cached content for the default method first
     let cachedContent = await storage.getPageContent(url, defaultMethod);

@@ -10,32 +10,36 @@ export class FormHandler {
   static populateForm(config, domElements) {
     if (!config) return;
     
+    // Support both old and new config formats
+    const basicConfig = config.basic || config;
+    const llmConfig = config.llm_models || config.llm;
+
     // Content extraction settings
-    domElements.defaultExtractionMethod.value = config.defaultExtractionMethod || 'readability';
-    domElements.jinaApiKey.value = config.jinaApiKey || '';
-    domElements.jinaResponseTemplate.value = config.jinaResponseTemplate || 
+    domElements.defaultExtractionMethod.value = basicConfig.defaultExtractionMethod || 'readability';
+    domElements.jinaApiKey.value = basicConfig.jinaApiKey || '';
+    domElements.jinaResponseTemplate.value = basicConfig.jinaResponseTemplate ||
       '# {title}\n\n**URL:** {url}\n\n**Description:** {description}\n\n## Content\n\n{content}';
-    
+
     // LLM settings - handled by ModelManager
-    if (config.llm?.defaultModelId && domElements.defaultModelSelect) {
+    if (llmConfig?.defaultModelId && domElements.defaultModelSelect) {
       // Check if the default model ID exists in the current options
       const options = Array.from(domElements.defaultModelSelect.options);
-      const modelExists = options.some(option => option.value === config.llm.defaultModelId);
+      const modelExists = options.some(option => option.value === llmConfig.defaultModelId);
 
       if (modelExists) {
-        domElements.defaultModelSelect.value = config.llm.defaultModelId;
+        domElements.defaultModelSelect.value = llmConfig.defaultModelId;
       } else if (options.length > 0 && options[0].value !== '') {
         // If the saved default model doesn't exist, select the first available model
         domElements.defaultModelSelect.value = options[0].value;
-        logger.warn(`Default model ${config.llm.defaultModelId} not found, using first available: ${options[0].value}`);
+        logger.warn(`Default model ${llmConfig.defaultModelId} not found, using first available: ${options[0].value}`);
       }
     }
-    
+
     // UI settings - Ensure contentDisplayHeight is within valid range (0-600)
-    const heightValue = config.contentDisplayHeight || 10;
+    const heightValue = basicConfig.contentDisplayHeight || 10;
     domElements.contentDisplayHeight.value = Math.min(Math.max(heightValue, 0), 600);
-    domElements.systemPrompt.value = config.systemPrompt || '';
-    domElements.theme.value = config.theme || 'system';
+    domElements.systemPrompt.value = basicConfig.systemPrompt || '';
+    domElements.theme.value = basicConfig.theme || 'system';
 
     // Sync settings - Load from sync config
     this.populateSyncSettings(domElements);

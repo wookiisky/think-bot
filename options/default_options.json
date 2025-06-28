@@ -1,8 +1,5 @@
 {
-  "defaultExtractionMethod": "readability",
-  "jinaApiKey": "",
-  "jinaResponseTemplate": "# {title}\n\n**URL:** {url}\n\n**Description:** {description}\n\n## Content\n\n{content}",
-  "llm": {
+  "llm_models": {
     "defaultModelId": "gemini-pro",
     "models": [
       {
@@ -14,7 +11,8 @@
         "model": "gemini-2.5-pro-preview-05-06",
         "maxTokens": 20480,
         "temperature": 1.0,
-        "enabled": true
+        "enabled": true,
+        "lastModified": 1735372800000
       },
       {
         "id": "openai-gpt35",
@@ -25,14 +23,32 @@
         "model": "gpt-3.5-turbo",
         "maxTokens": 20480,
         "temperature": 1.0,
-        "enabled": true
+        "enabled": true,
+        "lastModified": 1735372800000
       }
     ]
   },
-  "systemPrompt": "使用中文输出",
   "quickInputs": [
-    { "displayText": "总结", "sendText": "简明概要的总结下面的文章:\n\n{CONTENT}" },
-    { "displayText": "提取要点", "sendText": "Extract key points from this content:\n{CONTENT}" }
+    {
+      "id": "qi_default_summary",
+      "displayText": "总结",
+      "sendText": "简明概要的总结下面的文章:\n\n{CONTENT}",
+      "lastModified": 1735372800000
+    },
+    {
+      "id": "qi_default_keypoints",
+      "displayText": "提取要点",
+      "sendText": "Extract key points from this content:\n{CONTENT}",
+      "lastModified": 1735372800000
+    }
   ],
-  "contentDisplayHeight": 100
-} 
+  "basic": {
+    "defaultExtractionMethod": "readability",
+    "jinaApiKey": "",
+    "jinaResponseTemplate": "# {title}\n\n**URL:** {url}\n\n**Description:** {description}\n\n## Content\n\n{content}",
+    "systemPrompt": "使用中文输出",
+    "contentDisplayHeight": 100,
+    "theme": "system",
+    "lastModified": 1735372800000
+  }
+}

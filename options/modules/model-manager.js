@@ -13,7 +13,18 @@ export class ModelManager {
 
   // Initialize model configurations
   init(config, changeCallback = null) {
-    this.models = config.llm?.models || [];
+    // Support both old and new config formats
+    const llmConfig = config.llm_models || config.llm;
+    this.models = llmConfig?.models || [];
+
+    // Ensure all models have lastModified timestamp for sync merging
+    this.models.forEach(model => {
+      if (!model.lastModified) {
+        model.lastModified = Date.now();
+        logger.debug(`Added lastModified timestamp to model: ${model.id}`);
+      }
+    });
+
     if (changeCallback) {
       this.changeCallback = changeCallback;
     }
@@ -176,7 +187,8 @@ export class ModelManager {
       model: 'gpt-3.5-turbo',
       maxTokens: 2048,
       temperature: 0.7,
-      enabled: true
+      enabled: true,
+      lastModified: Date.now() // Add timestamp for sync merging
     };
 
     this.models.push(newModel);
@@ -203,48 +215,63 @@ export class ModelManager {
 
   // Toggle model enabled state
   toggleModel(index, enabled) {
-    this.models[index].enabled = enabled;
-    this.renderModels();
-    this.updateDefaultModelSelector();
-    logger.info(`Toggled model ${index}: ${enabled}`);
-    if (this.changeCallback) {
-      this.changeCallback();
-    }
-  }
-
-  // Update a model field
-  updateModelField(index, field, value) {
-    if (this.models[index]) {
-      this.models[index][field] = value;
-      if (field === 'name') {
-        this.updateDefaultModelSelector();
-      }
+    // Only update timestamp if the value actually changed
+    if (this.models[index].enabled !== enabled) {
+      this.models[index].enabled = enabled;
+      this.models[index].lastModified = Date.now(); // Update timestamp for sync merging
+      this.renderModels();
+      this.updateDefaultModelSelector();
+      logger.info(`Toggled model ${index}: ${enabled}`);
       if (this.changeCallback) {
         this.changeCallback();
       }
     }
   }
 
+  // Update a model field
+  updateModelField(index, field, value) {
+    if (this.models[index]) {
+      // Only update timestamp if the value actually changed
+      const oldValue = this.models[index][field];
+      if (oldValue !== value) {
+        this.models[index][field] = value;
+        this.models[index].lastModified = Date.now(); // Update timestamp for sync merging
+
+        if (field === 'name') {
+          this.updateDefaultModelSelector();
+        }
+        logger.info(`Updated model ${index} field ${field}: ${value}`);
+        if (this.changeCallback) {
+          this.changeCallback();
+        }
+      }
+    }
+  }
+
   // Update model provider and re-render specific fields
   updateModelProvider(index, provider) {
-    this.models[index].provider = provider;
+    // Only update timestamp if the provider actually changed
+    if (this.models[index].provider !== provider) {
+      this.models[index].provider = provider;
+      this.models[index].lastModified = Date.now(); // Update timestamp for sync merging
 
-    // Set default values for the new provider
-    if (provider === 'openai') {
-      this.models[index].baseUrl = this.models[index].baseUrl || 'https://api.openai.com';
-      this.models[index].model = this.models[index].model || 'gpt-3.5-turbo';
-    } else if (provider === 'gemini') {
-      this.models[index].baseUrl = this.models[index].baseUrl || 'https://generativelanguage.googleapis.com';
-      this.models[index].model = this.models[index].model || 'gemini-pro';
-    }
-    
-    this.models[index].maxTokens = this.models[index].maxTokens || 2048;
-    this.models[index].temperature = this.models[index].temperature !== undefined ? this.models[index].temperature : 0.7;
+      // Set default values for the new provider
+      if (provider === 'openai') {
+        this.models[index].baseUrl = this.models[index].baseUrl || 'https://api.openai.com';
+        this.models[index].model = this.models[index].model || 'gpt-3.5-turbo';
+      } else if (provider === 'gemini') {
+        this.models[index].baseUrl = this.models[index].baseUrl || 'https://generativelanguage.googleapis.com';
+        this.models[index].model = this.models[index].model || 'gemini-pro';
+      }
 
-    this.renderModels();
-    logger.info(`Updated model ${index} provider: ${provider}`);
-    if (this.changeCallback) {
-      this.changeCallback();
+      this.models[index].maxTokens = this.models[index].maxTokens || 2048;
+      this.models[index].temperature = this.models[index].temperature !== undefined ? this.models[index].temperature : 0.7;
+
+      this.renderModels();
+      logger.info(`Updated model ${index} provider: ${provider}`);
+      if (this.changeCallback) {
+        this.changeCallback();
+      }
     }
   }
 
@@ -259,6 +286,11 @@ export class ModelManager {
   // Get all models that are enabled and have complete configurations
   getCompleteModels() {
     return this.models.filter(model => model.enabled && this.isModelComplete(model));
+  }
+
+  // Get all models (including incomplete ones) with timestamps preserved
+  getAllModels() {
+    return this.models.map(model => ({ ...model })); // Return a copy to avoid mutations
   }
 
   // Update the default model selector

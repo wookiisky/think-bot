@@ -89,14 +89,18 @@ dataSerializer.collectLocalData = async function() {
         totalSize: 0 // Will be calculated after serialization
       },
       config: {
-        defaultExtractionMethod: config.defaultExtractionMethod,
-        jinaApiKey: config.jinaApiKey,
-        jinaResponseTemplate: config.jinaResponseTemplate,
-        llm: config.llm,
-        systemPrompt: config.systemPrompt,
+        // Support both old and new config formats
+        llm_models: config.llm_models || config.llm,
         quickInputs: config.quickInputs,
-        contentDisplayHeight: config.contentDisplayHeight,
-        theme: config.theme
+        basic: config.basic || {
+          defaultExtractionMethod: config.defaultExtractionMethod,
+          jinaApiKey: config.jinaApiKey,
+          jinaResponseTemplate: config.jinaResponseTemplate,
+          systemPrompt: config.systemPrompt,
+          contentDisplayHeight: config.contentDisplayHeight,
+          theme: config.theme,
+          lastModified: Date.now()
+        }
       },
       pageCache: pageCache,
       chatHistory: chatHistory
@@ -539,18 +543,27 @@ dataSerializer.mergeConfigData = function(localConfig, remoteConfig) {
     const mergedConfig = { ...localConfig };
 
     // For most config fields, use remote config (latest sync)
-    // But for quickInputs, do intelligent merging based on lastModified timestamps
+    // But for quickInputs, llm_models, llm, and basic do intelligent merging based on lastModified timestamps
     Object.keys(remoteConfig).forEach(key => {
       if (key === 'quickInputs') {
         // Special handling for quickInputs - merge by individual items
         mergedConfig.quickInputs = this.mergeQuickInputs(localConfig.quickInputs, remoteConfig.quickInputs);
+      } else if (key === 'llm_models') {
+        // Special handling for new format LLM configuration - merge models by individual items
+        mergedConfig.llm_models = this.mergeLlmConfig(localConfig.llm_models, remoteConfig.llm_models);
+      } else if (key === 'llm') {
+        // Special handling for old format LLM configuration - merge models by individual items
+        mergedConfig.llm = this.mergeLlmConfig(localConfig.llm, remoteConfig.llm);
+      } else if (key === 'basic') {
+        // Special handling for basic configuration - merge based on timestamp
+        mergedConfig.basic = this.mergeBasicConfig(localConfig.basic, remoteConfig.basic);
       } else {
         // For other config fields, use remote config (latest sync)
         mergedConfig[key] = remoteConfig[key];
       }
     });
 
-    serializerLogger.info('Config data merge completed with quickInputs field-level merging');
+    serializerLogger.info('Config data merge completed with quickInputs and llm models field-level merging');
     return mergedConfig;
   } catch (error) {
     serializerLogger.error('Error merging config data:', error.message);
@@ -651,6 +664,170 @@ dataSerializer.mergeQuickInputs = function(localQuickInputs, remoteQuickInputs) 
   } catch (error) {
     serializerLogger.error('Error merging quickInputs:', error.message);
     return localQuickInputs || remoteQuickInputs || [];
+  }
+};
+
+/**
+ * Merge LLM configuration with intelligent model merging based on timestamps
+ */
+dataSerializer.mergeLlmConfig = function(localLlm, remoteLlm) {
+  try {
+    serializerLogger.info('Starting LLM config merge based on lastModified timestamps');
+
+    if (!localLlm && !remoteLlm) {
+      return {};
+    }
+
+    if (!localLlm) {
+      serializerLogger.info('Using remote LLM config (no local config available)');
+      return remoteLlm;
+    }
+
+    if (!remoteLlm) {
+      serializerLogger.info('Using local LLM config (no remote config available)');
+      return localLlm;
+    }
+
+    // Start with local LLM config as base
+    const mergedLlm = { ...localLlm };
+
+    // Use remote defaultModelId (latest sync)
+    if (remoteLlm.defaultModelId) {
+      mergedLlm.defaultModelId = remoteLlm.defaultModelId;
+    }
+
+    // Merge models array based on individual model timestamps
+    if (remoteLlm.models || localLlm.models) {
+      mergedLlm.models = this.mergeLlmModels(localLlm.models, remoteLlm.models);
+    }
+
+    serializerLogger.info('LLM config merge completed');
+    return mergedLlm;
+  } catch (error) {
+    serializerLogger.error('Error merging LLM config:', error.message);
+    return localLlm || remoteLlm || {};
+  }
+};
+
+/**
+ * Merge basic configuration based on lastModified timestamp
+ */
+dataSerializer.mergeBasicConfig = function(localBasic, remoteBasic) {
+  try {
+    serializerLogger.info('Starting basic config merge based on lastModified timestamp');
+
+    if (!localBasic && !remoteBasic) {
+      return {};
+    }
+
+    if (!localBasic) {
+      serializerLogger.info('Using remote basic config (no local config available)');
+      return remoteBasic;
+    }
+
+    if (!remoteBasic) {
+      serializerLogger.info('Using local basic config (no remote config available)');
+      return localBasic;
+    }
+
+    // Compare timestamps
+    const localTimestamp = localBasic.lastModified || 0;
+    const remoteTimestamp = remoteBasic.lastModified || 0;
+
+    if (localTimestamp >= remoteTimestamp) {
+      serializerLogger.info(`Using local basic config (local: ${new Date(localTimestamp).toISOString()}, remote: ${new Date(remoteTimestamp).toISOString()})`);
+      return localBasic;
+    } else {
+      serializerLogger.info(`Using remote basic config (local: ${new Date(localTimestamp).toISOString()}, remote: ${new Date(remoteTimestamp).toISOString()})`);
+      return remoteBasic;
+    }
+  } catch (error) {
+    serializerLogger.error('Error merging basic config:', error.message);
+    return localBasic || remoteBasic || {};
+  }
+};
+
+/**
+ * Merge LLM models arrays based on individual model timestamps
+ */
+dataSerializer.mergeLlmModels = function(localModels, remoteModels) {
+  try {
+    serializerLogger.info('Starting LLM models merge based on lastModified timestamps');
+
+    if (!localModels && !remoteModels) {
+      return [];
+    }
+
+    if (!localModels) {
+      serializerLogger.info('Using remote models (no local models available)');
+      return remoteModels;
+    }
+
+    if (!remoteModels) {
+      serializerLogger.info('Using local models (no remote models available)');
+      return localModels;
+    }
+
+    // Create maps for efficient lookup
+    const localMap = new Map();
+    const remoteMap = new Map();
+
+    localModels.forEach(model => {
+      if (model.id) {
+        localMap.set(model.id, model);
+      }
+    });
+
+    remoteModels.forEach(model => {
+      if (model.id) {
+        remoteMap.set(model.id, model);
+      }
+    });
+
+    const mergedModels = [];
+    const processedIds = new Set();
+
+    // Process models that exist in both local and remote
+    localMap.forEach((localModel, id) => {
+      if (remoteMap.has(id)) {
+        const remoteModel = remoteMap.get(id);
+        const localTimestamp = localModel.lastModified || 0;
+        const remoteTimestamp = remoteModel.lastModified || 0;
+
+        if (localTimestamp >= remoteTimestamp) {
+          mergedModels.push(localModel);
+          serializerLogger.debug(`Using local model: ${id} (local: ${new Date(localTimestamp).toISOString()}, remote: ${new Date(remoteTimestamp).toISOString()})`);
+        } else {
+          mergedModels.push(remoteModel);
+          serializerLogger.debug(`Using remote model: ${id} (local: ${new Date(localTimestamp).toISOString()}, remote: ${new Date(remoteTimestamp).toISOString()})`);
+        }
+        processedIds.add(id);
+      }
+    });
+
+    // Add models that only exist in local
+    localMap.forEach((localModel, id) => {
+      if (!processedIds.has(id)) {
+        mergedModels.push(localModel);
+        serializerLogger.debug(`Adding local-only model: ${id}`);
+        processedIds.add(id);
+      }
+    });
+
+    // Add models that only exist in remote
+    remoteMap.forEach((remoteModel, id) => {
+      if (!processedIds.has(id)) {
+        mergedModels.push(remoteModel);
+        serializerLogger.debug(`Adding remote-only model: ${id}`);
+        processedIds.add(id);
+      }
+    });
+
+    serializerLogger.info(`Merged LLM models: ${mergedModels.length} items (local: ${localModels.length}, remote: ${remoteModels.length})`);
+    return mergedModels;
+  } catch (error) {
+    serializerLogger.error('Error merging LLM models:', error.message);
+    return localModels || remoteModels || [];
   }
 };
 

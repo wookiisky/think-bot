@@ -30,10 +30,7 @@ storageConfigManager.getDefaultConfig = async function() {
     storageConfigLogger.error('Failed to load default settings file:', error.message);
     // Return hardcoded default values as fallback
     return {
-      defaultExtractionMethod: 'readability',
-      jinaApiKey: '',
-      jinaResponseTemplate: '# {title}\n\n**URL:** {url}\n\n**Description:** {description}\n\n## Content\n\n{content}',
-      llm: {
+      llm_models: {
         defaultModelId: 'gemini-pro',
         models: [
           {
@@ -45,7 +42,8 @@ storageConfigManager.getDefaultConfig = async function() {
             model: 'gemini-2.5-pro-preview-05-06',
             maxTokens: 8192,
             temperature: 0.7,
-            enabled: true
+            enabled: true,
+            lastModified: 1735372800000
           },
           {
             id: 'openai-gpt35',
@@ -56,17 +54,34 @@ storageConfigManager.getDefaultConfig = async function() {
             model: 'gpt-3.5-turbo',
             maxTokens: 4000,
             temperature: 0.7,
-            enabled: true
+            enabled: true,
+            lastModified: 1735372800000
           }
         ]
       },
-      systemPrompt: 'Output in Chinese',
       quickInputs: [
-        { displayText: 'Summarize', sendText: 'Provide a concise summary of the following article:\n\n{CONTENT}' },
-        { displayText: 'Extract Key Points', sendText: 'Extract key points from this content:\n{CONTENT}' }
+        {
+          id: 'qi_default_summary_fallback',
+          displayText: 'Summarize',
+          sendText: 'Provide a concise summary of the following article:\n\n{CONTENT}',
+          lastModified: 1735372800000
+        },
+        {
+          id: 'qi_default_keypoints_fallback',
+          displayText: 'Extract Key Points',
+          sendText: 'Extract key points from this content:\n{CONTENT}',
+          lastModified: 1735372800000
+        }
       ],
-      contentDisplayHeight: 100,
-      theme: 'system'
+      basic: {
+        defaultExtractionMethod: 'readability',
+        jinaApiKey: '',
+        jinaResponseTemplate: '# {title}\n\n**URL:** {url}\n\n**Description:** {description}\n\n## Content\n\n{content}',
+        systemPrompt: 'Output in Chinese',
+        contentDisplayHeight: 100,
+        theme: 'system',
+        lastModified: 1735372800000
+      }
     };
   }
 }
@@ -79,8 +94,18 @@ storageConfigManager.getDefaultSystemPrompt = function() {
 // Get default quick inputs
 storageConfigManager.getDefaultQuickInputs = function() {
   return [
-    { displayText: 'Summarize', sendText: 'Provide a concise summary of the following article:\n\n{CONTENT}' },
-    { displayText: 'Extract Key Points', sendText: 'Extract key points from this content:\n{CONTENT}' }
+    {
+      id: 'qi_default_summary_fallback',
+      displayText: 'Summarize',
+      sendText: 'Provide a concise summary of the following article:\n\n{CONTENT}',
+      lastModified: 1735372800000
+    },
+    {
+      id: 'qi_default_keypoints_fallback',
+      displayText: 'Extract Key Points',
+      sendText: 'Extract key points from this content:\n{CONTENT}',
+      lastModified: 1735372800000
+    }
   ];
 }
 
@@ -268,12 +293,9 @@ storageConfigManager.saveAllQuickInputs = async function(quickInputs, forceTimes
 
       newIds.push(quickInput.id);
 
-      // Use appropriate save method based on whether we need to force timestamp update
-      if (forceTimestampUpdate) {
-        savePromises.push(storageConfigManager.saveQuickInputWithTimestamp(quickInput));
-      } else {
-        savePromises.push(storageConfigManager.saveQuickInput(quickInput));
-      }
+      // Always use saveQuickInput which preserves existing timestamps
+      // Timestamps are already calculated correctly in calculateConfigTimestamps
+      savePromises.push(storageConfigManager.saveQuickInput(quickInput));
     }
 
     // Save all quick inputs in parallel
@@ -329,21 +351,44 @@ storageConfigManager.getConfig = async function() {
     if (mainResult[MAIN_CONFIG_KEY]) {
       const storedMainConfig = mainResult[MAIN_CONFIG_KEY];
 
-      // Start with main config merged with defaults
-      const mergedConfig = {
-        ...defaultConfig,
-        ...storedMainConfig,
-        llm: {
-          ...defaultConfig.llm,
-          ...storedMainConfig.llm
-        }
-      };
+      // Check if stored config is in old format and convert to new format
+      let mergedConfig;
+      if (storedMainConfig.llm && !storedMainConfig.llm_models) {
+        // Old format - convert to new format
+        mergedConfig = {
+          llm_models: {
+            ...defaultConfig.llm_models,
+            ...storedMainConfig.llm
+          },
+          quickInputs: await storageConfigManager.loadAllQuickInputs(),
+          basic: {
+            ...defaultConfig.basic,
+            defaultExtractionMethod: storedMainConfig.defaultExtractionMethod || defaultConfig.basic.defaultExtractionMethod,
+            jinaApiKey: storedMainConfig.jinaApiKey || defaultConfig.basic.jinaApiKey,
+            jinaResponseTemplate: storedMainConfig.jinaResponseTemplate || defaultConfig.basic.jinaResponseTemplate,
+            contentDisplayHeight: storedMainConfig.contentDisplayHeight || defaultConfig.basic.contentDisplayHeight,
+            theme: storedMainConfig.theme || defaultConfig.basic.theme,
+            lastModified: Date.now() // Update timestamp for format conversion
+          }
+        };
+        storageConfigLogger.info('Converted old config format to new format');
+      } else {
+        // New format - merge with defaults
+        mergedConfig = {
+          llm_models: {
+            ...defaultConfig.llm_models,
+            ...storedMainConfig.llm_models
+          },
+          quickInputs: await storageConfigManager.loadAllQuickInputs(),
+          basic: {
+            ...defaultConfig.basic,
+            ...storedMainConfig.basic
+          }
+        };
+      }
 
-      // Add quick inputs (loaded separately)
-      mergedConfig.quickInputs = await storageConfigManager.loadAllQuickInputs();
-
-      // Add system prompt (from separate storage or default)
-      let systemPrompt = mergedConfig.systemPrompt || storageConfigManager.getDefaultSystemPrompt();
+      // Add system prompt (from separate storage or basic config)
+      let systemPrompt = mergedConfig.basic.systemPrompt || storageConfigManager.getDefaultSystemPrompt();
 
       // Decompress system prompt if needed
       if (systemPromptResult[SYSTEM_PROMPT_KEY]) {
@@ -354,7 +399,7 @@ storageConfigManager.getConfig = async function() {
         }
       }
 
-      mergedConfig.systemPrompt = systemPrompt;
+      mergedConfig.basic.systemPrompt = systemPrompt;
 
       // Add blacklist configuration
       mergedConfig.blacklist = blacklistConfig;
@@ -362,10 +407,10 @@ storageConfigManager.getConfig = async function() {
       // Add sync configuration
       mergedConfig.sync = syncConfigData;
 
-      // Ensure existing models have maxTokens, temperature, and baseUrl fields
-      if (mergedConfig.llm?.models) {
+      // Ensure existing models have maxTokens, temperature, baseUrl, and lastModified fields
+      if (mergedConfig.llm_models?.models) {
         let needsModelUpdate = false;
-        mergedConfig.llm.models.forEach(model => {
+        mergedConfig.llm_models.models.forEach(model => {
           if (model.maxTokens === undefined) {
             model.maxTokens = model.provider === 'gemini' ? 8192 : 4000;
             needsModelUpdate = true;
@@ -378,11 +423,25 @@ storageConfigManager.getConfig = async function() {
             model.baseUrl = model.provider === 'gemini' ? 'https://generativelanguage.googleapis.com' : 'https://api.openai.com';
             needsModelUpdate = true;
           }
+          // Add lastModified timestamp if missing (system update, not user modification)
+          if (model.lastModified === undefined) {
+            model.lastModified = Date.now();
+            needsModelUpdate = true;
+            storageConfigLogger.debug(`Added lastModified timestamp to existing model: ${model.id}`);
+          }
         });
 
+        // Ensure basic config has lastModified timestamp
+        if (!mergedConfig.basic.lastModified) {
+          mergedConfig.basic.lastModified = Date.now();
+          needsModelUpdate = true;
+          storageConfigLogger.debug('Added lastModified timestamp to basic config');
+        }
+
         if (needsModelUpdate) {
-          await storageConfigManager.saveConfig(mergedConfig);
-          storageConfigLogger.info('Updated existing models with maxTokens, temperature, and baseUrl fields');
+          // Use isUserModification = false to avoid timestamp recalculation for system updates
+          await storageConfigManager.saveConfig(mergedConfig, false);
+          storageConfigLogger.info('Updated existing config with missing fields including timestamps');
         }
       }
 
@@ -414,23 +473,48 @@ storageConfigManager.getConfig = async function() {
 // Save configuration with split storage to avoid quota limits
 storageConfigManager.saveConfig = async function(newConfig, isUserModification = true) {
   try {
-    // Extract main config (without quick inputs and system prompt)
-    const mainConfig = {
-      defaultExtractionMethod: newConfig.defaultExtractionMethod,
-      jinaApiKey: newConfig.jinaApiKey,
-      jinaResponseTemplate: newConfig.jinaResponseTemplate,
-      llm: newConfig.llm,
-      contentDisplayHeight: newConfig.contentDisplayHeight
-    };
-    if (newConfig.theme) {
-      mainConfig.theme = newConfig.theme;
+    // If this is a user modification, compare with existing config to calculate accurate timestamps
+    let processedConfig = newConfig;
+    if (isUserModification) {
+      try {
+        const existingConfig = await storageConfigManager.getConfig();
+        processedConfig = storageConfigManager.calculateConfigTimestamps(newConfig, existingConfig);
+        storageConfigLogger.debug('Calculated timestamps for modified configuration items');
+      } catch (error) {
+        storageConfigLogger.warn('Could not load existing config for timestamp comparison, using new timestamps:', error.message);
+        // Fallback: add timestamps to new items
+        processedConfig = storageConfigManager.addTimestampsToNewConfig(newConfig);
+      }
     }
 
-    // Extract quick inputs
-    const quickInputs = newConfig.quickInputs || storageConfigManager.getDefaultQuickInputs();
+    // Extract main config based on new format
+    let mainConfig, quickInputs, systemPrompt;
 
-    // Extract system prompt
-    const systemPrompt = newConfig.systemPrompt || storageConfigManager.getDefaultSystemPrompt();
+    if (processedConfig.llm_models && processedConfig.basic) {
+      // New format
+      mainConfig = {
+        llm_models: processedConfig.llm_models,
+        basic: processedConfig.basic
+      };
+      quickInputs = processedConfig.quickInputs || storageConfigManager.getDefaultQuickInputs();
+      systemPrompt = processedConfig.basic.systemPrompt || storageConfigManager.getDefaultSystemPrompt();
+    } else {
+      // Old format - convert to new format for storage
+      mainConfig = {
+        llm_models: processedConfig.llm || { defaultModelId: 'gemini-pro', models: [] },
+        basic: {
+          defaultExtractionMethod: processedConfig.defaultExtractionMethod || 'readability',
+          jinaApiKey: processedConfig.jinaApiKey || '',
+          jinaResponseTemplate: processedConfig.jinaResponseTemplate || '# {title}\n\n**URL:** {url}\n\n**Description:** {description}\n\n## Content\n\n{content}',
+          systemPrompt: processedConfig.systemPrompt || storageConfigManager.getDefaultSystemPrompt(),
+          contentDisplayHeight: processedConfig.contentDisplayHeight || 100,
+          theme: processedConfig.theme || 'system',
+          lastModified: Date.now()
+        }
+      };
+      quickInputs = processedConfig.quickInputs || storageConfigManager.getDefaultQuickInputs();
+      systemPrompt = processedConfig.systemPrompt || storageConfigManager.getDefaultSystemPrompt();
+    }
 
     // Compress system prompt using pako compression if available
     let systemPromptToSave = systemPrompt;
@@ -570,6 +654,126 @@ storageConfigManager.checkStorageUsage = async function() {
     return null;
   }
 }
+
+// Calculate accurate modification timestamps by comparing new config with existing config
+storageConfigManager.calculateConfigTimestamps = function(newConfig, existingConfig) {
+  const processedConfig = JSON.parse(JSON.stringify(newConfig)); // Deep copy
+  const currentTime = Date.now();
+
+  // Process Quick Inputs
+  if (processedConfig.quickInputs && Array.isArray(processedConfig.quickInputs)) {
+    processedConfig.quickInputs.forEach(newItem => {
+      const existingItem = existingConfig.quickInputs?.find(item => item.id === newItem.id);
+
+      if (existingItem) {
+        // Compare all fields to determine if item was actually modified
+        const fieldsChanged = ['displayText', 'sendText', 'autoTrigger'].some(field =>
+          existingItem[field] !== newItem[field]
+        );
+
+        if (fieldsChanged) {
+          newItem.lastModified = currentTime;
+          storageConfigLogger.debug(`Updated timestamp for modified quick input: ${newItem.id}`);
+        } else {
+          // Preserve existing timestamp if no changes
+          newItem.lastModified = existingItem.lastModified || currentTime;
+        }
+      } else {
+        // New item
+        newItem.lastModified = currentTime;
+        storageConfigLogger.debug(`Added timestamp for new quick input: ${newItem.id}`);
+      }
+    });
+  }
+
+  // Process LLM Models (support both old and new format)
+  const llmModels = processedConfig.llm_models?.models || processedConfig.llm?.models;
+  const existingLlmModels = existingConfig.llm_models?.models || existingConfig.llm?.models;
+
+  if (llmModels && Array.isArray(llmModels)) {
+    llmModels.forEach(newModel => {
+      const existingModel = existingLlmModels?.find(model => model.id === newModel.id);
+
+      if (existingModel) {
+        // Compare all fields to determine if model was actually modified
+        const fieldsChanged = ['name', 'provider', 'apiKey', 'baseUrl', 'model', 'maxTokens', 'temperature', 'enabled'].some(field =>
+          existingModel[field] !== newModel[field]
+        );
+
+        if (fieldsChanged) {
+          newModel.lastModified = currentTime;
+          storageConfigLogger.debug(`Updated timestamp for modified model: ${newModel.id}`);
+        } else {
+          // Preserve existing timestamp if no changes
+          newModel.lastModified = existingModel.lastModified || currentTime;
+        }
+      } else {
+        // New model
+        newModel.lastModified = currentTime;
+        storageConfigLogger.debug(`Added timestamp for new model: ${newModel.id}`);
+      }
+    });
+  }
+
+  // Process Basic Configuration
+  if (processedConfig.basic) {
+    const existingBasic = existingConfig.basic;
+
+    if (existingBasic) {
+      // Compare basic config fields to determine if anything was modified
+      const basicFields = ['defaultExtractionMethod', 'jinaApiKey', 'jinaResponseTemplate', 'systemPrompt', 'contentDisplayHeight', 'theme'];
+      const fieldsChanged = basicFields.some(field =>
+        existingBasic[field] !== processedConfig.basic[field]
+      );
+
+      if (fieldsChanged) {
+        processedConfig.basic.lastModified = currentTime;
+        storageConfigLogger.debug('Updated timestamp for modified basic config');
+      } else {
+        // Preserve existing timestamp if no changes
+        processedConfig.basic.lastModified = existingBasic.lastModified || currentTime;
+      }
+    } else {
+      // New basic config
+      processedConfig.basic.lastModified = currentTime;
+      storageConfigLogger.debug('Added timestamp for new basic config');
+    }
+  }
+
+  return processedConfig;
+};
+
+// Add timestamps to new configuration items (fallback when existing config is not available)
+storageConfigManager.addTimestampsToNewConfig = function(config) {
+  const processedConfig = JSON.parse(JSON.stringify(config)); // Deep copy
+  const currentTime = Date.now();
+
+  // Add timestamps to Quick Inputs
+  if (processedConfig.quickInputs && Array.isArray(processedConfig.quickInputs)) {
+    processedConfig.quickInputs.forEach(item => {
+      if (!item.lastModified) {
+        item.lastModified = currentTime;
+      }
+    });
+  }
+
+  // Add timestamps to LLM Models (support both old and new format)
+  const llmModels = processedConfig.llm_models?.models || processedConfig.llm?.models;
+  if (llmModels && Array.isArray(llmModels)) {
+    llmModels.forEach(model => {
+      if (!model.lastModified) {
+        model.lastModified = currentTime;
+      }
+    });
+  }
+
+  // Add timestamp to Basic Configuration
+  if (processedConfig.basic && !processedConfig.basic.lastModified) {
+    processedConfig.basic.lastModified = currentTime;
+  }
+
+  return processedConfig;
+};
 
 // Maintain backward compatibility by creating an alias
 var configManager = storageConfigManager;

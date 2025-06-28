@@ -255,7 +255,9 @@ const retryMessage = (messageElement, retryCallback) => {
       
       // Prepare LLM request
       const config = await window.StateManager.getConfig();
-      const systemPrompt = config.systemPrompt || '';
+      // Support both old and new config formats
+      const basicConfig = config.basic || config;
+      const systemPrompt = basicConfig.systemPrompt || '';
       const extractedContent = window.StateManager.getStateItem('extractedContent') || '';
       const currentUrl = window.StateManager.getStateItem('currentUrl') || '';
       const extractionMethod = window.StateManager.getStateItem('currentExtractionMethod') || 'readability';

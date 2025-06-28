@@ -91,8 +91,8 @@ export class QuickInputsManager {
           id,
           displayText,
           sendText,
-          autoTrigger: autoTriggerEnabled,
-          lastModified: Date.now() // Add timestamp for sync merging
+          autoTrigger: autoTriggerEnabled
+          // Note: lastModified timestamp will be calculated during save by comparing with old config
         });
       }
     });

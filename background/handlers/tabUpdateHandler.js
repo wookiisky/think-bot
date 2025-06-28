@@ -13,7 +13,9 @@ async function handleTabUpdated(tabId, changeInfo, tab, serviceLogger, configMan
 
             try {
                 const config = await configManager.getConfig();
-                const defaultMethod = config.defaultExtractionMethod;
+                // Support both old and new config formats
+                const basicConfig = config.basic || config;
+                const defaultMethod = basicConfig.defaultExtractionMethod;
 
                 const cachedContent = await storage.getPageContent(tab.url, defaultMethod);
 

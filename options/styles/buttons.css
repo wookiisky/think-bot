@@ -243,6 +243,21 @@
   background-color: var(--success-color);
 }
 
+.header-actions #saveBtn.syncing {
+  background-color: var(--warning-color);
+  cursor: not-allowed;
+  pointer-events: none;
+  position: relative;
+}
+
+.header-actions #saveBtn.syncing .material-icons {
+  animation: spin 1s linear infinite;
+}
+
+.header-actions #saveBtn.error {
+  background-color: var(--error-color);
+}
+
 .header-actions #saveBtn .material-icons {
   font-size: 14px;
   margin: 0;

@@ -152,16 +152,16 @@ class OptionsPage {
         // Check if auto sync is enabled and perform sync
         if (syncSettings.enabled && typeof syncManager !== 'undefined') {
           logger.info('Auto sync enabled, performing sync after save');
-          this.performAutoSyncAfterSave();
+          await this.performAutoSyncAfterSave(saveBtn);
+        } else {
+          // Reset button state after 2 seconds if no sync is needed
+          setTimeout(() => {
+            if (saveBtn.classList.contains('saved')) {
+              saveBtn.classList.remove('saved');
+              saveBtn.querySelector('span').textContent = 'Save';
+            }
+          }, 2000);
         }
-
-        // Reset button state after 2 seconds
-        setTimeout(() => {
-          if (saveBtn.classList.contains('saved')) {
-            saveBtn.classList.remove('saved');
-            saveBtn.querySelector('span').textContent = 'Save';
-          }
-        }, 2000);
         
       } else {
         logger.error('Failed to save settings');
@@ -596,7 +596,7 @@ class OptionsPage {
   }
 
   // Perform auto-sync after saving configuration
-  async performAutoSyncAfterSave() {
+  async performAutoSyncAfterSave(saveBtn) {
     // Prevent concurrent syncs
     if (this.isAutoSyncing) {
       logger.info('Auto sync already in progress, skipping sync after save');
@@ -608,10 +608,27 @@ class OptionsPage {
     if (typeof syncManager === 'undefined') {
       logger.warn('Sync manager not available, skipping auto-sync after save.');
       this.isAutoSyncing = false;
+      // Reset button state if sync manager is not available
+      if (saveBtn) {
+        setTimeout(() => {
+          if (saveBtn.classList.contains('saved')) {
+            saveBtn.classList.remove('saved');
+            saveBtn.querySelector('span').textContent = 'Save';
+          }
+        }, 2000);
+      }
       return;
     }
 
     logger.info('Performing auto-sync after configuration save');
+
+    // Update save button to show syncing state
+    if (saveBtn) {
+      saveBtn.classList.remove('saved');
+      saveBtn.classList.add('syncing');
+      saveBtn.querySelector('span').textContent = 'Syncing...';
+    }
+
     this.updateSyncStatus('syncing', 'Auto-syncing after save...');
 
     try {
@@ -619,18 +636,47 @@ class OptionsPage {
       if (syncResult.success) {
         this.updateSyncStatus('success', 'Auto-sync completed');
         logger.info('Auto-sync after save completed successfully');
+
+        // Update save button to show sync success
+        if (saveBtn) {
+          saveBtn.classList.remove('syncing');
+          saveBtn.classList.add('saved');
+          saveBtn.querySelector('span').textContent = 'Synced!';
+        }
       } else {
         this.updateSyncStatus('error', syncResult.message || 'Auto-sync failed');
         logger.error('Auto-sync after save failed:', syncResult.error);
+
+        // Update save button to show sync error
+        if (saveBtn) {
+          saveBtn.classList.remove('syncing');
+          saveBtn.classList.add('error');
+          saveBtn.querySelector('span').textContent = 'Sync Error';
+        }
       }
     } catch (error) {
       logger.error('An error occurred during auto-sync after save:', error);
       this.updateSyncStatus('error', 'Sync failed');
+
+      // Update save button to show sync error
+      if (saveBtn) {
+        saveBtn.classList.remove('syncing');
+        saveBtn.classList.add('error');
+        saveBtn.querySelector('span').textContent = 'Sync Error';
+      }
     } finally {
       // After sync attempt, reload status from storage to reflect the final state
       const status = await syncManager.getSyncStatus();
       this.displaySyncStatus(status);
       this.isAutoSyncing = false; // Reset flag
+
+      // Reset button state after 3 seconds
+      if (saveBtn) {
+        setTimeout(() => {
+          saveBtn.classList.remove('saved', 'error');
+          saveBtn.querySelector('span').textContent = 'Save';
+        }, 3000);
+      }
     }
   }
 
@@ -807,7 +853,9 @@ class OptionsPage {
    * @param {Object} config - The application configuration
    */
   applyTheme(config) {
-    const theme = config.theme || 'system';
+    // Support both old and new config formats
+    const basicConfig = config.basic || config;
+    const theme = basicConfig.theme || 'system';
     const body = document.body;
 
     // Remove existing theme classes

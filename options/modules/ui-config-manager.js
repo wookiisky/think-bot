@@ -115,26 +115,29 @@ export class UIConfigManager {
           displayText,
           sendText,
           autoTrigger
+          // Note: lastModified timestamp will be calculated during save by comparing with old config
         });
       }
     });
 
     const config = {
-      defaultExtractionMethod: domElements.defaultExtractionMethod.value,
-      jinaApiKey: domElements.jinaApiKey.value,
-      jinaResponseTemplate: domElements.jinaResponseTemplate.value,
-
-      llm: {
+      llm_models: {
         defaultModelId: modelManager.getDefaultModelId(),
-        models: modelManager.getCompleteModels() // Only save complete models
+        models: modelManager.getAllModels() // Get all models with timestamps preserved
       },
-      systemPrompt: domElements.systemPrompt.value,
       quickInputs: quickInputs,
-      contentDisplayHeight: Math.min(Math.max(parseInt(domElements.contentDisplayHeight.value), 0), 600),
-      theme: domElements.theme.value
+      basic: {
+        defaultExtractionMethod: domElements.defaultExtractionMethod.value,
+        jinaApiKey: domElements.jinaApiKey.value,
+        jinaResponseTemplate: domElements.jinaResponseTemplate.value,
+        systemPrompt: domElements.systemPrompt.value,
+        contentDisplayHeight: Math.min(Math.max(parseInt(domElements.contentDisplayHeight.value), 0), 600),
+        theme: domElements.theme.value,
+        lastModified: Date.now()
+      }
     };
 
-    logger.info(`Built configuration with ${quickInputs.length} quick inputs and ${config.llm.models.length} models`);
+    logger.info(`Built configuration with ${quickInputs.length} quick inputs and ${config.llm_models.models.length} models`);
     return config;
   }
 
@@ -223,8 +226,9 @@ export class UIConfigManager {
 
       const config = importData.config;
 
-      // Validate required configuration fields
-      if (!config.defaultExtractionMethod) {
+      // Validate required configuration fields (support both old and new formats)
+      const basicConfig = config.basic || config;
+      if (!basicConfig.defaultExtractionMethod) {
         throw new Error('Configuration missing required field: defaultExtractionMethod');
       }
 
