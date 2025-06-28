@@ -1,6 +1,6 @@
 /**
- * confirmation-overlay.js - Blacklist confirmation overlay component
- * Handles the confirmation dialog when accessing blacklisted pages
+ * confirmation-overlay.js - Universal confirmation overlay component
+ * Handles confirmation dialogs for various actions including blacklist detection
  */
 
 import { createLogger } from '../modules/utils.js';
@@ -8,7 +8,7 @@ import { createLogger } from '../modules/utils.js';
 const logger = createLogger('ConfirmationOverlay');
 
 /**
- * ConfirmationOverlay class for managing blacklist confirmation dialogs
+ * ConfirmationOverlay class for managing universal confirmation dialogs
  */
 class ConfirmationOverlay {
   constructor() {
@@ -37,22 +37,22 @@ class ConfirmationOverlay {
    */
   createOverlayElement() {
     this.overlayElement = document.createElement('div');
-    this.overlayElement.className = 'blacklist-overlay';
+    this.overlayElement.className = 'confirmation-overlay';
     this.overlayElement.innerHTML = `
       <div class="overlay-backdrop"></div>
       <div class="overlay-content">
         <div class="overlay-header">
-          <h3>Blacklist Page Detected</h3>
+          <h3 class="overlay-title">Confirmation</h3>
         </div>
         <div class="overlay-body">
-          <p class="overlay-message">This page is in your blacklist. Do you want to continue using Think Bot?</p>
+          <p class="overlay-message">Are you sure you want to proceed?</p>
           <div class="overlay-pattern-info">
             <small class="pattern-description"></small>
           </div>
         </div>
         <div class="overlay-actions">
           <button class="btn-secondary overlay-cancel-btn" type="button">Cancel</button>
-          <button class="btn-primary overlay-confirm-btn" type="button">Continue</button>
+          <button class="btn-primary overlay-confirm-btn" type="button">Confirm</button>
         </div>
       </div>
     `;
@@ -103,8 +103,12 @@ class ConfirmationOverlay {
   /**
    * Show the confirmation overlay
    * @param {Object} options - Display options
+   * @param {string} options.title - Custom title to display
    * @param {string} options.message - Custom message to display
-   * @param {Object} options.matchedPattern - The matched blacklist pattern
+   * @param {string} options.confirmText - Text for confirm button
+   * @param {string} options.cancelText - Text for cancel button
+   * @param {string} options.confirmButtonClass - CSS class for confirm button
+   * @param {Object} options.matchedPattern - The matched blacklist pattern (for blacklist dialogs)
    * @param {Function} options.onConfirm - Callback for confirm action
    * @param {Function} options.onCancel - Callback for cancel action
    */
@@ -119,7 +123,11 @@ class ConfirmationOverlay {
     }
 
     const {
-      message = 'This page is in your blacklist. Do you want to continue using Think Bot?',
+      title = 'Confirmation',
+      message = 'Are you sure you want to proceed?',
+      confirmText = 'Confirm',
+      cancelText = 'Cancel',
+      confirmButtonClass = 'btn-primary',
       matchedPattern = null,
       onConfirm = () => {},
       onCancel = () => {}
@@ -128,17 +136,31 @@ class ConfirmationOverlay {
     // Store callbacks
     this.pendingCallback = { onConfirm, onCancel };
 
+    // Update title
+    const titleElement = this.overlayElement.querySelector('.overlay-title');
+    titleElement.textContent = title;
+
     // Update message
     const messageElement = this.overlayElement.querySelector('.overlay-message');
     messageElement.textContent = message;
 
-    // Update pattern info
+    // Update button texts
+    const confirmBtn = this.overlayElement.querySelector('.overlay-confirm-btn');
+    const cancelBtn = this.overlayElement.querySelector('.overlay-cancel-btn');
+    confirmBtn.textContent = confirmText;
+    cancelBtn.textContent = cancelText;
+
+    // Update confirm button class
+    confirmBtn.className = `overlay-confirm-btn ${confirmButtonClass}`;
+
+    // Update pattern info (for blacklist dialogs)
     const patternInfoElement = this.overlayElement.querySelector('.pattern-description');
+    const patternContainer = this.overlayElement.querySelector('.overlay-pattern-info');
     if (matchedPattern && matchedPattern.pattern) {
       patternInfoElement.textContent = `Matched pattern: ${matchedPattern.pattern}`;
-      patternInfoElement.style.display = 'block';
+      patternContainer.style.display = 'block';
     } else {
-      patternInfoElement.style.display = 'none';
+      patternContainer.style.display = 'none';
     }
 
     // Show overlay
@@ -152,7 +174,6 @@ class ConfirmationOverlay {
 
     // Focus on confirm button for accessibility
     setTimeout(() => {
-      const confirmBtn = this.overlayElement.querySelector('.overlay-confirm-btn');
       confirmBtn.focus();
     }, 100);
 
@@ -184,12 +205,12 @@ class ConfirmationOverlay {
    * Handle confirm action
    */
   handleConfirm() {
-    logger.info('User confirmed to continue on blacklisted page');
-    
+    logger.info('User confirmed action');
+
     if (this.pendingCallback && this.pendingCallback.onConfirm) {
       this.pendingCallback.onConfirm();
     }
-    
+
     this.hide();
   }
 
@@ -197,12 +218,12 @@ class ConfirmationOverlay {
    * Handle cancel action
    */
   handleCancel() {
-    logger.info('User cancelled on blacklisted page');
-    
+    logger.info('User cancelled action');
+
     if (this.pendingCallback && this.pendingCallback.onCancel) {
       this.pendingCallback.onCancel();
     }
-    
+
     this.hide();
   }
 

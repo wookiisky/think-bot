@@ -1,5 +1,6 @@
-/* Blacklist Confirmation Overlay Styles - Modern Flat Design */
+/* Universal Confirmation Overlay Styles - Modern Flat Design */
 
+.confirmation-overlay,
 .blacklist-overlay {
   position: fixed;
   top: 0;
@@ -14,6 +15,7 @@
   transition: opacity 0.25s ease;
 }
 
+.confirmation-overlay.visible,
 .blacklist-overlay.visible {
   opacity: 1;
 }
@@ -42,6 +44,7 @@
   border: none;
 }
 
+.confirmation-overlay.visible .overlay-content,
 .blacklist-overlay.visible .overlay-content {
   transform: translateY(0);
 }
@@ -148,7 +151,28 @@
   opacity: 0.9;
 }
 
+/* Danger button for destructive actions */
+.btn-danger {
+  background: var(--btn-danger-bg, #ea4335);
+  color: var(--btn-danger-text, #ffffff);
+}
+
+.btn-danger:hover {
+  background: var(--btn-danger-hover-bg, #d33b2c);
+}
+
+.btn-danger:focus {
+  outline: 2px solid var(--btn-danger-focus, #ea4335);
+  outline-offset: 1px;
+}
+
+.btn-danger:active {
+  transform: none;
+  opacity: 0.9;
+}
+
 /* Dark theme support */
+[data-theme="dark"] .confirmation-overlay,
 [data-theme="dark"] .blacklist-overlay {
   --bg-color: #1f1f1f;
   --text-color: #e8eaed;
@@ -161,6 +185,10 @@
   --btn-primary-bg: #8ab4f8;
   --btn-primary-text: #202124;
   --btn-primary-hover-bg: #aecbfa;
+  --btn-danger-bg: #f28b82;
+  --btn-danger-text: #202124;
+  --btn-danger-hover-bg: #f6aea9;
+  --btn-danger-focus: #f28b82;
   --focus-color: #8ab4f8;
 }
 
@@ -195,16 +223,20 @@
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
+  .confirmation-overlay,
   .blacklist-overlay {
     --btn-secondary-bg: #ffffff;
     --btn-secondary-text: #000000;
     --btn-primary-bg: #0000ff;
     --btn-primary-text: #ffffff;
+    --btn-danger-bg: #ff0000;
+    --btn-danger-text: #ffffff;
   }
 }
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
+  .confirmation-overlay,
   .blacklist-overlay,
   .overlay-content,
   .overlay-actions button {
@@ -213,6 +245,7 @@
 }
 
 /* Focus management for accessibility */
+.confirmation-overlay:focus-within .overlay-content,
 .blacklist-overlay:focus-within .overlay-content {
   outline: 2px solid var(--focus-color, #4285f4);
   outline-offset: 2px;

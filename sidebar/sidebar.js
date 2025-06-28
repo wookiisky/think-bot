@@ -17,6 +17,7 @@ import * as PageDataManager from './modules/page-data-manager.js';
 import * as EventHandler from './modules/event-handler.js';
 import { ModelSelector } from './modules/model-selector.js';
 import { confirmationOverlay } from './components/confirmation-overlay.js';
+import { miniConfirmation } from './components/mini-confirmation.js';
 
 // Create logger
 const logger = createLogger('Sidebar');
@@ -50,6 +51,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Initialize confirmation overlay
   confirmationOverlay.init();
+
+  // Initialize mini confirmation
+  miniConfirmation.init();
 
   // Page data loading will be triggered by handleSidebarOpened message from background
   // This ensures proper blacklist checking before loading content

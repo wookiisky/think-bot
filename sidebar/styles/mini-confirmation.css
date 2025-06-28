@@ -1,0 +1,228 @@
+/* Mini Confirmation Styles - Minimal Intrusive Design */
+
+.mini-confirmation {
+  position: fixed;
+  z-index: 9999;
+  display: none;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.95);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.mini-confirmation.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.mini-confirmation-content {
+  background: var(--mini-confirmation-bg, #ffffff);
+  border: 1px solid var(--mini-confirmation-border, #e0e0e0);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+  padding: 12px;
+  min-width: 200px;
+  max-width: 280px;
+  position: relative;
+}
+
+.mini-confirmation-message {
+  font-size: 13px;
+  color: var(--mini-confirmation-text, #333333);
+  margin-bottom: 10px;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.mini-confirmation-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.mini-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  min-width: 60px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mini-btn-cancel {
+  background: var(--mini-btn-cancel-bg, #f8f9fa);
+  color: var(--mini-btn-cancel-text, #5f6368);
+  border: 1px solid var(--mini-btn-cancel-border, #dadce0);
+}
+
+.mini-btn-cancel:hover {
+  background: var(--mini-btn-cancel-hover-bg, #e8eaed);
+  border-color: var(--mini-btn-cancel-hover-border, #c4c7ca);
+}
+
+.mini-btn-cancel:focus {
+  outline: 2px solid var(--mini-focus-color, #4285f4);
+  outline-offset: 1px;
+}
+
+.mini-btn-confirm {
+  background: var(--mini-btn-confirm-bg, #4285f4);
+  color: var(--mini-btn-confirm-text, #ffffff);
+}
+
+.mini-btn-confirm:hover {
+  background: var(--mini-btn-confirm-hover-bg, #3367d6);
+}
+
+.mini-btn-confirm:focus {
+  outline: 2px solid var(--mini-focus-color, #4285f4);
+  outline-offset: 1px;
+}
+
+/* Danger variant for destructive actions */
+.mini-btn-danger {
+  background: var(--mini-btn-danger-bg, #ea4335);
+  color: var(--mini-btn-danger-text, #ffffff);
+}
+
+.mini-btn-danger:hover {
+  background: var(--mini-btn-danger-hover-bg, #d33b2c);
+}
+
+.mini-btn-danger:focus {
+  outline: 2px solid var(--mini-btn-danger-focus, #ea4335);
+  outline-offset: 1px;
+}
+
+/* Arrow pointing to the target element */
+.mini-confirmation-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid var(--mini-confirmation-bg, #ffffff);
+  top: -6px;
+  left: 20px;
+}
+
+.mini-confirmation.above .mini-confirmation-arrow {
+  top: auto;
+  bottom: -6px;
+  border-bottom: none;
+  border-top: 6px solid var(--mini-confirmation-bg, #ffffff);
+}
+
+/* Dark theme support */
+[data-theme="dark"] .mini-confirmation {
+  --mini-confirmation-bg: #2d2e30;
+  --mini-confirmation-border: #3c4043;
+  --mini-confirmation-text: #e8eaed;
+  --mini-btn-cancel-bg: #3c4043;
+  --mini-btn-cancel-text: #e8eaed;
+  --mini-btn-cancel-border: #5f6368;
+  --mini-btn-cancel-hover-bg: #48494c;
+  --mini-btn-cancel-hover-border: #6c6e71;
+  --mini-btn-confirm-bg: #8ab4f8;
+  --mini-btn-confirm-text: #202124;
+  --mini-btn-confirm-hover-bg: #aecbfa;
+  --mini-btn-danger-bg: #f28b82;
+  --mini-btn-danger-text: #202124;
+  --mini-btn-danger-hover-bg: #f6aea9;
+  --mini-btn-danger-focus: #f28b82;
+  --mini-focus-color: #8ab4f8;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .mini-confirmation {
+    --mini-confirmation-border: #000000;
+    --mini-btn-cancel-bg: #ffffff;
+    --mini-btn-cancel-text: #000000;
+    --mini-btn-cancel-border: #000000;
+    --mini-btn-confirm-bg: #0000ff;
+    --mini-btn-confirm-text: #ffffff;
+    --mini-btn-danger-bg: #ff0000;
+    --mini-btn-danger-text: #ffffff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .mini-confirmation,
+  .mini-btn {
+    transition: none;
+  }
+}
+
+/* Mobile responsive design */
+@media (max-width: 768px) {
+  .mini-confirmation-content {
+    min-width: 180px;
+    max-width: 240px;
+    padding: 10px;
+  }
+
+  .mini-confirmation-message {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  .mini-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+    min-width: 50px;
+    height: 26px;
+  }
+
+  .mini-confirmation-actions {
+    gap: 4px;
+  }
+}
+
+/* Animation for button press feedback */
+.mini-btn:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+/* Ensure proper layering */
+.mini-confirmation {
+  isolation: isolate;
+}
+
+/* Backdrop blur effect for modern browsers */
+@supports (backdrop-filter: blur(4px)) {
+  .mini-confirmation-content {
+    backdrop-filter: blur(4px);
+    background: var(--mini-confirmation-bg-blur, rgba(255, 255, 255, 0.95));
+  }
+
+  [data-theme="dark"] .mini-confirmation {
+    --mini-confirmation-bg-blur: rgba(45, 46, 48, 0.95);
+  }
+}
+
+/* Focus trap for accessibility */
+.mini-confirmation.visible .mini-btn:focus {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure arrow matches border in high contrast */
+@media (prefers-contrast: high) {
+  .mini-confirmation-arrow {
+    border-bottom-color: var(--mini-confirmation-bg, #ffffff);
+  }
+
+  .mini-confirmation.above .mini-confirmation-arrow {
+    border-top-color: var(--mini-confirmation-bg, #ffffff);
+  }
+}

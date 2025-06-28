@@ -11,6 +11,7 @@ import * as ContentExtractor from './content-extractor.js';
 import * as ChatManager from './chat-manager.js';
 import * as ResizeHandler from './resize-handler.js';
 import * as ImageHandler from './image-handler.js';
+import { miniConfirmation } from '../components/mini-confirmation.js';
 
 
 const logger = createLogger('EventHandler');
@@ -148,7 +149,26 @@ const setupEventListeners = (elements, modelSelector, onTabAction) => {
   });
 
   // Page management buttons
-  elements.clearPageDataBtn.addEventListener('click', clearAllPageData);
+  elements.clearPageDataBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Show mini confirmation near the clicked button
+    miniConfirmation.show({
+      target: elements.clearPageDataBtn,
+      message: 'Clear all page data? This action cannot be undone.',
+      confirmText: 'Clear',
+      cancelText: 'Cancel',
+      confirmButtonClass: 'mini-btn-danger',
+      onConfirm: () => {
+        logger.info('User confirmed clearing page data');
+        clearAllPageData();
+      },
+      onCancel: () => {
+        logger.info('User cancelled clearing page data');
+      }
+    });
+  });
   elements.openOptionsBtn.addEventListener('click', openOptionsPage);
   elements.openChatBtn.addEventListener('click', openChatPage);
   
