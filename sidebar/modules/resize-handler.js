@@ -73,11 +73,15 @@ const initInputResize = (userInput, inputResizeHandle, layoutCallback) => {
     inputStartY = e.clientY;
     inputStartHeight = userInput.offsetHeight;
     e.preventDefault();
-    
+
     // Add visual feedback
     document.body.style.cursor = 'ns-resize';
     document.body.style.userSelect = 'none';
-    
+    inputResizeHandle.classList.add('dragging');
+
+    // Optimize performance during drag
+    userInput.style.pointerEvents = 'none'; // Prevent text selection during drag
+
 
   });
   
@@ -124,28 +128,26 @@ const doResize = (e, contentSection, userInput, layoutCallback) => {
   if (isInputResizing && userInput && typeof layoutCallback === 'function') {
     const deltaY = e.clientY - inputStartY;
     // Adjust growth factor for more natural dragging
-    const newHeight = Math.round(inputStartHeight - (deltaY * 1.2));
-    
+    const newHeight = inputStartHeight - deltaY;
+
     // Set min and max height
     const minHeight = 30;
     const maxHeight = 200;
-    
+
     if (newHeight >= minHeight && newHeight <= maxHeight) {
       // Use integer value to avoid layout issues
-      const roundedHeight = Math.floor(newHeight);
+      const roundedHeight = Math.round(newHeight);
       userInput.style.height = `${roundedHeight}px`;
       // Real-time input height update
       userInput.style.transition = 'none';
-      
-      // Debounce to avoid frequent layout updates
-      if (!window.layoutUpdateTimer) {
-        // Update icon layout based on input height
-        layoutCallback(roundedHeight);
-        
-        // Debounce: do not update within 50ms
-        window.layoutUpdateTimer = setTimeout(() => {
-          window.layoutUpdateTimer = null;
-        }, 50);
+
+      // Use requestAnimationFrame for smoother updates
+      if (!window.inputResizeRAF) {
+        window.inputResizeRAF = requestAnimationFrame(() => {
+          // Update icon layout based on input height
+          layoutCallback(roundedHeight);
+          window.inputResizeRAF = null;
+        });
       }
     }
   }
@@ -175,21 +177,33 @@ const stopResize = (e, contentSection, userInput, saveCallback) => {
   
   if (isInputResizing && userInput) {
     isInputResizing = false;
-    
+
     // Remove visual feedback
     document.body.style.cursor = '';
     document.body.style.userSelect = '';
-    
-    // Restore input transition effect
+
+    // Remove dragging state from resize handle
+    const inputResizeHandle = document.getElementById('inputResizeHandle');
+    if (inputResizeHandle) {
+      inputResizeHandle.classList.remove('dragging');
+    }
+
+    // Restore input transition effect and pointer events
     userInput.style.transition = '';
-    
-    // Clear layout update timer
+    userInput.style.pointerEvents = '';
+
+    // Clear layout update timer and RAF
     if (window.layoutUpdateTimer) {
       clearTimeout(window.layoutUpdateTimer);
       window.layoutUpdateTimer = null;
     }
-    
-    
+
+    if (window.inputResizeRAF) {
+      cancelAnimationFrame(window.inputResizeRAF);
+      window.inputResizeRAF = null;
+    }
+
+
   }
 };
 
