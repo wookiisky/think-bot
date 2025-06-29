@@ -100,6 +100,29 @@ async function checkSidePanelAllowed(serviceLogger, forUrl = null) {
 // This happens automatically if this script is imported.
 
 /**
+ * Sanitize a string to be used as a valid filename.
+ * Replaces or removes characters that are not allowed in filenames.
+ * @param {string} filename The string to sanitize.
+ * @returns {string} A sanitized filename.
+ */
+function sanitizeForFilename(filename) {
+  if (typeof filename !== 'string') {
+    return '';
+  }
+  // Replace invalid characters with an underscore
+  const sanitized = filename.replace(/[<>:"/\\|?*]/g, '_');
+
+  // Replace multiple consecutive underscores with a single one
+  const collapsed = sanitized.replace(/_{2,}/g, '_');
+
+  // Remove leading and trailing underscores
+  const trimmed = collapsed.replace(/^_+|_+$/g, '');
+
+  // Limit filename length to avoid issues with filesystems (e.g., 100 chars)
+  return trimmed.substring(0, 100);
+}
+
+/**
  * Get metadata for a specific page URL from storage
  * @param {string} url - The URL of the page to get metadata for
  * @returns {Promise<Object|null>} - The page metadata or null if not found

@@ -2,16 +2,8 @@
  * exportConversationHandler.js - Handles conversation export requests
  */
 
-// Utility to sanitize filenames
-function sanitizeForFilename(filename) {
-  if (typeof filename !== 'string') {
-    return '';
-  }
-  const sanitized = filename.replace(/[<>:"/\\|?*]/g, '_');
-  const collapsed = sanitized.replace(/_{2,}/g, '_');
-  const trimmed = collapsed.replace(/^_+|_+$/g, '');
-  return trimmed.substring(0, 100);
-}
+// Note: sanitizeForFilename function is now available from background/utils.js
+// which is imported in service-worker.js
 
 // Main handler function
 async function handleExportConversation(request, sender, sendResponse) {
@@ -43,14 +35,14 @@ async function handleExportConversation(request, sender, sendResponse) {
     const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
 
     // 4. Construct filename
-    const filename = `${sanitizedPageTitle} | ${sanitizedTabName} | ${timestamp}.md`;
+    const filename = `${sanitizedPageTitle}--${sanitizedTabName}--${timestamp}.md`;
 
     // 5. Generate markdown content
     let markdownContent = `# ${pageTitle}\n\nURL: ${baseUrl}\n\n`;
     chatHistory.forEach(message => {
       const role = message.role || 'Unknown';
       const content = message.content || '';
-      markdownContent += `--------${role}--------\n${content}\n\n`;
+      markdownContent += `## --------${role}--------\n${content}\n\n`;
     });
 
     // 6. Send response with data to be downloaded
