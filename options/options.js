@@ -52,7 +52,7 @@ class OptionsPage {
 
     // Apply initial theme if no config was loaded
     if (!this.domElements.theme.value) {
-      this.applyTheme({ theme: 'system' });
+      this.applyTheme({ basic: { theme: 'system' } });
     }
   }
   
@@ -272,7 +272,7 @@ class OptionsPage {
 
           // Apply theme immediately when theme selection changes
           if (input === this.domElements.theme) {
-            const config = { theme: input.value };
+            const config = { basic: { theme: input.value } };
             this.applyTheme(config);
           }
         });

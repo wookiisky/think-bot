@@ -569,22 +569,27 @@ async function triggerAutoInputs() {
  * @param {Object} config - The application configuration
  */
 async function applyTheme(config) {
-  const theme = config.theme || 'system';
+  // Support both old and new config formats
+  const basicConfig = config.basic || config;
+  const theme = basicConfig.theme || 'system';
   const body = document.body;
+
+  // Remove existing theme classes
+  body.classList.remove('dark-theme');
 
   if (theme === 'dark') {
     body.classList.add('dark-theme');
   } else if (theme === 'light') {
-    body.classList.remove('dark-theme');
+    // Light theme is default, no class needed
   } else {
-    // System theme
+    // System theme - check user's system preference
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (prefersDark) {
       body.classList.add('dark-theme');
-    } else {
-      body.classList.remove('dark-theme');
     }
   }
+
+  logger.info(`Applied theme: ${theme}`);
 }
 
 /**
