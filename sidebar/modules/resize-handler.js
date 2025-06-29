@@ -219,15 +219,19 @@ const resetContentSectionHeight = (contentSection, config) => {
   }
   
   try {
-    if (config && typeof config.contentDisplayHeight === 'number') {
-      const height = Math.max(config.contentDisplayHeight, 0); // Allow 0 to completely hide content area
+    // Support both old and new config formats
+    const basicConfig = config?.basic || config;
+    if (basicConfig && typeof basicConfig.contentDisplayHeight === 'number') {
+      const height = Math.max(basicConfig.contentDisplayHeight, 0); // Allow 0 to completely hide content area
       contentSection.style.height = `${height}px`;
       contentSection.style.maxHeight = `${height}px`;
+      logger.info('Applied configured content display height:', height);
     } else {
       // Fallback to default value
       const defaultHeight = 100;
       contentSection.style.height = `${defaultHeight}px`;
       contentSection.style.maxHeight = `${defaultHeight}px`;
+      logger.warn('Using default content display height:', defaultHeight);
     }
   } catch (error) {
     logger.error('Error resetting content section height:', error);
@@ -293,16 +297,20 @@ const loadContentSectionHeight = async (contentSection, config) => {
     }
     
     // If no saved height, use config default value
-    if (config && typeof config.contentDisplayHeight === 'number') {
-      const height = Math.max(config.contentDisplayHeight, 0); // Allow 0 to completely hide content area
+    // Support both old and new config formats
+    const basicConfig = config?.basic || config;
+    if (basicConfig && typeof basicConfig.contentDisplayHeight === 'number') {
+      const height = Math.max(basicConfig.contentDisplayHeight, 0); // Allow 0 to completely hide content area
       contentSection.style.height = `${height}px`;
       contentSection.style.maxHeight = `${height}px`;
+      logger.info('Applied configured content display height from config:', height);
       return height;
     } else {
       // Fallback to default value
       const defaultHeight = 100;
       contentSection.style.height = `${defaultHeight}px`;
       contentSection.style.maxHeight = `${defaultHeight}px`;
+      logger.warn('Using default content display height in loadContentSectionHeight:', defaultHeight);
       return defaultHeight;
     }
   } catch (error) {
