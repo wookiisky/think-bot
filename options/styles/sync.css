@@ -17,17 +17,10 @@
 }
 
 .sync-status {
-  margin-top: 16px;
-  padding: 12px 16px;
-  background-color: var(--bg-color);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
+  margin-top: 0px;
+  padding: 0;
 }
 
-.sync-config-group .form-group {
-  margin-bottom: 12px;
-}
 
 .sync-config-group .form-group:last-child {
   margin-bottom: 0;

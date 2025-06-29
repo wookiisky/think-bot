@@ -224,42 +224,36 @@ input:focus + .slider {
 }
 
 /* Status Indicators */
-.status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
+.status-text {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 4px 0;
   transition: all var(--transition-slow) ease;
+  white-space: pre-line;
+  line-height: 1.4;
 }
 
-.status-dot.idle {
-  background-color: var(--text-secondary);
+.status-text.idle {
+  color: var(--text-secondary);
 }
 
-.status-dot.testing {
-  background-color: var(--secondary-color);
+.status-text.testing {
+  color: var(--secondary-color);
   animation: pulse 1.5s infinite;
 }
 
-.status-dot.syncing {
-  background-color: var(--primary-color);
+.status-text.syncing {
+  color: var(--primary-color);
   animation: pulse 1.5s infinite;
 }
 
-.status-dot.success {
-  background-color: var(--success-color);
+.status-text.success {
+  color: var(--success-color);
 }
 
-.status-dot.error {
-  background-color: var(--error-color);
+.status-text.error {
+  color: var(--error-color);
 }
 
 @keyframes pulse {
@@ -268,16 +262,10 @@ input:focus + .slider {
   100% { opacity: 1; }
 }
 
-.status-text {
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--text-color);
-}
-
 .status-details {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
 }
 
 .status-details small {

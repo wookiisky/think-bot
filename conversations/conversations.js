@@ -19,6 +19,7 @@ import { ModelSelector } from '../sidebar/modules/model-selector.js';
 // Import conversations-specific modules
 import { PageListManager } from './modules/page-list-manager.js';
 import { ConfirmationDialog } from './modules/confirmation-dialog.js';
+import { createConversationsExportHandler } from '../sidebar/modules/export-utils.js';
 
 // Create logger
 const logger = createLogger('Conversations');
@@ -379,28 +380,11 @@ function setupEssentialEventListeners(elements, modelSelector) {
     });
   }
   
-  // Export conversation button
+  // Export conversation button - using common export handler with dynamic currentUrl
   if (elements.exportBtn) {
-    elements.exportBtn.addEventListener('click', async () => {
-      try {
-        const chatHistory = ChatHistory.getChatHistoryFromDOM(elements.chatContainer);
-        const exportData = {
-          url: currentUrl,
-          timestamp: new Date().toISOString(),
-          chatHistory: chatHistory
-        };
-        
-        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `conversation-${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        logger.info('Conversation exported successfully');
-      } catch (error) {
-        logger.error('Error exporting conversation:', error);
-      }
+    elements.exportBtn.addEventListener('click', () => {
+      const handler = createConversationsExportHandler(elements.chatContainer, currentUrl);
+      handler();
     });
   }
   

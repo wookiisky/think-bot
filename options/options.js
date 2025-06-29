@@ -489,23 +489,13 @@ class OptionsPage {
             // Perform sync operation
             const syncResult = await syncManager.fullSync();
             if (syncResult.success) {
-              this.updateSyncStatus('success', 'Synchronized');
-
               // Reload sync status to get the updated lastSyncTime from syncConfig
               try {
                 const status = await syncManager.getSyncStatus();
-                if (status.lastSyncTime) {
-                  const lastSyncDate = new Date(status.lastSyncTime);
-                  this.domElements.syncLastTime.textContent = `Last sync: ${lastSyncDate.toLocaleString()}`;
-                } else {
-                  // Fallback to current time if syncConfig doesn't have lastSyncTime yet
-                  const now = new Date();
-                  this.domElements.syncLastTime.textContent = `Last sync: ${now.toLocaleString()}`;
-                }
+                this.updateSyncStatus('success', 'Sync completed successfully', status.lastSyncTime);
               } catch (statusError) {
                 // Fallback to current time if we can't get status
-                const now = new Date();
-                this.domElements.syncLastTime.textContent = `Last sync: ${now.toLocaleString()}`;
+                this.updateSyncStatus('success', 'Sync completed successfully');
                 logger.warn('Could not reload sync status after successful sync:', statusError);
               }
 
@@ -527,11 +517,7 @@ class OptionsPage {
             this.domElements.syncEnabled.checked = false;
           }
         } else {
-          this.updateSyncStatus('success', 'Auto sync enabled (sync manager not available)');
-
-          // Update last sync time display even when sync manager is not available
-          const now = new Date();
-          this.domElements.syncLastTime.textContent = `Last sync: ${now.toLocaleString()}`;
+          this.updateSyncStatus('success', 'Sync completed successfully');
         }
       } else {
         // Connection failed, disable auto sync
@@ -558,9 +544,6 @@ class OptionsPage {
       // Hide error messages
       this.domElements.syncErrorMessage.style.display = 'none';
       this.domElements.syncErrorMessage.textContent = '';
-
-      // Reset last sync time
-      this.domElements.syncLastTime.textContent = 'Never synced';
 
       logger.info('Auto sync disabled and status cleared');
     } catch (error) {
@@ -634,7 +617,7 @@ class OptionsPage {
     try {
       const syncResult = await syncManager.fullSync();
       if (syncResult.success) {
-        this.updateSyncStatus('success', 'Auto-sync completed');
+        this.updateSyncStatus('success', 'Sync completed successfully');
         logger.info('Auto-sync after save completed successfully');
 
         // Update save button to show sync success
@@ -700,15 +683,7 @@ class OptionsPage {
   // Display sync status in UI
   displaySyncStatus(status) {
     const statusText = this.getSyncStatusText(status);
-    this.updateSyncStatus(status.status, statusText);
-
-    // Update last sync time
-    if (status.lastSyncTime) {
-      const lastSyncDate = new Date(status.lastSyncTime);
-      this.domElements.syncLastTime.textContent = `Last sync: ${lastSyncDate.toLocaleString()}`;
-    } else {
-      this.domElements.syncLastTime.textContent = 'Never synced';
-    }
+    this.updateSyncStatus(status.status, statusText, status.lastSyncTime);
 
     // Show error message if any
     if (status.lastError) {
@@ -717,6 +692,16 @@ class OptionsPage {
     } else {
       this.domElements.syncErrorMessage.style.display = 'none';
     }
+  }
+
+  // Format date to yyyy-mm-dd HH:MM:SS format
+  formatSyncDate(date) {
+    return date.getFullYear() + '-' +
+      String(date.getMonth() + 1).padStart(2, '0') + '-' +
+      String(date.getDate()).padStart(2, '0') + ' ' +
+      String(date.getHours()).padStart(2, '0') + ':' +
+      String(date.getMinutes()).padStart(2, '0') + ':' +
+      String(date.getSeconds()).padStart(2, '0');
   }
 
   // Get human-readable status text
@@ -733,7 +718,7 @@ class OptionsPage {
       case 'syncing':
         return 'Syncing data...';
       case 'success':
-        return status.enabled ? 'Auto sync enabled' : 'Connected and ready';
+        return 'Sync completed successfully';
       case 'error':
         return 'Configuration error';
       default:
@@ -742,17 +727,28 @@ class OptionsPage {
   }
 
   // Update sync status indicator
-  updateSyncStatus(status, message) {
-    const indicator = this.domElements.syncStatusIndicator;
-    const dot = indicator.querySelector('.status-dot');
-    const text = indicator.querySelector('.status-text');
+  updateSyncStatus(status, message, lastSyncTime = null) {
+    const statusText = this.domElements.syncStatusText;
+    if (statusText) {
+      let displayText = message;
 
-    // Remove all status classes
-    dot.className = 'status-dot';
-    // Add current status class
-    dot.classList.add(status);
+      // Add sync time information if provided
+      if (lastSyncTime) {
+        const syncDate = new Date(lastSyncTime);
+        displayText += `\nLast sync: ${this.formatSyncDate(syncDate)}`;
+      } else if (status === 'success') {
+        // For success status without specific time, use current time
+        const now = new Date();
+        displayText += `\nLast sync: ${this.formatSyncDate(now)}`;
+      }
 
-    text.textContent = message;
+      statusText.textContent = displayText;
+
+      // Remove all status classes
+      statusText.className = 'status-text';
+      // Add current status class for styling
+      statusText.classList.add(status);
+    }
   }
 
   // Test sync connection

@@ -754,70 +754,41 @@ const displayChatHistory = (chatContainer, history) => {
  * @param {string} extractedContent - Extracted content
  * @param {Array} chatHistory - Chat history
  */
-const exportConversation = async (currentUrl, extractedContent, chatHistory) => {
-  // Validate parameters with proper error handling
-  if (!chatHistory || !Array.isArray(chatHistory)) {
-    logger.warn('Invalid chat history provided for export');
+const exportConversation = async (urlWithPossibleFragment, extractedContent, chatHistory) => {
+  if (!chatHistory || !Array.isArray(chatHistory) || chatHistory.length === 0) {
+    logger.warn('Invalid or empty chat history provided for export');
     return;
-  }
-  
-  if (chatHistory.length === 0) {
-    return;
-  }
-  
-  // Get page title
-  let pageTitle = 'Unknown';
-  try {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tabs.length > 0 && tabs[0].title) {
-      // Sanitize filename and limit length
-      pageTitle = tabs[0].title
-        .replace(/[<>:"/\\|?*'，。！？；：""''（）【】《》]/g, '_') // Remove invalid filename characters and Chinese punctuation
-        .replace(/_{2,}/g, '_') // Replace multiple consecutive underscores with single underscore
-        .replace(/^_+|_+$/g, '') // Remove leading and trailing underscores
-        .substring(0, 100); // Limit to 100 characters
-    }
-  } catch (error) {
-    logger.warn('Failed to get page title:', error);
   }
 
-  // Generate markdown content
-  let markdownContent = `# ${pageTitle}\n\n`;
-  markdownContent += `URL: ${currentUrl || 'Unknown'}\n\n`;
-  markdownContent += `## Conversation\n\n`;
-  
-  chatHistory.forEach((message, index) => {
-    if (message && typeof message === 'object') {
-      const role = message.role || 'Unknown';
-      const content = message.content || '';
-      markdownContent += `## ------${role}------\n\n`;
-      markdownContent += `${content}\n\n`;
-    } else {
-      logger.warn(`Invalid message format at index ${index}:`, message);
+  let quickInputTabName = 'chat';
+  if (window.TabManager) {
+    const activeTab = window.TabManager.getActiveTab();
+    if (activeTab && activeTab.displayText) {
+      quickInputTabName = activeTab.displayText;
     }
-  });
-  
-  // Create blob and download
+  }
+
   try {
-    const blob = new Blob([markdownContent], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    
-    // Generate filename with timestamp and page title
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hour = String(now.getHours()).padStart(2, '0');
-    const minute = String(now.getMinutes()).padStart(2, '0');
-    const timestamp = `${year}${month}${day}_${hour}${minute}`;
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${timestamp}_${pageTitle}.md`;
-    a.click();
-    
-    URL.revokeObjectURL(url);
-    logger.info(`Successfully exported conversation with ${chatHistory.length} messages`);
+    const response = await chrome.runtime.sendMessage({
+      type: 'EXPORT_CONVERSATION',
+      urlWithPossibleFragment,
+      chatHistory,
+      quickInputTabName
+    });
+
+    if (response && response.success) {
+      const { filename, markdownContent } = response;
+      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(downloadUrl);
+      logger.info(`Successfully exported conversation to ${filename}`);
+    } else {
+      throw new Error(response?.error || 'Unknown error during export');
+    }
   } catch (error) {
     logger.error('Failed to export conversation:', error);
   }

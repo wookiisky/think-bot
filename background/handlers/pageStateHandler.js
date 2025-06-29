@@ -9,7 +9,19 @@ async function handleSavePageState(data, serviceLogger, storage) {
   }
 
   try {
+    // Get title from the ThinkBotPage_ key
+    const pageData = await storage.get(url);
+    const title = pageData?.title;
+
+    // Save page state
     const success = await storage.savePageState(url, pageState);
+    
+    // Save page metadata (title)
+    if (title) {
+      const metadataKey = `pageMetadata_${url}`;
+      await chrome.storage.local.set({ [metadataKey]: { title, url, lastVisited: Date.now() } });
+      serviceLogger.info('Page metadata saved successfully', { url, title });
+    }
     
     if (success) {
       serviceLogger.info('Page state saved successfully', { url, pageState });

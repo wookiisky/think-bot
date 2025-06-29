@@ -43,6 +43,7 @@ importScripts('handlers/cancelLlmRequestHandler.js');
 importScripts('handlers/cancelAllLlmRequestsHandler.js');
 importScripts('handlers/getAllPageMetadataHandler.js');
 importScripts('handlers/blacklistHandler.js');
+importScripts('handlers/exportConversationHandler.js');
 
 // Import event listener handlers
 importScripts('handlers/tabActivationHandler.js');
@@ -286,6 +287,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return await handleResetBlacklistToDefaults(data, serviceLogger);
         case 'GET_SYNC_CONFIG':
           return await handleGetSyncConfig(data, serviceLogger);
+        case 'EXPORT_CONVERSATION':
+          return await handleExportConversation(data, sender, sendResponse);
         default:
           return { type: 'UNKNOWN_MESSAGE', error: `Unknown message type: ${type}` };
       }

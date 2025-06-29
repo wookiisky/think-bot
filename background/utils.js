@@ -97,4 +97,29 @@ async function checkSidePanelAllowed(serviceLogger, forUrl = null) {
 
 // If these functions are to be used by other files imported via importScripts,
 // they need to be available in the global scope of the service worker.
-// This happens automatically if this script is imported. 
+// This happens automatically if this script is imported.
+
+/**
+ * Get metadata for a specific page URL from storage
+ * @param {string} url - The URL of the page to get metadata for
+ * @returns {Promise<Object|null>} - The page metadata or null if not found
+ */
+async function getPageMetadata(url) {
+  try {
+    // First try the new unified storage format
+    if (typeof storage !== 'undefined' && storage.getPageMetadata) {
+      const metadata = await storage.getPageMetadata(url);
+      if (metadata) {
+        return metadata;
+      }
+    }
+
+    // Fallback to old storage format
+    const key = `pageMetadata_${url}`;
+    const data = await chrome.storage.local.get(key);
+    return data[key] || null;
+  } catch (error) {
+    console.error('Error getting page metadata:', error);
+    return null;
+  }
+}

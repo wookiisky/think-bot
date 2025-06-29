@@ -12,6 +12,7 @@ import * as ChatManager from './chat-manager.js';
 import * as ResizeHandler from './resize-handler.js';
 import * as ImageHandler from './image-handler.js';
 import { miniConfirmation } from '../components/mini-confirmation.js';
+import { createSidebarExportHandler } from './export-utils.js';
 
 
 const logger = createLogger('EventHandler');
@@ -70,27 +71,8 @@ const setupEventListeners = (elements, modelSelector, onTabAction) => {
     }
   });
   
-  // Export conversation
-  elements.exportBtn.addEventListener('click', async () => {
-    const state = StateManager.getState();
-    // Get chat history from DOM for current tab
-    const chatHistory = window.ChatHistory.getChatHistoryFromDOM(elements.chatContainer);
-    
-    // Include tab info in URL for better identification
-    let exportUrl = state.currentUrl;
-    if (window.TabManager && window.TabManager.getActiveTabId) {
-      const activeTabId = window.TabManager.getActiveTabId();
-      if (activeTabId !== 'chat') {
-        exportUrl = `${state.currentUrl}#${activeTabId}`;
-      }
-    }
-    
-    await ChatManager.exportConversation(
-      exportUrl,
-      state.extractedContent,
-      chatHistory
-    );
-  });
+  // Export conversation - using common export handler
+  elements.exportBtn.addEventListener('click', createSidebarExportHandler(elements.chatContainer));
   
   // Clear conversation and context
   elements.clearBtn.addEventListener('click', async () => {

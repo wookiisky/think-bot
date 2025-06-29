@@ -30,9 +30,8 @@ export const domElements = {
   gistToken: document.getElementById('gistToken'),
   gistId: document.getElementById('gistId'),
   syncStatus: document.getElementById('syncStatus'),
-  syncStatusIndicator: document.getElementById('syncStatusIndicator'),
   syncStatusDetails: document.getElementById('syncStatusDetails'),
-  syncLastTime: document.getElementById('syncLastTime'),
+  syncStatusText: document.getElementById('syncStatusText'),
   syncErrorMessage: document.getElementById('syncErrorMessage'),
 
   // Action buttons

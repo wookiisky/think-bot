@@ -153,7 +153,8 @@ const savePageState = async () => {
     const response = await chrome.runtime.sendMessage({
       type: 'SAVE_PAGE_STATE',
       url: state.currentUrl,
-      pageState: pageState
+      pageState: pageState,
+      title: document.title // Pass the page title
     });
     
     if (response && response.type === 'PAGE_STATE_SAVED') {
