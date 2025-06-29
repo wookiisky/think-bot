@@ -20,17 +20,8 @@ if (typeof window.marked !== 'undefined') {
           return markdown;
         }
 
-        // This regex trims whitespace inside `**...**`.
-        // It fixes issues where `marked.js` fails to parse bold text with extra spaces,
-        // like `** text **`.
-        // NOTE: This may not work correctly with deeply nested bold tags,
-        // for example `**a **b** c**`. But such cases are rare in practice for this app.
-        let processed = markdown.replace(/\*\*(([^*]|\*(?!\*))+)\*\*/g, (match, content) => {
-          return `**${content.trim()}**`;
-        });
-
         // Replace full-width quotes with standard quotes
-        processed = processed
+        processed = markdown
           .replace(/“|”/g, '"')
           .replace(/‘|’/g, "'")
           .replace(/（/g, "(")
