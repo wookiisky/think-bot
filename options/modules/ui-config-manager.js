@@ -122,7 +122,6 @@ export class UIConfigManager {
 
     const config = {
       llm_models: {
-        defaultModelId: modelManager.getDefaultModelId(),
         models: modelManager.getAllModels() // Get all models with timestamps preserved
       },
       quickInputs: quickInputs,
@@ -133,6 +132,7 @@ export class UIConfigManager {
         systemPrompt: domElements.systemPrompt.value,
         contentDisplayHeight: Math.min(Math.max(parseInt(domElements.contentDisplayHeight.value), 0), 600),
         theme: domElements.theme.value,
+        defaultModelId: modelManager.getDefaultModelId(), // Move to basic for timestamp protection
         lastModified: Date.now()
       }
     };

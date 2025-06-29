@@ -31,7 +31,6 @@ storageConfigManager.getDefaultConfig = async function() {
     // Return hardcoded default values as fallback
     return {
       llm_models: {
-        defaultModelId: 'gemini-pro',
         models: [
           {
             id: 'gemini-pro',
@@ -80,6 +79,7 @@ storageConfigManager.getDefaultConfig = async function() {
         systemPrompt: 'Output in Chinese',
         contentDisplayHeight: 100,
         theme: 'system',
+        defaultModelId: 'gemini-pro',
         lastModified: 1735372800000
       }
     };
@@ -368,6 +368,7 @@ storageConfigManager.getConfig = async function() {
             jinaResponseTemplate: storedMainConfig.jinaResponseTemplate || defaultConfig.basic.jinaResponseTemplate,
             contentDisplayHeight: storedMainConfig.contentDisplayHeight || defaultConfig.basic.contentDisplayHeight,
             theme: storedMainConfig.theme || defaultConfig.basic.theme,
+            defaultModelId: storedMainConfig.llm?.defaultModelId || defaultConfig.basic.defaultModelId,
             lastModified: Date.now() // Update timestamp for format conversion
           }
         };
@@ -382,9 +383,18 @@ storageConfigManager.getConfig = async function() {
           quickInputs: await storageConfigManager.loadAllQuickInputs(),
           basic: {
             ...defaultConfig.basic,
-            ...storedMainConfig.basic
+            ...storedMainConfig.basic,
+            // Handle migration of defaultModelId from llm_models to basic
+            defaultModelId: storedMainConfig.basic?.defaultModelId ||
+                           storedMainConfig.llm_models?.defaultModelId ||
+                           defaultConfig.basic.defaultModelId
           }
         };
+
+        // Remove defaultModelId from llm_models if it exists there (migration cleanup)
+        if (mergedConfig.llm_models.defaultModelId) {
+          delete mergedConfig.llm_models.defaultModelId;
+        }
       }
 
       // Add system prompt (from separate storage or basic config)
@@ -500,8 +510,11 @@ storageConfigManager.saveConfig = async function(newConfig, isUserModification =
       systemPrompt = processedConfig.basic.systemPrompt || storageConfigManager.getDefaultSystemPrompt();
     } else {
       // Old format - convert to new format for storage
+      const oldLlmConfig = processedConfig.llm || { models: [] };
       mainConfig = {
-        llm_models: processedConfig.llm || { defaultModelId: 'gemini-pro', models: [] },
+        llm_models: {
+          models: oldLlmConfig.models || []
+        },
         basic: {
           defaultExtractionMethod: processedConfig.defaultExtractionMethod || 'readability',
           jinaApiKey: processedConfig.jinaApiKey || '',
@@ -509,6 +522,7 @@ storageConfigManager.saveConfig = async function(newConfig, isUserModification =
           systemPrompt: processedConfig.systemPrompt || storageConfigManager.getDefaultSystemPrompt(),
           contentDisplayHeight: processedConfig.contentDisplayHeight || 100,
           theme: processedConfig.theme || 'system',
+          defaultModelId: oldLlmConfig.defaultModelId || 'gemini-pro',
           lastModified: Date.now()
         }
       };
@@ -721,7 +735,7 @@ storageConfigManager.calculateConfigTimestamps = function(newConfig, existingCon
 
     if (existingBasic) {
       // Compare basic config fields to determine if anything was modified
-      const basicFields = ['defaultExtractionMethod', 'jinaApiKey', 'jinaResponseTemplate', 'systemPrompt', 'contentDisplayHeight', 'theme'];
+      const basicFields = ['defaultExtractionMethod', 'jinaApiKey', 'jinaResponseTemplate', 'systemPrompt', 'contentDisplayHeight', 'theme', 'defaultModelId'];
       const fieldsChanged = basicFields.some(field =>
         existingBasic[field] !== processedConfig.basic[field]
       );

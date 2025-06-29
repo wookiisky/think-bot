@@ -10,7 +10,10 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
     const llmModelsConfig = config.llm_models || config.llm;
 
     if (llmModelsConfig?.models && llmModelsConfig.models.length > 0) {
-        const modelId = selectedModel?.id || llmModelsConfig.defaultModelId;
+        // Get defaultModelId from basic config (new location) or fallback to llm config (old location)
+        const basicConfig = config.basic || config;
+        const defaultModelId = basicConfig.defaultModelId || llmModelsConfig.defaultModelId;
+        const modelId = selectedModel?.id || defaultModelId;
         const defaultModel = llmModelsConfig.models.find(m => m.id === modelId && m.enabled) ||
                             llmModelsConfig.models.find(m => m.enabled);
 

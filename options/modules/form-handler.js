@@ -21,17 +21,19 @@ export class FormHandler {
       '# {title}\n\n**URL:** {url}\n\n**Description:** {description}\n\n## Content\n\n{content}';
 
     // LLM settings - handled by ModelManager
-    if (llmConfig?.defaultModelId && domElements.defaultModelSelect) {
+    // Get defaultModelId from basic config (new location) or fallback to llm config (old location)
+    const defaultModelId = basicConfig.defaultModelId || llmConfig?.defaultModelId;
+    if (defaultModelId && domElements.defaultModelSelect) {
       // Check if the default model ID exists in the current options
       const options = Array.from(domElements.defaultModelSelect.options);
-      const modelExists = options.some(option => option.value === llmConfig.defaultModelId);
+      const modelExists = options.some(option => option.value === defaultModelId);
 
       if (modelExists) {
-        domElements.defaultModelSelect.value = llmConfig.defaultModelId;
+        domElements.defaultModelSelect.value = defaultModelId;
       } else if (options.length > 0 && options[0].value !== '') {
         // If the saved default model doesn't exist, select the first available model
         domElements.defaultModelSelect.value = options[0].value;
-        logger.warn(`Default model ${llmConfig.defaultModelId} not found, using first available: ${options[0].value}`);
+        logger.warn(`Default model ${defaultModelId} not found, using first available: ${options[0].value}`);
       }
     }
 

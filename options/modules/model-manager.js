@@ -17,6 +17,9 @@ export class ModelManager {
     const llmConfig = config.llm_models || config.llm;
     this.models = llmConfig?.models || [];
 
+    // Store config reference for accessing defaultModelId from basic config
+    this.config = config;
+
     // Ensure all models have lastModified timestamp for sync merging
     this.models.forEach(model => {
       if (!model.lastModified) {
@@ -298,8 +301,12 @@ export class ModelManager {
     const select = this.domElements.defaultModelSelect;
     const completeModels = this.getCompleteModels();
 
-    // Get current value to preserve selection
-    const currentValue = select.value;
+    // Get current value from config or DOM to preserve selection
+    // Priority: config.basic.defaultModelId > current DOM value
+    const configDefaultModelId = this.config?.basic?.defaultModelId ||
+                                 this.config?.llm_models?.defaultModelId ||
+                                 this.config?.llm?.defaultModelId;
+    const currentValue = configDefaultModelId || select.value;
 
     // Clear existing options
     select.innerHTML = '';
@@ -413,6 +420,49 @@ export class ModelManager {
   // Get the ID of the default model
   getDefaultModelId() {
     return this.domElements.defaultModelSelect.value;
+  }
+
+  // Set the default model by ID
+  setDefaultModel(modelId) {
+    if (!this.domElements.defaultModelSelect) {
+      logger.warn('Default model selector not available');
+      return false;
+    }
+
+    // Check if the model exists in the current options
+    const options = Array.from(this.domElements.defaultModelSelect.options);
+    const modelExists = options.some(option => option.value === modelId);
+
+    if (modelExists) {
+      this.domElements.defaultModelSelect.value = modelId;
+      logger.info(`Default model set to: ${modelId}`);
+
+      // Trigger change event to notify other components
+      const changeEvent = new Event('change', { bubbles: true });
+      this.domElements.defaultModelSelect.dispatchEvent(changeEvent);
+
+      return true;
+    } else {
+      logger.warn(`Model ${modelId} not found in available options`);
+      return false;
+    }
+  }
+
+  // Get the current default model object
+  getDefaultModel() {
+    const defaultModelId = this.getDefaultModelId();
+    return this.models.find(model => model.id === defaultModelId) || null;
+  }
+
+  // Check if a model ID is valid and complete
+  isValidDefaultModel(modelId) {
+    const model = this.models.find(m => m.id === modelId);
+    return model && model.enabled && this.isModelComplete(model);
+  }
+
+  // Get all valid default model options (enabled and complete)
+  getValidDefaultModelOptions() {
+    return this.getCompleteModels();
   }
 }
 

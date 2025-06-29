@@ -94,13 +94,13 @@ class OptionsPage {
   updateSaveButtonState() {
     const saveBtn = this.domElements.saveBtn;
     if (!saveBtn) return;
-    
+
     if (this.hasUnsavedChanges) {
       saveBtn.classList.remove('saved');
       saveBtn.classList.remove('error');
     }
   }
-  
+
   // Manual save settings with validation and visual feedback
   async saveSettings() {
     const saveBtn = this.domElements.saveBtn;

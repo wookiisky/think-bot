@@ -1,6 +1,5 @@
 {
   "llm_models": {
-    "defaultModelId": "gemini-pro",
     "models": [
       {
         "id": "gemini-pro",
@@ -49,6 +48,7 @@
     "systemPrompt": "使用中文输出",
     "contentDisplayHeight": 100,
     "theme": "system",
+    "defaultModelId": "gemini-pro",
     "lastModified": 1735372800000
   }
 }

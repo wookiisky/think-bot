@@ -32,8 +32,10 @@ export class ModelSelector {
         const config = response.config;
         // Support both old and new config formats
         const llmConfig = config.llm_models || config.llm;
+        const basicConfig = config.basic || config;
         this.models = llmConfig?.models?.filter(model => model.enabled) || [];
-        this.currentModelId = llmConfig?.defaultModelId || (this.models[0]?.id);
+        // Get defaultModelId from basic config (new location) or fallback to llm config (old location)
+        this.currentModelId = basicConfig.defaultModelId || llmConfig?.defaultModelId || (this.models[0]?.id);
         
         this.renderModelOptions();
         logger.info(`Loaded ${this.models.length} available models`);

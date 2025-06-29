@@ -99,6 +99,9 @@ dataSerializer.collectLocalData = async function() {
           systemPrompt: config.systemPrompt,
           contentDisplayHeight: config.contentDisplayHeight,
           theme: config.theme,
+          defaultModelId: (config.llm_models && config.llm_models.defaultModelId) ||
+                         (config.llm && config.llm.defaultModelId) ||
+                         'gemini-pro',
           lastModified: Date.now()
         }
       },
@@ -691,9 +694,10 @@ dataSerializer.mergeLlmConfig = function(localLlm, remoteLlm) {
     // Start with local LLM config as base
     const mergedLlm = { ...localLlm };
 
-    // Use remote defaultModelId (latest sync)
-    if (remoteLlm.defaultModelId) {
-      mergedLlm.defaultModelId = remoteLlm.defaultModelId;
+    // Remove defaultModelId from LLM config if it exists (migration cleanup)
+    // defaultModelId is now handled in basic config with timestamp protection
+    if (mergedLlm.defaultModelId) {
+      delete mergedLlm.defaultModelId;
     }
 
     // Merge models array based on individual model timestamps
