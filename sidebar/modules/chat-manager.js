@@ -2,7 +2,7 @@
  * chat-manager.js - Chat functionality management
  */
 
-import { createLogger, hasMarkdownElements } from './utils.js';
+import { createLogger, hasMarkdownElements, showCopyToast } from './utils.js';
 import { editMessage, retryMessage } from '../components/chat-message.js';
 import { displayChatHistory as displayChatHistoryFromModule } from './chat-history.js';
 
@@ -747,7 +747,7 @@ const copyMessageText = (content) => {
   }
 
   navigator.clipboard.writeText(textToCopy)
-    .then(() => window.showCopyToast('Text copied to clipboard'))
+    .then(() => showCopyToast('Text copied to clipboard'))
     .catch(err => logger.error('Failed to copy text:', err));
 };
 
@@ -775,10 +775,10 @@ const copyMessageMarkdown = (content) => {
   }
 
   navigator.clipboard.writeText(markdownToCopy)
-    .then(() => window.showCopyToast('Markdown copied to clipboard'))
+    .then(() => showCopyToast('Markdown copied to clipboard'))
     .catch(err => {
       logger.error('Error copying markdown to clipboard:', err);
-      window.showCopyToast('Error copying markdown');
+      showCopyToast('Error copying markdown');
     });
 };
 
