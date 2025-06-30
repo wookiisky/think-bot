@@ -714,24 +714,67 @@ const handleLlmError = (chatContainer, error, streamingMessageElement = null, on
 
 /**
  * Copy message text
- * @param {string} content - Message content
+ * @param {string|HTMLElement} content - Message content or message element
  */
 const copyMessageText = (content) => {
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = window.marked.parse(content);
-  const textContent = tempDiv.textContent || tempDiv.innerText || '';
-  
-  navigator.clipboard.writeText(textContent)
+  let textToCopy = '';
+
+  if (typeof content === 'string') {
+    // If content is a string, parse markdown and extract text
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = window.marked.parse(content);
+    textToCopy = tempDiv.textContent || tempDiv.innerText || '';
+  } else if (content && content.nodeType === Node.ELEMENT_NODE) {
+    // If content is a DOM element, extract text from it
+    const contentDiv = content.querySelector('.message-content');
+    if (contentDiv) {
+      // Try to get raw content first
+      const rawContent = contentDiv.getAttribute('data-raw-content');
+      if (rawContent) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = window.marked.parse(rawContent);
+        textToCopy = tempDiv.textContent || tempDiv.innerText || '';
+      } else {
+        // Fallback to element text content
+        textToCopy = contentDiv.textContent || contentDiv.innerText || '';
+      }
+    } else {
+      textToCopy = content.textContent || content.innerText || '';
+    }
+  } else {
+    logger.error('Invalid content type for copying:', typeof content);
+    return;
+  }
+
+  navigator.clipboard.writeText(textToCopy)
     .then(() => window.showCopyToast('Text copied to clipboard'))
     .catch(err => logger.error('Failed to copy text:', err));
 };
 
 /**
  * Copy message Markdown
- * @param {string} content - Message content
+ * @param {string|HTMLElement} content - Message content or message element
  */
 const copyMessageMarkdown = (content) => {
-  navigator.clipboard.writeText(content)
+  let markdownToCopy = '';
+
+  if (typeof content === 'string') {
+    // If content is a string, use it directly
+    markdownToCopy = content;
+  } else if (content && content.nodeType === Node.ELEMENT_NODE) {
+    // If content is a DOM element, extract raw content from it
+    const contentDiv = content.querySelector('.message-content');
+    if (contentDiv) {
+      markdownToCopy = contentDiv.getAttribute('data-raw-content') || contentDiv.textContent || contentDiv.innerText || '';
+    } else {
+      markdownToCopy = content.textContent || content.innerText || '';
+    }
+  } else {
+    logger.error('Invalid content type for copying:', typeof content);
+    return;
+  }
+
+  navigator.clipboard.writeText(markdownToCopy)
     .then(() => window.showCopyToast('Markdown copied to clipboard'))
     .catch(err => {
       logger.error('Error copying markdown to clipboard:', err);
