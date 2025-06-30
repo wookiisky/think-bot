@@ -11,7 +11,6 @@ const storageLogger = logger.createModuleLogger('Storage');
 // Storage constants
 const DB_CHAT_PREFIX = CACHE_KEYS.CHAT_PREFIX;
 const DB_PAGE_PREFIX = CACHE_KEYS.PAGE_PREFIX; // Unified page data storage
-const RECENT_URLS_KEY = CACHE_KEYS.RECENT_URLS;
 const MAX_CACHE_AGE_DAYS = CACHE_CONFIG.MAX_CACHE_AGE_DAYS; // Remove items older than 90 days
 const MAX_CACHE_AGE_MS = CACHE_CONFIG.MAX_CACHE_AGE_MS;
 
@@ -123,8 +122,6 @@ storage.getPageContent = async function(url, method = 'default') {
         contentLength: content.length
       });
 
-      // Update last accessed time for this URL+method combination
-      await updateRecentUrls(url, method);
       return content;
     }
 
@@ -179,8 +176,6 @@ storage.getChatHistory = async function(url) {
         lastMessageTimestamp: historyWithTimestamps[historyWithTimestamps.length-1].timestamp
       });
 
-      // Update last accessed time for this URL (use default method for chat history access)
-      await updateRecentUrls(url, 'default');
     } else {
       storageLogger.info(`No chat history found for URL: ${url}`);
     }
@@ -205,17 +200,6 @@ storage.updateChatHistory = async function(url, newMessages) {
   } catch (error) {
     storageLogger.error('Error updating chat history:', { url, error: error.message });
     return false;
-  }
-}
-
-// Get list of recent URLs (for LRU)
-storage.getRecentUrls = async function() {
-  try {
-    const result = await chrome.storage.local.get(RECENT_URLS_KEY);
-    return result[RECENT_URLS_KEY] || [];
-  } catch (error) {
-    storageLogger.error('Error getting recent URLs:', error.message);
-    return [];
   }
 }
 
@@ -337,26 +321,6 @@ storage.clearUrlData = async function(url, clearContent = true, clearChat = true
       await chrome.storage.local.remove(keysToRemove);
     }
 
-    // Update recent URLs list if metadata is being cleared (only for hard delete)
-    if ((clearMetadata || wildcard) && !softDelete) {
-      let recentUrls = await storage.getRecentUrls();
-
-      if (wildcard) {
-        // If wildcard mode, remove all entries that contain the normalized URL
-        recentUrls = recentUrls.filter(item => {
-          const itemUrl = typeof item === 'string' ? item : item.url;
-          return !normalizeUrl(itemUrl).includes(normalizedBaseUrl);
-        });
-      } else {
-        // Otherwise, just remove the exact URL
-        recentUrls = recentUrls.filter(item => {
-          const itemUrl = typeof item === 'string' ? item : item.url;
-          return normalizeUrl(itemUrl) !== normalizeUrl(url);
-        });
-      }
-
-      await chrome.storage.local.set({ [RECENT_URLS_KEY]: recentUrls });
-    }
 
     storageLogger.info(`URL data ${softDelete ? 'soft deleted' : 'cleared'} successfully`, {
       url,
@@ -406,81 +370,6 @@ storage.getDataTimestamp = function(data) {
   return 0;
 };
 
-// Update recent URLs list with time-based cleanup
-async function updateRecentUrls(url, method) {
-  try {
-    // Get normalized URL
-    const normalizedUrl = normalizeUrl(url);
-    const currentTime = Date.now();
-
-    // Get current list of recent URLs
-    let recentUrls = await storage.getRecentUrls();
-
-    // Convert old format to new format if needed and add timestamps
-    recentUrls = recentUrls.map(item => {
-      if (typeof item === 'string') {
-        return { url: item, method: 'default', lastAccessed: currentTime };
-      }
-      // Add lastAccessed timestamp if missing
-      if (!item.lastAccessed) {
-        item.lastAccessed = currentTime;
-      }
-      return item;
-    });
-
-    // Remove the URL+method combination if it already exists
-    recentUrls = recentUrls.filter(item =>
-      !(normalizeUrl(item.url) === normalizedUrl && item.method === method)
-    );
-
-    // Add the URL+method to the front of the list (most recent)
-    recentUrls.unshift({ url, method, lastAccessed: currentTime });
-
-    // Clean up items older than MAX_CACHE_AGE_DAYS
-    const cutoffTime = currentTime - MAX_CACHE_AGE_MS;
-    const itemsToRemove = recentUrls.filter(item => item.lastAccessed < cutoffTime);
-
-    if (itemsToRemove.length > 0) {
-      storageLogger.info(`Removing ${itemsToRemove.length} items older than ${MAX_CACHE_AGE_DAYS} days`, {
-        cutoffDate: new Date(cutoffTime).toISOString(),
-        itemsToRemove: itemsToRemove.map(item => ({ url: item.url, method: item.method, lastAccessed: new Date(item.lastAccessed).toISOString() }))
-      });
-
-      // Remove old data from unified storage
-      for (const oldItem of itemsToRemove) {
-        // Remove unified page storage
-        const oldPageKey = getPageKeyFromUrl(oldItem.url);
-        await chrome.storage.local.remove(oldPageKey);
-
-        // Remove chat history for this URL (only if no other methods exist for this URL)
-        const remainingItemsForUrl = recentUrls.filter(item =>
-          normalizeUrl(item.url) === normalizeUrl(oldItem.url) &&
-          item.lastAccessed >= cutoffTime
-        );
-
-        if (remainingItemsForUrl.length === 0) {
-          const chatKey = getChatHistoryKeyFromUrl(oldItem.url);
-          await chrome.storage.local.remove(chatKey);
-          storageLogger.info(`Removed chat history for expired URL: ${oldItem.url}`);
-        }
-      }
-
-      // Filter out expired items
-      recentUrls = recentUrls.filter(item => item.lastAccessed >= cutoffTime);
-    }
-
-    // Save updated list
-    await chrome.storage.local.set({ [RECENT_URLS_KEY]: recentUrls });
-
-    storageLogger.info(`Updated recent URLs list`, {
-      totalItems: recentUrls.length,
-      removedExpiredItems: itemsToRemove.length,
-      maxAgeHours: MAX_CACHE_AGE_DAYS * 24
-    });
-  } catch (error) {
-    storageLogger.error('Error updating recent URLs:', error.message);
-  }
-}
 
 // Normalize URL for consistency
 function normalizeUrl(url) {
@@ -696,8 +585,7 @@ storage.clearAllCachedData = async function() {
     const result = await chrome.storage.local.get(null);
     const keysToRemove = Object.keys(result).filter(key =>
       key.startsWith(DB_CHAT_PREFIX) ||
-      key.startsWith(DB_PAGE_PREFIX) ||
-      key === RECENT_URLS_KEY
+      key.startsWith(DB_PAGE_PREFIX)
     );
 
     if (keysToRemove.length > 0) {
@@ -785,9 +673,6 @@ storage.savePageData = async function(url, content, method = 'default', metadata
       hasMetadata: !!metadata && Object.keys(metadata).length > 0,
       compressed: typeof contentToStore === 'object' && contentToStore.__compressed__
     });
-
-    // Update LRU list
-    await updateRecentUrls(url, method);
 
     return true;
   } catch (error) {
@@ -896,124 +781,5 @@ storage.getAllPagesUnified = async function() {
   } catch (error) {
     storageLogger.error('Error getting all unified pages:', error.message);
     return [];
-  }
-};
-
-/**
- * Clean up expired cache data based on last access time
- * This function can be called periodically or on startup
- * @returns {Promise<Object>} Cleanup statistics
- */
-storage.cleanupExpiredCache = async function() {
-  try {
-    const currentTime = Date.now();
-    const cutoffTime = currentTime - MAX_CACHE_AGE_MS;
-
-    storageLogger.info(`Starting cache cleanup for items older than ${MAX_CACHE_AGE_DAYS} days`, {
-      cutoffDate: new Date(cutoffTime).toISOString()
-    });
-
-    // Get all storage data
-    const result = await chrome.storage.local.get(null);
-    const keysToRemove = [];
-    let expiredPageCount = 0;
-    let expiredChatCount = 0;
-
-    // Check recent URLs list and identify expired items
-    const recentUrls = result[RECENT_URLS_KEY] || [];
-    const validUrls = [];
-    const expiredUrls = [];
-
-    for (const item of recentUrls) {
-      const lastAccessed = item.lastAccessed || 0;
-      if (lastAccessed < cutoffTime) {
-        expiredUrls.push(item);
-      } else {
-        validUrls.push(item);
-      }
-    }
-
-    // Remove expired page data
-    for (const expiredItem of expiredUrls) {
-      const pageKey = getPageKeyFromUrl(expiredItem.url);
-      if (result[pageKey]) {
-        keysToRemove.push(pageKey);
-        expiredPageCount++;
-      }
-
-      // Check if we should remove chat history (only if no valid items exist for this URL)
-      const hasValidItemsForUrl = validUrls.some(validItem =>
-        normalizeUrl(validItem.url) === normalizeUrl(expiredItem.url)
-      );
-
-      if (!hasValidItemsForUrl) {
-        const chatKey = getChatHistoryKeyFromUrl(expiredItem.url);
-        if (result[chatKey]) {
-          keysToRemove.push(chatKey);
-          expiredChatCount++;
-        }
-      }
-    }
-
-    // Also check for orphaned page data (not in recent URLs but older than cutoff)
-    for (const key in result) {
-      if (key.startsWith(DB_PAGE_PREFIX)) {
-        const pageData = result[key];
-        if (pageData && pageData.lastUpdated && pageData.lastUpdated < cutoffTime) {
-          // Check if this page is in the valid URLs list
-          const isInValidUrls = validUrls.some(item =>
-            getPageKeyFromUrl(item.url) === key
-          );
-
-          if (!isInValidUrls && !keysToRemove.includes(key)) {
-            keysToRemove.push(key);
-            expiredPageCount++;
-
-            // Also remove associated chat if no other valid items exist
-            const chatKey = getChatHistoryKeyFromUrl(pageData.url);
-            if (result[chatKey] && !keysToRemove.includes(chatKey)) {
-              const hasOtherValidItems = validUrls.some(item =>
-                normalizeUrl(item.url) === normalizeUrl(pageData.url)
-              );
-              if (!hasOtherValidItems) {
-                keysToRemove.push(chatKey);
-                expiredChatCount++;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Remove expired keys
-    if (keysToRemove.length > 0) {
-      await chrome.storage.local.remove(keysToRemove);
-    }
-
-    // Update recent URLs list to remove expired items
-    if (expiredUrls.length > 0) {
-      await chrome.storage.local.set({ [RECENT_URLS_KEY]: validUrls });
-    }
-
-    const stats = {
-      totalExpiredItems: expiredUrls.length,
-      expiredPageCount,
-      expiredChatCount,
-      keysRemoved: keysToRemove.length,
-      remainingValidUrls: validUrls.length,
-      cutoffDate: new Date(cutoffTime).toISOString()
-    };
-
-    storageLogger.info('Cache cleanup completed', stats);
-    return stats;
-  } catch (error) {
-    storageLogger.error('Error during cache cleanup:', error.message);
-    return {
-      error: error.message,
-      totalExpiredItems: 0,
-      expiredPageCount: 0,
-      expiredChatCount: 0,
-      keysRemoved: 0
-    };
   }
 };
