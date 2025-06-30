@@ -170,37 +170,6 @@ const savePageState = async () => {
 };
 
 /**
- * Load page state from cache
- * @param {string} url - Page URL
- * @returns {Promise<Object|null>} Page state object or null
- */
-const loadPageState = async (url) => {
-  try {
-    if (!url) {
-
-      return null;
-    }
-    
-    const response = await chrome.runtime.sendMessage({
-      type: 'GET_PAGE_STATE',
-      url: url
-    });
-    
-    if (response && response.type === 'PAGE_STATE_LOADED' && response.pageState) {
-      return response.pageState;
-    } else if (response && response.type === 'PAGE_STATE_LOADED') {
-      return null;
-    } else {
-      logger.error('Failed to load page state:', response);
-      return null;
-    }
-  } catch (error) {
-    logger.error('Error loading page state:', error);
-    return null;
-  }
-};
-
-/**
  * Apply page state to current state
  * @param {Object} pageState - Page state object
  */
@@ -224,6 +193,5 @@ export {
   clearUrlData,
   toggleIncludePageContent,
   savePageState,
-  loadPageState,
   applyPageState
-}; 
+};

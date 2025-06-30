@@ -25,7 +25,7 @@ importScripts('utils.js');
 importScripts('request-tracker.js');
 
 // Import message handlers
-importScripts('handlers/getPageDataHandler.js');
+importScripts('handlers/getPageInfoHandler.js');
 importScripts('handlers/getCachedPageDataHandler.js');
 importScripts('handlers/getAnyCachedContentHandler.js');
 importScripts('handlers/switchExtractionMethodHandler.js');
@@ -38,7 +38,6 @@ importScripts('handlers/getChatHistoryHandler.js');
 importScripts('handlers/getLoadingStateHandler.js');
 importScripts('handlers/clearLoadingStateHandler.js');
 importScripts('handlers/clearAllLoadingStatesForUrlHandler.js');
-importScripts('handlers/pageStateHandler.js');
 importScripts('handlers/cancelLlmRequestHandler.js');
 importScripts('handlers/cancelAllLlmRequestsHandler.js');
 importScripts('handlers/getAllPageMetadataHandler.js');
@@ -214,9 +213,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const { type, ...data } = message;
       
       switch (type) {
-        case 'GET_PAGE_DATA': {
-          return await handleGetPageData(data, serviceLogger, storageConfigManager, storage, contentExtractor,
-            (tabId, msg, callback) => safeSendTabMessage(tabId, msg, serviceLogger, callback));
+        case 'GET_PAGE_INFO': {
+            return await handleGetPageInfo(data, serviceLogger, storageConfigManager, storage, contentExtractor,
+                (tabId, msg, callback) => safeSendTabMessage(tabId, msg, serviceLogger, callback));
         }
         case 'GET_CACHED_PAGE_DATA': {
           return await handleGetCachedPageData(data, serviceLogger, storageConfigManager, storage);
@@ -268,8 +267,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return await handleClearAllLoadingStatesForUrl(data, serviceLogger, loadingStateCache);
         case 'SAVE_PAGE_STATE':
           return await handleSavePageState(data, serviceLogger, storage);
-        case 'GET_PAGE_STATE':
-          return await handleGetPageState(data, serviceLogger, storage);
         case 'GET_ALL_PAGE_METADATA':
           return await handleGetAllPageMetadata(data, serviceLogger, storage);
         case 'TEST_SYNC_CONNECTION':

@@ -658,36 +658,14 @@ async function loadPageConversation(url) {
       elements.pageUrl.href = url;
     }
     
-    // Load page state first (reusing sidebar logic)
-    try {
-      const pageState = await StateManager.loadPageState(url);
-      if (pageState) {
-        StateManager.applyPageState(pageState);
-        // Update UI to reflect loaded state
-        const includePageContent = StateManager.getStateItem('includePageContent');
-        if (elements.includePageContentBtn) {
-          elements.includePageContentBtn.setAttribute('data-enabled', includePageContent ? 'true' : 'false');
-        }
-        
-        // Apply page state to conversations UI (e.g., content section height)
-        if (pageState.contentSectionHeight && elements.contentSection) {
-          elements.contentSection.style.height = pageState.contentSectionHeight + 'px';
-        }
-        
-        logger.info('Page state loaded and applied for conversations page');
-      }
-    } catch (error) {
-      logger.warn('Failed to load page state for conversations page, using defaults:', error);
-    }
-    
     // Show loading state
     showLoadingState();
-    
-    // Load page data using the same approach as sidebar
-    const pageData = await getPageData(url);
-    
-    // Handle page data loaded (similar to sidebar's handlePageDataLoaded)
-    await handleConversationsPageDataLoaded(pageData);
+
+    // Load all page info in a single request
+    const pageInfo = await getPageInfo(url);
+
+    // Handle page data loaded
+    await handleConversationsPageDataLoaded(pageInfo);
     
     // Clear chat container first to prevent showing wrong conversations
     if (elements.chatContainer) {
@@ -739,9 +717,9 @@ async function loadPageConversation(url) {
         logger.info('Chat tab history loaded from TabManager:', chatHistory?.length || 0, 'messages');
       }
 
-      // If no chat history from TabManager, try page data
-      if ((!chatHistory || chatHistory.length === 0) && pageData && pageData.chatHistory) {
-        chatHistory = pageData.chatHistory;
+      // If no chat history from TabManager, try page info
+      if ((!chatHistory || chatHistory.length === 0) && pageInfo && pageInfo.chatHistory) {
+        chatHistory = pageInfo.chatHistory;
         logger.info('Using fallback chat history from page data:', chatHistory.length, 'messages');
         // Display the fallback chat history
         ChatHistory.displayChatHistory(elements.chatContainer, chatHistory, ChatManager.appendMessageToUI);
@@ -864,23 +842,24 @@ async function loadPageConversation(url) {
  * @param {Object} data - Page data
  * @returns {Promise<void>}
  */
-async function handleConversationsPageDataLoaded(data) {
+async function handleConversationsPageDataLoaded(pageInfo) {
   const elements = window.conversationsElements;
-  
+
   // Hide loading indicator
   if (elements.loadingIndicator) {
     elements.loadingIndicator.classList.add('hidden');
   }
-  
+
   // Log detailed information for debugging
-  logger.info('Processing page data:', {
-    hasData: !!data,
-    hasContent: !!(data && data.content),
-    contentLength: data?.content?.length || 0,
-    hasExtractionMethod: !!(data && data.extractionMethod),
-    extractionMethod: data?.extractionMethod,
-    hasChatHistory: !!(data && data.chatHistory),
-    chatHistoryLength: data?.chatHistory?.length || 0
+  logger.info('Processing page info:', {
+    hasData: !!pageInfo,
+    hasContent: !!(pageInfo && pageInfo.content),
+    contentLength: pageInfo?.content?.length || 0,
+    hasExtractionMethod: !!(pageInfo && pageInfo.extractionMethod),
+    extractionMethod: pageInfo?.extractionMethod,
+    hasChatHistory: !!(pageInfo && pageInfo.chatHistory),
+    chatHistoryLength: pageInfo?.chatHistory?.length || 0,
+    hasPageState: !!(pageInfo && pageInfo.pageState)
   });
   
   // Try to get page metadata for title
@@ -906,38 +885,45 @@ async function handleConversationsPageDataLoaded(data) {
     logger.warn('Error fetching page metadata:', metadataError);
   }
   
-  // Update extracted content and display (similar to sidebar)
-  if (data && data.content) {
-    StateManager.updateStateItem('extractedContent', data.content);
-    
-    // Display content (reusing sidebar display logic)
+  // Apply page state first
+  if (pageInfo && pageInfo.pageState) {
+    StateManager.applyPageState(pageInfo.pageState);
+    const includePageContent = StateManager.getStateItem('includePageContent');
+    if (elements.includePageContentBtn) {
+      elements.includePageContentBtn.setAttribute('data-enabled', includePageContent ? 'true' : 'false');
+    }
+    if (pageInfo.pageState.contentSectionHeight && elements.contentSection) {
+      elements.contentSection.style.height = pageInfo.pageState.contentSectionHeight + 'px';
+    }
+    logger.info('Page state applied for conversations page');
+  }
+
+  // Update extracted content and display
+  if (pageInfo && pageInfo.content) {
+    StateManager.updateStateItem('extractedContent', pageInfo.content);
     if (elements.extractedContent) {
-      elements.extractedContent.innerHTML = data.content;
+      elements.extractedContent.innerHTML = pageInfo.content;
     }
     if (elements.contentError) {
       elements.contentError.classList.add('hidden');
     }
-    
-    logger.info('Content displayed successfully, length:', data.content.length);
+    logger.info('Content displayed successfully, length:', pageInfo.content.length);
   } else {
     StateManager.updateStateItem('extractedContent', '');
-
     if (elements.extractedContent) {
       elements.extractedContent.innerHTML = '';
     }
     if (elements.contentError) {
       elements.contentError.classList.remove('hidden');
-      // Show more helpful error message for conversations page
       elements.contentError.textContent = 'No cached content available for this page. Visit the page first to extract content.';
     }
-
-    logger.warn('No content extracted for current page. Data received:', data);
+    logger.warn('No content extracted for current page. Data received:', pageInfo);
   }
-  
-  // Update extraction method state if provided (similar to sidebar)
-  if (data && data.extractionMethod) {
-    StateManager.updateStateItem('currentExtractionMethod', data.extractionMethod);
-    logger.info(`Content displayed using method: ${data.extractionMethod}`);
+
+  // Update extraction method state if provided
+  if (pageInfo && pageInfo.extractionMethod) {
+    StateManager.updateStateItem('currentExtractionMethod', pageInfo.extractionMethod);
+    logger.info(`Content displayed using method: ${pageInfo.extractionMethod}`);
   } else {
     logger.info('No extraction method provided in page data');
   }
@@ -1021,66 +1007,31 @@ async function handlePageDelete(url) {
  * Get page data from background
  * For conversations page, prioritize cached content to avoid extraction errors
  */
-async function getPageData(url) {
+/**
+ * Get all page info from background in a single request
+ */
+async function getPageInfo(url) {
   try {
-    logger.info('Requesting page data for URL:', url);
-
-    // Add small delay to allow service worker initialization
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // First try to get cached content directly
-    try {
-      const cachedResponse = await chrome.runtime.sendMessage({
-        type: 'GET_CACHED_PAGE_DATA',
-        url: url
-      });
-
-      if (cachedResponse && cachedResponse.type === 'CACHED_PAGE_DATA_LOADED' && cachedResponse.data && cachedResponse.data.content) {
-        logger.info('Using cached page data, content length:', cachedResponse.data.content.length);
-        return cachedResponse.data;
-      }
-    } catch (cacheError) {
-      logger.info('No cached data available, trying fresh extraction:', cacheError.message);
-    }
-
-    // If no cached content, try fresh extraction
+    logger.info('Requesting all page info for URL:', url);
     const response = await chrome.runtime.sendMessage({
-      type: 'GET_PAGE_DATA',
+      type: 'GET_PAGE_INFO',
       url: url
     });
 
-    logger.info('Received response from background:', response);
+    logger.info('Received page info response from background:', response);
 
-    if (response.type === 'PAGE_DATA_LOADED') {
-      logger.info('Page data loaded successfully, content length:', response.data?.content?.length || 0);
-      return response.data; // Return the data object directly
-    } else if (response.type === 'PAGE_DATA_ERROR') {
-      logger.warn('Page data error:', response.error);
-
-      // For conversations page, if extraction fails, try to get any available cached content
-      // even if it might be from a different extraction method
-      try {
-        logger.info('Extraction failed, attempting to get any cached content for URL:', url);
-        const fallbackResponse = await chrome.runtime.sendMessage({
-          type: 'GET_ANY_CACHED_CONTENT',
-          url: url
-        });
-
-        if (fallbackResponse && fallbackResponse.data && fallbackResponse.data.content) {
-          logger.info('Found fallback cached content, length:', fallbackResponse.data.content.length);
-          return fallbackResponse.data;
-        }
-      } catch (fallbackError) {
-        logger.warn('No fallback content available:', fallbackError.message);
-      }
-
-      return null; // Return null to indicate no content
+    if (response.type === 'PAGE_INFO_LOADED') {
+      logger.info('Page info loaded successfully.');
+      // The 'data' object now contains pageState, content, chatHistory, etc.
+      return response.data;
     } else {
-      logger.warn('Unexpected response type:', response.type);
+      logger.warn('Page info error:', response.error);
+      showErrorState(response.error || 'Failed to load page information.');
       return null;
     }
   } catch (error) {
-    logger.error('Error getting page data:', error);
+    logger.error('Error getting page info:', error);
+    showErrorState(`Error getting page info: ${error.message}`);
     return null;
   }
 }

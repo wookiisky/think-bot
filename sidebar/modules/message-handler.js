@@ -11,22 +11,22 @@ const logger = createLogger('MessageHandler');
  * @param {string} url - Page URL
  * @returns {Promise<Object>} Page data
  */
-const getPageData = async (url) => {
+const getPageInfo = async (url) => {
   try {
     // Add small delay to allow service worker initialization
-    await new Promise(resolve => setTimeout(resolve, 100)); 
-    
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     const response = await chrome.runtime.sendMessage({
-      type: 'GET_PAGE_DATA',
+      type: 'GET_PAGE_INFO',
       url: url
     });
-    
-    if (response.type === 'PAGE_DATA_LOADED') {
+
+    if (response.type === 'PAGE_INFO_LOADED') {
       return {
         success: true,
         data: response.data
       };
-    } else if (response.type === 'PAGE_DATA_ERROR') {
+    } else if (response.type === 'PAGE_INFO_ERROR') {
       return {
         success: false,
         error: response.error
@@ -38,7 +38,7 @@ const getPageData = async (url) => {
       };
     }
   } catch (error) {
-    logger.error('Error requesting page data:', error);
+    logger.error('Error requesting page info:', error);
     return {
       success: false,
       error: `Failed to communicate with the background script. Details: ${error.message || 'Unknown error'}`
@@ -227,9 +227,9 @@ const setupMessageListeners = (handlers) => {
 };
 
 export {
-  getPageData,
+  getPageInfo,
   switchExtractionMethod,
   reExtractContent,
   sendLlmMessage,
   setupMessageListeners
-}; 
+};

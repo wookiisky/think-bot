@@ -36,27 +36,14 @@ const loadCurrentPageData = async (skipLoadingIndicator = false) => {
       return;
     }
     
-    // Load page state first
-    try {
-      const pageState = await StateManager.loadPageState(url);
-      if (pageState) {
-        StateManager.applyPageState(pageState);
-        // Update UI to reflect loaded state
-        UIManager.updateIncludePageContentUI(StateManager.getStateItem('includePageContent'));
-
-      }
-    } catch (error) {
-      logger.warn('Failed to load page state, using defaults:', error);
-    }
-
     // Show loading status (unless already shown)
     if (!skipLoadingIndicator) {
-      UIManager.showLoading('Loading page data...');
+      UIManager.showLoading('Loading page info...');
     }
 
-    // Load page data from background script
+    // Load all page info from background script in a single request
     try {
-      const response = await MessageHandler.getPageData(url);
+      const response = await MessageHandler.getPageInfo(url);
 
       if (response.success) {
         // Data loaded successfully
@@ -71,7 +58,7 @@ const loadCurrentPageData = async (skipLoadingIndicator = false) => {
         }
       }
     } catch (error) {
-      logger.error('Error requesting page data:', error);
+      logger.error('Error requesting page info:', error);
 
       // Check if this might be a content script connection issue
       const errorMessage = error.message || '';
@@ -377,20 +364,26 @@ const setupStreamReconnection = (currentUrl, tabId) => {
  * @param {Object} data - Page data
  * @returns {Promise<void>}
  */
-const handlePageDataLoaded = async (data) => {
+const handlePageDataLoaded = async (pageInfo) => {
   const elements = UIManager.getAllElements();
   UIManager.hideLoading();
-  
+
   // Re-enable buttons in case they were disabled on restricted page
   elements.jinaExtractBtn.disabled = false;
   elements.readabilityExtractBtn.disabled = false;
   elements.userInput.disabled = false;
   elements.sendBtn.disabled = false;
-  
+
+  // Apply page state first
+  if (pageInfo && pageInfo.pageState) {
+    StateManager.applyPageState(pageInfo.pageState);
+    UIManager.updateIncludePageContentUI(StateManager.getStateItem('includePageContent'));
+  }
+
   // Update extracted content and display
-  if (data && data.content) {
-    StateManager.updateStateItem('extractedContent', data.content);
-    await UIManager.displayExtractedContent(data.content);
+  if (pageInfo && pageInfo.content) {
+    StateManager.updateStateItem('extractedContent', pageInfo.content);
+    await UIManager.displayExtractedContent(pageInfo.content);
     elements.copyContentBtn.classList.add('visible');
     elements.copyContentBtn.disabled = false;
   } else {
@@ -399,30 +392,30 @@ const handlePageDataLoaded = async (data) => {
     elements.copyContentBtn.classList.remove('visible');
     elements.copyContentBtn.disabled = true;
   }
-  
+
   // Update extraction method UI based on actual method used
-  if (data && data.extractionMethod) {
-    StateManager.updateStateItem('currentExtractionMethod', data.extractionMethod);
-    UIManager.updateExtractionButtonUI(data.extractionMethod);
-    logger.info(`Content displayed using method: ${data.extractionMethod}`);
+  if (pageInfo && pageInfo.extractionMethod) {
+    StateManager.updateStateItem('currentExtractionMethod', pageInfo.extractionMethod);
+    UIManager.updateExtractionButtonUI(pageInfo.extractionMethod);
+    logger.info(`Content displayed using method: ${pageInfo.extractionMethod}`);
   }
 
   // Load chat history for current tab
   if (window.TabManager && window.TabManager.loadTabChatHistory && window.TabManager.getActiveTabId) {
     const activeTabId = window.TabManager.getActiveTabId();
-    await window.TabManager.loadTabChatHistory(activeTabId);
+    await window.TabManager.loadTabChatHistory(activeTabId, pageInfo.chatHistory);
     logger.info(`Loaded chat history for active tab: ${activeTabId}`);
-    
+
     // Fix existing message layouts
     setTimeout(() => {
       ChatManager.fixExistingMessageLayouts(elements.chatContainer);
     }, 100);
   } else {
     // Fallback to original method if TabManager not available
-    if (data && data.chatHistory) {
-      logger.info(`Received chat history with ${data.chatHistory.length} messages from service worker`);
-      ChatManager.displayChatHistory(elements.chatContainer, data.chatHistory);
-      
+    if (pageInfo && pageInfo.chatHistory) {
+      logger.info(`Received chat history with ${pageInfo.chatHistory.length} messages from service worker`);
+      ChatManager.displayChatHistory(elements.chatContainer, pageInfo.chatHistory);
+
       // Fix existing message layouts
       setTimeout(() => {
         ChatManager.fixExistingMessageLayouts(elements.chatContainer);
@@ -432,10 +425,10 @@ const handlePageDataLoaded = async (data) => {
       elements.chatContainer.innerHTML = '';
     }
   }
-  
+
   // Enable or disable retry button based on success or failure
-  elements.retryExtractBtn.disabled = !data.content;
-  if (data.content) {
+  elements.retryExtractBtn.disabled = !pageInfo.content;
+  if (pageInfo.content) {
     elements.retryExtractBtn.classList.remove('disabled');
     elements.retryExtractBtn.classList.add('visible');
   } else {
@@ -444,7 +437,7 @@ const handlePageDataLoaded = async (data) => {
   }
 
   // Trigger auto inputs if callback is set and content is available
-  if (onPageDataLoadedCallback && data && data.content) {
+  if (onPageDataLoadedCallback && pageInfo && pageInfo.content) {
     try {
       logger.info('Triggering auto inputs after page data loaded');
       await onPageDataLoadedCallback();
@@ -500,19 +493,7 @@ const handleAutoLoadContent = async (url, data) => {
     logger.info(`Auto-loading cached content for URL: ${url}`);
     StateManager.updateStateItem('currentUrl', url);
     
-    // Load page state first
-    try {
-      const pageState = await StateManager.loadPageState(url);
-      if (pageState) {
-        StateManager.applyPageState(pageState);
-        // Update UI to reflect loaded state
-        UIManager.updateIncludePageContentUI(StateManager.getStateItem('includePageContent'));
-        logger.info('Page state loaded and applied for auto-loaded content');
-      }
-    } catch (error) {
-      logger.warn('Failed to load page state for auto-loaded content, using defaults:', error);
-    }
-    
+    // The handlePageDataLoaded function now handles page state, so no need to load it separately here.
     await handlePageDataLoaded(data);
   }
 };
@@ -546,18 +527,6 @@ const handleAutoExtractContent = async (url, extractionMethod) => {
       return;
     }
 
-    // Load page state first
-    try {
-      const pageState = await StateManager.loadPageState(url);
-      if (pageState) {
-        StateManager.applyPageState(pageState);
-        // Update UI to reflect loaded state
-        UIManager.updateIncludePageContentUI(StateManager.getStateItem('includePageContent'));
-        logger.info('Page state loaded and applied after page reload');
-      }
-    } catch (error) {
-      logger.warn('Failed to load page state after page reload, using defaults:', error);
-    }
 
     // Wait for page to stabilize after reload before extracting content
     UIManager.showLoading('Page reloaded, waiting for content to stabilize...');
@@ -584,18 +553,6 @@ const handleAutoExtractContent = async (url, extractionMethod) => {
       return;
     }
 
-    // Load page state first
-    try {
-      const pageState = await StateManager.loadPageState(url);
-      if (pageState) {
-        StateManager.applyPageState(pageState);
-        // Update UI to reflect loaded state
-        UIManager.updateIncludePageContentUI(StateManager.getStateItem('includePageContent'));
-        logger.info('Page state loaded and applied for auto-extract content');
-      }
-    } catch (error) {
-      logger.warn('Failed to load page state for auto-extract content, using defaults:', error);
-    }
 
     // Show loading and extract content
     UIManager.showLoading('Extracting content...');
