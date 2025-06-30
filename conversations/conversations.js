@@ -948,24 +948,34 @@ async function handleConversationsPageDataLoaded(data) {
  */
 async function handlePageDelete(url) {
   logger.info('Deleting page data for URL:', url);
-  
+
   try {
-    // Use wildcard mode to delete all data related to this URL
-    // This includes all quick tab data stored with URL#tabId format
+    // Check if sync is enabled to determine deletion method
+    let useSoftDelete = false;
+    try {
+      const syncConfigResponse = await chrome.runtime.sendMessage({ type: 'GET_SYNC_CONFIG' });
+      useSoftDelete = syncConfigResponse?.config?.enabled === true;
+      logger.info(`Sync is ${useSoftDelete ? 'enabled' : 'disabled'}, using ${useSoftDelete ? 'soft' : 'hard'} delete`);
+    } catch (error) {
+      logger.warn('Failed to check sync status, using hard delete:', error.message);
+    }
+
+    // Use appropriate deletion method based on sync status
+    const deleteType = useSoftDelete ? 'SOFT_DELETE_URL_DATA' : 'CLEAR_URL_DATA';
     const response = await chrome.runtime.sendMessage({
-      type: 'CLEAR_URL_DATA',
+      type: deleteType,
       url: url,
       clearContent: true,
       clearChat: true,
-      clearMetadata: true,
+      clearMetadata: !useSoftDelete, // Don't clear metadata for soft delete
       wildcard: true // Enable wildcard matching to delete all URL-related data including tab data
     });
-    
+
     if (!response || !response.success) {
       throw new Error(response?.error || 'Failed to delete page data');
     }
-    
-    logger.info('All page data deleted successfully:', url);
+
+    logger.info(`All page data ${useSoftDelete ? 'soft ' : ''}deleted successfully:`, url);
     
     // If this was the currently selected page, switch back to welcome screen
     if (currentUrl === url) {

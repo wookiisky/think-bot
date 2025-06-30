@@ -219,40 +219,51 @@ storage.getRecentUrls = async function() {
   }
 }
 
-// Clear data for a specific URL
-storage.clearUrlData = async function(url, clearContent = true, clearChat = true, clearMetadata = true, wildcard = false) {
+// Clear data for a specific URL (now supports soft delete for sync)
+storage.clearUrlData = async function(url, clearContent = true, clearChat = true, clearMetadata = true, wildcard = false, softDelete = false) {
   if (!url) {
     storageLogger.error('Cannot clear data: URL is empty');
     return false;
   }
-  
+
   try {
     // Get all storage keys
     const result = await chrome.storage.local.get(null);
     const allKeys = Object.keys(result);
     const keysToRemove = [];
+    const keysToSoftDelete = [];
     const normalizedBaseUrl = normalizeUrl(url);
-    
+
     // URL wildcard matching mode - used to clear all tabs associated with a URL
     if (wildcard) {
-      storageLogger.info(`Using wildcard matching to clear data for base URL: ${normalizedBaseUrl}`);
+      storageLogger.info(`Using wildcard matching to ${softDelete ? 'soft delete' : 'clear'} data for base URL: ${normalizedBaseUrl}`);
 
       if (clearContent) {
-        // Clear all unified page data keys that start with the normalized URL
+        // Find all unified page data keys that start with the normalized URL
         const pageKeys = allKeys.filter(key =>
           key.startsWith(DB_PAGE_PREFIX) &&
           key.includes(normalizedBaseUrl)
         );
-        keysToRemove.push(...pageKeys);
+
+        if (softDelete) {
+          keysToSoftDelete.push(...pageKeys);
+        } else {
+          keysToRemove.push(...pageKeys);
+        }
       }
 
       if (clearChat) {
-        // Clear all chat keys that start with the normalized URL
+        // Find all chat keys that start with the normalized URL
         const chatKeys = allKeys.filter(key =>
           key.startsWith(DB_CHAT_PREFIX) &&
           key.includes(normalizedBaseUrl)
         );
-        keysToRemove.push(...chatKeys);
+
+        if (softDelete) {
+          keysToSoftDelete.push(...chatKeys);
+        } else {
+          keysToRemove.push(...chatKeys);
+        }
       }
 
       // Note: pageState is now part of unified page data (DB_PAGE_PREFIX)
@@ -262,20 +273,28 @@ storage.clearUrlData = async function(url, clearContent = true, clearChat = true
         // Note: Unified page data (DB_PAGE_PREFIX) already includes metadata,
         // so it's cleared above when clearContent is true
       }
-      
-      storageLogger.info(`Found ${keysToRemove.length} keys to remove with wildcard matching`);
+
+      storageLogger.info(`Found ${keysToRemove.length + keysToSoftDelete.length} keys to ${softDelete ? 'soft delete' : 'remove'} with wildcard matching`);
     } else {
       // Standard exact URL matching
       if (clearContent) {
         // Clear unified page data for this URL
         const pageKey = getPageKeyFromUrl(url);
-        keysToRemove.push(pageKey);
+        if (softDelete) {
+          keysToSoftDelete.push(pageKey);
+        } else {
+          keysToRemove.push(pageKey);
+        }
       }
 
       if (clearChat) {
         // Clear chat history for this URL
         const chatKey = getChatHistoryKeyFromUrl(url);
-        keysToRemove.push(chatKey);
+        if (softDelete) {
+          keysToSoftDelete.push(chatKey);
+        } else {
+          keysToRemove.push(chatKey);
+        }
       }
 
       // Note: pageState is now part of unified page data (DB_PAGE_PREFIX)
@@ -286,16 +305,42 @@ storage.clearUrlData = async function(url, clearContent = true, clearChat = true
         // so it's cleared above when clearContent is true
       }
     }
-    
-    // Remove the keys
+
+    // Handle soft delete operations
+    if (keysToSoftDelete.length > 0) {
+      const softDeleteUpdates = {};
+
+      for (const key of keysToSoftDelete) {
+        const existingData = result[key];
+        if (existingData) {
+          // Create soft delete record: keep id (URL), lastModified timestamp, and add 'del' flag
+          const softDeleteRecord = {
+            url: existingData.url || url, // Preserve original URL as ID
+            lastModified: Date.now(), // Update timestamp for deletion
+            del: true // Mark as deleted
+            // Clear all other data fields (content, metadata, pageState, etc.)
+          };
+
+          softDeleteUpdates[key] = softDeleteRecord;
+          storageLogger.debug(`Creating soft delete record for key: ${key}`);
+        }
+      }
+
+      if (Object.keys(softDeleteUpdates).length > 0) {
+        await chrome.storage.local.set(softDeleteUpdates);
+        storageLogger.info(`Soft deleted ${Object.keys(softDeleteUpdates).length} items`);
+      }
+    }
+
+    // Remove the keys (hard delete)
     if (keysToRemove.length > 0) {
       await chrome.storage.local.remove(keysToRemove);
     }
-    
-    // Update recent URLs list if metadata is being cleared
-    if (clearMetadata || wildcard) {
+
+    // Update recent URLs list if metadata is being cleared (only for hard delete)
+    if ((clearMetadata || wildcard) && !softDelete) {
       let recentUrls = await storage.getRecentUrls();
-      
+
       if (wildcard) {
         // If wildcard mode, remove all entries that contain the normalized URL
         recentUrls = recentUrls.filter(item => {
@@ -309,17 +354,19 @@ storage.clearUrlData = async function(url, clearContent = true, clearChat = true
           return normalizeUrl(itemUrl) !== normalizeUrl(url);
         });
       }
-      
+
       await chrome.storage.local.set({ [RECENT_URLS_KEY]: recentUrls });
     }
-    
-    storageLogger.info('URL data cleared successfully', {
+
+    storageLogger.info(`URL data ${softDelete ? 'soft deleted' : 'cleared'} successfully`, {
       url,
       wildcard,
+      softDelete,
       clearedContent: clearContent,
       clearedChat: clearChat,
       clearedMetadata: clearMetadata,
-      keysRemoved: keysToRemove.length
+      keysRemoved: keysToRemove.length,
+      keysSoftDeleted: keysToSoftDelete.length
     });
     return true;
   } catch (error) {
@@ -327,6 +374,37 @@ storage.clearUrlData = async function(url, clearContent = true, clearChat = true
     return false;
   }
 }
+
+// Soft delete data for a specific URL (for sync purposes)
+storage.softDeleteUrlData = async function(url, clearContent = true, clearChat = true, wildcard = false) {
+  return await this.clearUrlData(url, clearContent, clearChat, true, wildcard, true);
+};
+
+// Check if a data item is soft deleted
+storage.isDataSoftDeleted = function(data) {
+  return data && data.del === true;
+};
+
+// Get the last modified timestamp from data (including soft deleted items)
+storage.getDataTimestamp = function(data) {
+  if (!data) return 0;
+
+  // For soft deleted items, use lastModified
+  if (data.del === true) {
+    return data.lastModified || 0;
+  }
+
+  // For regular page data, use lastUpdated or metadata timestamp
+  if (data.lastUpdated) {
+    return data.lastUpdated;
+  }
+
+  if (data.metadata && data.metadata.timestamp) {
+    return data.metadata.timestamp;
+  }
+
+  return 0;
+};
 
 // Update recent URLs list with time-based cleanup
 async function updateRecentUrls(url, method) {

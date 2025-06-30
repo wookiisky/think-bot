@@ -272,13 +272,16 @@ syncManager.applyDownloadedData = async function(data) {
       await this.applyPageCache(data.pageCache);
       syncLogger.info('Page cache applied');
     }
-    
+
     // Apply chat history
     if (data.chatHistory) {
       await this.applyChatHistory(data.chatHistory);
       syncLogger.info('Chat history applied');
     }
-    
+
+    // Clean up deletion records after merge is complete
+    await this.cleanupDeletionRecords();
+
     syncLogger.info('All downloaded data applied successfully');
   } catch (error) {
     syncLogger.error('Error applying downloaded data:', error.message);
@@ -317,6 +320,37 @@ syncManager.applyPageCache = async function(pageCache) {
   } catch (error) {
     syncLogger.error('Error applying page cache:', error.message);
     throw error;
+  }
+};
+
+/**
+ * Clean up deletion records after merge is complete
+ */
+syncManager.cleanupDeletionRecords = async function() {
+  try {
+    // Get deletion records from data serializer
+    const deletionRecords = dataSerializer._deletionRecordsToCleanup || [];
+
+    if (deletionRecords.length === 0) {
+      return;
+    }
+
+    syncLogger.info(`Cleaning up ${deletionRecords.length} deletion records`);
+
+    // Remove deletion records from storage
+    const keysToRemove = deletionRecords.map(urlHash => `${CACHE_KEYS.PAGE_PREFIX}${urlHash}`);
+
+    if (keysToRemove.length > 0) {
+      await chrome.storage.local.remove(keysToRemove);
+      syncLogger.info(`Removed ${keysToRemove.length} deletion records from storage`);
+    }
+
+    // Clear the deletion records list
+    dataSerializer._deletionRecordsToCleanup = [];
+
+  } catch (error) {
+    syncLogger.error('Error cleaning up deletion records:', error.message);
+    // Don't throw error as this is cleanup operation
   }
 };
 

@@ -245,6 +245,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         case 'CLEAR_URL_DATA': {
           return await handleClearUrlData(data, serviceLogger, storage);
         }
+        case 'SOFT_DELETE_URL_DATA': {
+          return await handleSoftDeleteUrlData(data, serviceLogger, storage);
+        }
         case 'GET_CONFIG':
           return await handleGetConfig(storageConfigManager, serviceLogger);
         case 'SAVE_CONFIG':

@@ -836,11 +836,12 @@ dataSerializer.mergeLlmModels = function(localModels, remoteModels) {
 };
 
 /**
- * Merge page cache data - merge individual pages based on their timestamps
+ * Merge page cache data - merge individual pages based on their timestamps with soft delete support
  */
 dataSerializer.mergePageCacheData = function(localPageCache, remotePageCache) {
   try {
     const mergedPageCache = {};
+    const deletionRecords = []; // Track deletion records for cleanup
     const allUrlHashes = new Set([
       ...Object.keys(localPageCache || {}),
       ...Object.keys(remotePageCache || {})
@@ -851,27 +852,74 @@ dataSerializer.mergePageCacheData = function(localPageCache, remotePageCache) {
       const remotePage = remotePageCache?.[urlHash];
 
       if (!localPage && remotePage) {
-        mergedPageCache[urlHash] = remotePage;
-        serializerLogger.debug(`Using remote page data for ${urlHash}`);
-      } else if (localPage && !remotePage) {
-        mergedPageCache[urlHash] = localPage;
-        serializerLogger.debug(`Using local page data for ${urlHash}`);
-      } else if (localPage && remotePage) {
-        // Both exist, compare timestamps
-        const localTimestamp = this.getPageTimestamp(localPage);
-        const remoteTimestamp = this.getPageTimestamp(remotePage);
-
-        if (localTimestamp >= remoteTimestamp) {
-          mergedPageCache[urlHash] = localPage;
-          serializerLogger.debug(`Using local page data for ${urlHash} (newer: ${new Date(localTimestamp).toISOString()})`);
+        // Only remote data exists
+        if (this.isPageSoftDeleted(remotePage)) {
+          deletionRecords.push(urlHash);
+          serializerLogger.debug(`Remote page ${urlHash} is soft deleted, marking for cleanup`);
         } else {
           mergedPageCache[urlHash] = remotePage;
-          serializerLogger.debug(`Using remote page data for ${urlHash} (newer: ${new Date(remoteTimestamp).toISOString()})`);
+          serializerLogger.debug(`Using remote page data for ${urlHash}`);
+        }
+      } else if (localPage && !remotePage) {
+        // Only local data exists
+        if (this.isPageSoftDeleted(localPage)) {
+          deletionRecords.push(urlHash);
+          serializerLogger.debug(`Local page ${urlHash} is soft deleted, marking for cleanup`);
+        } else {
+          mergedPageCache[urlHash] = localPage;
+          serializerLogger.debug(`Using local page data for ${urlHash}`);
+        }
+      } else if (localPage && remotePage) {
+        // Both exist, compare timestamps and handle soft delete conflicts
+        const localTimestamp = this.getPageTimestamp(localPage);
+        const remoteTimestamp = this.getPageTimestamp(remotePage);
+        const localIsDeleted = this.isPageSoftDeleted(localPage);
+        const remoteIsDeleted = this.isPageSoftDeleted(remotePage);
+
+        if (localIsDeleted && remoteIsDeleted) {
+          // Both are deleted, keep the newer deletion record for cleanup
+          deletionRecords.push(urlHash);
+          serializerLogger.debug(`Both local and remote page ${urlHash} are deleted, marking for cleanup`);
+        } else if (localIsDeleted && !remoteIsDeleted) {
+          // Local is deleted, remote has data
+          if (localTimestamp > remoteTimestamp) {
+            // Deletion is newer, delete the item
+            deletionRecords.push(urlHash);
+            serializerLogger.debug(`Local deletion of ${urlHash} is newer than remote data, deleting item`);
+          } else {
+            // Remote data is newer, keep it
+            mergedPageCache[urlHash] = remotePage;
+            serializerLogger.debug(`Remote data for ${urlHash} is newer than local deletion, keeping data`);
+          }
+        } else if (!localIsDeleted && remoteIsDeleted) {
+          // Remote is deleted, local has data
+          if (remoteTimestamp > localTimestamp) {
+            // Deletion is newer, delete the item
+            deletionRecords.push(urlHash);
+            serializerLogger.debug(`Remote deletion of ${urlHash} is newer than local data, deleting item`);
+          } else {
+            // Local data is newer, keep it
+            mergedPageCache[urlHash] = localPage;
+            serializerLogger.debug(`Local data for ${urlHash} is newer than remote deletion, keeping data`);
+          }
+        } else {
+          // Neither is deleted, normal timestamp comparison
+          if (localTimestamp >= remoteTimestamp) {
+            mergedPageCache[urlHash] = localPage;
+            serializerLogger.debug(`Using local page data for ${urlHash} (newer: ${new Date(localTimestamp).toISOString()})`);
+          } else {
+            mergedPageCache[urlHash] = remotePage;
+            serializerLogger.debug(`Using remote page data for ${urlHash} (newer: ${new Date(remoteTimestamp).toISOString()})`);
+          }
         }
       }
     }
 
-    serializerLogger.info(`Merged page cache: ${Object.keys(mergedPageCache).length} pages`);
+    serializerLogger.info(`Merged page cache: ${Object.keys(mergedPageCache).length} pages, ${deletionRecords.length} deletion records to cleanup`);
+
+    // Store deletion records for cleanup after merge is applied
+    this._deletionRecordsToCleanup = deletionRecords;
+
     return mergedPageCache;
   } catch (error) {
     serializerLogger.error('Error merging page cache data:', error.message);
@@ -924,11 +972,28 @@ dataSerializer.mergeChatHistoryData = function(localChatHistory, remoteChatHisto
 };
 
 /**
- * Get timestamp from page data
+ * Check if page data is soft deleted
+ */
+dataSerializer.isPageSoftDeleted = function(pageData) {
+  return pageData && pageData.del === true;
+};
+
+/**
+ * Get timestamp from page data (including soft deleted items)
  */
 dataSerializer.getPageTimestamp = function(pageData) {
   try {
-    // Look for timestamp in metadata first
+    // For soft deleted items, use lastModified timestamp
+    if (pageData.del === true) {
+      return pageData.lastModified || 0;
+    }
+
+    // For regular page data, use lastUpdated first
+    if (pageData.lastUpdated) {
+      return pageData.lastUpdated;
+    }
+
+    // Look for timestamp in metadata
     if (pageData.metadata && pageData.metadata.timestamp) {
       return pageData.metadata.timestamp;
     }
