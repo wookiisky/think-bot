@@ -111,8 +111,10 @@ const loadTabs = async (container, chatContainer, onTabClick) => {
     });
     
     activeTabId = 'chat';
+
+    // Render tabs without forcing state update initially
     renderTabs(container);
-    
+
     logger.info(`Loaded ${tabs.length} tabs (1 default + ${config.quickInputs.length} quick inputs)`);
   } catch (error) {
     logger.error('Error loading tabs:', error);
@@ -142,13 +144,15 @@ const renderTabs = async (container, skipLoadingStateUpdate = false, forceFullRe
     // Add updating class to prevent flicker
     container.classList.add('updating');
 
-    // Check loading states for all tabs before rendering (only if not skipping)
+    // Standard loading state check (if not skipped)
     if (!skipLoadingStateUpdate) {
       await updateTabsLoadingStates();
     }
 
-    // Check content states for all tabs
-    await updateTabsContentStates();
+    // If forced, also update content states
+    if (forceFullRender) {
+      await updateTabsContentStates();
+    }
 
     // Check if we can do incremental update instead of full re-render
     const existingTabs = container.querySelectorAll('.tab');
@@ -563,27 +567,38 @@ const handleTabClick = async (tabId) => {
  * @param {string} tabId - Tab ID
  * @returns {Promise<Array>} Chat history array
  */
-const loadTabChatHistory = async (tabId) => {
+const loadTabChatHistory = async (tabId, preloadedHistory = null) => {
   try {
     const currentUrl = window.StateManager.getStateItem('currentUrl');
     if (!currentUrl) {
       logger.warn('No current URL, cannot load tab chat history');
       return [];
     }
-    
-    const cacheKey = `${currentUrl}#${tabId}`;
-    logger.info(`Loading chat history for tab ${tabId} from key: ${cacheKey}`);
-    
-    const response = await chrome.runtime.sendMessage({
-      type: 'GET_CHAT_HISTORY',
-      url: cacheKey
-    });
+
+    let chatHistory = preloadedHistory;
+    let response = null;
+
+    if (chatHistory) {
+      logger.info(`Using preloaded chat history for tab ${tabId}: ${chatHistory.length} messages`);
+    } else {
+      const cacheKey = `${currentUrl}#${tabId}`;
+      logger.info(`Loading chat history for tab ${tabId} from key: ${cacheKey}`);
+      
+      response = await chrome.runtime.sendMessage({
+        type: 'GET_CHAT_HISTORY',
+        url: cacheKey
+      });
+
+      if (response && response.type === 'CHAT_HISTORY_LOADED') {
+        chatHistory = response.chatHistory || [];
+      } else {
+        chatHistory = [];
+      }
+    }
     
     const chatContainer = document.getElementById('chatContainer');
     
-    if (response && response.type === 'CHAT_HISTORY_LOADED') {
-      // Handle both empty and non-empty chat history
-      const chatHistory = response.chatHistory || [];
+    if (chatHistory.length > 0 || (response && response.type === 'CHAT_HISTORY_LOADED')) {
       
       // Clear any existing streaming state when switching tabs
       if (chatContainer) {
@@ -667,14 +682,7 @@ const loadTabChatHistory = async (tabId) => {
       // Check for cached loading state even if no chat history
       await checkAndRestoreLoadingState(currentUrl, tabId, chatContainer);
       
-      // Improved response logging
-      const responseInfo = response ? {
-        type: response.type || 'unknown',
-        hasHistory: !!response.chatHistory,
-        historyLength: response.chatHistory ? response.chatHistory.length : 0
-      } : 'null response';
-      
-      logger.info(`No chat history found for tab ${tabId}. Response:`, responseInfo);
+      logger.info(`No chat history found for tab ${tabId}.`);
       return [];
     }
   } catch (error) {
@@ -1107,8 +1115,9 @@ const resetToDefaultTab = async () => {
 const renderCurrentTabsState = async () => {
   const container = document.querySelector('.tab-container');
   if (container) {
-    logger.info('Force re-rendering current tab state');
-    await renderTabs(container);
+    logger.info('Force re-rendering current tab state with content check');
+    // Force a full re-render including content states
+    await renderTabs(container, false, true);
   }
 };
 

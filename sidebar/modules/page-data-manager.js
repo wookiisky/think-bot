@@ -448,6 +448,13 @@ const handlePageDataLoaded = async (pageInfo) => {
       logger.error('Error triggering auto inputs after page data loaded:', error);
     }
   }
+
+  // After all page data is loaded and UI is updated, refresh tab states
+  // This is no longer needed as the loadTabChatHistory call above now handles it correctly
+  // if (window.TabManager && window.TabManager.renderCurrentTabsState) {
+  //   logger.info('Refreshing all tab states after page data loaded.');
+  //   await window.TabManager.renderCurrentTabsState();
+  // }
 };
 
 /**
