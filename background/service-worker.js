@@ -66,11 +66,6 @@ chrome.runtime.onInstalled.addListener(async () => {
     contexts: ["action"]
   });
   
-  // Initialize cache compression module to clean up legacy data
-  if (typeof cacheCompression !== 'undefined' && cacheCompression.initialize) {
-    await cacheCompression.initialize();
-  }
-  
   // Initialize config if needed
   await storageConfigManager.initializeIfNeeded();
   await storageConfigManager.checkStorageUsage();
@@ -104,10 +99,6 @@ serviceLogger.info('Think Bot service worker started');
 // Initialize cache compression module on startup
 (async () => {
   try {
-    if (typeof cacheCompression !== 'undefined' && cacheCompression.initialize) {
-      await cacheCompression.initialize();
-    }
-
     // Run initial cache cleanup on startup
     if (typeof storage !== 'undefined' && storage.cleanupExpiredCache) {
       try {

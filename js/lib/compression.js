@@ -302,11 +302,6 @@ compressionModule.decompress = function(data, dataType = 'unknown') {
       
       return decompressed;
       
-    } else if (compressionMethod === 'lz-string') {
-      // Handle legacy lz-string compressed data
-      compressionLogger.warn(`Legacy lz-string data detected for ${dataType}. Returning compressed data as-is for now.`);
-      compressionLogger.info('Consider migrating this data to pako-deflate compression for better performance.');
-      return data; // Return as-is, cannot decompress without lz-string library
     } else {
       compressionLogger.warn(`Unknown compression method: ${compressionMethod} for ${dataType}`);
       return data;
@@ -580,66 +575,7 @@ compressionModule.decompressQuickInput = compressionModule.decompressQuickInputs
 // =============================================================================
 
 /**
- * Clean up legacy lz-string compressed data from storage
- * @returns {Promise<Object>} - Cleanup statistics
- */
-compressionModule.cleanupLegacyData = async function() {
-  const cleanupStats = {
-    totalItemsChecked: 0,
-    legacyItemsFound: 0,
-    itemsRemoved: 0,
-    errors: 0
-  };
-  
-  try {
-    compressionLogger.info('Starting cleanup of legacy lz-string compressed data');
-    
-    // Get all storage items
-    const allData = await chrome.storage.local.get(null);
-    cleanupStats.totalItemsChecked = Object.keys(allData).length;
-    
-    const itemsToRemove = [];
-    
-    for (const [key, value] of Object.entries(allData)) {
-      try {
-        // Check if item is compressed data
-        if (value && typeof value === 'object' && value[COMPRESSION_CONFIG.COMPRESSED_INDICATOR]) {
-          const compressionMethod = value[COMPRESSION_CONFIG.COMPRESSION_METHOD_KEY];
-          
-          if (compressionMethod === 'lz-string') {
-            cleanupStats.legacyItemsFound++;
-            compressionLogger.warn(`Found legacy lz-string data: ${key}`);
-            
-            // Mark for removal since we can't decompress without lz-string library
-            itemsToRemove.push(key);
-          }
-        }
-      } catch (error) {
-        cleanupStats.errors++;
-        compressionLogger.error(`Error checking item ${key}:`, error.message);
-      }
-    }
-    
-    // Remove legacy items
-    if (itemsToRemove.length > 0) {
-      await chrome.storage.local.remove(itemsToRemove);
-      cleanupStats.itemsRemoved = itemsToRemove.length;
-      compressionLogger.info(`Removed ${itemsToRemove.length} legacy lz-string items from storage`);
-    }
-    
-    compressionLogger.info('Legacy data cleanup completed', cleanupStats);
-    return cleanupStats;
-    
-  } catch (error) {
-    compressionLogger.error('Error during legacy data cleanup:', error.message);
-    cleanupStats.errors++;
-    return cleanupStats;
-  }
-};
-
-/**
  * Initialize compression module
- * Performs automatic cleanup of legacy data
  */
 compressionModule.initialize = async function() {
   try {
@@ -648,12 +584,6 @@ compressionModule.initialize = async function() {
     // Check available compression methods
     const pakoAvailable = compressionModule.isPakoAvailable();
     compressionLogger.info(`Compression support - Pako: ${pakoAvailable ? 'available' : 'not available'}`);
-    
-    // Cleanup legacy data if any exists
-    const cleanupStats = await compressionModule.cleanupLegacyData();
-    if (cleanupStats.legacyItemsFound > 0) {
-      compressionLogger.warn(`Found and handled ${cleanupStats.legacyItemsFound} legacy items`);
-    }
     
     compressionLogger.info('Unified compression module initialized successfully');
     return true;
@@ -755,7 +685,6 @@ var cacheCompression = {
   getCompressionStats: function(data, dataType = 'general') {
     return compressionModule.getCompressionStats(data, COMPRESSION_CONFIG.CONFIGS.CACHE);
   },
-  cleanupLegacyData: compressionModule.cleanupLegacyData,
   initialize: compressionModule.initialize
 };
 
