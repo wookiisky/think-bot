@@ -601,6 +601,9 @@ async function handleSidebarOpened(message) {
     const { url, tabId } = message;
     logger.info('Received SIDEBAR_OPENED message for URL:', url);
 
+    // Reset config cache to get latest settings
+    StateManager.resetConfig();
+
     // Use the centralized blacklist checking function
     await PageDataManager.checkBlacklistAndLoadData(url);
   } catch (error) {

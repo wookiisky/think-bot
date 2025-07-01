@@ -50,8 +50,11 @@ const loadCurrentPageData = async (skipLoadingIndicator = false) => {
         await handlePageDataLoaded(response.data);
       } else {
         // Load data error - check if it's a content script connection issue
-        if (response.error === 'CONTENT_SCRIPT_NOT_CONNECTED') {
-          logger.info('Content script not connected during initial load, auto-reloading page');
+        const errorMessage = response.error || '';
+        if (errorMessage.includes('Could not establish connection') ||
+            errorMessage.includes('Receiving end does not exist') ||
+            errorMessage.includes('CONTENT_SCRIPT_NOT_CONNECTED')) {
+          logger.info('Content script not connected, auto-reloading page');
           await handleAutoReloadForContentScriptError(url);
         } else {
           UIManager.showExtractionError(response.error);
@@ -537,6 +540,16 @@ const handleAutoExtractContent = async (url, extractionMethod) => {
     // Update loading message and extract content
     UIManager.showLoading('Extracting content...');
     await loadCurrentPageDataWithRetry(true); // Use retry version for better reliability
+
+    // Manually trigger auto-inputs after successful reload and extraction
+    if (onPageDataLoadedCallback) {
+        const currentState = StateManager.getState();
+        const hasExtractedContent = currentState.extractedContent && currentState.extractedContent.trim().length > 0;
+        if (hasExtractedContent) {
+            logger.info('Triggering auto inputs after successful page reload and extraction.');
+            await onPageDataLoadedCallback();
+        }
+    }
     return;
   }
 

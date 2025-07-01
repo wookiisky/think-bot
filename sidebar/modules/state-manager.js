@@ -56,14 +56,18 @@ const updateStateItem = (key, value) => {
  * @returns {Promise<Object>} Config object
  */
 const getConfig = async () => {
-  try {
+  if (state.config) {
+    return state.config;
+  }
 
+  try {
     const response = await chrome.runtime.sendMessage({
       type: 'GET_CONFIG'
     });
     
     if (response && response.type === 'CONFIG_LOADED' && response.config) {
-      return response.config;
+      state.config = response.config;
+      return state.config;
     } else {
       logger.error('Error loading config or config missing in response. Response:', response);
       return null;
@@ -183,12 +187,30 @@ const applyPageState = (pageState) => {
   }
 };
 
+/**
+ * Set config in state
+ * @param {Object} config - Config object
+ */
+const setConfig = (config) => {
+  state.config = config;
+};
+
+/**
+ * Reset config in state
+ */
+const resetConfig = () => {
+  state.config = null;
+  logger.info('Config cache reset');
+};
+
 export {
   getState,
   updateState,
   getStateItem,
   updateStateItem,
   getConfig,
+  setConfig,
+  resetConfig,
   saveChatHistory,
   clearUrlData,
   toggleIncludePageContent,

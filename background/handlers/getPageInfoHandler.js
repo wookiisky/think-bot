@@ -68,11 +68,13 @@ async function handleGetPageInfo(data, serviceLogger, configManager, storage, co
         });
       }
 
+      if (defaultMethod === 'readability' && htmlContent === 'CONTENT_SCRIPT_NOT_CONNECTED') {
+        serviceLogger.warn('GET_PAGE_INFO: Content script not connected.');
+        return { type: 'PAGE_INFO_ERROR', error: 'CONTENT_SCRIPT_NOT_CONNECTED' };
+      }
+      
       if (defaultMethod === 'readability' && !htmlContent) {
         serviceLogger.warn('GET_PAGE_INFO: HTML content not available for readability.');
-        // Still return other data, but content will be null
-      } else if (defaultMethod === 'readability' && htmlContent === 'CONTENT_SCRIPT_NOT_CONNECTED') {
-        serviceLogger.warn('GET_PAGE_INFO: Content script not connected.');
         // Still return other data, but content will be null
       } else {
         const newlyExtractedContent = await contentExtractor.extract(url, htmlContent, defaultMethod, config);

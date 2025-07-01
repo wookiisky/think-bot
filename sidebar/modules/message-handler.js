@@ -222,6 +222,11 @@ const setupMessageListeners = (handlers) => {
           handlers.onSidebarOpened(message);
         }
         break;
+
+      case 'PING_SIDEBAR':
+        // Respond to pings from the service worker to confirm the sidebar is open
+        sendResponse({ type: 'PONG_SIDEBAR' });
+        break;
     }
   });
 };

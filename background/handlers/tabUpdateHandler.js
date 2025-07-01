@@ -4,6 +4,34 @@ async function handleTabUpdated(tabId, changeInfo, tab, serviceLogger, configMan
     if (changeInfo.status === 'complete' && tab && tab.url) {
         serviceLogger.info(`TAB_UPDATED: Page loaded - ${tab.url}`);
 
+        // Ping the sidebar to see if it's open before proceeding
+        let isSidebarOpen = false;
+        try {
+            // Use a timeout to prevent waiting indefinitely
+            const response = await Promise.race([
+                chrome.runtime.sendMessage({ type: 'PING_SIDEBAR' }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 200))
+            ]);
+
+            if (response && response.type === 'PONG_SIDEBAR') {
+                isSidebarOpen = true;
+                serviceLogger.info('TAB_UPDATED: Sidebar is open, proceeding with checks.');
+            }
+        } catch (error) {
+            // An error likely means the sidebar is closed and there's no one to answer the ping.
+            // This is expected behavior.
+            if (error.message.includes('Could not establish connection. Receiving end does not exist.') || error.message === 'Timeout') {
+                serviceLogger.info('TAB_UPDATED: Sidebar is closed (ping failed), aborting auto-load/extract.');
+            } else {
+                serviceLogger.warn(`TAB_UPDATED: Error pinging sidebar: ${error.message}`);
+            }
+            isSidebarOpen = false;
+        }
+
+        if (!isSidebarOpen) {
+            return; // Stop execution if sidebar is not open
+        }
+
         // Check if this is the active tab to avoid unnecessary operations
         const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
         const isActiveTab = activeTab && activeTab.id === tabId;
@@ -51,4 +79,4 @@ async function handleTabUpdated(tabId, changeInfo, tab, serviceLogger, configMan
             }
         }
     }
-} 
+}
