@@ -575,11 +575,24 @@ dataSerializer.mergeConfigData = function(localConfig, remoteConfig) {
 };
 
 /**
- * Merge quickInputs arrays based on individual item timestamps
+ * Get the latest lastModified timestamp from a list of quick inputs
+ */
+dataSerializer.getQuickInputsListTimestamp = function(quickInputs) {
+  if (!Array.isArray(quickInputs) || quickInputs.length === 0) {
+    return 0;
+  }
+  return quickInputs.reduce((latest, item) => {
+    const timestamp = item.lastModified || 0;
+    return Math.max(latest, timestamp);
+  }, 0);
+};
+
+/**
+ * Merge quickInputs arrays based on list order (by latest timestamp) and individual item timestamps
  */
 dataSerializer.mergeQuickInputs = function(localQuickInputs, remoteQuickInputs) {
   try {
-    serializerLogger.info('Starting quickInputs merge based on lastModified timestamps');
+    serializerLogger.info('Starting quickInputs merge based on list and item lastModified timestamps');
 
     if (!localQuickInputs && !remoteQuickInputs) {
       return [];
@@ -595,70 +608,62 @@ dataSerializer.mergeQuickInputs = function(localQuickInputs, remoteQuickInputs) 
       return localQuickInputs || [];
     }
 
-    // Create maps for easier lookup by ID
-    const localMap = new Map();
-    const remoteMap = new Map();
+    // Get the timestamp of the entire list
+    const localListTimestamp = this.getQuickInputsListTimestamp(localQuickInputs);
+    const remoteListTimestamp = this.getQuickInputsListTimestamp(remoteQuickInputs);
 
-    // Process local quickInputs
-    localQuickInputs.forEach(item => {
-      if (item.id) {
-        // Ensure lastModified exists, use a timestamp that indicates it's older if missing
-        if (!item.lastModified) {
-          item.lastModified = 0; // Use 0 to indicate missing timestamp (older than any real timestamp)
-          serializerLogger.debug(`Added missing lastModified (0) to local quickInput: ${item.id}`);
-        }
-        localMap.set(item.id, item);
-      }
-    });
+    let baseList, otherList;
+    if (localListTimestamp >= remoteListTimestamp) {
+      baseList = localQuickInputs;
+      otherList = remoteQuickInputs;
+      serializerLogger.info(`Using local quickInputs order as base (local: ${new Date(localListTimestamp).toISOString()}, remote: ${new Date(remoteListTimestamp).toISOString()})`);
+    } else {
+      baseList = remoteQuickInputs;
+      otherList = localQuickInputs;
+      serializerLogger.info(`Using remote quickInputs order as base (remote: ${new Date(remoteListTimestamp).toISOString()}, local: ${new Date(localListTimestamp).toISOString()})`);
+    }
 
-    // Process remote quickInputs
-    remoteQuickInputs.forEach(item => {
+    const otherMap = new Map();
+    otherList.forEach(item => {
       if (item.id) {
-        // Ensure lastModified exists, use a timestamp that indicates it's older if missing
-        if (!item.lastModified) {
-          item.lastModified = 0; // Use 0 to indicate missing timestamp (older than any real timestamp)
-          serializerLogger.debug(`Added missing lastModified (0) to remote quickInput: ${item.id}`);
-        }
-        remoteMap.set(item.id, item);
+        otherMap.set(item.id, item);
       }
     });
 
     const mergedQuickInputs = [];
     const processedIds = new Set();
 
-    // Process items that exist in both local and remote
-    localMap.forEach((localItem, id) => {
-      if (remoteMap.has(id)) {
-        const remoteItem = remoteMap.get(id);
-        const localTimestamp = localItem.lastModified || 0;
-        const remoteTimestamp = remoteItem.lastModified || 0;
+    // Process items based on the base list's order
+    baseList.forEach(baseItem => {
+      if (!baseItem.id) return;
 
-        if (localTimestamp >= remoteTimestamp) {
-          mergedQuickInputs.push(localItem);
-          serializerLogger.debug(`Using local quickInput: ${id} (local: ${new Date(localTimestamp).toISOString()}, remote: ${new Date(remoteTimestamp).toISOString()})`);
+      processedIds.add(baseItem.id);
+      const otherItem = otherMap.get(baseItem.id);
+
+      if (otherItem) {
+        // Item exists in both, merge based on individual timestamp
+        const baseTimestamp = baseItem.lastModified || 0;
+        const otherTimestamp = otherItem.lastModified || 0;
+
+        if (baseTimestamp >= otherTimestamp) {
+          mergedQuickInputs.push(baseItem);
+          serializerLogger.debug(`Using base list item: ${baseItem.id} (base: ${new Date(baseTimestamp).toISOString()}, other: ${new Date(otherTimestamp).toISOString()})`);
         } else {
-          mergedQuickInputs.push(remoteItem);
-          serializerLogger.debug(`Using remote quickInput: ${id} (local: ${new Date(localTimestamp).toISOString()}, remote: ${new Date(remoteTimestamp).toISOString()})`);
+          mergedQuickInputs.push(otherItem);
+          serializerLogger.debug(`Using other list item: ${otherItem.id} (other: ${new Date(otherTimestamp).toISOString()}, base: ${new Date(baseTimestamp).toISOString()})`);
         }
-        processedIds.add(id);
+      } else {
+        // Item only exists in the base list
+        mergedQuickInputs.push(baseItem);
+        serializerLogger.debug(`Adding base-only item: ${baseItem.id}`);
       }
     });
 
-    // Add items that only exist in local
-    localMap.forEach((localItem, id) => {
-      if (!processedIds.has(id)) {
-        mergedQuickInputs.push(localItem);
-        serializerLogger.debug(`Adding local-only quickInput: ${id}`);
-        processedIds.add(id);
-      }
-    });
-
-    // Add items that only exist in remote
-    remoteMap.forEach((remoteItem, id) => {
-      if (!processedIds.has(id)) {
-        mergedQuickInputs.push(remoteItem);
-        serializerLogger.debug(`Adding remote-only quickInput: ${id}`);
-        processedIds.add(id);
+    // Add items that only exist in the other list
+    otherList.forEach(otherItem => {
+      if (otherItem.id && !processedIds.has(otherItem.id)) {
+        mergedQuickInputs.push(otherItem);
+        serializerLogger.debug(`Adding other-only item: ${otherItem.id}`);
       }
     });
 
@@ -666,6 +671,79 @@ dataSerializer.mergeQuickInputs = function(localQuickInputs, remoteQuickInputs) 
     return mergedQuickInputs;
   } catch (error) {
     serializerLogger.error('Error merging quickInputs:', error.message);
+    // Fallback to the old merging logic in case of an error to avoid data loss
+    return this.legacyMergeQuickInputs(localQuickInputs, remoteQuickInputs);
+  }
+};
+
+/**
+ * Legacy merge quickInputs arrays based on individual item timestamps (fallback)
+ */
+dataSerializer.legacyMergeQuickInputs = function(localQuickInputs, remoteQuickInputs) {
+  try {
+    serializerLogger.info('Starting legacy quickInputs merge based on lastModified timestamps');
+
+    if (!localQuickInputs && !remoteQuickInputs) {
+      return [];
+    }
+
+    if (!localQuickInputs || localQuickInputs.length === 0) {
+      return remoteQuickInputs || [];
+    }
+
+    if (!remoteQuickInputs || remoteQuickInputs.length === 0) {
+      return localQuickInputs || [];
+    }
+
+    const localMap = new Map();
+    const remoteMap = new Map();
+
+    localQuickInputs.forEach(item => {
+      if (item.id) {
+        if (!item.lastModified) item.lastModified = 0;
+        localMap.set(item.id, item);
+      }
+    });
+
+    remoteQuickInputs.forEach(item => {
+      if (item.id) {
+        if (!item.lastModified) item.lastModified = 0;
+        remoteMap.set(item.id, item);
+      }
+    });
+
+    const mergedQuickInputs = [];
+    const processedIds = new Set();
+
+    localMap.forEach((localItem, id) => {
+      if (remoteMap.has(id)) {
+        const remoteItem = remoteMap.get(id);
+        if ((localItem.lastModified || 0) >= (remoteItem.lastModified || 0)) {
+          mergedQuickInputs.push(localItem);
+        } else {
+          mergedQuickInputs.push(remoteItem);
+        }
+        processedIds.add(id);
+      }
+    });
+
+    localMap.forEach((localItem, id) => {
+      if (!processedIds.has(id)) {
+        mergedQuickInputs.push(localItem);
+        processedIds.add(id);
+      }
+    });
+
+    remoteMap.forEach((remoteItem, id) => {
+      if (!processedIds.has(id)) {
+        mergedQuickInputs.push(remoteItem);
+        processedIds.add(id);
+      }
+    });
+
+    return mergedQuickInputs;
+  } catch (error) {
+    serializerLogger.error('Error in legacyMergeQuickInputs:', error.message);
     return localQuickInputs || remoteQuickInputs || [];
   }
 };
