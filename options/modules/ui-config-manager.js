@@ -233,28 +233,16 @@ export class UIConfigManager {
         throw new Error(i18n.getMessage('options_ui_config_import_missing_field', { fieldName: 'defaultExtractionMethod' }));
       }
 
-      // Check if blacklist or sync configurations are included
-      const hasBlacklist = config.blacklist && config.blacklist.patterns;
-      const hasSync = config.sync;
-
       // Show confirmation dialog with import details
       let confirmMessage = `${i18n.getMessage('options_ui_config_import_confirm_title')}\n\n` +
                            `${i18n.getMessage('options_ui_config_import_confirm_export_date', { date: importData.exportedAt || 'Unknown' })}\n` +
                            `${i18n.getMessage('options_ui_config_import_confirm_version', { version: importData.version || 'Unknown' })}\n` +
                            `${i18n.getMessage('options_ui_config_import_confirm_exported_by', { author: importData.exportedBy || 'Unknown' })}\n`;
 
-      if (hasBlacklist) {
-        confirmMessage += `\n${i18n.getMessage('options_ui_config_import_confirm_blacklist', { count: config.blacklist.patterns.length })}`;
-      }
-
-      if (hasSync) {
-        confirmMessage += `\n${i18n.getMessage('options_ui_config_import_confirm_sync')}`;
-      }
-
       confirmMessage += `\n\n${i18n.getMessage('options_ui_config_import_confirm_footer')}`;
 
       if (!confirm(confirmMessage)) {
-        logger.info(i18n.getMessage('options_ui_config_import_cancelled'));
+        logger.info('Configuration import cancelled by user');
         return false;
       }
 
@@ -264,14 +252,8 @@ export class UIConfigManager {
       if (success) {
         logger.info('Configuration imported successfully');
 
-        // Show success message with details about what was imported
+        // Show success message
         let successMessage = i18n.getMessage('options_ui_config_import_success');
-        if (hasBlacklist) {
-          successMessage += `\n${i18n.getMessage('options_ui_config_import_success_blacklist', { count: config.blacklist.patterns.length })}`;
-        }
-        if (hasSync) {
-          successMessage += `\n${i18n.getMessage('options_ui_config_import_success_sync')}`;
-        }
         successMessage += `\n\n${i18n.getMessage('options_ui_config_import_success_footer')}`;
 
         alert(successMessage);

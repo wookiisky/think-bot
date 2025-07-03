@@ -971,17 +971,9 @@
     "message": "Version: $1",
     "description": "Shows the version of the configuration file."
   },
-  "options_ui_config_import_confirm_exported_by": {
+    "options_ui_config_import_confirm_exported_by": {
     "message": "Exported By: $1",
     "description": "Shows who exported the configuration file."
-  },
-  "options_ui_config_import_confirm_blacklist": {
-    "message": "Blacklist patterns: $1",
-    "description": "Shows the number of blacklist patterns to be imported."
-  },
-  "options_ui_config_import_confirm_sync": {
-    "message": "Sync configuration included",
-    "description": "Indicates that sync configuration is included in the import."
   },
   "options_ui_config_import_confirm_footer": {
     "message": "Do you want to proceed with importing this configuration? This will overwrite your current settings.",
@@ -991,10 +983,6 @@
     "message": "Configuration imported successfully!",
     "description": "Main success message after configuration import."
   },
-  "options_ui_config_import_success_blacklist": {
-    "message": "Imported $1 blacklist patterns",
-    "description": "Success message showing the number of blacklist patterns imported."
-  },
   "options_ui_config_import_success_sync": {
     "message": "Sync configuration imported",
     "description": "Success message indicating sync configuration was imported."
@@ -1002,5 +990,9 @@
   "options_ui_config_import_success_footer": {
     "message": "The page will reload to apply the new settings.",
     "description": "Footer text for the configuration import success message."
+  },
+  "options_ui_config_import_cancelled": {
+    "message": "Configuration import cancelled.",
+    "description": "Message shown when the user cancels the configuration import."
   }
 }

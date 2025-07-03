@@ -99,7 +99,7 @@ const i18n = {
   /**
    * Get translated message
    * @param {string} key - Translation key
-   * @param {string|string[]} [substitutions] - Optional placeholder values
+   * @param {string|string[]|object} [substitutions] - Optional placeholder values
    * @returns {string} The translated string
    */
   getMessage(key, substitutions = []) {
@@ -124,12 +124,35 @@ const i18n = {
       }
       
       // Handle substitutions for custom translations
-      if (substitutions && substitutions.length > 0) {
+      if (substitutions) {
         if (Array.isArray(substitutions)) {
+          // Array format: ['value1', 'value2', ...]
           substitutions.forEach((sub, index) => {
             message = message.replace(`$${index + 1}`, sub);
           });
+        } else if (typeof substitutions === 'object') {
+          // Object format: {key: 'value', key2: 'value2', ...}
+          // First handle named placeholders like {time}, {minutes}, etc.
+          for (const [key, value] of Object.entries(substitutions)) {
+            // Replace named placeholders in curly braces
+            message = message.replace(`{${key}}`, value);
+          }
+          
+          // Then handle positional placeholders for backward compatibility
+          const keys = Object.keys(substitutions);
+          if (keys.length > 0) {
+            // For backward compatibility, if there's only one key, use it as $1
+            if (keys.length === 1) {
+              message = message.replace('$1', substitutions[keys[0]]);
+            } else {
+              // For multiple keys, replace based on key names or index
+              keys.forEach((key, index) => {
+                message = message.replace(`$${index + 1}`, substitutions[key]);
+              });
+            }
+          }
         } else {
+          // String format: 'value'
           message = message.replace('$1', substitutions);
         }
       }

@@ -678,7 +678,7 @@ async function loadPageConversation(url) {
       elements.loadingIndicator.classList.add('hidden');
       elements.extractedContent.innerHTML = '';
       elements.contentError.classList.remove('hidden');
-      elements.contentError.textContent = chrome.i18n.getMessage('conversations_js_cannot_extract');
+              elements.contentError.textContent = i18n.getMessage('conversations_js_cannot_extract');
       
       // Clear chat container for restricted pages
       elements.chatContainer.innerHTML = '';
@@ -872,7 +872,7 @@ async function loadPageConversation(url) {
     logger.info('Page conversation loaded successfully');
   } catch (error) {
     logger.error('Error loading page conversation:', error);
-    showErrorState(chrome.i18n.getMessage('conversations_js_failed_to_load'));
+          showErrorState(i18n.getMessage('conversations_js_failed_to_load'));
   }
 }
 
@@ -955,7 +955,7 @@ async function handleConversationsPageDataLoaded(pageInfo) {
     }
     if (elements.contentError) {
       elements.contentError.classList.remove('hidden');
-      elements.contentError.textContent = chrome.i18n.getMessage('conversations_js_no_cached_content');
+              elements.contentError.textContent = i18n.getMessage('conversations_js_no_cached_content');
     }
     logger.warn('No content extracted for current page. Data received:', pageInfo);
   }
@@ -1038,7 +1038,7 @@ async function handlePageDelete(url) {
     return true;
   } catch (error) {
     logger.error('Error deleting page data:', error);
-    alert(chrome.i18n.getMessage('conversations_js_failed_to_delete', { error: error.message || 'Unknown error' }));
+            alert(i18n.getMessage('conversations_js_failed_to_delete', { error: error.message || 'Unknown error' }));
     return false;
   }
 }
@@ -1307,7 +1307,7 @@ function setupMessageListeners() {
           if (streamingMessage) {
             const contentDiv = streamingMessage.querySelector('.message-content');
             if (contentDiv) {
-              contentDiv.innerHTML = `<span style="color: var(--text-color); font-style: italic;">${chrome.i18n.getMessage('conversations_js_response_stopped')}</span>`;
+              contentDiv.innerHTML = `<span style="color: var(--text-color); font-style: italic;">${i18n.getMessage('conversations_js_response_stopped')}</span>`;
             }
             streamingMessage.removeAttribute('data-streaming');
           }
