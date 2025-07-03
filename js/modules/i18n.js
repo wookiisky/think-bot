@@ -21,16 +21,15 @@ const i18n = {
     try {
       // Load user's preferred language from storage
       // Check both locations for backward compatibility
-      const syncResult = await chrome.storage.sync.get(['ThinkBotConfig']);
-      const localResult = await chrome.storage.local.get(['language']);
+      const localResult = await chrome.storage.local.get(['ThinkBotConfig', 'language']);
       
       let language = 'en';
       
-      // First try to get from main config (sync storage)
-      if (syncResult.ThinkBotConfig?.basic?.language) {
-        language = syncResult.ThinkBotConfig.basic.language;
+      // First try to get from main config (local storage)
+      if (localResult.ThinkBotConfig?.basic?.language) {
+        language = localResult.ThinkBotConfig.basic.language;
       }
-      // Then try local storage as fallback
+      // Then try language key as fallback
       else if (localResult.language) {
         language = localResult.language;
       }
@@ -159,18 +158,18 @@ const i18n = {
        
        // Also update the main config to keep it in sync
        try {
-         const syncResult = await chrome.storage.sync.get(['ThinkBotConfig']);
-         if (syncResult.ThinkBotConfig) {
-           const config = syncResult.ThinkBotConfig;
+         const localResult = await chrome.storage.local.get(['ThinkBotConfig']);
+         if (localResult.ThinkBotConfig) {
+           const config = localResult.ThinkBotConfig;
            if (config.basic) {
              config.basic.language = language;
            } else {
              config.basic = { language: language };
            }
-           await chrome.storage.sync.set({ ThinkBotConfig: config });
+           await chrome.storage.local.set({ ThinkBotConfig: config });
          }
-       } catch (syncError) {
-         console.warn('Failed to update main config language, but local storage updated:', syncError);
+       } catch (localError) {
+         console.warn('Failed to update main config language, but language preference updated:', localError);
        }
        
        // Update current language

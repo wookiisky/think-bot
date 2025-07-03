@@ -115,9 +115,9 @@ var KeyHelpers = {
  * Storage Type Definitions
  * Defines which storage API to use for different types of data
  */
-var STORAGE_TYPES = {
-  // Configuration data - uses chrome.storage.sync for cross-device sync
-  CONFIG: 'sync',
+  var STORAGE_TYPES = {
+    // Configuration data - uses chrome.storage.local for fast local access
+    CONFIG: 'local',
   
   // Cache data - uses chrome.storage.local for larger storage capacity
   CACHE: 'local',

@@ -28,7 +28,7 @@ const DEFAULT_SYNC_CONFIG = {
  */
 syncConfig.initializeIfNeeded = async function() {
   try {
-    const result = await chrome.storage.sync.get(SYNC_CONFIG_KEY);
+    const result = await chrome.storage.local.get(SYNC_CONFIG_KEY);
     
     if (!result[SYNC_CONFIG_KEY]) {
       syncConfigLogger.info('Initializing default sync configuration');
@@ -44,7 +44,7 @@ syncConfig.initializeIfNeeded = async function() {
  */
 syncConfig.getSyncConfig = async function() {
   try {
-    const result = await chrome.storage.sync.get(SYNC_CONFIG_KEY);
+    const result = await chrome.storage.local.get(SYNC_CONFIG_KEY);
     const config = result[SYNC_CONFIG_KEY] || DEFAULT_SYNC_CONFIG;
     
     // Ensure all default fields exist
@@ -68,7 +68,7 @@ syncConfig.getSyncConfig = async function() {
  */
 syncConfig.saveSyncConfig = async function(config) {
   try {
-    await chrome.storage.sync.set({ [SYNC_CONFIG_KEY]: config });
+    await chrome.storage.local.set({ [SYNC_CONFIG_KEY]: config });
     syncConfigLogger.info('Sync configuration saved successfully');
     return true;
   } catch (error) {

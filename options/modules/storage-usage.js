@@ -36,8 +36,8 @@ export class StorageUsageDisplay {
   // Get storage quota limits
   static getStorageLimits() {
     return {
-      maxPerItem: chrome.storage.sync.QUOTA_BYTES_PER_ITEM || 8192, // 8KB per item
-      maxTotal: chrome.storage.sync.QUOTA_BYTES || 102400 // 100KB total
+      maxPerItem: chrome.storage.local.QUOTA_BYTES_PER_ITEM || 10485760, // 10MB per item for local storage
+      maxTotal: chrome.storage.local.QUOTA_BYTES || 10485760 // 10MB total for local storage
     };
   }
   

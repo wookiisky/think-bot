@@ -45,14 +45,21 @@ function generateUUID() {
  */
 blacklistManager.getPatterns = async function() {
   try {
-    const result = await chrome.storage.sync.get([BLACKLIST_PATTERNS_KEY]);
+    const result = await chrome.storage.local.get([BLACKLIST_PATTERNS_KEY]);
     let patterns = result[BLACKLIST_PATTERNS_KEY] || [];
 
     // If no patterns exist, initialize with defaults
     if (patterns.length === 0) {
       blacklistLogger.info('No blacklist patterns found, initializing with defaults');
-      await blacklistManager.initializeDefaultPatterns();
-      return await blacklistManager.getPatterns();
+      const initSuccess = await blacklistManager.initializeDefaultPatterns();
+      if (initSuccess) {
+        // Re-fetch patterns after successful initialization
+        const newResult = await chrome.storage.local.get([BLACKLIST_PATTERNS_KEY]);
+        patterns = newResult[BLACKLIST_PATTERNS_KEY] || [];
+      } else {
+        blacklistLogger.error('Failed to initialize default patterns, returning empty array');
+        return [];
+      }
     }
 
     blacklistLogger.info(`Loaded ${patterns.length} blacklist patterns`);
@@ -70,7 +77,7 @@ blacklistManager.getPatterns = async function() {
  */
 blacklistManager.savePatterns = async function(patterns) {
   try {
-    await chrome.storage.sync.set({ [BLACKLIST_PATTERNS_KEY]: patterns });
+    await chrome.storage.local.set({ [BLACKLIST_PATTERNS_KEY]: patterns });
     blacklistLogger.info(`Saved ${patterns.length} blacklist patterns`);
     return true;
   } catch (error) {
@@ -398,7 +405,7 @@ blacklistManager.importConfig = async function(blacklistConfig) {
     }
 
     // Save imported patterns
-    await chrome.storage.sync.set({ [BLACKLIST_PATTERNS_KEY]: validPatterns });
+    await chrome.storage.local.set({ [BLACKLIST_PATTERNS_KEY]: validPatterns });
     blacklistLogger.info(`Imported ${validPatterns.length} blacklist patterns`);
     return true;
   } catch (error) {
@@ -414,7 +421,7 @@ blacklistManager.importConfig = async function(blacklistConfig) {
 blacklistManager.resetToDefaults = async function() {
   try {
     // Clear existing patterns
-    await chrome.storage.sync.remove([BLACKLIST_PATTERNS_KEY]);
+    await chrome.storage.local.remove([BLACKLIST_PATTERNS_KEY]);
 
     // Initialize with defaults
     const success = await blacklistManager.initializeDefaultPatterns();

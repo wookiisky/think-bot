@@ -1,6 +1,6 @@
 // Storage Configuration Manager Module
 // Core storage operations for configuration data
-// Handles Chrome Storage API operations, compression, and storage optimization
+// Handles Chrome Storage API operations with local storage, compression, and storage optimization
 
 // Note: Compression utilities should be loaded before this module
 // The compression utilities are loaded in the appropriate context (service worker, options page, sidebar)
@@ -110,6 +110,36 @@ storageConfigManager.getDefaultQuickInputs = function() {
   ];
 }
 
+// Get blacklist configuration safely (avoid circular dependencies)
+storageConfigManager.getBlacklistConfigSafe = async function() {
+  try {
+    // Try to get blacklist config directly from storage without triggering blacklist manager initialization
+    if (typeof blacklistManager !== 'undefined') {
+      // First try to get patterns directly from storage
+      const BLACKLIST_PATTERNS_KEY = CONFIG_KEYS.BLACKLIST_PATTERNS;
+      const result = await chrome.storage.local.get([BLACKLIST_PATTERNS_KEY]);
+      const patterns = result[BLACKLIST_PATTERNS_KEY] || [];
+      
+      // If patterns exist, return them directly
+      if (patterns.length > 0) {
+        return {
+          patterns: patterns.map(pattern => ({
+            id: pattern.id,
+            pattern: pattern.pattern,
+            enabled: pattern.enabled
+          }))
+        };
+      }
+    }
+    
+    // If no patterns found or blacklist manager not available, return empty config
+    return { patterns: [] };
+  } catch (error) {
+    storageConfigLogger.error('Error getting blacklist config safely:', error.message);
+    return { patterns: [] };
+  }
+}
+
 // Generate unique ID for quick input using UUID with timestamp
 storageConfigManager.generateQuickInputId = function() {
   // Generate timestamp component
@@ -150,7 +180,7 @@ storageConfigManager.saveQuickInput = async function(quickInput) {
     }
 
     const key = KeyHelpers.getQuickInputKey(quickInput.id);
-    await chrome.storage.sync.set({ [key]: dataToSave });
+    await chrome.storage.local.set({ [key]: dataToSave });
     return quickInput.id;
   } catch (error) {
     storageConfigLogger.error(`Error saving quick input ${quickInput.id}:`, error.message);
@@ -179,7 +209,7 @@ storageConfigManager.saveQuickInputWithTimestamp = async function(quickInput) {
     }
 
     const key = KeyHelpers.getQuickInputKey(quickInput.id);
-    await chrome.storage.sync.set({ [key]: dataToSave });
+    await chrome.storage.local.set({ [key]: dataToSave });
 
     storageConfigLogger.info(`Quick input saved with updated timestamp: ${quickInput.id}`);
     return quickInput.id;
@@ -193,7 +223,7 @@ storageConfigManager.saveQuickInputWithTimestamp = async function(quickInput) {
 storageConfigManager.loadQuickInput = async function(id) {
   try {
     const key = KeyHelpers.getQuickInputKey(id);
-    const result = await chrome.storage.sync.get(key);
+    const result = await chrome.storage.local.get(key);
     let quickInput = result[key] || null;
 
     // Decompress quick input using pako compression
@@ -213,7 +243,7 @@ storageConfigManager.loadQuickInput = async function(id) {
 storageConfigManager.deleteQuickInput = async function(id) {
   try {
     const key = KeyHelpers.getQuickInputKey(id);
-    await chrome.storage.sync.remove(key);
+    await chrome.storage.local.remove(key);
     return true;
   } catch (error) {
     storageConfigLogger.error(`Error deleting quick input ${id}:`, error.message);
@@ -224,7 +254,7 @@ storageConfigManager.deleteQuickInput = async function(id) {
 // Save quick inputs index
 storageConfigManager.saveQuickInputsIndex = async function(quickInputIds) {
   try {
-    await chrome.storage.sync.set({ [QUICK_INPUTS_INDEX_KEY]: quickInputIds });
+    await chrome.storage.local.set({ [QUICK_INPUTS_INDEX_KEY]: quickInputIds });
     return true;
   } catch (error) {
     storageConfigLogger.error('Error saving quick inputs index:', error.message);
@@ -235,7 +265,7 @@ storageConfigManager.saveQuickInputsIndex = async function(quickInputIds) {
 // Load quick inputs index
 storageConfigManager.loadQuickInputsIndex = async function() {
   try {
-    const result = await chrome.storage.sync.get(QUICK_INPUTS_INDEX_KEY);
+    const result = await chrome.storage.local.get(QUICK_INPUTS_INDEX_KEY);
     const index = result[QUICK_INPUTS_INDEX_KEY] || [];
     return index;
   } catch (error) {
@@ -323,12 +353,13 @@ storageConfigManager.saveAllQuickInputs = async function(quickInputs, forceTimes
 storageConfigManager.initializeIfNeeded = async function() {
   try {
     // Check main config
-    const mainResult = await chrome.storage.sync.get(MAIN_CONFIG_KEY);
+    const mainResult = await chrome.storage.local.get(MAIN_CONFIG_KEY);
 
     if (!mainResult[MAIN_CONFIG_KEY]) {
       storageConfigLogger.info('Initializing default configuration');
       const defaultConfig = await storageConfigManager.getDefaultConfig();
-      await storageConfigManager.saveConfig(defaultConfig);
+      // Use isUserModification = false to avoid triggering getConfig during initialization
+      await storageConfigManager.saveConfig(defaultConfig, false);
     }
   } catch (error) {
     storageConfigLogger.error('Configuration initialization error:', error.message);
@@ -339,10 +370,11 @@ storageConfigManager.initializeIfNeeded = async function() {
 storageConfigManager.getConfig = async function() {
   try {
     // Get main config, system prompt, blacklist, and sync config in parallel
+    // Use safe blacklist loading to avoid circular dependencies during initialization
     const [mainResult, systemPromptResult, blacklistConfig, syncConfigData] = await Promise.all([
-      chrome.storage.sync.get(MAIN_CONFIG_KEY),
-      chrome.storage.sync.get(SYSTEM_PROMPT_KEY),
-      typeof blacklistManager !== 'undefined' ? blacklistManager.getExportableConfig() : Promise.resolve({ patterns: [] }),
+      chrome.storage.local.get(MAIN_CONFIG_KEY),
+      chrome.storage.local.get(SYSTEM_PROMPT_KEY),
+      storageConfigManager.getBlacklistConfigSafe(),
       typeof syncConfig !== 'undefined' ? syncConfig.getExportableConfig() : Promise.resolve({})
     ]);
 
@@ -548,7 +580,7 @@ storageConfigManager.saveConfig = async function(newConfig, isUserModification =
 
     // Save all parts with error handling
     const savePromises = [
-      chrome.storage.sync.set({ [MAIN_CONFIG_KEY]: mainConfig }).catch(error => {
+      chrome.storage.local.set({ [MAIN_CONFIG_KEY]: mainConfig }).catch(error => {
         storageConfigLogger.error('Error saving main config:', error.message);
         throw new Error(`Main config save failed: ${error.message}`);
       }),
@@ -556,7 +588,7 @@ storageConfigManager.saveConfig = async function(newConfig, isUserModification =
         storageConfigLogger.error('Error saving quick inputs:', error.message);
         throw new Error(`Quick inputs save failed: ${error.message}`);
       }),
-      chrome.storage.sync.set({ [SYSTEM_PROMPT_KEY]: systemPromptToSave }).catch(error => {
+      chrome.storage.local.set({ [SYSTEM_PROMPT_KEY]: systemPromptToSave }).catch(error => {
         storageConfigLogger.error('Error saving system prompt:', error.message);
         throw new Error(`System prompt save failed: ${error.message}`);
       })
@@ -619,17 +651,17 @@ storageConfigManager.resetConfig = async function() {
 // Check storage usage and warn if approaching limits
 storageConfigManager.checkStorageUsage = async function() {
   try {
-    const storageInfo = await chrome.storage.sync.getBytesInUse(null);
-    const maxBytes = chrome.storage.sync.QUOTA_BYTES || 102400; // 100KB default
-    const maxBytesPerItem = chrome.storage.sync.QUOTA_BYTES_PER_ITEM || 8192; // 8KB default
+    const storageInfo = await chrome.storage.local.getBytesInUse(null);
+    const maxBytes = chrome.storage.local.QUOTA_BYTES || 10485760; // 10MB default for local storage
+    const maxBytesPerItem = chrome.storage.local.QUOTA_BYTES_PER_ITEM || 10485760; // 10MB default for local storage
 
     storageConfigLogger.info(`Storage usage: ${storageInfo}/${maxBytes} bytes (${Math.round(storageInfo/maxBytes*100)}%)`);
 
     // Check individual items
     const [mainUsage, quickInputsIndexUsage, systemPromptUsage] = await Promise.all([
-      chrome.storage.sync.getBytesInUse(MAIN_CONFIG_KEY),
-      chrome.storage.sync.getBytesInUse(QUICK_INPUTS_INDEX_KEY),
-      chrome.storage.sync.getBytesInUse(SYSTEM_PROMPT_KEY)
+      chrome.storage.local.getBytesInUse(MAIN_CONFIG_KEY),
+      chrome.storage.local.getBytesInUse(QUICK_INPUTS_INDEX_KEY),
+      chrome.storage.local.getBytesInUse(SYSTEM_PROMPT_KEY)
     ]);
 
     // Calculate quick inputs total usage
@@ -639,7 +671,7 @@ storageConfigManager.checkStorageUsage = async function() {
     if (quickInputIds.length > 0) {
       const quickInputKeys = quickInputIds.map(id => KeyHelpers.getQuickInputKey(id));
       const quickInputUsages = await Promise.all(
-        quickInputKeys.map(key => chrome.storage.sync.getBytesInUse(key))
+        quickInputKeys.map(key => chrome.storage.local.getBytesInUse(key))
       );
       quickInputsTotalUsage += quickInputUsages.reduce((sum, usage) => sum + usage, 0);
     }
