@@ -73,7 +73,7 @@ export class ModelManager {
             <span class="slider round"></span>
           </label>
           <button type="button" class="remove-model-btn icon-btn"
-                  data-model-index="${index}" title="Remove Model">
+                  data-model-index="${index}" data-i18n-title="options_model_remove_button_title" title="Remove Model">
             <i class="material-icons">delete</i>
           </button>
         </div>
@@ -82,16 +82,16 @@ export class ModelManager {
         <div class="model-form">
           <div class="form-grid">
             <div class="form-group">
-              <label>Display Name</label>
+              <label data-i18n="options_model_display_name_label">Display Name</label>
               <input type="text" class="model-name-input" value="${model.name || ''}"
                      data-model-index="${index}" data-field="name">
             </div>
             <div class="form-group">
-              <label>Provider</label>
+              <label data-i18n="options_model_provider_label">Provider</label>
               <select class="model-provider-select"
                       data-model-index="${index}">
-                <option value="openai" ${model.provider === 'openai' ? 'selected' : ''}>OpenAI Compatible</option>
-                <option value="gemini" ${model.provider === 'gemini' ? 'selected' : ''}>Google Gemini</option>
+                <option value="openai" ${model.provider === 'openai' ? 'selected' : ''} data-i18n="options_model_provider_openai">OpenAI Compatible</option>
+                <option value="gemini" ${model.provider === 'gemini' ? 'selected' : ''} data-i18n="options_model_provider_gemini">Google Gemini</option>
               </select>
             </div>
           </div>
@@ -100,16 +100,16 @@ export class ModelManager {
           </div>
           <div class="form-grid">
             <div class="form-group">
-              <label>Max Tokens</label>
+              <label data-i18n="options_model_max_tokens_label">Max Tokens</label>
               <input type="number" class="model-max-tokens" value="${model.maxTokens || 2048}"
-                     data-model-index="${index}" data-field="maxTokens" 
-                     placeholder="e.g., 2048" min="1" max="100000">
+                     data-model-index="${index}" data-field="maxTokens"
+                     data-i18n-placeholder="options_model_max_tokens_placeholder" placeholder="e.g., 2048" min="1" max="100000">
             </div>
             <div class="form-group">
-              <label>Temperature</label>
+              <label data-i18n="options_model_temperature_label">Temperature</label>
               <input type="number" class="model-temperature" value="${model.temperature || 0.7}"
-                     data-model-index="${index}" data-field="temperature" 
-                     placeholder="0.0 - 1.0" min="0" max="1" step="0.1">
+                     data-model-index="${index}" data-field="temperature"
+                     data-i18n-placeholder="options_model_temperature_placeholder" placeholder="0.0 - 1.0" min="0" max="1" step="0.1">
             </div>
           </div>
         </div>
@@ -123,17 +123,17 @@ export class ModelManager {
     if (model.provider === 'openai') {
       return `
         <div class="form-group">
-          <label>Base URL</label>
+          <label data-i18n="options_model_base_url_label">Base URL</label>
           <input type="text" class="model-base-url" value="${model.baseUrl || 'https://api.openai.com'}"
                  data-model-index="${index}" data-field="baseUrl">
         </div>
         <div class="form-group">
-          <label>API Key</label>
+          <label data-i18n="options_model_api_key_label">API Key</label>
           <input type="password" class="model-api-key" value="${model.apiKey || ''}"
                  data-model-index="${index}" data-field="apiKey">
         </div>
         <div class="form-group">
-          <label>Model</label>
+          <label data-i18n="options_model_model_label">Model</label>
           <input type="text" class="model-model" value="${model.model || 'gpt-3.5-turbo'}"
                  data-model-index="${index}" data-field="model">
         </div>
@@ -141,17 +141,17 @@ export class ModelManager {
     } else if (model.provider === 'gemini') {
       return `
         <div class="form-group">
-          <label>Base URL</label>
+          <label data-i18n="options_model_base_url_label">Base URL</label>
           <input type="text" class="model-base-url" value="${model.baseUrl || 'https://generativelanguage.googleapis.com'}"
                  data-model-index="${index}" data-field="baseUrl">
         </div>
         <div class="form-group">
-          <label>API Key</label>
+          <label data-i18n="options_model_api_key_label">API Key</label>
           <input type="password" class="model-api-key" value="${model.apiKey || ''}"
                  data-model-index="${index}" data-field="apiKey">
         </div>
         <div class="form-group">
-          <label>Model</label>
+          <label data-i18n="options_model_model_label">Model</label>
           <input type="text" class="model-model" value="${model.model || 'gemini-pro'}"
                  data-model-index="${index}" data-field="model">
         </div>
@@ -183,7 +183,7 @@ export class ModelManager {
 
     const newModel = {
       id: `model_${timestamp}_${uuid}`,
-      name: `New Model ${this.models.length + 1}`,
+      name: i18n.getMessage('options_model_new_name', [this.models.length + 1]),
       provider: 'openai',
       apiKey: '',
       baseUrl: 'https://api.openai.com',
@@ -205,7 +205,7 @@ export class ModelManager {
 
   // Remove a model configuration
   removeModel(index) {
-    if (confirm('Are you sure you want to remove this model configuration?')) {
+    if (confirm(i18n.getMessage('options_model_remove_confirm'))) {
       this.models.splice(index, 1);
       this.renderModels();
       this.updateDefaultModelSelector();
@@ -315,7 +315,7 @@ export class ModelManager {
     if (completeModels.length === 0) {
       const option = document.createElement('option');
       option.value = '';
-      option.textContent = 'No models configured';
+      option.textContent = i18n.getMessage('options_model_no_models_configured');
       select.appendChild(option);
       return;
     }

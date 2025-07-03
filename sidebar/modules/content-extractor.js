@@ -2,6 +2,7 @@
  * content-extractor.js - Content extraction functionality
  */
 
+import { i18n } from '../../js/modules/i18n.js';
 import { createLogger } from './utils.js';
 import { switchExtractionMethod, reExtractContent } from './message-handler.js';
 
@@ -31,7 +32,7 @@ const switchMethod = async (url, method, currentMethod, onSuccess, onError) => {
     } catch (error) {
       logger.error('Error handling same method click:', error);
       if (typeof onError === 'function') {
-        onError('Error accessing current content');
+        onError(i18n.getMessage('sidebar_contentExtractor_error_accessContent'));
       }
     }
     
@@ -62,7 +63,7 @@ const switchMethod = async (url, method, currentMethod, onSuccess, onError) => {
     
     // Call error callback
     if (typeof onError === 'function') {
-      onError('Failed to communicate with the background script');
+      onError(i18n.getMessage('sidebar_contentExtractor_error_backgroundScript'));
     }
   }
 };
@@ -98,7 +99,7 @@ const reExtract = async (url, method, onSuccess, onError) => {
     
     // Call error callback
     if (typeof onError === 'function') {
-      onError('Failed to communicate with the background script');
+      onError(i18n.getMessage('sidebar_contentExtractor_error_backgroundScript'));
     }
   }
 };
@@ -110,7 +111,7 @@ const reExtract = async (url, method, onSuccess, onError) => {
  */
 const copyExtractedContent = async (content) => {
   if (!content) {
-    logger.warn('No content to copy');
+    logger.warn(i18n.getMessage('sidebar_contentExtractor_warn_noContentToCopy'));
     return false;
   }
   
@@ -118,7 +119,7 @@ const copyExtractedContent = async (content) => {
     await navigator.clipboard.writeText(content);
     return true;
   } catch (err) {
-    logger.error('Failed to copy content:', err);
+    logger.error(i18n.getMessage('sidebar_contentExtractor_error_failedToCopy'), err);
     return false;
   }
 };

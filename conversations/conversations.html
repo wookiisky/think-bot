@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Think Bot - Conversations</title>
+  <title data-i18n="conversations_page_title">Think Bot - Conversations</title>
   <!-- Reuse sidebar styles -->
   <link rel="stylesheet" href="../sidebar/styles/base.css">
   <link rel="stylesheet" href="../sidebar/styles/main.css">
@@ -20,15 +20,15 @@
     <!-- Left Column: Page List -->
     <div class="page-list-section" id="pageListSection">
       <div class="page-list-header">
-        <input type="text" id="pageSearchInput" class="page-search-input" placeholder="Search pages...">
+        <input type="text" id="pageSearchInput" class="page-search-input" data-i18n-placeholder="conversations_search_placeholder">
       </div>
       <div class="page-list-container" id="pageListContainer">
         <!-- Page list items will be generated here dynamically -->
         <div class="page-list-empty" id="pageListEmpty">
           <div class="empty-message">
             <i class="material-icons">chat_bubble_outline</i>
-            <p>No conversations yet</p>
-            <p class="empty-subtitle">Browse pages and chat to see conversations here</p>
+            <p data-i18n="conversations_empty_list_title">No conversations yet</p>
+            <p class="empty-subtitle" data-i18n="conversations_empty_list_subtitle">Browse pages and chat to see conversations here</p>
           </div>
         </div>
       </div>
@@ -50,9 +50,8 @@
       <!-- Welcome Screen -->
       <div class="welcome-screen" id="welcomeScreen">
         <div class="welcome-content">
-          <i class="material-icons">forum</i>
-          <h2>Welcome to Conversations</h2>
-          <p>Select a page from the left to view its content and continue chatting.</p>
+          <i class="material-icons">forum</i>          
+          <p data-i18n="conversations_welcome_subtitle">Select a page from the left to view its content and continue chatting.</p>
         </div>
       </div>
       
@@ -70,10 +69,10 @@
                   <div class="dot"></div>
                   <div class="dot"></div>
                 </div>
-                <div class="loading-text">Loading content...</div>
+                <div class="loading-text" data-i18n="global_loading_content">Loading content...</div>
               </div>
             </div>
-            <div id="contentError" class="content-error hidden">Failed to load content.</div>
+            <div id="contentError" class="content-error hidden" data-i18n="global_failed_to_load_content">Failed to load content.</div>
           </div>
           <div class="resize-handle" id="resizeHandle">
             <div class="resize-handle-line"></div>
@@ -94,7 +93,6 @@
           <!-- Image preview area (shown when images are pasted) -->
           <div id="imagePreviewContainer" class="image-preview-container hidden">
             <div class="image-preview-header">
-              Image attached
               <button id="removeImageBtn" class="remove-image-btn">×</button>
             </div>
             <div id="imagePreview" class="image-preview"></div>
@@ -104,23 +102,23 @@
           <div class="input-container">
             <div id="inputResizeHandle" class="input-resize-handle"></div>
             <div class="input-wrapper">
-              <textarea id="userInput" placeholder="Ask ..." rows="1"></textarea>
+              <textarea id="userInput" data-i18n-placeholder="global_ask_placeholder" rows="1"></textarea>
               <div class="model-selector-container">
                 <select id="modelSelector" class="model-selector">
                   <!-- Model options will be populated dynamically -->
                 </select>
               </div>
               <div id="inputActions" class="button-group">
-                <button id="sendBtn" class="button-icon primary" title="Send message">
+                <button id="sendBtn" class="button-icon primary" data-i18n-title="global_send_message_title">
                   <i class="material-icons">send</i>
                 </button>
-                <button id="includePageContentBtn" class="button-icon selector-btn" data-enabled="true" title="Include page content in prompt">
+                <button id="includePageContentBtn" class="button-icon selector-btn" data-enabled="true" data-i18n-title="global_include_page_content_title">
                   <i class="material-icons">description</i>
                 </button>
-                <button id="clearBtn" class="button-icon" title="Stop generating and clear conversation">
+                <button id="clearBtn" class="button-icon" data-i18n-title="global_stop_and_clear_title">
                   <i class="material-icons">delete_forever</i>
                 </button>
-                <button id="exportBtn" class="button-icon" title="Export conversation">
+                <button id="exportBtn" class="button-icon" data-i18n-title="global_export_conversation_title">
                   <i class="material-icons">save_alt</i>
                 </button>
               </div>
@@ -161,12 +159,12 @@
   <!-- Confirmation Dialog -->
   <div id="confirmationDialog" class="confirmation-dialog-overlay hidden">
     <div class="confirmation-dialog">
-      <h3 id="confirmationDialogTitle">Confirm Deletion</h3>
-      <p id="confirmationDialogMessage">Are you sure you want to delete this conversation?</p>
+      <h3 id="confirmationDialogTitle" data-i18n="global_confirm_deletion_title">Confirm Deletion</h3>
+      <p id="confirmationDialogMessage" data-i18n="conversations_confirm_delete_message">Are you sure you want to delete this conversation?</p>
       <div id="confirmationDialogDetails" class="confirmation-details"></div>
       <div class="confirmation-dialog-buttons">
-        <button id="confirmBtn" class="button-danger">Delete</button>
-        <button id="cancelBtn" class="button-secondary">Cancel</button>
+        <button id="confirmBtn" class="button-danger" data-i18n="global_delete_button">Delete</button>
+        <button id="cancelBtn" class="button-secondary" data-i18n="global_cancel_button">Cancel</button>
       </div>
     </div>
   </div>

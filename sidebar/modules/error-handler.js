@@ -3,6 +3,7 @@
  * Handles all types of errors across the application with consistent formatting and display
  */
 
+import { i18n } from '../../js/modules/i18n.js';
 // Import necessary dependencies - use createLogger from utils for consistent logger access
 import { createLogger } from './utils.js';
 
@@ -136,7 +137,7 @@ class ProcessedError {
       this.name = this.originalError.name;
     } else {
       this.message = 'Unknown error occurred';
-      this.userMessage = 'An unexpected error occurred. Please try again.';
+      this.userMessage = i18n.getMessage('sidebar_errorHandler_error_unexpected');
     }
 
     // Ensure we always have valid message and userMessage
@@ -150,28 +151,28 @@ class ProcessedError {
 
     // Handle special case where message is the generic "No detailed error information available"
     if (this.message === 'No detailed error information available') {
-      this.message = 'LLM service error occurred';
-      this.userMessage = 'Failed to get response from AI service. Please try again.';
+      this.message = i18n.getMessage('sidebar_errorHandler_error_llmService');
+      this.userMessage = i18n.getMessage('sidebar_errorHandler_error_failedToGetResponse');
     }
 
     // Handle user cancellation case
     if (this.message === 'Request was cancelled by user') {
-      this.userMessage = 'Request was cancelled by user.';
+      this.userMessage = i18n.getMessage('sidebar_errorHandler_error_requestCancelled');
     }
   }
   
   createUserFriendlyMessage(message) {
     // Map technical error messages to user-friendly messages
     const userFriendlyMappings = {
-      'CONTENT_SCRIPT_NOT_CONNECTED': 'Content script not connected. Please reload the page and try again.',
-      'page_loading_or_script_issue': 'Page content not ready or content script issue. Please wait for the page to load fully and try again.',
-      'page_loading': 'Page content not ready, please wait for page to load fully and retry.',
-      'Readability library not loaded': 'Readability library failed to load. Please try again or contact support.',
-      'Failed to extract content with Readability': 'Readability extraction failed. The page content may not be suitable for extraction. Try refreshing the page.',
-      'HTML content is required': 'Unable to get page content. Please reload the page and try again.',
-      'Processing error': 'Content processing error. Please try again or reload the page.',
-      'offscreen': 'Content processing service unavailable. Please try again.',
-      'Request was cancelled by user': 'Request was cancelled by user.'
+      'CONTENT_SCRIPT_NOT_CONNECTED': i18n.getMessage('sidebar_errorHandler_error_contentScript'),
+      'page_loading_or_script_issue': i18n.getMessage('sidebar_errorHandler_error_pageNotReady'),
+      'page_loading': i18n.getMessage('sidebar_errorHandler_error_pageLoading'),
+      'Readability library not loaded': i18n.getMessage('sidebar_errorHandler_error_readabilityLoad'),
+      'Failed to extract content with Readability': i18n.getMessage('sidebar_errorHandler_error_readabilityExtract'),
+      'HTML content is required': i18n.getMessage('sidebar_errorHandler_error_noHtml'),
+      'Processing error': i18n.getMessage('sidebar_errorHandler_error_processing'),
+      'offscreen': i18n.getMessage('sidebar_errorHandler_error_offscreen'),
+      'Request was cancelled by user': i18n.getMessage('sidebar_errorHandler_error_requestCancelled')
     };
     
     // Check for direct matches
@@ -189,15 +190,15 @@ class ProcessedError {
     // Default user-friendly message based on error type
     switch (this.type) {
       case ERROR_TYPES.LLM_ERROR:
-        return 'Failed to get response from AI service. Please try again.';
+        return i18n.getMessage('sidebar_errorHandler_error_failedToGetResponse');
       case ERROR_TYPES.EXTRACTION_ERROR:
-        return 'Failed to extract content from the page. Please try again or reload the page.';
+        return i18n.getMessage('sidebar_errorHandler_error_extractFailed');
       case ERROR_TYPES.NETWORK_ERROR:
-        return 'Network connection error. Please check your internet connection and try again.';
+        return i18n.getMessage('sidebar_errorHandler_error_network');
       case ERROR_TYPES.TIMEOUT_ERROR:
-        return 'Request timed out. Please try again.';
+        return i18n.getMessage('sidebar_errorHandler_error_timeout');
       default:
-        return message || 'An unexpected error occurred. Please try again.';
+        return message || i18n.getMessage('sidebar_errorHandler_error_unexpected');
     }
   }
   
@@ -229,7 +230,7 @@ class ProcessedError {
       } catch (parseError) {
         // If JSON parsing fails, show raw response as is, but inside a formatted object for context
         const formattedError = {
-          userMessage: "Failed to parse raw response.",
+          userMessage: i18n.getMessage('sidebar_errorHandler_error_parseRawResponse'),
           originalError: this.message,
           rawResponse: this.rawResponse,
           parseError: parseError.message,

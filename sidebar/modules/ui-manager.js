@@ -2,6 +2,7 @@
  * ui-manager.js - UI state management and DOM operations
  */
 
+import { i18n } from '../../js/modules/i18n.js';
 import { createLogger, escapeHtml } from './utils.js';
 
 const logger = createLogger('UIManager');
@@ -40,17 +41,110 @@ const initElements = () => {
     openChatBtn: document.getElementById('openChatBtn')
   };
   
+  // Check for critical missing elements and log detailed information
+  const missingElements = [];
+  const criticalElements = ['userInput', 'chatContainer', 'sendBtn'];
+  const optionalElements = ['removeImageBtn', 'imagePreviewContainer', 'imagePreview'];
+  
+  Object.keys(elements).forEach(key => {
+    if (!elements[key]) {
+      missingElements.push(key);
+    }
+  });
+  
+  if (missingElements.length > 0) {
+    // Separate critical and optional missing elements
+    const missingCritical = missingElements.filter(elem => criticalElements.includes(elem));
+    const missingOptional = missingElements.filter(elem => optionalElements.includes(elem));
+    const missingOther = missingElements.filter(elem => !criticalElements.includes(elem) && !optionalElements.includes(elem));
+    
+    // Only warn about non-critical missing elements
+    if (missingOther.length > 0) {
+      logger.warn('Missing UI elements detected:', missingOther);
+    }
+    
+    // Log optional elements as info level
+    if (missingOptional.length > 0) {
+      logger.info('Optional UI elements not found (will be initialized when needed):', missingOptional);
+    }
+    
+    // Error for critical elements
+    if (missingCritical.length > 0) {
+      logger.error('Critical UI elements missing:', missingCritical);
+    }
+    
+    // For debugging, check if elements exist in DOM using querySelector
+    const elementExistenceCheck = {};
+    missingElements.forEach(elementKey => {
+      const elementId = elementKey === 'extractedContentElem' ? 'extractedContent' : 
+                       elementKey === 'buttonGroup' ? 'inputActions' : elementKey;
+      elementExistenceCheck[elementKey] = !!document.querySelector(`#${elementId}`);
+    });
+    
+    logger.debug('Element existence check in DOM:', elementExistenceCheck);
+  } else {
+    logger.info('All UI elements successfully initialized');
+  }
 
   return elements;
 };
 
 /**
- * Get DOM element
+ * Get DOM element with lazy initialization for optional elements
  * @param {string} elementId - Element ID
  * @returns {HTMLElement} DOM element
  */
 const getElement = (elementId) => {
+  // If element doesn't exist, try to get it again for optional elements
+  if (!elements[elementId]) {
+    const optionalElements = ['removeImageBtn', 'imagePreviewContainer', 'imagePreview'];
+    if (optionalElements.includes(elementId)) {
+      logger.debug(`Attempting lazy initialization for optional element: ${elementId}`);
+      elements[elementId] = document.getElementById(elementId);
+      if (elements[elementId]) {
+        logger.info(`Successfully initialized optional element: ${elementId}`);
+      } else {
+        logger.warn(`Failed to initialize optional element: ${elementId}`);
+        
+        // Additional debugging for removeImageBtn
+        if (elementId === 'removeImageBtn') {
+          const container = document.getElementById('imagePreviewContainer');
+          const header = container ? container.querySelector('.image-preview-header') : null;
+          const removeBtn = header ? header.querySelector('button') : null;
+          const removeBtnByClass = document.querySelector('.remove-image-btn');
+          
+          logger.debug('RemoveImageBtn detailed debug:', {
+            containerId: container ? container.id : 'not found',
+            containerExists: !!container,
+            containerHidden: container ? container.classList.contains('hidden') : 'N/A',
+            headerExists: !!header,
+            buttonInHeader: !!removeBtn,
+            removeBtnByClass: !!removeBtnByClass,
+            documentReady: document.readyState,
+            allButtons: Array.from(document.querySelectorAll('button')).map(btn => btn.id || btn.className)
+          });
+        }
+      }
+    }
+  }
   return elements[elementId];
+};
+
+/**
+ * Ensure image-related elements are available (lazy initialization)
+ * @returns {Object} Object containing image-related elements
+ */
+const ensureImageElements = () => {
+  const imageElements = {
+    imagePreviewContainer: getElement('imagePreviewContainer'),
+    imagePreview: getElement('imagePreview'), 
+    removeImageBtn: getElement('removeImageBtn')
+  };
+  
+  // Update the main elements object with any newly found elements
+  Object.assign(elements, imageElements);
+  
+  return imageElements;
 };
 
 /**
@@ -87,7 +181,7 @@ const clearAllStates = () => {
  * Show loading state
  * @param {string} message - Loading message
  */
-const showLoading = (message = 'Extracting content...') => {
+const showLoading = (message = i18n.getMessage('sidebar_text_extractingContent')) => {
   // First, completely clear all states to prevent overlapping
   clearAllStates();
   
@@ -189,26 +283,26 @@ const showExtractionErrorFallback = (error) => {
     elements.readabilityExtractBtn.disabled = false;
   }
   
-  let errorMessage = 'Failed to extract content.'; // Default message
+  let errorMessage = i18n.getMessage('sidebar_text_failedToExtractContent'); // Default message
   if (error) {
     if (error === 'CONTENT_SCRIPT_NOT_CONNECTED') {
-      errorMessage = 'Content script not connected. Please reload the page and try again.';
+      errorMessage = i18n.getMessage('sidebar_errorHandler_error_contentScript');
     } else if (error === 'page_loading_or_script_issue') {
-      errorMessage = 'Page content not ready or content script issue. Please wait for the page to load fully and try again.';
+      errorMessage = i18n.getMessage('sidebar_errorHandler_error_pageNotReady');
     } else if (error === 'page_loading') {
-      errorMessage = 'Page content not ready, please wait for page to load fully and retry.';
+      errorMessage = i18n.getMessage('sidebar_errorHandler_error_pageLoading');
     } else if (typeof error === 'string') {
       // Handle specific readability errors
       if (error.includes('Readability library not loaded')) {
-        errorMessage = 'Readability library failed to load. Please try again or contact support.';
+        errorMessage = i18n.getMessage('sidebar_errorHandler_error_readabilityLoad');
       } else if (error.includes('Failed to extract content with Readability')) {
-        errorMessage = 'Readability extraction failed. The page content may not be suitable for extraction. Try refreshing the page.';
+        errorMessage = i18n.getMessage('sidebar_errorHandler_error_readabilityExtract');
       } else if (error.includes('HTML content is required')) {
-        errorMessage = 'Unable to get page content. Please reload the page and try again.';
+        errorMessage = i18n.getMessage('sidebar_errorHandler_error_noHtml');
       } else if (error.includes('Processing error')) {
-        errorMessage = 'Content processing error. Please try again or reload the page.';
+        errorMessage = i18n.getMessage('sidebar_errorHandler_error_processing');
       } else if (error.includes('offscreen')) {
-        errorMessage = 'Content processing service unavailable. Please try again.';
+        errorMessage = i18n.getMessage('sidebar_errorHandler_error_offscreen');
       } else {
         errorMessage = error;
       }
@@ -253,11 +347,11 @@ const showRestrictedPageMessage = () => {
   
   messageDiv.innerHTML = `
     <div style="font-size: 18px; margin-bottom: 10px;">🚫</div>
-    <div style="font-weight: bold; margin-bottom: 10px;">Restricted Page</div>
-    <div style="font-size: 14px; line-height: 1.4; margin-bottom: 15px;">
+    <div style="font-weight: bold; margin-bottom: 10px;" data-i18n="sidebar_uiManager_text_restrictedPage">Restricted Page</div>
+    <div style="font-size: 14px; line-height: 1.4; margin-bottom: 15px;" data-i18n="sidebar_uiManager_text_restrictedPageMessage">
       Think Bot cannot work on Chrome internal pages (chrome://, chrome-extension://, etc.).
     </div>
-    <div style="font-size: 14px; line-height: 1.4; color: #888;">
+    <div style="font-size: 14px; line-height: 1.4; color: #888;" data-i18n="sidebar_uiManager_text_restrictedPageGuidance">
       Please navigate to a regular webpage to use the extension.
     </div>
   `;
@@ -279,7 +373,7 @@ const showRestrictedPageMessage = () => {
  */
 const displayExtractedContent = async (content) => {
   if (!content) {
-    showExtractionError('No content extracted');
+    showExtractionError(i18n.getMessage('sidebar_uiManager_error_noContentExtracted'));
     return;
   }
   
@@ -377,6 +471,7 @@ export {
   initElements,
   getElement,
   getAllElements,
+  ensureImageElements,
   clearAllStates,
   showLoading,
   hideLoading,

@@ -2,6 +2,7 @@
  * chat-manager.js - Chat functionality management
  */
 
+import { i18n } from '../../js/modules/i18n.js';
 import { createLogger, hasMarkdownElements, showCopyToast } from './utils.js';
 import { editMessage, retryMessage } from '../components/chat-message.js';
 import { displayChatHistory as displayChatHistoryFromModule } from './chat-history.js';
@@ -99,8 +100,16 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
     messageDiv.setAttribute('data-image', imageBase64);
   }
   
-  if (streamId) {
-    messageDiv.dataset.streamId = streamId;
+  // Set stream ID for streaming messages
+  if (isStreaming) {
+    // If no streamId provided, generate one from current state
+    if (!streamId) {
+      const currentUrl = window.StateManager ? window.StateManager.getStateItem('currentUrl') : window.location.href;
+      const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
+      streamId = `${currentUrl}#${currentTabId}`;
+    }
+    messageDiv.setAttribute('data-stream-id', streamId);
+    logger.debug(`Set stream ID for message: ${streamId}`);
   }
   
   // Create role element - Remove role text display
@@ -134,14 +143,14 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
       const stopButton = document.createElement('button');
       stopButton.className = 'stop-request-btn';
       stopButton.innerHTML = '<i class="material-icons">close</i>';
-      stopButton.title = 'Stop generating response';
+      stopButton.title = i18n.getMessage('sidebar_chatManager_title_stopGenerating');
       stopButton.addEventListener('click', async () => {
         const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
         const success = await cancelLlmRequest(currentTabId);
         
         if (success) {
           // Update UI to show cancellation
-          contentDiv.innerHTML = '<span style="color: var(--text-color); font-style: italic;">Response generation stopped by user.</span>';
+          contentDiv.innerHTML = `<span style="color: var(--text-color); font-style: italic;">${i18n.getMessage('sidebar_js_responseStoppedByUser')}</span>`;
           messageDiv.removeAttribute('data-streaming');
           
           // Update tab loading state
@@ -159,7 +168,7 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
       const stopClearButton = document.createElement('button');
       stopClearButton.className = 'stop-clear-btn';
       stopClearButton.innerHTML = '<i class="material-icons">delete_forever</i>';
-      stopClearButton.title = 'Stop generating and clear conversation';
+      stopClearButton.title = i18n.getMessage('sidebar_title_stopAndClear');
       stopClearButton.addEventListener('click', async () => {
         const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
         
@@ -245,7 +254,7 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
     const editButton = document.createElement('button');
     editButton.className = 'btn-base message-action-btn';
     editButton.innerHTML = '<i class="material-icons">edit</i>';
-    editButton.title = 'Edit Message';
+    editButton.title = i18n.getMessage('sidebar_chatManager_title_editMessage');
     editButton.onclick = () => editMessage(messageDiv, (messageId, newContent) => {
       // Modify DOM
       const contentDiv = messageDiv.querySelector('.message-content');
@@ -266,21 +275,21 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
     const copyButton = document.createElement('button');
     copyButton.className = 'btn-base message-action-btn';
     copyButton.innerHTML = '<i class="material-icons">content_copy</i>';
-    copyButton.title = 'Copy Text';
+    copyButton.title = i18n.getMessage('sidebar_chatManager_title_copyText');
     copyButton.onclick = () => copyMessageText(content);
     
     // Copy markdown button
     const copyMarkdownButton = document.createElement('button');
     copyMarkdownButton.className = 'btn-base message-action-btn';
     copyMarkdownButton.innerHTML = '<i class="material-icons">code</i>';
-    copyMarkdownButton.title = 'Copy Markdown';
+    copyMarkdownButton.title = i18n.getMessage('sidebar_chatManager_title_copyMarkdown');
     copyMarkdownButton.onclick = () => copyMessageMarkdown(content);
     
     // Retry button
     const retryButton = document.createElement('button');
     retryButton.className = 'btn-base message-action-btn';
     retryButton.innerHTML = '<i class="material-icons">refresh</i>';
-    retryButton.title = 'Retry';
+    retryButton.title = i18n.getMessage('sidebar_chatManager_title_retry');
     retryButton.onclick = () => retryMessage(messageDiv, (messageId, messageContent) => {
       // Simply remove all subsequent messages
       const allMessages = Array.from(chatContainer.querySelectorAll('.chat-message'));
@@ -294,12 +303,19 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
       }
       
       // Add new assistant placeholder message
+      // Add initial assistant message for streaming
+      const currentUrl = window.StateManager ? window.StateManager.getStateItem('currentUrl') : window.location.href;
+      const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
+      const streamId = `${currentUrl}#${currentTabId}`;
+      
       appendMessageToUI(
         chatContainer,
         'assistant',
         '<div class="spinner"></div>',
         null,
-        true
+        true,
+        Date.now(),
+        streamId
       );
       
       // Scroll to bottom
@@ -321,28 +337,28 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
     const scrollTopButton = document.createElement('button');
     scrollTopButton.className = 'btn-base message-action-btn';
     scrollTopButton.innerHTML = '<i class="material-icons">arrow_upward</i>';
-    scrollTopButton.title = 'Scroll to Top';
+    scrollTopButton.title = i18n.getMessage('sidebar_chatManager_title_scrollToTop');
     scrollTopButton.onclick = () => messageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     // Copy text button
     const copyTextButton = document.createElement('button');
     copyTextButton.className = 'btn-base message-action-btn';
     copyTextButton.innerHTML = '<i class="material-icons">content_copy</i>';
-    copyTextButton.title = 'Copy Text';
+    copyTextButton.title = i18n.getMessage('sidebar_chatManager_title_copyText');
     copyTextButton.onclick = () => copyMessageText(content);
     
     // Copy markdown button
     const copyMarkdownButton = document.createElement('button');
     copyMarkdownButton.className = 'btn-base message-action-btn';
     copyMarkdownButton.innerHTML = '<i class="material-icons">code</i>';
-    copyMarkdownButton.title = 'Copy Markdown';
+    copyMarkdownButton.title = i18n.getMessage('sidebar_chatManager_title_copyMarkdown');
     copyMarkdownButton.onclick = () => copyMessageMarkdown(content);
 
     // Scroll to bottom button
     const scrollBottomButton = document.createElement('button');
     scrollBottomButton.className = 'btn-base message-action-btn';
     scrollBottomButton.innerHTML = '<i class="material-icons">arrow_downward</i>';
-    scrollBottomButton.title = 'Scroll to Bottom';
+    scrollBottomButton.title = i18n.getMessage('sidebar_chatManager_title_scrollToBottom');
     scrollBottomButton.onclick = () => messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
     
     const buttons = [scrollTopButton, copyTextButton, copyMarkdownButton, scrollBottomButton];
@@ -393,6 +409,7 @@ const handleStreamChunk = (chatContainer, chunk, tabId, url) => {
   const streamingMessageContainer = chatContainer.querySelector(`[data-stream-id="${streamId}"][data-streaming="true"]`);
   
   if (!streamingMessageContainer) {
+    logger.debug(`No streaming message container found for stream ${streamId}`);
     return;
   }
 
@@ -402,10 +419,10 @@ const handleStreamChunk = (chatContainer, chunk, tabId, url) => {
     return;
   }
 
-  // Remove spinner (if exists, should only be on first chunk)
-  const spinner = streamingMessageContentDiv.querySelector('.spinner');
-  if (spinner) {
-    spinner.remove();
+  // Remove loading container (spinner and buttons) if it exists
+  const loadingContainer = streamingMessageContentDiv.querySelector('.loading-container');
+  if (loadingContainer) {
+    loadingContainer.remove();
   }
   
   // Append new chunk to buffer
@@ -421,28 +438,23 @@ const handleStreamChunk = (chatContainer, chunk, tabId, url) => {
   
   try {
     if (containsMarkdown) {
-      // If contains markdown, try to parse it
-      streamingMessageContentDiv.classList.remove('no-markdown');
-      const parsedContent = window.marked.parse(currentBuffer);
-      streamingMessageContentDiv.innerHTML = parsedContent;
+      // For markdown content, render it
+      streamingMessageContentDiv.innerHTML = marked.parse(currentBuffer);
     } else {
-      // If no markdown, display text and preserve line breaks
-      streamingMessageContentDiv.classList.add('no-markdown');
-      streamingMessageContentDiv.textContent = currentBuffer;
+      // For plain text, preserve formatting
+      streamingMessageContentDiv.innerHTML = currentBuffer.replace(/\n/g, '<br>');
     }
+    
+    // Log successful chunk processing
+    logger.debug(`Stream chunk processed successfully for ${streamId}, buffer length: ${currentBuffer.length}`);
   } catch (error) {
-    logger.error('Error parsing markdown during stream:', error);
-    // Fallback: display text
-    streamingMessageContentDiv.classList.add('no-markdown');
-    streamingMessageContentDiv.textContent = currentBuffer;
+    logger.error('Error rendering stream chunk:', error);
+    // Fallback to plain text display
+    streamingMessageContentDiv.innerHTML = currentBuffer.replace(/\n/g, '<br>');
   }
   
-  // Scroll to bottom
-  try {
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-  } catch (scrollError) {
-    logger.warn('Error scrolling to bottom:', scrollError);
-  }
+  // Auto-scroll to bottom
+  chatContainer.scrollTop = chatContainer.scrollHeight;
 };
 
 /**
@@ -538,20 +550,20 @@ const handleStreamEnd = (chatContainer, fullResponse, onComplete, finishReason =
       switch (finishReason) {
         case 'MAX_TOKENS':
         case 'length':
-          warningText = 'Response was truncated due to maximum token limit. The response may be incomplete.';
+          warningText = i18n.getMessage('sidebar_chatManager_finishReason_maxTokens');
           break;
         case 'SAFETY':
         case 'content_filter':
-          warningText = 'Response was stopped due to content policy restrictions.';
+          warningText = i18n.getMessage('sidebar_chatManager_finishReason_safety');
           break;
         case 'RECITATION':
-          warningText = 'Response was stopped due to potential copyright content.';
+          warningText = i18n.getMessage('sidebar_chatManager_finishReason_recitation');
           break;
         case 'OTHER':
-          warningText = 'Response ended for an unknown reason.';
+          warningText = i18n.getMessage('sidebar_chatManager_finishReason_other');
           break;
         default:
-          warningText = `Response ended with reason: ${finishReason}`;
+          warningText = i18n.getMessage('sidebar_chatManager_finishReason_default', { reason: finishReason });
       }
       
       textSpan.textContent = warningText;
@@ -584,21 +596,21 @@ const handleStreamEnd = (chatContainer, fullResponse, onComplete, finishReason =
     const scrollTopButton = document.createElement('button');
     scrollTopButton.className = 'btn-base message-action-btn';
     scrollTopButton.innerHTML = '<i class="material-icons">arrow_upward</i>';
-    scrollTopButton.title = 'Scroll to Top';
+    scrollTopButton.title = i18n.getMessage('sidebar_chatManager_title_scrollToTop');
     scrollTopButton.onclick = () => streamingMessageContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     // Copy text button
     const copyTextButton = document.createElement('button');
     copyTextButton.className = 'btn-base message-action-btn';
     copyTextButton.innerHTML = '<i class="material-icons">content_copy</i>';
-    copyTextButton.title = 'Copy text';
+    copyTextButton.title = i18n.getMessage('sidebar_chatManager_title_copyText');
     copyTextButton.onclick = () => copyMessageText(streamingMessageContainer);
 
     // Copy markdown button
     const copyMarkdownButton = document.createElement('button');
     copyMarkdownButton.className = 'btn-base message-action-btn';
     copyMarkdownButton.innerHTML = '<i class="material-icons">code</i>';
-    copyMarkdownButton.title = 'Copy as Markdown';
+    copyMarkdownButton.title = i18n.getMessage('sidebar_chatManager_title_copyAsMarkdown');
     copyMarkdownButton.onclick = () => copyMessageMarkdown(streamingMessageContainer);
 
     // Scroll to bottom button
@@ -607,7 +619,7 @@ const handleStreamEnd = (chatContainer, fullResponse, onComplete, finishReason =
     const scrollBottomButton = document.createElement('button');
     scrollBottomButton.className = 'btn-base message-action-btn';
     scrollBottomButton.innerHTML = '<i class="material-icons">arrow_downward</i>';
-    scrollBottomButton.title = 'Scroll to Bottom';
+    scrollBottomButton.title = i18n.getMessage('sidebar_chatManager_title_scrollToBottom');
     scrollBottomButton.onclick = () => streamingMessageContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
     const buttons = [scrollTopButton, copyTextButton, copyMarkdownButton, scrollBottomButton];
@@ -745,10 +757,10 @@ const copyMessageText = (content) => {
     logger.error('Invalid content type for copying:', typeof content);
     return;
   }
-
+ 
   navigator.clipboard.writeText(textToCopy)
-    .then(() => showCopyToast('Text copied to clipboard'))
-    .catch(err => logger.error('Failed to copy text:', err));
+    .then(() => showCopyToast(i18n.getMessage('sidebar_chatManager_toast_textCopied')))
+    .catch(err => logger.error(i18n.getMessage('sidebar_chatManager_log_failedToCopyText'), err));
 };
 
 /**
@@ -773,12 +785,12 @@ const copyMessageMarkdown = (content) => {
     logger.error('Invalid content type for copying:', typeof content);
     return;
   }
-
+ 
   navigator.clipboard.writeText(markdownToCopy)
-    .then(() => showCopyToast('Markdown copied to clipboard'))
+    .then(() => showCopyToast(i18n.getMessage('sidebar_chatManager_toast_markdownCopied')))
     .catch(err => {
       logger.error('Error copying markdown to clipboard:', err);
-      showCopyToast('Error copying markdown');
+      showCopyToast(i18n.getMessage('sidebar_chatManager_toast_errorCopyingMarkdown'));
     });
 };
 
@@ -1011,6 +1023,12 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
   
   // Show loading indicator in chat
   // Ensure this method is called before sending message to ensure UI is updated in time
+  // Generate streamId if not provided
+  if (!streamId) {
+    const currentUrl = window.StateManager ? window.StateManager.getStateItem('currentUrl') : window.location.href;
+    const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
+    streamId = `${currentUrl}#${currentTabId}`;
+  }
   const loadingMsgId = appendMessageToUI(chatContainer, 'assistant', '<div class="spinner"></div>', null, true, undefined, streamId);
   
   // If image was attached, send and remove
@@ -1020,6 +1038,9 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
       const imagePreviewContainer = document.getElementById('imagePreviewContainer');
       const imagePreview = document.getElementById('imagePreview');
       imageHandler.removeAttachedImage(imagePreviewContainer, imagePreview);
+      logger.info('Image cleared after sending message');
+    } else {
+      logger.warn('ImageHandler not available for image cleanup');
     }
   }
 
@@ -1076,7 +1097,7 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
     
     handleLlmError(
       chatContainer,
-      'Failed to send message to the AI. Check service worker logs.',
+      i18n.getMessage('sidebar_chatManager_error_failedToSend'),
       loadingMsgId,
       () => {
         // If error occurs, re-enable send button
@@ -1129,6 +1150,12 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
   }
   
   // Show assistant response loading indicator
+  // Generate streamId if not provided
+  if (!streamId) {
+    const currentUrl = window.StateManager ? window.StateManager.getStateItem('currentUrl') : window.location.href;
+    const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
+    streamId = `${currentUrl}#${currentTabId}`;
+  }
   const assistantLoadingMessage = appendMessageToUI(
     chatContainer,
     'assistant',
@@ -1201,7 +1228,7 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     // Pass loading message element to handleLlmError for updating it in case of failure
     handleLlmError(
       chatContainer,
-      'Failed to send message to LLM',
+      i18n.getMessage('sidebar_chatManager_error_failedToSendLlm'),
       assistantLoadingMessage,
       () => {
         sendBtn.disabled = false;

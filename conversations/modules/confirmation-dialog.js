@@ -38,12 +38,12 @@ export class ConfirmationDialog {
     return new Promise((resolve) => {
       this.resolvePromise = resolve;
 
-      const { 
-        title = 'Confirm', 
-        message = 'Are you sure?', 
-        details = '', 
-        confirmText = 'Confirm', 
-        cancelText = 'Cancel' 
+      const {
+        title = chrome.i18n.getMessage('confirmation_dialog_default_title'),
+        message = chrome.i18n.getMessage('confirmation_dialog_default_message'),
+        details = '',
+        confirmText = chrome.i18n.getMessage('confirmation_dialog_default_confirm_button'),
+        cancelText = chrome.i18n.getMessage('confirmation_dialog_default_cancel_button')
       } = options;
 
       this.titleEl.textContent = title;

@@ -21,7 +21,7 @@ var openaiProvider = (function() {
         temperature: 1.0,
         max_tokens: 20480
     };
-    const VISION_MODELS = ['gpt-4-vision-preview', 'gpt-4o', 'gpt-4o-mini'];
+    // All models now support image input by default
 
     // Normalize parameters using BaseProvider utilities
     function normalizeParameters(llmConfig) {
@@ -39,7 +39,7 @@ var openaiProvider = (function() {
         return `${baseUrl}/v1/chat/completions`;
     }
 
-    // Helper function to build messages array
+    // Helper function to build messages array with enhanced image handling
     function buildMessages(messages, systemPrompt, imageBase64, model) {
         const openaiMessages = [];
 
@@ -54,13 +54,25 @@ var openaiProvider = (function() {
             if (
                 message.role === 'user' &&
                 imageBase64 &&
-                message === messages[messages.length - 1] &&
-                VISION_MODELS.includes(model)
+                message === messages[messages.length - 1]
             ) {
+                // Validate image data format
+                if (!imageBase64.startsWith('data:image/')) {
+                    openaiLogger.error('Invalid image format - must be data URL');
+                    throw new Error('Invalid image format');
+                }
+
+                // Log image processing for debugging
+                openaiLogger.info('Processing image with OpenAI model', {
+                    model,
+                    imageSize: imageBase64.length,
+                    hasText: !!message.content
+                });
+
                 openaiMessages.push({
                     role: 'user',
                     content: [
-                        { type: 'text', text: message.content },
+                        { type: 'text', text: message.content || 'Please analyze this image.' },
                         {
                             type: 'image_url',
                             image_url: {
@@ -71,12 +83,22 @@ var openaiProvider = (function() {
                     ]
                 });
             } else {
+                // Handle text-only messages
                 openaiMessages.push({
                     role: message.role,
                     content: message.content
                 });
             }
         }
+
+        // Log final message structure for debugging
+        openaiLogger.info('Built OpenAI messages', {
+            messageCount: openaiMessages.length,
+            hasImageContent: openaiMessages.some(msg => 
+                Array.isArray(msg.content) && 
+                msg.content.some(content => content.type === 'image_url')
+            )
+        });
 
         return openaiMessages;
     }

@@ -42,6 +42,7 @@ export class FormHandler {
     domElements.contentDisplayHeight.value = Math.min(Math.max(heightValue, 0), 600);
     domElements.systemPrompt.value = basicConfig.systemPrompt || '';
     domElements.theme.value = basicConfig.theme || 'system';
+    domElements.languageSelector.value = basicConfig.language || 'en';
 
     // Sync settings - Load from sync config
     this.populateSyncSettings(domElements);

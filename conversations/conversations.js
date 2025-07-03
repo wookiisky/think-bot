@@ -1,9 +1,24 @@
+// Global Error Catcher
+window.addEventListener('error', function(event) {
+  const errorInfo = {
+    message: event.message,
+    source: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
+    error: event.error ? event.error.stack : 'No stack available',
+    timestamp: new Date().toISOString(),
+    page: 'conversations'
+  };
+  chrome.storage.local.set({ 'last_error': errorInfo });
+});
+
 /**
  * conversations.js - Main entry point for Think Bot conversations page
  * Manages page list and chat functionality for cached pages
  */
 
 // Import all modules (reusing sidebar modules)
+import { i18n } from '../js/modules/i18n.js';
 import { createLogger, isRestrictedPage } from '../sidebar/modules/utils.js';
 import * as StateManager from '../sidebar/modules/state-manager.js';
 import * as UIManager from '../sidebar/modules/ui-manager.js';
@@ -44,6 +59,9 @@ window.TabManager = TabManager;
 document.addEventListener('DOMContentLoaded', async () => {
   logger.info('Conversations page loaded');
   
+  // Initialize i18n system
+  await i18n.init();
+
   try {
     // Initialize UI element references
     const elements = initConversationsElements();
@@ -209,12 +227,25 @@ function initConversationsElements() {
     }
   });
   
-  // Log missing elements
+  // Log missing elements with more details
   if (missingElements.length > 0) {
     logger.error('Missing required DOM elements:', missingElements);
   }
   if (missingOptionalElements.length > 0) {
-    logger.warn('Missing optional DOM elements:', missingOptionalElements);
+    // Don't log missing optional elements as warnings if they're actually present in HTML
+    // This prevents spurious warnings due to timing issues
+    const actuallyMissingElements = missingOptionalElements.filter(elementId => {
+      // For image-related elements, check if they're actually in the DOM
+      if (['imagePreviewContainer', 'imagePreview', 'removeImageBtn'].includes(elementId)) {
+        const element = document.querySelector(`#${elementId}`);
+        return !element; // Only consider it missing if it's actually not in the DOM
+      }
+      return true; // For other elements, keep original behavior
+    });
+    
+    if (actuallyMissingElements.length > 0) {
+      logger.warn('Missing optional DOM elements:', actuallyMissingElements);
+    }
   }
   
   // Log successful initialization
@@ -278,6 +309,15 @@ function setupConversationsEventListeners(elements, modelSelector, onQuickInputA
   
   // Set up essential event listeners directly
   setupEssentialEventListeners(elements, modelSelector);
+  
+  // Initialize image processing with enhanced error handling
+  if (elements.userInput && elements.imagePreviewContainer && elements.imagePreview && elements.removeImageBtn) {
+    if (!ImageHandler.initImageHandler(elements)) {
+      logger.warn('Image handler initialization failed in conversations page');
+    }
+  } else {
+    logger.info('Image handler elements not all available, skipping image handler initialization');
+  }
   
   // Add conversations-specific event listeners
   
@@ -638,7 +678,7 @@ async function loadPageConversation(url) {
       elements.loadingIndicator.classList.add('hidden');
       elements.extractedContent.innerHTML = '';
       elements.contentError.classList.remove('hidden');
-      elements.contentError.textContent = 'Cannot extract content from this page type. Please navigate to a regular web page.';
+      elements.contentError.textContent = chrome.i18n.getMessage('conversations_js_cannot_extract');
       
       // Clear chat container for restricted pages
       elements.chatContainer.innerHTML = '';
@@ -832,7 +872,7 @@ async function loadPageConversation(url) {
     logger.info('Page conversation loaded successfully');
   } catch (error) {
     logger.error('Error loading page conversation:', error);
-    showErrorState('Failed to load page conversation');
+    showErrorState(chrome.i18n.getMessage('conversations_js_failed_to_load'));
   }
 }
 
@@ -915,7 +955,7 @@ async function handleConversationsPageDataLoaded(pageInfo) {
     }
     if (elements.contentError) {
       elements.contentError.classList.remove('hidden');
-      elements.contentError.textContent = 'No cached content available for this page. Visit the page first to extract content.';
+      elements.contentError.textContent = chrome.i18n.getMessage('conversations_js_no_cached_content');
     }
     logger.warn('No content extracted for current page. Data received:', pageInfo);
   }
@@ -998,7 +1038,7 @@ async function handlePageDelete(url) {
     return true;
   } catch (error) {
     logger.error('Error deleting page data:', error);
-    alert(`Failed to delete page: ${error.message || 'Unknown error'}`);
+    alert(chrome.i18n.getMessage('conversations_js_failed_to_delete', { error: error.message || 'Unknown error' }));
     return false;
   }
 }
@@ -1267,7 +1307,7 @@ function setupMessageListeners() {
           if (streamingMessage) {
             const contentDiv = streamingMessage.querySelector('.message-content');
             if (contentDiv) {
-              contentDiv.innerHTML = '<span style="color: var(--text-color); font-style: italic;">Response generation stopped by user.</span>';
+              contentDiv.innerHTML = `<span style="color: var(--text-color); font-style: italic;">${chrome.i18n.getMessage('conversations_js_response_stopped')}</span>`;
             }
             streamingMessage.removeAttribute('data-streaming');
           }

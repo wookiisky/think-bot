@@ -1,9 +1,24 @@
+// Global Error Catcher
+window.addEventListener('error', function(event) {
+  const errorInfo = {
+    message: event.message,
+    source: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
+    error: event.error ? event.error.stack : 'No stack available',
+    timestamp: new Date().toISOString(),
+    page: 'sidebar'
+  };
+  chrome.storage.local.set({ 'last_error': errorInfo });
+});
+
 /**
  * sidebar.js - Main entry point for Think Bot sidebar
  * Integrates all modules and manages application logic flow
  */
 
 // Import all modules
+import { i18n } from '../js/modules/i18n.js';
 import { createLogger } from './modules/utils.js';
 import * as StateManager from './modules/state-manager.js';
 import * as UIManager from './modules/ui-manager.js';
@@ -39,6 +54,9 @@ window.TabManager = TabManager;
 document.addEventListener('DOMContentLoaded', async () => {
   logger.info('Side panel loaded');
   
+  // Initialize i18n system first
+  await i18n.init();
+
   // Initialize UI element references
   const elements = UIManager.initElements();
   
@@ -322,6 +340,21 @@ function setupMessageListeners() {
 
     onSidebarOpened: handleSidebarOpened
   });
+  
+  // Send a ping to the service worker to confirm the sidebar is ready
+  setTimeout(() => {
+    try {
+      chrome.runtime.sendMessage({ type: 'SIDEBAR_READY' }, (response) => {
+        if (chrome.runtime.lastError) {
+          logger.debug('Sidebar ready ping failed:', chrome.runtime.lastError.message);
+        } else {
+          logger.info('Sidebar ready ping sent successfully');
+        }
+      });
+    } catch (error) {
+      logger.debug('Error sending sidebar ready ping:', error);
+    }
+  }, 200);
 }
 
 /**
@@ -398,7 +431,7 @@ function handleLoadingStateUpdate(message) {
         if (streamingMessage) {
           const contentDiv = streamingMessage.querySelector('.message-content');
           if (contentDiv) {
-            contentDiv.innerHTML = '<span style="color: var(--text-color); font-style: italic;">Response generation stopped by user.</span>';
+            contentDiv.innerHTML = `<span style="color: var(--text-color); font-style: italic;">${i18n.getMessage('sidebar_js_responseStoppedByUser')}</span>`;
           }
           streamingMessage.removeAttribute('data-streaming');
         }
@@ -448,7 +481,7 @@ function startStreamingSession(requestInfo) {
       });
       
       // Could show a warning to user or attempt recovery
-      showStreamWarning(`Stream has been silent for ${Math.round(silenceDuration / 1000)} seconds. Connection may be interrupted.`);
+      showStreamWarning(i18n.getMessage('sidebar_js_streamSilent', { seconds: Math.round(silenceDuration / 1000) }));
     },
     onRecoveryAttempt: (streamId, attempt, originalError) => {
       // Could attempt to restart the request or show recovery UI
@@ -624,7 +657,7 @@ function handleBlacklistDetected(message) {
 
     // Show confirmation overlay
     confirmationOverlay.show({
-      message: 'This page is in your blacklist. Do you want to continue using Think Bot?',
+      message: i18n.getMessage('sidebar_js_blacklistConfirm'),
       matchedPattern: matchedPattern,
       onConfirm: () => {
         logger.info('User confirmed to continue on blacklisted page');

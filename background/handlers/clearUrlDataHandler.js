@@ -3,8 +3,9 @@
 async function handleClearUrlData(data, serviceLogger, storage) {
     const { url, clearContent = true, clearChat = true, clearMetadata = true, wildcard = false, softDelete = false } = data;
     if (!url) {
-        serviceLogger.warn('CLEAR_URL_DATA: No URL provided');
-        return { success: false, error: 'No URL provided' };
+        const errorMsg = chrome.i18n.getMessage('global_error_no_url');
+        serviceLogger.warn(`CLEAR_URL_DATA: ${errorMsg}`);
+        return { success: false, error: errorMsg };
     }
 
     try {
@@ -24,10 +25,12 @@ async function handleClearUrlData(data, serviceLogger, storage) {
         if (!success) {
             serviceLogger.warn(`CLEAR_URL_DATA: Failed ${action} for ${url}`);
         }
-        return { success, error: success ? null : `Failed to ${action.replace('ing', '')} data from storage` };
+        const errorMsg = success ? null : (softDelete ? chrome.i18n.getMessage('global_error_failed_to_soft_delete') : chrome.i18n.getMessage('global_error_failed_to_clear_storage'));
+        return { success, error: errorMsg };
     } catch (error) {
         serviceLogger.error('CLEAR_URL_DATA error:', error.message);
-        return { success: false, error: error.message || 'Failed to clear data' };
+        const errorMsg = error.message || (softDelete ? chrome.i18n.getMessage('global_error_failed_to_soft_delete') : chrome.i18n.getMessage('global_error_failed_to_clear_storage'));
+        return { success: false, error: errorMsg };
     }
 }
 
@@ -35,8 +38,9 @@ async function handleClearUrlData(data, serviceLogger, storage) {
 async function handleSoftDeleteUrlData(data, serviceLogger, storage) {
     const { url, clearContent = true, clearChat = true, wildcard = false } = data;
     if (!url) {
-        serviceLogger.warn('SOFT_DELETE_URL_DATA: No URL provided');
-        return { success: false, error: 'No URL provided' };
+        const errorMsg = chrome.i18n.getMessage('global_error_no_url');
+        serviceLogger.warn(`SOFT_DELETE_URL_DATA: ${errorMsg}`);
+        return { success: false, error: errorMsg };
     }
 
     try {
@@ -48,9 +52,11 @@ async function handleSoftDeleteUrlData(data, serviceLogger, storage) {
         if (!success) {
             serviceLogger.warn(`SOFT_DELETE_URL_DATA: Failed for ${url}`);
         }
-        return { success, error: success ? null : 'Failed to soft delete data from storage' };
+        const errorMsg = success ? null : chrome.i18n.getMessage('global_error_failed_to_soft_delete');
+        return { success, error: errorMsg };
     } catch (error) {
         serviceLogger.error('SOFT_DELETE_URL_DATA error:', error.message);
-        return { success: false, error: error.message || 'Failed to soft delete data' };
+        const errorMsg = error.message || chrome.i18n.getMessage('global_error_failed_to_soft_delete');
+        return { success: false, error: errorMsg };
     }
 }

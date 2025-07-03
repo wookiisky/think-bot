@@ -3,6 +3,7 @@
  * Shows a small confirmation popup near the clicked button
  */
 
+import { i18n } from '../../js/modules/i18n.js';
 // Import createLogger from utils
 import { createLogger } from '../modules/utils.js';
 
@@ -42,10 +43,10 @@ class MiniConfirmation {
     this.confirmationElement.className = 'mini-confirmation';
     this.confirmationElement.innerHTML = `
       <div class="mini-confirmation-content">
-        <div class="mini-confirmation-message">Are you sure?</div>
+        <div class="mini-confirmation-message" data-i18n="sidebar_miniConfirmation_areYouSure">Are you sure?</div>
         <div class="mini-confirmation-actions">
-          <button class="mini-btn mini-btn-cancel" type="button">Cancel</button>
-          <button class="mini-btn mini-btn-confirm" type="button">Confirm</button>
+          <button class="mini-btn mini-btn-cancel" type="button" data-i18n="sidebar_miniConfirmation_cancel">Cancel</button>
+          <button class="mini-btn mini-btn-confirm" type="button" data-i18n="sidebar_miniConfirmation_confirm">Confirm</button>
         </div>
       </div>
       <div class="mini-confirmation-arrow"></div>
@@ -170,9 +171,9 @@ class MiniConfirmation {
 
     const {
       target,
-      message = 'Are you sure?',
-      confirmText = 'Confirm',
-      cancelText = 'Cancel',
+      message = i18n.getMessage('sidebar_miniConfirmation_areYouSure'),
+      confirmText = i18n.getMessage('sidebar_miniConfirmation_confirm'),
+      cancelText = i18n.getMessage('sidebar_miniConfirmation_cancel'),
       confirmButtonClass = 'mini-btn-confirm',
       onConfirm = () => {},
       onCancel = () => {}

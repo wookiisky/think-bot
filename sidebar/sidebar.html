@@ -18,17 +18,17 @@
         <!-- Left group: extraction methods and action buttons -->
         <div class="left-controls">
           <div class="extraction-methods">
-            <button id="jinaExtractBtn" class="btn-base extraction-btn selector-btn jina-btn" title="Extract with Jina AI">
+            <button id="jinaExtractBtn" class="btn-base extraction-btn selector-btn jina-btn" data-i18n-title="sidebar_title_extractWithJina">
               <img src="../icons/jina32.png" alt="Jina AI" class="jina-icon">
             </button>
-            <button id="readabilityExtractBtn" class="btn-base extraction-btn selector-btn readability-btn active" title="Extract with Readability.js">R</button>
+            <button id="readabilityExtractBtn" class="btn-base extraction-btn selector-btn readability-btn active" data-i18n-title="sidebar_title_extractWithReadability">R</button>
           </div>
 
           <div class="action-buttons">
-            <button id="copyContentBtn" class="btn-base action-btn" title="Copy extracted content">
+            <button id="copyContentBtn" class="btn-base action-btn" data-i18n-title="sidebar_title_copyExtractedContent">
               <i class="material-icons">content_copy</i>
             </button>
-            <button id="retryExtractBtn" class="btn-base action-btn" title="Retry extraction">
+            <button id="retryExtractBtn" class="btn-base action-btn" data-i18n-title="sidebar_title_retryExtraction">
               <i class="material-icons">refresh</i>
             </button>
           </div>
@@ -36,13 +36,13 @@
 
         <!-- Right group: page management buttons -->
         <div class="right-controls">
-          <button id="clearPageDataBtn" class="btn-base page-btn" title="Clear all page data">
+          <button id="clearPageDataBtn" class="btn-base page-btn" data-i18n-title="sidebar_title_clearAllPageData">
             <i class="material-icons">clear_all</i>
-          </button>          
-          <button id="openChatBtn" class="btn-base page-btn" title="Open chat page">
+          </button>
+          <button id="openChatBtn" class="btn-base page-btn" data-i18n-title="sidebar_title_openChatPage">
             <i class="material-icons">chat</i>
           </button>
-          <button id="openOptionsBtn" class="btn-base page-btn" title="Open configuration page">
+          <button id="openOptionsBtn" class="btn-base page-btn" data-i18n-title="sidebar_title_openConfigPage">
             <i class="material-icons">settings</i>
           </button>
         </div>
@@ -50,7 +50,7 @@
     </div>
     
     <!-- Content extraction area -->
-    <div class="content-section" id="contentSection">      
+    <div class="content-section" id="contentSection">
       <div class="content-container">
         <div id="extractedContent" class="extracted-content"></div>
         <div id="loadingIndicator" class="loading-indicator hidden">
@@ -61,10 +61,10 @@
               <div class="dot"></div>
               <div class="dot"></div>
             </div>
-            <div class="loading-text">Extracting content...</div>
+            <div class="loading-text" data-i18n="sidebar_text_extractingContent">Extracting content...</div>
           </div>
         </div>
-        <div id="extractionError" class="extraction-error hidden">Failed to extract content.</div>
+        <div id="extractionError" class="extraction-error hidden" data-i18n="sidebar_text_failedToExtractContent">Failed to extract content.</div>
       </div>
       <div class="resize-handle" id="resizeHandle">
         <div class="resize-handle-line"></div>
@@ -85,7 +85,7 @@
       <!-- Image preview area (shown when images are pasted) -->
       <div id="imagePreviewContainer" class="image-preview-container hidden">
         <div class="image-preview-header">
-          Image attached
+          <span data-i18n="sidebar_text_imageAttached">Image attached</span>
           <button id="removeImageBtn" class="remove-image-btn">×</button>
         </div>
         <div id="imagePreview" class="image-preview"></div>
@@ -95,23 +95,23 @@
       <div class="input-container">
         <div id="inputResizeHandle" class="input-resize-handle"></div>
         <div class="input-wrapper">
-          <textarea id="userInput" placeholder="Ask ..." rows="1"></textarea>
+          <textarea id="userInput" data-i18n-placeholder="sidebar_placeholder_ask" rows="1"></textarea>
           <div class="model-selector-container">
             <select id="modelSelector" class="model-selector">
               <!-- Model options will be populated dynamically -->
             </select>
           </div>
           <div id="inputActions" class="button-group">
-            <button id="sendBtn" class="button-icon primary" title="Send message">
+            <button id="sendBtn" class="button-icon primary" data-i18n-title="sidebar_title_sendMessage">
               <i class="material-icons">send</i>
             </button>
-            <button id="includePageContentBtn" class="button-icon selector-btn" data-enabled="true" title="Include page content in prompt">
+            <button id="includePageContentBtn" class="button-icon selector-btn" data-enabled="true" data-i18n-title="sidebar_title_includePageContent">
               <i class="material-icons">description</i>
             </button>
-            <button id="clearBtn" class="button-icon" title="Stop generating and clear conversation">
+            <button id="clearBtn" class="button-icon" data-i18n-title="sidebar_title_stopAndClear">
               <i class="material-icons">delete_forever</i>
             </button>
-            <button id="exportBtn" class="button-icon" title="Export conversation">
+            <button id="exportBtn" class="button-icon" data-i18n-title="sidebar_title_exportConversation">
               <i class="material-icons">save_alt</i>
             </button>
           </div>

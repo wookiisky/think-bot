@@ -41,6 +41,7 @@ importScripts('handlers/clearAllLoadingStatesForUrlHandler.js');
 importScripts('handlers/cancelLlmRequestHandler.js');
 importScripts('handlers/cancelAllLlmRequestsHandler.js');
 importScripts('handlers/getAllPageMetadataHandler.js');
+importScripts('handlers/savePageStateHandler.js');
 importScripts('handlers/blacklistHandler.js');
 importScripts('handlers/exportConversationHandler.js');
 
@@ -278,22 +279,36 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return await handleResetBlacklistToDefaults(data, serviceLogger);
         case 'GET_SYNC_CONFIG':
           return await handleGetSyncConfig(data, serviceLogger);
-        case 'EXPORT_CONVERSATION':
-          return await handleExportConversation(data, sender, sendResponse);
-        default:
-          return { type: 'UNKNOWN_MESSAGE', error: `Unknown message type: ${type}` };
+        case 'EXPORT_CONVERSATION': {
+          return await handleExportConversation(data, serviceLogger, storage);
+        }
+        case 'SIDEBAR_READY': {
+          // Sidebar is ready to receive messages
+          serviceLogger.info('Sidebar confirmed ready to receive messages');
+          return { type: 'SIDEBAR_READY_CONFIRMED' };
+        }
+        default: {
+          serviceLogger.warn('Unknown message type:', type);
+          return { type: 'UNKNOWN_MESSAGE_TYPE', originalType: type };
+        }
       }
     } catch (error) {
       serviceLogger.error('Error handling message:', error);
-      return { type: 'ERROR', error: error.message || 'Unknown error in service worker' };
+      return { type: 'MESSAGE_HANDLING_ERROR', error: error.message };
     }
   };
   
-  handleMessage().then(sendResponse).catch(error => {
+  // Execute the message handler and send response
+  handleMessage().then(result => {
+    if (result && typeof sendResponse === 'function') {
+      sendResponse(result);
+    }
+  }).catch(error => {
     serviceLogger.error('Unhandled error in handleMessage promise:', error);
     sendResponse({ type: 'ERROR', error: error.message || 'Critical unhandled error in service worker' });
   });
-  return true; // Crucial for asynchronous sendResponse
+  
+  return true; // Keep the message channel open for asynchronous response
 });
 
 /**

@@ -3,6 +3,7 @@
  * Handles confirmation dialogs for various actions including blacklist detection
  */
 
+import { i18n } from '../../js/modules/i18n.js';
 import { createLogger } from '../modules/utils.js';
 
 const logger = createLogger('ConfirmationOverlay');
@@ -42,17 +43,17 @@ class ConfirmationOverlay {
       <div class="overlay-backdrop"></div>
       <div class="overlay-content">
         <div class="overlay-header">
-          <h3 class="overlay-title">Confirmation</h3>
+          <h3 class="overlay-title" data-i18n="sidebar_confirmationOverlay_title">Confirmation</h3>
         </div>
         <div class="overlay-body">
-          <p class="overlay-message">Are you sure you want to proceed?</p>
+          <p class="overlay-message" data-i18n="sidebar_confirmationOverlay_areYouSure">Are you sure you want to proceed?</p>
           <div class="overlay-pattern-info">
             <small class="pattern-description"></small>
           </div>
         </div>
         <div class="overlay-actions">
-          <button class="btn-secondary overlay-cancel-btn" type="button">Cancel</button>
-          <button class="btn-primary overlay-confirm-btn" type="button">Confirm</button>
+          <button class="btn-secondary overlay-cancel-btn" type="button" data-i18n="sidebar_confirmationOverlay_cancel">Cancel</button>
+          <button class="btn-primary overlay-confirm-btn" type="button" data-i18n="sidebar_confirmationOverlay_confirm">Confirm</button>
         </div>
       </div>
     `;
@@ -123,10 +124,10 @@ class ConfirmationOverlay {
     }
 
     const {
-      title = 'Confirmation',
-      message = 'Are you sure you want to proceed?',
-      confirmText = 'Confirm',
-      cancelText = 'Cancel',
+      title = i18n.getMessage('sidebar_confirmationOverlay_title'),
+      message = i18n.getMessage('sidebar_confirmationOverlay_areYouSure'),
+      confirmText = i18n.getMessage('sidebar_confirmationOverlay_confirm'),
+      cancelText = i18n.getMessage('sidebar_confirmationOverlay_cancel'),
       confirmButtonClass = 'btn-primary',
       matchedPattern = null,
       onConfirm = () => {},
@@ -157,7 +158,7 @@ class ConfirmationOverlay {
     const patternInfoElement = this.overlayElement.querySelector('.pattern-description');
     const patternContainer = this.overlayElement.querySelector('.overlay-pattern-info');
     if (matchedPattern && matchedPattern.pattern) {
-      patternInfoElement.textContent = `Matched pattern: ${matchedPattern.pattern}`;
+      patternInfoElement.textContent = i18n.getMessage('sidebar_confirmationOverlay_matchedPattern', { pattern: matchedPattern.pattern });
       patternContainer.style.display = 'block';
     } else {
       patternContainer.style.display = 'none';

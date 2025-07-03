@@ -80,6 +80,7 @@ storageConfigManager.getDefaultConfig = async function() {
         contentDisplayHeight: 100,
         theme: 'system',
         defaultModelId: 'gemini-pro',
+        language: 'en',
         lastModified: 1735372800000
       }
     };
@@ -735,7 +736,7 @@ storageConfigManager.calculateConfigTimestamps = function(newConfig, existingCon
 
     if (existingBasic) {
       // Compare basic config fields to determine if anything was modified
-      const basicFields = ['defaultExtractionMethod', 'jinaApiKey', 'jinaResponseTemplate', 'systemPrompt', 'contentDisplayHeight', 'theme', 'defaultModelId'];
+      const basicFields = ['defaultExtractionMethod', 'jinaApiKey', 'jinaResponseTemplate', 'systemPrompt', 'contentDisplayHeight', 'theme', 'defaultModelId', 'language'];
       const fieldsChanged = basicFields.some(field =>
         existingBasic[field] !== processedConfig.basic[field]
       );

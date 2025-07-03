@@ -6,14 +6,38 @@
 // Helper function to safely send messages to the runtime (e.g., sidebar)
 function safeSendMessage(message, serviceLogger) {
     if (chrome.runtime && typeof chrome.runtime.sendMessage === 'function') {
-        chrome.runtime.sendMessage(
-            message,
-            () => {
-                if (chrome.runtime.lastError && serviceLogger && typeof serviceLogger.info === 'function') {
-                    serviceLogger.info('safeSendMessage: Destination unavailable');
+        // Add a small delay for streaming messages to prevent overwhelming the message queue
+        const isStreamingMessage = message.type === 'LLM_STREAM_CHUNK' || message.type === 'LLM_STREAM_END';
+        
+        const sendMessage = () => {
+            chrome.runtime.sendMessage(
+                message,
+                (response) => {
+                    if (chrome.runtime.lastError) {
+                        const errorMessage = chrome.runtime.lastError.message;
+                        
+                        // For streaming messages, only log warnings instead of errors to reduce noise
+                        if (isStreamingMessage) {
+                            if (serviceLogger && typeof serviceLogger.debug === 'function') {
+                                serviceLogger.debug(`safeSendMessage: ${errorMessage} (${message.type})`);
+                            }
+                        } else {
+                            if (serviceLogger && typeof serviceLogger.info === 'function') {
+                                serviceLogger.info(`safeSendMessage: ${errorMessage}`);
+                            }
+                        }
+                    }
                 }
-            }
-        );
+            );
+        };
+        
+        // Add throttling for streaming messages to prevent overwhelming the message queue
+        if (isStreamingMessage) {
+            // Use a small delay to prevent flooding the message queue
+            setTimeout(sendMessage, 5);
+        } else {
+            sendMessage();
+        }
     } else {
         if (serviceLogger && typeof serviceLogger.error === 'function') {
             serviceLogger.error('safeSendMessage: chrome.runtime.sendMessage not available');

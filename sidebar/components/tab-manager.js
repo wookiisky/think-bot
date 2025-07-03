@@ -3,6 +3,7 @@
  * Manages multiple conversation tabs with independent chat histories
  */
 
+import { i18n } from '../../js/modules/i18n.js';
 import { createLogger } from '../modules/utils.js';
 
 const logger = createLogger('TabManager');
@@ -54,7 +55,7 @@ const initTabManager = (container, chatContainer, onTabClick) => {
   // Initialize with default chat tab
   tabs = [{
     id: 'chat',
-    displayText: 'Chat',
+    displayText: i18n.getMessage('sidebar_tabManager_text_chat'),
     isDefault: true,
     isActive: true,
     hasInitialized: true,
@@ -87,7 +88,7 @@ const loadTabs = async (container, chatContainer, onTabClick) => {
     // Create tabs array starting with default chat tab
     tabs = [{
       id: 'chat',
-      displayText: 'Chat', 
+      displayText: i18n.getMessage('sidebar_tabManager_text_chat'),
       isDefault: true,
       isActive: true,
       hasInitialized: true,
@@ -729,12 +730,12 @@ const checkAndRestoreLoadingState = async (currentUrl, tabId, chatContainer) => 
           
           // Add context if this was a retry operation
           if (loadingState.isRetry) {
-            loadingMessage += '<div class="loading-context">Retrying message...</div>';
+            loadingMessage += `<div class="loading-context">${i18n.getMessage('sidebar_tabManager_text_retryingMessage')}</div>`;
           } else if (loadingState.lastMessageContent) {
-            const shortContent = loadingState.lastMessageContent.length > 50 
+            const shortContent = loadingState.lastMessageContent.length > 50
               ? loadingState.lastMessageContent.substring(0, 50) + '...'
               : loadingState.lastMessageContent;
-            loadingMessage += `<div class="loading-context">Processing: ${shortContent}</div>`;
+            loadingMessage += `<div class="loading-context">${i18n.getMessage('sidebar_tabManager_text_processing', { content: shortContent })}</div>`;
           }
           
           window.ChatManager.appendMessageToUI(

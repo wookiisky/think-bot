@@ -6,6 +6,23 @@
 // Create module logger
 const blacklistConfigLogger = logger.createModuleLogger('BlacklistConfig');
 
+// Safe i18n access function with fallback
+const safeI18n = {
+  getMessage: (key, substitutions = []) => {
+    try {
+      if (typeof window !== 'undefined' && window.i18n && typeof window.i18n.getMessage === 'function') {
+        return window.i18n.getMessage(key, substitutions);
+      } else {
+        // Fallback to Chrome i18n API
+        return chrome.i18n.getMessage(key, substitutions) || key;
+      }
+    } catch (error) {
+      console.warn(`i18n getMessage failed for key: ${key}`, error);
+      return key;
+    }
+  }
+};
+
 /**
  * BlacklistConfig class for managing blacklist configuration UI
  */
@@ -89,7 +106,7 @@ class BlacklistConfig {
     if (patterns.length === 0) {
       this.tableBody.innerHTML = `
         <tr>
-          <td class="empty-state">
+          <td class="empty-state" data-i18n="options_blacklist_no_patterns">
             No blacklist patterns configured. Click "Add Pattern" to create one.
           </td>
         </tr>
@@ -131,11 +148,13 @@ class BlacklistConfig {
           <div class="pattern-actions">
             <button type="button" class="icon-btn edit-btn"
                     data-pattern-id="${pattern.id}"
+                    data-i18n-title="options_blacklist_edit_pattern_title"
                     title="Edit Pattern">
               <i class="material-icons">edit</i>
             </button>
             <button type="button" class="icon-btn delete-btn"
                     data-pattern-id="${pattern.id}"
+                    data-i18n-title="options_blacklist_delete_pattern_title"
                     title="Delete Pattern">
               <i class="material-icons">delete</i>
             </button>
@@ -191,13 +210,13 @@ class BlacklistConfig {
       const success = await blacklistManager.updatePattern(patternId, { enabled });
       if (success) {
         await this.loadAndRenderPatterns();
-        this.showSuccess(`Pattern ${enabled ? 'enabled' : 'disabled'} successfully`);
+        this.showSuccess(enabled ? safeI18n.getMessage('options_blacklist_pattern_enabled_success') : safeI18n.getMessage('options_blacklist_pattern_disabled_success'));
       } else {
-        this.showError('Failed to update pattern');
+        this.showError(safeI18n.getMessage('options_blacklist_update_failed'));
       }
     } catch (error) {
       blacklistConfigLogger.error('Error toggling pattern:', error);
-      this.showError('Failed to update pattern');
+      this.showError(safeI18n.getMessage('options_blacklist_update_failed'));
     }
   }
 
@@ -211,11 +230,11 @@ class BlacklistConfig {
     try {
       const pattern = await blacklistManager.getPatternById(patternId);
       if (!pattern) {
-        this.showError('Pattern not found');
+        this.showError(safeI18n.getMessage('options_blacklist_pattern_not_found'));
         return;
       }
 
-      const confirmed = confirm(`Are you sure you want to delete the pattern "${pattern.description}"?`);
+      const confirmed = confirm(safeI18n.getMessage('options_blacklist_confirm_delete', { description: pattern.pattern }));
       if (!confirmed) {
         return;
       }
@@ -223,13 +242,13 @@ class BlacklistConfig {
       const success = await blacklistManager.deletePattern(patternId);
       if (success) {
         await this.loadAndRenderPatterns();
-        this.showSuccess('Pattern deleted successfully');
+        this.showSuccess(safeI18n.getMessage('options_blacklist_delete_success'));
       } else {
-        this.showError('Failed to delete pattern');
+        this.showError(safeI18n.getMessage('options_blacklist_delete_failed'));
       }
     } catch (error) {
       blacklistConfigLogger.error('Error deleting pattern:', error);
-      this.showError('Failed to delete pattern');
+      this.showError(safeI18n.getMessage('options_blacklist_delete_failed'));
     }
   }
 
@@ -287,7 +306,7 @@ class BlacklistConfig {
    */
   showPatternDialog(pattern = null) {
     const isEdit = pattern !== null;
-    const title = isEdit ? 'Edit Blacklist Pattern' : 'Add Blacklist Pattern';
+    const title = isEdit ? safeI18n.getMessage('options_blacklist_edit_dialog_title') : safeI18n.getMessage('options_blacklist_add_dialog_title');
 
     const dialogHtml = `
       <div class="modal-overlay" id="patternDialog">
@@ -301,29 +320,31 @@ class BlacklistConfig {
           <div class="modal-body">
             <form id="patternForm">
               <div class="form-group">
-                <label for="patternInput">URL Pattern (Regex)</label>
+                <label for="patternInput" data-i18n="options_blacklist_url_pattern_label">URL Pattern (Regex)</label>
                 <input type="text" id="patternInput" class="form-control"
+                       data-i18n-placeholder="options_blacklist_url_pattern_placeholder"
                        placeholder="e.g., google\\.com/search"
                        value="${pattern ? this.escapeHtml(pattern.pattern) : ''}" required>
-                <small class="form-text">Use regex pattern to match URLs (without protocol)</small>
+                <small class="form-text" data-i18n="options_blacklist_url_pattern_description">Use regex pattern to match URLs (without protocol)</small>
               </div>
 
               <div class="form-group test-url-section">
-                <label for="testUrlInput">Test URL (Optional)</label>
+                <label for="testUrlInput" data-i18n="options_blacklist_test_url_label">Test URL (Optional)</label>
                 <div class="test-url-container">
                   <input type="text" id="testUrlInput" class="form-control"
-                         placeholder="e.g., https://www.google.com/search?q=test">                  
+                         data-i18n-placeholder="options_blacklist_test_url_placeholder"
+                         placeholder="e.g., https://www.google.com/search?q=test">
                 </div>
                 <div id="testResult" class="test-result" style="display: none;"></div>
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="secondary-btn" id="patternDialogCancelBtn">
+            <button type="button" class="secondary-btn" id="patternDialogCancelBtn" data-i18n="options_blacklist_cancel_button">
               Cancel
             </button>
             <button type="button" class="primary-btn" id="patternDialogSaveBtn">
-              ${isEdit ? 'Update' : 'Add'} Pattern
+              ${isEdit ? safeI18n.getMessage('options_blacklist_update_button') : safeI18n.getMessage('options_blacklist_add_pattern_button')}
             </button>
           </div>
         </div>
@@ -450,7 +471,7 @@ class BlacklistConfig {
       testResult.innerHTML = `
         <div class="test-result-header">
           <i class="material-icons">error</i>
-          <span>Test Error</span>
+          <span data-i18n="options_blacklist_test_error">Test Error</span>
         </div>
         <div class="test-result-content">${this.escapeHtml(result.error)}</div>
       `;
@@ -460,14 +481,14 @@ class BlacklistConfig {
       testResult.innerHTML = `
         <div class="test-result-header">
           <i class="material-icons">${isMatch ? 'check_circle' : 'cancel'}</i>
-          <span>${isMatch ? 'Pattern Matches' : 'Pattern Does Not Match'}</span>
+          <span data-i18n="${isMatch ? 'options_blacklist_test_match' : 'options_blacklist_test_no_match'}">${isMatch ? 'Pattern Matches' : 'Pattern Does Not Match'}</span>
         </div>
         <div class="test-result-content">
           <div class="test-detail">
-            <strong>Pattern:</strong> <code>${this.escapeHtml(result.pattern)}</code>
+            <strong data-i18n="options_blacklist_test_pattern_label">Pattern:</strong> <code>${this.escapeHtml(result.pattern)}</code>
           </div>
           <div class="test-detail">
-            <strong>Tested URL:</strong> <code>${this.escapeHtml(result.testedUrl)}</code>
+            <strong data-i18n="options_blacklist_test_tested_url_label">Tested URL:</strong> <code>${this.escapeHtml(result.testedUrl)}</code>
           </div>
         </div>
       `;
@@ -499,7 +520,7 @@ class BlacklistConfig {
     const enabled = true; // Default to enabled for new patterns
 
     if (!pattern) {
-      this.showError('Please enter a pattern');
+      this.showError(safeI18n.getMessage('options_blacklist_enter_pattern_error'));
       return;
     }
 
@@ -528,13 +549,13 @@ class BlacklistConfig {
       if (success) {
         this.closePatternDialog();
         await this.loadAndRenderPatterns();
-        this.showSuccess(`Pattern ${this.editingPatternId ? 'updated' : 'added'} successfully`);
+        this.showSuccess(this.editingPatternId ? safeI18n.getMessage('options_blacklist_pattern_updated_success') : safeI18n.getMessage('options_blacklist_pattern_added_success'));
       } else {
-        this.showError('Failed to save pattern');
+        this.showError(safeI18n.getMessage('options_blacklist_save_failed'));
       }
     } catch (error) {
       blacklistConfigLogger.error('Error saving pattern:', error);
-      this.showError('Failed to save pattern');
+      this.showError(safeI18n.getMessage('options_blacklist_save_failed'));
     }
   }
 
@@ -546,12 +567,12 @@ class BlacklistConfig {
     const patternCount = currentPatterns.length;
 
     const confirmed = confirm(
-      `Reset to Default Patterns?\n\n` +
-      `This will:\n` +
-      `• Delete all ${patternCount} current patterns\n` +
-      `• Restore default search engine patterns\n` +
-      `• Cannot be undone\n\n` +
-      `Continue?`
+      `${safeI18n.getMessage('options_blacklist_reset_confirm_title')}\n\n` +
+      `${safeI18n.getMessage('options_blacklist_reset_confirm_line1')}\n` +
+      `${safeI18n.getMessage('options_blacklist_reset_confirm_line2', { count: patternCount })}\n` +
+      `${safeI18n.getMessage('options_blacklist_reset_confirm_line3')}\n` +
+      `${safeI18n.getMessage('options_blacklist_reset_confirm_line4')}\n\n` +
+      `${safeI18n.getMessage('options_blacklist_reset_confirm_line5')}`
     );
 
     if (!confirmed) {
@@ -562,14 +583,14 @@ class BlacklistConfig {
       const success = await blacklistManager.resetToDefaults();
       if (success) {
         await this.loadAndRenderPatterns();
-        this.showSuccess('Blacklist patterns reset to defaults successfully');
+        this.showSuccess(safeI18n.getMessage('options_blacklist_reset_success'));
         blacklistConfigLogger.info('Blacklist patterns reset to defaults');
       } else {
-        this.showError('Failed to reset blacklist patterns');
+        this.showError(safeI18n.getMessage('options_blacklist_reset_failed'));
       }
     } catch (error) {
       blacklistConfigLogger.error('Error resetting blacklist patterns:', error);
-      this.showError('Failed to reset blacklist patterns');
+      this.showError(safeI18n.getMessage('options_blacklist_reset_failed'));
     }
   }
 

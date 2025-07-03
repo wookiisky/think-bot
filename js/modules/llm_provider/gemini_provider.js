@@ -20,6 +20,8 @@ var geminiProvider = (function() {
         temperature: 1.0,
         maxOutputTokens: 8192
     };
+    
+    // All models now support image input by default
 
     // Get user-friendly error message based on Gemini API error codes
     // Reference: https://ai.google.dev/gemini-api/docs/troubleshooting
@@ -105,7 +107,7 @@ var geminiProvider = (function() {
         return isStreaming ? `${fullUrl}&alt=sse` : fullUrl;
     }
 
-    // Helper function to build request contents
+    // Helper function to build request contents with enhanced image handling
     function buildContents(messages, systemPrompt, imageBase64, model) {
         const contents = [];
         
@@ -123,26 +125,70 @@ var geminiProvider = (function() {
         for (const message of messages) {
             const role = message.role === 'assistant' ? 'model' : 'user';
             
-            if (role === 'user' && imageBase64 && message === messages[messages.length - 1] && model.includes('vision')) {
-                const parts = [];
-                if (message.content) {
-                    parts.push({ text: message.content });
+            if (role === 'user' && imageBase64 && message === messages[messages.length - 1]) {
+                // Validate image data format
+                if (!imageBase64.startsWith('data:image/')) {
+                    geminiLogger.error('Invalid image format - must be data URL');
+                    throw new Error('Invalid image format');
                 }
-                const imageData = imageBase64.split(',')[1];
-                parts.push({
-                    inlineData: {
-                        mimeType: imageBase64.split(';')[0].split(':')[1],
-                        data: imageData
+
+                try {
+                    const parts = [];
+                    
+                    // Add text content or default message
+                    if (message.content) {
+                        parts.push({ text: message.content });
+                    } else {
+                        parts.push({ text: 'Please analyze this image.' });
                     }
-                });
-                contents.push({ role, parts });
+                    
+                    // Extract image data
+                    const [header, imageData] = imageBase64.split(',');
+                    if (!imageData) {
+                        throw new Error('Invalid image data format');
+                    }
+                    
+                    const mimeType = header.split(';')[0].split(':')[1];
+                    if (!mimeType || !mimeType.startsWith('image/')) {
+                        throw new Error('Invalid image MIME type');
+                    }
+
+                    // Log image processing for debugging
+                    geminiLogger.info('Processing image with Gemini model', {
+                        model,
+                        mimeType,
+                        imageDataSize: imageData.length,
+                        hasText: !!message.content
+                    });
+
+                    parts.push({
+                        inlineData: {
+                            mimeType: mimeType,
+                            data: imageData
+                        }
+                    });
+                    
+                    contents.push({ role, parts });
+                } catch (error) {
+                    geminiLogger.error('Error processing image data:', error);
+                    throw new Error(`Failed to process image: ${error.message}`);
+                }
             } else {
+                // Handle text-only messages
                 contents.push({
                     role,
                     parts: [{ text: message.content }]
                 });
             }
         }
+        
+        // Log final content structure for debugging
+        geminiLogger.info('Built Gemini contents', {
+            contentCount: contents.length,
+            hasImageContent: contents.some(content => 
+                content.parts.some(part => part.inlineData)
+            )
+        });
         
         return contents;
     }

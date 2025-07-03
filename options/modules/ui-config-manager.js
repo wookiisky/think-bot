@@ -44,20 +44,20 @@ export class UIConfigManager {
       }
 
       if (response && response.type === 'CONFIG_SAVED') {
-        return true;
+        return { success: true };
       } else {
         logger.error('Failed to save configuration to storage');
-        return false;
+        return { success: false, error: 'Failed to save configuration' };
       }
     } catch (error) {
       logger.error('Error saving settings to storage:', error.message);
-      return false;
+      return { success: false, error: error.message };
     }
   }
 
   // Reset settings to defaults via message passing
   static async resetSettings() {
-    if (!confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')) {
+    if (!confirm(i18n.getMessage('options_ui_config_reset_confirm'))) {
       return false;
     }
 
@@ -133,6 +133,7 @@ export class UIConfigManager {
         contentDisplayHeight: Math.min(Math.max(parseInt(domElements.contentDisplayHeight.value), 0), 600),
         theme: domElements.theme.value,
         defaultModelId: modelManager.getDefaultModelId(), // Move to basic for timestamp protection
+        language: domElements.languageSelector.value,
         lastModified: Date.now()
       }
     };
@@ -200,7 +201,7 @@ export class UIConfigManager {
       return true;
     } catch (error) {
       logger.error('Error exporting configuration:', error.message);
-      alert('Failed to export configuration. Please check the console for details.');
+      alert(i18n.getMessage('options_ui_config_export_error'));
       return false;
     }
   }
@@ -212,7 +213,7 @@ export class UIConfigManager {
 
       // Validate file type
       if (!file || file.type !== 'application/json') {
-        throw new Error('Please select a valid JSON file');
+        throw new Error(i18n.getMessage('options_ui_config_import_invalid_file'));
       }
 
       // Parse file content
@@ -221,7 +222,7 @@ export class UIConfigManager {
 
       // Validate import data structure
       if (!importData.config) {
-        throw new Error('Invalid configuration file format - missing config section');
+        throw new Error(i18n.getMessage('options_ui_config_import_invalid_format'));
       }
 
       const config = importData.config;
@@ -229,7 +230,7 @@ export class UIConfigManager {
       // Validate required configuration fields (support both old and new formats)
       const basicConfig = config.basic || config;
       if (!basicConfig.defaultExtractionMethod) {
-        throw new Error('Configuration missing required field: defaultExtractionMethod');
+        throw new Error(i18n.getMessage('options_ui_config_import_missing_field', { fieldName: 'defaultExtractionMethod' }));
       }
 
       // Check if blacklist or sync configurations are included
@@ -237,23 +238,23 @@ export class UIConfigManager {
       const hasSync = config.sync;
 
       // Show confirmation dialog with import details
-      let confirmMessage = `Are you sure you want to import this configuration?\n\n` +
-                           `Export Date: ${importData.exportedAt || 'Unknown'}\n` +
-                           `Version: ${importData.version || 'Unknown'}\n` +
-                           `Exported By: ${importData.exportedBy || 'Unknown'}\n`;
+      let confirmMessage = `${i18n.getMessage('options_ui_config_import_confirm_title')}\n\n` +
+                           `${i18n.getMessage('options_ui_config_import_confirm_export_date', { date: importData.exportedAt || 'Unknown' })}\n` +
+                           `${i18n.getMessage('options_ui_config_import_confirm_version', { version: importData.version || 'Unknown' })}\n` +
+                           `${i18n.getMessage('options_ui_config_import_confirm_exported_by', { author: importData.exportedBy || 'Unknown' })}\n`;
 
       if (hasBlacklist) {
-        confirmMessage += `\nBlacklist patterns: ${config.blacklist.patterns.length} patterns`;
+        confirmMessage += `\n${i18n.getMessage('options_ui_config_import_confirm_blacklist', { count: config.blacklist.patterns.length })}`;
       }
 
       if (hasSync) {
-        confirmMessage += `\nSync settings: Included (sensitive data excluded)`;
+        confirmMessage += `\n${i18n.getMessage('options_ui_config_import_confirm_sync')}`;
       }
 
-      confirmMessage += `\n\nThis will replace your current settings and reload the page.`;
+      confirmMessage += `\n\n${i18n.getMessage('options_ui_config_import_confirm_footer')}`;
 
       if (!confirm(confirmMessage)) {
-        logger.info('Configuration import cancelled by user');
+        logger.info(i18n.getMessage('options_ui_config_import_cancelled'));
         return false;
       }
 
@@ -264,25 +265,25 @@ export class UIConfigManager {
         logger.info('Configuration imported successfully');
 
         // Show success message with details about what was imported
-        let successMessage = 'Configuration imported successfully!';
+        let successMessage = i18n.getMessage('options_ui_config_import_success');
         if (hasBlacklist) {
-          successMessage += `\n- ${config.blacklist.patterns.length} blacklist patterns imported`;
+          successMessage += `\n${i18n.getMessage('options_ui_config_import_success_blacklist', { count: config.blacklist.patterns.length })}`;
         }
         if (hasSync) {
-          successMessage += '\n- Sync settings imported (tokens preserved)';
+          successMessage += `\n${i18n.getMessage('options_ui_config_import_success_sync')}`;
         }
-        successMessage += '\n\nThe page will reload to apply changes.';
+        successMessage += `\n\n${i18n.getMessage('options_ui_config_import_success_footer')}`;
 
         alert(successMessage);
         location.reload();
         return true;
       } else {
-        throw new Error('Failed to save imported configuration to storage');
+        throw new Error(i18n.getMessage('options_ui_config_import_save_error'));
       }
 
     } catch (error) {
       logger.error('Error importing configuration:', error.message);
-      alert(`Failed to import configuration: ${error.message}`);
+      alert(i18n.getMessage('options_ui_config_import_generic_error', { error: error.message }));
       return false;
     }
   }

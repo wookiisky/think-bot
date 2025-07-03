@@ -89,7 +89,7 @@ export class PageListManager {
       logger.error('Error loading pages from storage:', error);
       this.pages = [];
       this.filteredPages = [];
-      this.showError('Failed to load conversations');
+      this.showError(chrome.i18n.getMessage('page_list_manager_failed_to_load'));
     }
   }
 
@@ -137,7 +137,10 @@ export class PageListManager {
     item.dataset.url = page.url;
     
     // Create tooltip with title, URL and timestamp (three lines)
-    const tooltipText = `${page.title || this.getUrlDisplay(page.url)}\n${page.url}\n${page.timestamp ? 'Extracted: ' + new Date(page.timestamp).toLocaleString() : 'No extraction time'}`;
+    const timestampText = page.timestamp
+      ? chrome.i18n.getMessage('page_list_manager_tooltip_extracted', { time: new Date(page.timestamp).toLocaleString() })
+      : chrome.i18n.getMessage('page_list_manager_tooltip_no_extraction_time');
+    const tooltipText = `${page.title || this.getUrlDisplay(page.url)}\n${page.url}\n${timestampText}`;
     item.title = tooltipText;
     
     // Create icon
@@ -167,7 +170,7 @@ export class PageListManager {
     // Create open button
     const openBtn = document.createElement('button');
     openBtn.className = 'page-open-btn';
-    openBtn.title = 'Open in new tab';
+    openBtn.title = chrome.i18n.getMessage('page_list_manager_open_in_new_tab_title');
     openBtn.innerHTML = '<i class="material-icons">open_in_new</i>';
     
     // Create page info - simplified to show only title in one line
@@ -183,7 +186,7 @@ export class PageListManager {
     // Create delete button
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'page-delete-btn';
-    deleteBtn.title = 'Delete this conversation';
+    deleteBtn.title = chrome.i18n.getMessage('page_list_manager_delete_conversation_title');
     deleteBtn.innerHTML = '<i class="material-icons">delete</i>';
     
     // Add event listeners
@@ -242,13 +245,13 @@ export class PageListManager {
     const diffDays = Math.floor(diffMs / 86400000);
     
     if (diffMins < 1) {
-      return 'Just now';
+      return chrome.i18n.getMessage('global_time_just_now');
     } else if (diffMins < 60) {
-      return `${diffMins}m ago`;
+      return chrome.i18n.getMessage('global_time_minutes_ago', { minutes: diffMins });
     } else if (diffHours < 24) {
-      return `${diffHours}h ago`;
+      return chrome.i18n.getMessage('global_time_hours_ago', { hours: diffHours });
     } else if (diffDays < 7) {
-      return `${diffDays}d ago`;
+      return chrome.i18n.getMessage('global_time_days_ago', { days: diffDays });
     } else {
       return date.toLocaleDateString();
     }
@@ -298,11 +301,11 @@ export class PageListManager {
     const pageTitle = page ? (page.title || page.url) : url;
 
     const confirmed = await this.confirmationDialog.show({
-      title: 'Confirm Deletion',
-      message: `Are you sure you want to delete the conversation for this page?`,
-      details: `<strong>Title:</strong> ${pageTitle}<br>This will permanently remove all associated data, including chat history and extracted content.`,
-      confirmText: 'Delete',
-      cancelText: 'Cancel'
+      title: chrome.i18n.getMessage('global_confirm_deletion_title'),
+      message: chrome.i18n.getMessage('page_list_manager_confirm_delete_message'),
+      details: chrome.i18n.getMessage('page_list_manager_confirm_delete_details', { title: pageTitle }),
+      confirmText: chrome.i18n.getMessage('global_delete_button'),
+      cancelText: chrome.i18n.getMessage('global_cancel_button')
     });
 
     if (confirmed) {
@@ -357,8 +360,8 @@ export class PageListManager {
     emptyDiv.innerHTML = `
       <div class="empty-message">
         <i class="material-icons">chat_bubble_outline</i>
-        <p>No conversations found</p>
-        <p class="empty-subtitle">Browse pages and chat to see conversations here</p>
+        <p>${chrome.i18n.getMessage('page_list_manager_empty_list_title')}</p>
+        <p class="empty-subtitle">${chrome.i18n.getMessage('page_list_manager_empty_list_subtitle')}</p>
       </div>
     `;
     this.container.appendChild(emptyDiv);

@@ -98,13 +98,16 @@ const setupEventListeners = (elements, modelSelector, onTabAction) => {
   // Include page content button
   elements.includePageContentBtn.addEventListener('click', toggleIncludePageContent);
   
-  // Initialize image processing
-  ImageHandler.initImageHandler(
-    elements.userInput,
-    elements.imagePreviewContainer,
-    elements.imagePreview,
-    elements.removeImageBtn
-  );
+  // Initialize image processing with enhanced error handling
+  // Pass ensureImageElements function to allow lazy initialization
+  const elementsWithEnsure = {
+    ...elements,
+    ensureImageElements: UIManager.ensureImageElements
+  };
+  
+  if (!ImageHandler.initImageHandler(elementsWithEnsure)) {
+    logger.warn('Image handler initialization failed, some image features may not work');
+  }
   
   // Copy extracted content
   elements.copyContentBtn.addEventListener('click', copyExtractedContent);

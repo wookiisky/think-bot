@@ -3,28 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Think Bot Settings</title>
+  <title data-i18n="options_page_title">Think Bot Settings</title>
   <link rel="stylesheet" href="options.css">
   <link rel="stylesheet" href="styles/blacklist.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
   <div class="container">
+    <!-- Error Display Area -->
+    <div id="errorDisplayContainer" class="error-container" style="display: none;">
+      <h2>Caught Error</h2>
+      <pre id="errorDisplayContent"></pre>
+      <button id="clearErrorBtn" class="secondary-btn small-btn">Clear Error</button>
+    </div>
+
     <!-- Header with Title and Action Buttons -->
     <header class="header-row">
       <div class="header-content">
         <div class="header-left">
-          <h1>Think Bot Settings</h1>
+          <h1 data-i18n="options_header_title_text">Think Bot Settings</h1>
         </div>
         <div class="header-right">
           <div class="header-actions">
-            <button type="button" id="exportConfigBtn" class="secondary-btn">Export Configuration</button>
-            <button type="button" id="importConfigBtn" class="secondary-btn">Import Configuration</button>
+            <button type="button" id="exportConfigBtn" class="secondary-btn" data-i18n="options_export_config_button">Export Configuration</button>
+            <button type="button" id="importConfigBtn" class="secondary-btn" data-i18n="options_import_config_button">Import Configuration</button>
             <input type="file" id="importConfigFile" accept=".json" style="display: none;">
-            <button type="button" id="resetBtn" class="secondary-btn">Reset to Defaults</button>
+            <button type="button" id="resetBtn" class="secondary-btn" data-i18n="options_reset_defaults_button">Reset to Defaults</button>
             <button type="button" id="saveBtn" class="primary-btn">
               <i class="material-icons">save</i>
-              <span>Save</span>
+              <span data-i18n="options_save_button">Save</span>
             </button>
           </div>
         </div>
@@ -39,17 +46,17 @@
           <div class="left-sidebar">
             <!-- Cache Settings -->
             <section class="settings-section sidebar-section">
-              <h2>Cache Settings</h2>
+              <h2 data-i18n="options_cache_settings_title">Cache Settings</h2>
               <div class="form-group cache-item-group">
-                <label>Cache:</label>
+                <label data-i18n="options_cache_label">Cache:</label>
                 <p><span id="totalCacheDisplay">0B</span></p>
-                <button type="button" id="clearAllCacheBtn" class="secondary-btn small-btn">Clear</button>
+                <button type="button" id="clearAllCacheBtn" class="secondary-btn small-btn" data-i18n="options_clear_cache_button">Clear</button>
               </div>
             </section>
 
             <!-- Default Model -->
             <section class="settings-section sidebar-section">
-              <h2>Default Model</h2>
+              <h2 data-i18n="options_default_model_title">Default Model</h2>
               <div class="form-group">
                 <!-- <label for="defaultModelSelect">Model</label> -->
                 <select id="defaultModelSelect" name="defaultModelSelect">
@@ -60,72 +67,84 @@
 
             <!-- Content Extraction Settings -->
             <section class="settings-section sidebar-section">
-              <h2>Content Extraction</h2>
+              <h2 data-i18n="options_content_extraction_title">Content Extraction</h2>
               
               <div class="form-group">
-                <label for="contentDisplayHeight">Extracted Content Height</label>
-                <input type="number" id="contentDisplayHeight" name="contentDisplayHeight" placeholder="e.g., 300" min="0" max="600">
+                <label for="contentDisplayHeight" data-i18n="options_extracted_content_height_label">Extracted Content Height</label>
+                <input type="number" id="contentDisplayHeight" name="contentDisplayHeight" data-i18n-placeholder="options_extracted_content_height_placeholder" placeholder="e.g., 300" min="0" max="600">
               </div>
               
               <div class="form-group">
-                <label for="defaultExtractionMethod">Default Extraction Method</label>
+                <label for="defaultExtractionMethod" data-i18n="options_default_extraction_method_label">Default Extraction Method</label>
                 <select id="defaultExtractionMethod" name="defaultExtractionMethod">
-                  <option value="readability">Readability.js (Default)</option>
-                  <option value="jina">Jina AI</option>
+                  <option value="readability" data-i18n="options_extraction_method_readability">Readability.js (Default)</option>
+                  <option value="jina" data-i18n="options_extraction_method_jina">Jina AI</option>
                 </select>
               </div>
               
               <div class="form-group" id="jinaApiKeyGroup">
-                <label for="jinaApiKey">Jina AI API Key (Optional)</label>
-                <input type="password" id="jinaApiKey" name="jinaApiKey" placeholder="Enter your Jina AI API key (optional)">              
+                <label for="jinaApiKey" data-i18n="options_jina_api_key_label">Jina AI API Key (Optional)</label>
+                <input type="password" id="jinaApiKey" name="jinaApiKey" data-i18n-placeholder="options_jina_api_key_placeholder" placeholder="Enter your Jina AI API key (optional)">
               </div>
               
               <div class="form-group" id="jinaResponseTemplateGroup">
-                <label for="jinaResponseTemplate">Jina AI Response Template</label>
-                <textarea id="jinaResponseTemplate" name="jinaResponseTemplate" rows="3" placeholder="Enter template for formatting Jina AI response"></textarea>
-                <small>Template for formatting Jina AI JSON response. Available placeholders: {title}, {url}, {description}, {content}.</small>
+                <label for="jinaResponseTemplate" data-i18n="options_jina_response_template_label">Jina AI Response Template</label>
+                <textarea id="jinaResponseTemplate" name="jinaResponseTemplate" rows="3" data-i18n-placeholder="options_jina_response_template_placeholder" placeholder="Enter template for formatting Jina AI response"></textarea>
+                <small data-i18n="options_jina_response_template_description">Template for formatting Jina AI JSON response. Available placeholders: {title}, {url}, {description}, {content}.</small>
               </div>
             </section>
 
             <!-- Theme -->
             <section class="settings-section sidebar-section">
-              <h2>Theme</h2>
+              <h2 data-i18n="options_theme_title">Theme</h2>
               <div class="form-group">
                 <!-- <label for="theme">Theme</label> -->
                 <select id="theme" name="theme">
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                  <option value="system">System</option>
+                  <option value="light" data-i18n="options_theme_light">Light</option>
+                  <option value="dark" data-i18n="options_theme_dark">Dark</option>
+                  <option value="system" data-i18n="options_theme_system">System</option>
+                </select>
+              </div>
+            </section>
+
+            <!-- Language -->
+            <section class="settings-section sidebar-section">
+              <h2 data-i18n="options_language_title">Language</h2>
+              <div class="form-group">
+                <select id="languageSelector" name="language">
+                  <option value="en" data-i18n="options_language_english">English</option>
+                  <option value="zh_CN" data-i18n="options_language_chinese">简体中文</option>
+                  <!-- More languages can be added here -->
                 </select>
               </div>
             </section>
 
             <!-- System Prompt -->
             <section class="settings-section sidebar-section">
-              <h2>System Prompt</h2>
+              <h2 data-i18n="options_system_prompt_title">System Prompt</h2>
               <div class="form-group">
-                <textarea id="systemPrompt" name="systemPrompt" rows="3" placeholder="Enter your system prompt template with {CONTENT} placeholder"></textarea>
+                <textarea id="systemPrompt" name="systemPrompt" rows="3" data-i18n-placeholder="options_system_prompt_placeholder" placeholder="Enter your system prompt template with {CONTENT} placeholder"></textarea>
               </div>
             </section>
 
             <!-- Cloud Sync Settings -->
             <section class="settings-section sidebar-section">
-              <h2>Cloud Sync</h2>
-              <p>
+              <h2 data-i18n="options_cloud_sync_title">Cloud Sync</h2>
+              <p data-i18n="options_cloud_sync_description" data-i18n-html>
                 Sync your config (<strong>INCLUDE api-key</strong>) and data
               </p>
 
               <div id="syncConfigGroup" class="sync-config-group">
                 <div class="form-group">
-                  <label for="gistToken">GitHub Token</label>
-                  <input type="password" id="gistToken" name="gistToken" placeholder="Enter your GitHub Personal Access Token">
-                  <small><a href="https://github.com/settings/tokens" target="_blank">Create token</a>(Requires Gist permission)</small>
+                  <label for="gistToken" data-i18n="options_github_token_label">GitHub Token</label>
+                  <input type="password" id="gistToken" name="gistToken" data-i18n-placeholder="options_github_token_placeholder" placeholder="Enter your GitHub Personal Access Token">
+                  <small><a href="https://github.com/settings/tokens" target="_blank" data-i18n="options_github_token_create_link">Create token</a><span data-i18n="options_github_token_permission_note">(Requires Gist permission)</span></small>
                 </div>
 
                 <div class="form-group">
-                  <label for="gistId">Secret Gist ID</label>
-                  <input type="text" id="gistId" name="gistId" placeholder="Secret gist ID without url">
-                  <small>Create a <a href="https://gist.github.com/" target="_blank">secret Gist</a>(DO NOT create public gist)</small>
+                  <label for="gistId" data-i18n="options_gist_id_label">Secret Gist ID</label>
+                  <input type="text" id="gistId" name="gistId" data-i18n-placeholder="options_gist_id_placeholder" placeholder="Secret gist ID without url">
+                  <small><span data-i18n="options_gist_id_create_link_prefix">Create a </span><a href="https://gist.github.com/" target="_blank" data-i18n="options_gist_id_create_link">secret Gist</a><span data-i18n="options_gist_id_create_link_suffix">(DO NOT create public gist)</span></small>
                 </div>
 
                 <div class="form-group sync-controls">
@@ -135,14 +154,14 @@
                         <input type="checkbox" id="syncEnabled" name="syncEnabled">
                         <span class="slider"></span>
                       </span>
-                      Sync when Save
+                      <span data-i18n="options_sync_on_save_label">Sync when Save</span>
                     </label>
                   </div>
                 </div>
 
                 <div class="sync-status" id="syncStatus">
                   <div class="status-details" id="syncStatusDetails">
-                    <div class="status-text" id="syncStatusText">Not configured</div>
+                    <div class="status-text" id="syncStatusText" data-i18n="options_sync_status_not_configured">Not configured</div>
                     <small id="syncErrorMessage" class="error-message" style="display: none;"></small>
                   </div>
                 </div>
@@ -153,19 +172,19 @@
 
             <!-- Blacklist Settings -->
             <section class="settings-section sidebar-section">
-              <h2>Blacklist Settings</h2>
+              <h2 data-i18n="options_blacklist_settings_title">Blacklist Settings</h2>
               <div class="blacklist-description">
-                <p>Confirm before run Think Bot</small>
+                <p data-i18n="options_blacklist_description">Confirm before run Think Bot</p>
               </div>
 
               <div class="blacklist-controls">
                 <button type="button" id="addBlacklistBtn" class="secondary-btn">
                   <i class="material-icons">add</i>
-                  Add 
+                  <span data-i18n="options_blacklist_add_button">Add</span>
                 </button>
                 <button type="button" id="resetBlacklistBtn" class="secondary-btn">
                   <i class="material-icons">refresh</i>
-                  Reset
+                  <span data-i18n="options_blacklist_reset_button">Reset</span>
                 </button>
               </div>
 
@@ -186,10 +205,10 @@
             <!-- Quick Input Tabs -->
             <section class="settings-section main-section">
               <div class="section-header">
-                <h2>Quick Input Tabs</h2>
+                <h2 data-i18n="options_quick_input_tabs_title">Quick Input Tabs</h2>
                 <button type="button" id="addQuickInputBtn" class="add-model-btn-inline">
                   <i class="material-icons">add</i>
-                  Add Quick Input
+                  <span data-i18n="options_add_quick_input_button">Add Quick Input</span>
                 </button>
               </div>
               <div class="quick-inputs-section">
@@ -202,10 +221,10 @@
             <!-- Language Models -->
             <section class="settings-section main-section">
               <div class="section-header">
-                <h2>Language Models</h2>
+                <h2 data-i18n="options_language_models_title">Language Models</h2>
                 <button type="button" id="addModelBtn" class="add-model-btn-inline">
                   <i class="material-icons">add</i>
-                  Add New Model
+                  <span data-i18n="options_add_new_model_button">Add New Model</span>
                 </button>
               </div>
               <div class="models-section">
@@ -230,15 +249,15 @@
             <div class="drag-handle">
               <i class="material-icons">drag_indicator</i>
             </div>
-            <input type="text" class="quick-input-display" placeholder="Button text (e.g. 'Summarize')">
+            <input type="text" class="quick-input-display" data-i18n-placeholder="options_quick_input_placeholder_button_text" placeholder="Button text (e.g. 'Summarize')">
           </div>
           <div class="quick-input-header-right">
-            <label class="toggle-switch" title="Auto-trigger when sidebar opens">
+            <label class="toggle-switch" data-i18n-title="options_quick_input_auto_trigger_title" title="Auto-trigger when sidebar opens">
               <input type="checkbox" class="auto-trigger-checkbox">
               <span class="slider"></span>
             </label>
-            <span class="storage-status" data-tooltip="Storage usage percentage">Weight: 0%</span>
-            <button type="button" class="remove-quick-input-btn icon-btn" title="Remove Quick Input">
+            <span class="storage-status" data-i18n-tooltip="options_quick_input_storage_usage_tooltip">0%</span>
+            <button type="button" class="remove-quick-input-btn icon-btn" data-i18n-title="options_quick_input_remove_button_title" title="Remove Quick Input">
               <i class="material-icons">delete</i>
             </button>
           </div>
@@ -246,13 +265,14 @@
         
         <!-- Send Text -->
         <div class="form-group">
-          <textarea class="quick-input-send" rows="5" placeholder="Message to send when clicked (use {CONTENT} placeholder)"></textarea>
+          <textarea class="quick-input-send" rows="5" data-i18n-placeholder="options_quick_input_placeholder_message" placeholder="Message to send when clicked (use {CONTENT} placeholder)"></textarea>
         </div>
       </div>
     </div>
   </template>
   
   <script src="../js/modules/logger.js"></script>
+  <script src="../js/modules/i18n.js" type="module"></script>
   <script src="../js/lib/pako.min.js"></script>
   <script src="../js/lib/compression.js"></script>
   <script src="../js/modules/storage-keys.js"></script>

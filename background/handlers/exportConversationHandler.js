@@ -12,7 +12,7 @@ async function handleExportConversation(request, sender, sendResponse) {
   try {
     // 1. Get base URL and page title
     const baseUrl = urlWithPossibleFragment ? urlWithPossibleFragment.split('#')[0] : null;
-    let pageTitle = 'Conversation';
+    let pageTitle = chrome.i18n.getMessage('export_default_title');
     if (baseUrl) {
       const metadata = await getPageMetadata(baseUrl);
       if (metadata && metadata.title) {
@@ -21,14 +21,14 @@ async function handleExportConversation(request, sender, sendResponse) {
         try {
           pageTitle = new URL(baseUrl).hostname;
         } catch {
-          pageTitle = 'Untitled';
+          pageTitle = chrome.i18n.getMessage('export_untitled_page');
         }
       }
     }
 
     // 2. Sanitize filename parts
     const sanitizedPageTitle = sanitizeForFilename(pageTitle);
-    const sanitizedTabName = sanitizeForFilename(quickInputTabName || 'chat');
+    const sanitizedTabName = sanitizeForFilename(quickInputTabName || chrome.i18n.getMessage('export_default_tab_name'));
 
     // 3. Generate timestamp with seconds to avoid filename conflicts
     const now = new Date();
@@ -40,7 +40,7 @@ async function handleExportConversation(request, sender, sendResponse) {
     // 5. Generate markdown content
     let markdownContent = `# ${pageTitle}\n\nURL: ${baseUrl}\n\n`;
     chatHistory.forEach(message => {
-      const role = message.role || 'Unknown';
+      const role = message.role || chrome.i18n.getMessage('export_unknown_role');
       const content = message.content || '';
       markdownContent += `## --------${role}--------\n${content}\n\n`;
     });

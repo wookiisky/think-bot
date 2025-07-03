@@ -20,6 +20,7 @@ export const domElements = {
   contentDisplayHeight: document.getElementById('contentDisplayHeight'),
   systemPrompt: document.getElementById('systemPrompt'),
   theme: document.getElementById('theme'),
+  languageSelector: document.getElementById('languageSelector'),
   
   // Cache settings elements
   totalCacheDisplay: document.getElementById('totalCacheDisplay'),

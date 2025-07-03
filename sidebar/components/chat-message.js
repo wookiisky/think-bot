@@ -10,6 +10,7 @@
  * - No save/cancel buttons needed
  */
 
+import { i18n } from '../../js/modules/i18n.js';
 import { createLogger, hasMarkdownElements } from '../modules/utils.js';
 import { getChatHistoryFromDOM, editMessageInDOM, deleteMessagesAfter } from '../modules/chat-history.js';
 
@@ -56,8 +57,8 @@ const editMessage = (messageElement, saveCallback) => {
   const textarea = document.createElement('textarea');
   textarea.value = originalContent;
   textarea.className = 'edit-textarea';
-  textarea.placeholder = 'Edit your message... (ESC to cancel, Ctrl+Enter to save)';
-  textarea.setAttribute('title', 'Auto-saves when you click outside. ESC to cancel, Ctrl+Enter to save.');
+  textarea.placeholder = i18n.getMessage('sidebar_chatMessage_placeholder_edit');
+  textarea.setAttribute('title', i18n.getMessage('sidebar_chatMessage_title_edit'));
   
   // Store original content for restoration during tab switching
   textarea.setAttribute('data-original-content', originalContent);

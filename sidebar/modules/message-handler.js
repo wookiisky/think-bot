@@ -155,80 +155,103 @@ const sendLlmMessage = async (payload) => {
  * @param {Object} handlers - Message handler functions object
  */
 const setupMessageListeners = (handlers) => {
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    switch (message.type) {
-      case 'LLM_STREAM_CHUNK':
-        if (handlers.onStreamChunk) {
-          handlers.onStreamChunk(message.chunk, message.tabId, message.url);
-        }
-        break;
-        
-      case 'LLM_STREAM_END':
-        if (handlers.onStreamEnd) {
-          handlers.onStreamEnd(
-            message.fullResponse, 
-            message.finishReason, 
-            message.isAbnormalFinish,
-            message.tabId,
-            message.url
-          );
-        }
-        break;
-        
-      case 'LLM_ERROR':
-        if (handlers.onLlmError) {
-          handlers.onLlmError(message);
-        }
-        break;
-        
-      case 'LOADING_STATE_UPDATE':
-        if (handlers.onLoadingStateUpdate) {
-          handlers.onLoadingStateUpdate(message);
-        }
-        break;
-        
-      case 'TAB_CHANGED':
-        if (handlers.onTabChanged) {
-          handlers.onTabChanged(message.url);
-        }
-        break;
-        
-      case 'AUTO_LOAD_CONTENT':
-        if (handlers.onAutoLoadContent) {
-          handlers.onAutoLoadContent(message.url, message.data);
-        }
-        break;
-        
-      case 'AUTO_EXTRACT_CONTENT':
-        if (handlers.onAutoExtractContent) {
-          handlers.onAutoExtractContent(message.url, message.extractionMethod);
-        }
-        break;
-        
-      case 'TAB_UPDATED':
-        if (handlers.onTabUpdated) {
-          handlers.onTabUpdated(message.url);
-        }
-        break;
+  // Remove any existing listeners first to prevent duplicates
+  if (chrome.runtime && chrome.runtime.onMessage) {
+    chrome.runtime.onMessage.removeListener(handleMessage);
+  }
+  
+  // Define the message handler function
+  function handleMessage(message, sender, sendResponse) {
+    try {
+      // Log streaming messages at debug level to reduce noise
+      if (message.type === 'LLM_STREAM_CHUNK' || message.type === 'LLM_STREAM_END') {
+        logger.debug(`Received ${message.type} message`);
+      } else {
+        logger.info(`Received ${message.type} message`);
+      }
+      
+      switch (message.type) {
+        case 'LLM_STREAM_CHUNK':
+          if (handlers.onStreamChunk) {
+            handlers.onStreamChunk(message.chunk, message.tabId, message.url);
+          }
+          break;
+          
+        case 'LLM_STREAM_END':
+          if (handlers.onStreamEnd) {
+            handlers.onStreamEnd(
+              message.fullResponse, 
+              message.finishReason, 
+              message.isAbnormalFinish,
+              message.tabId,
+              message.url
+            );
+          }
+          break;
+          
+        case 'LLM_ERROR':
+          if (handlers.onLlmError) {
+            handlers.onLlmError(message);
+          }
+          break;
+          
+        case 'LOADING_STATE_UPDATE':
+          if (handlers.onLoadingStateUpdate) {
+            handlers.onLoadingStateUpdate(message);
+          }
+          break;
+          
+        case 'TAB_CHANGED':
+          if (handlers.onTabChanged) {
+            handlers.onTabChanged(message.url);
+          }
+          break;
+          
+        case 'AUTO_LOAD_CONTENT':
+          if (handlers.onAutoLoadContent) {
+            handlers.onAutoLoadContent(message.url, message.data);
+          }
+          break;
+          
+        case 'AUTO_EXTRACT_CONTENT':
+          if (handlers.onAutoExtractContent) {
+            handlers.onAutoExtractContent(message.url, message.extractionMethod);
+          }
+          break;
+          
+        case 'TAB_UPDATED':
+          if (handlers.onTabUpdated) {
+            handlers.onTabUpdated(message.url);
+          }
+          break;
 
-      case 'BLACKLIST_DETECTED':
-        if (handlers.onBlacklistDetected) {
-          handlers.onBlacklistDetected(message);
-        }
-        break;
+        case 'BLACKLIST_DETECTED':
+          if (handlers.onBlacklistDetected) {
+            handlers.onBlacklistDetected(message);
+          }
+          break;
 
-      case 'SIDEBAR_OPENED':
-        if (handlers.onSidebarOpened) {
-          handlers.onSidebarOpened(message);
-        }
-        break;
+        case 'SIDEBAR_OPENED':
+          if (handlers.onSidebarOpened) {
+            handlers.onSidebarOpened(message);
+          }
+          break;
 
-      case 'PING_SIDEBAR':
-        // Respond to pings from the service worker to confirm the sidebar is open
-        sendResponse({ type: 'PONG_SIDEBAR' });
-        break;
+        case 'PING_SIDEBAR':
+          // Respond to pings from the service worker to confirm the sidebar is open
+          sendResponse({ type: 'PONG_SIDEBAR' });
+          break;
+      }
+    } catch (error) {
+      logger.error('Error handling message:', error);
     }
-  });
+  }
+  
+  // Add the message listener
+  chrome.runtime.onMessage.addListener(handleMessage);
+  
+  // Log successful setup
+  logger.info('Message listeners set up successfully');
 };
 
 export {

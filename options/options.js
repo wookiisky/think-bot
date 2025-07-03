@@ -8,6 +8,7 @@ import { FormHandler } from './modules/form-handler.js';
 import { QuickInputsManager } from './modules/quick-inputs.js';
 import { ModelManager } from './modules/model-manager.js';
 import { StorageUsageDisplay } from './modules/storage-usage.js';
+import { i18n } from '../js/modules/i18n.js';
 
 // Import logger module
 const logger = window.logger ? window.logger.createModuleLogger('Options') : console;
@@ -26,6 +27,9 @@ class OptionsPage {
   
   // Initialize the options page
   async init() {
+    // Initialize i18n system first
+    await i18n.init();
+
     if (typeof syncManager === 'undefined') {
       logger.warn('Sync modules not loaded properly');
     }
@@ -54,6 +58,15 @@ class OptionsPage {
     if (!this.domElements.theme.value) {
       this.applyTheme({ basic: { theme: 'system' } });
     }
+
+    // Setup language switcher
+    this.setupLanguageSwitcher();
+
+    // Ensure language selector shows current language
+    this.updateLanguageSelector();
+
+    // Check for and display any caught errors
+    this.displayCaughtError();
   }
   
   // Load settings from storage and populate form
@@ -132,19 +145,19 @@ class OptionsPage {
 
       // Show saving state
       saveBtn.classList.add('saving');
-      saveBtn.querySelector('span').textContent = 'Saving...';
+      saveBtn.querySelector('span').textContent = i18n.getMessage('options_js_saving');
       saveBtn.classList.add('saved');
 
       // Save config and sync settings
-      const success = await UIConfigManager.saveSettings(config, syncSettings);
+      const result = await UIConfigManager.saveSettings(config, syncSettings);
       
-      if (success) {
+      if (result.success) {
         this.hasUnsavedChanges = false;
         
         // Show success state
         saveBtn.classList.remove('saving');
         
-        saveBtn.querySelector('span').textContent = 'Saved!';
+        saveBtn.querySelector('span').textContent = i18n.getMessage('options_js_saved');
         
         // Update storage usage display after save
         StorageUsageDisplay.updateAllUsageDisplays(this.domElements);
@@ -158,14 +171,14 @@ class OptionsPage {
           setTimeout(() => {
             if (saveBtn.classList.contains('saved')) {
               saveBtn.classList.remove('saved');
-              saveBtn.querySelector('span').textContent = 'Save';
+              saveBtn.querySelector('span').textContent = i18n.getMessage('options_js_save');
             }
           }, 2000);
         }
         
       } else {
-        logger.error('Failed to save settings');
-        this.showSaveError(saveBtn);
+        logger.error('Failed to save settings:', result.error);
+        this.showSaveError(saveBtn, result.error);
       }
     } catch (error) {
       logger.error('Error during save');
@@ -174,15 +187,24 @@ class OptionsPage {
   }
   
   // Show error state on save button
-  showSaveError(saveBtn) {
+  showSaveError(saveBtn, error = null) {
     saveBtn.classList.remove('saving', 'saved');
     saveBtn.classList.add('error');
-    saveBtn.querySelector('span').textContent = 'Error';
+    saveBtn.querySelector('span').textContent = i18n.getMessage('options_js_error');
+
+    if (error) {
+        const errorDisplayContainer = document.getElementById('errorDisplayContainer');
+        const errorDisplayContent = document.getElementById('errorDisplayContent');
+        if (errorDisplayContainer && errorDisplayContent) {
+            errorDisplayContent.textContent = `Save failed: ${error}\n\nThis is likely due to exceeding storage capacity. Please export your settings, then reset the extension or clear some large quick inputs.`;
+            errorDisplayContainer.style.display = 'block';
+        }
+    }
     
     // Reset button state after 3 seconds
     setTimeout(() => {
       saveBtn.classList.remove('error');
-      saveBtn.querySelector('span').textContent = 'Save';
+      saveBtn.querySelector('span').textContent = i18n.getMessage('options_js_save');
     }, 3000);
   }
   
@@ -259,6 +281,7 @@ class OptionsPage {
       this.domElements.systemPrompt,
       this.domElements.defaultModelSelect,
       this.domElements.theme,
+      this.domElements.languageSelector,
       this.domElements.syncEnabled,
       this.domElements.gistToken,
       this.domElements.gistId
@@ -310,8 +333,8 @@ class OptionsPage {
 
       logger.info(`Total cache stats: ${totalCacheCount} items (${this.formatDataSize(totalCacheSize)}) - Pages: ${pageCacheCount}, Chats: ${chatHistoryCount}`);
     } catch (error) {
-      logger.error('Error loading cache statistics');
-      this.domElements.totalCacheDisplay.textContent = 'Error';
+      logger.error(i18n.getMessage('options_js_cache_stats_error'), error);
+      this.domElements.totalCacheDisplay.textContent = i18n.getMessage('options_js_error');
     }
   }
   
@@ -360,8 +383,8 @@ class OptionsPage {
       await this.loadCacheStats();
 
     } catch (error) {
-      logger.error('Error clearing cache');
-      alert('Error clearing cache. See console for details.');
+      logger.error('Error clearing cache', error);
+      alert(i18n.getMessage('options_js_clear_cache_error'));
     }
   }
 
@@ -370,8 +393,8 @@ class OptionsPage {
     try {
       await UIConfigManager.exportConfiguration(this.domElements, this.modelManager);
     } catch (error) {
-      logger.error('Error exporting configuration');
-      alert('Failed to export configuration. Please check the console for details.');
+      logger.error('Error exporting configuration', error);
+      alert(i18n.getMessage('options_js_export_error'));
     }
   }
 
@@ -380,8 +403,8 @@ class OptionsPage {
     try {
       await UIConfigManager.importConfiguration(file, this.domElements, this.modelManager);
     } catch (error) {
-      logger.error('Error importing configuration');
-      alert('Failed to import configuration. Please check the console for details.');
+      logger.error('Error importing configuration', error);
+      alert(i18n.getMessage('options_js_import_error'));
     }
   }
 
@@ -425,21 +448,21 @@ class OptionsPage {
 
       if (!token || !gistId) {
         const missingFields = [];
-        if (!token) missingFields.push('GitHub Token');
-        if (!gistId) missingFields.push('Gist ID');
-        this.updateSyncStatus('error', `Missing ${missingFields.join(' and ')}`);
+        if (!token) missingFields.push(i18n.getMessage('options_js_sync_github_token'));
+        if (!gistId) missingFields.push(i18n.getMessage('options_js_sync_gist_id'));
+        this.updateSyncStatus('error', i18n.getMessage('options_js_sync_missing_fields', [missingFields.join(' and ')]));
         this.domElements.syncEnabled.checked = false;
         return;
       }
 
-      this.updateSyncStatus('testing', 'Testing connection...');
+      this.updateSyncStatus('testing', i18n.getMessage('options_js_sync_testing_connection'));
 
       // Test connection first
       const connectionResult = await this.testSyncConnection();
 
       if (connectionResult && connectionResult.success) {
         // Connection successful, now perform initial sync
-        this.updateSyncStatus('syncing', 'Syncing...');
+        this.updateSyncStatus('syncing', i18n.getMessage('options_js_syncing'));
 
         if (typeof syncManager !== 'undefined') {
           try {
@@ -458,8 +481,8 @@ class OptionsPage {
               logger.info('Sync configuration save result:', saveResult);
 
               if (!saveResult) {
-                this.updateSyncStatus('error', 'Failed to save sync configuration');
-                this.domElements.syncErrorMessage.textContent = 'Failed to save sync configuration';
+                this.updateSyncStatus('error', i18n.getMessage('options_js_sync_save_config_error'));
+                this.domElements.syncErrorMessage.textContent = i18n.getMessage('options_js_sync_save_config_error');
                 this.domElements.syncErrorMessage.style.display = 'block';
                 this.domElements.syncEnabled.checked = false;
                 return;
@@ -478,8 +501,8 @@ class OptionsPage {
               });
 
               if (!verifyConfig.gistToken || !verifyConfig.gistId) {
-                this.updateSyncStatus('error', 'Configuration not saved properly');
-                this.domElements.syncErrorMessage.textContent = 'Configuration was not saved properly. Please try again.';
+                this.updateSyncStatus('error', i18n.getMessage('options_js_sync_config_not_saved_properly'));
+                this.domElements.syncErrorMessage.textContent = i18n.getMessage('options_js_sync_config_not_saved_properly_details');
                 this.domElements.syncErrorMessage.style.display = 'block';
                 this.domElements.syncEnabled.checked = false;
                 return;
@@ -492,10 +515,10 @@ class OptionsPage {
               // Reload sync status to get the updated lastSyncTime from syncConfig
               try {
                 const status = await syncManager.getSyncStatus();
-                this.updateSyncStatus('success', 'Sync completed successfully', status.lastSyncTime);
+                this.updateSyncStatus('success', i18n.getMessage('options_js_sync_completed_successfully'), status.lastSyncTime);
               } catch (statusError) {
                 // Fallback to current time if we can't get status
-                this.updateSyncStatus('success', 'Sync completed successfully');
+                this.updateSyncStatus('success', i18n.getMessage('options_js_sync_completed_successfully'));
                 logger.warn('Could not reload sync status after successful sync:', statusError);
               }
 
@@ -504,31 +527,31 @@ class OptionsPage {
 
               logger.info('Auto sync enabled and initial sync completed');
             } else {
-              this.updateSyncStatus('error', 'Sync failed after connection test');
-              this.domElements.syncErrorMessage.textContent = syncResult.error || 'Sync operation failed';
+              this.updateSyncStatus('error', i18n.getMessage('options_js_sync_failed_after_test'));
+              this.domElements.syncErrorMessage.textContent = syncResult.error || i18n.getMessage('options_js_sync_operation_failed');
               this.domElements.syncErrorMessage.style.display = 'block';
               this.domElements.syncEnabled.checked = false;
             }
           } catch (syncError) {
             logger.error('Error during initial sync:', syncError);
-            this.updateSyncStatus('error', 'Initial sync failed');
+            this.updateSyncStatus('error', i18n.getMessage('options_js_sync_initial_sync_failed'));
             this.domElements.syncErrorMessage.textContent = syncError.message;
             this.domElements.syncErrorMessage.style.display = 'block';
             this.domElements.syncEnabled.checked = false;
           }
         } else {
-          this.updateSyncStatus('success', 'Sync completed successfully');
+          this.updateSyncStatus('success', i18n.getMessage('options_js_sync_completed_successfully'));
         }
       } else {
         // Connection failed, disable auto sync
         this.domElements.syncEnabled.checked = false;
-        this.updateSyncStatus('error', 'Connection failed - Auto sync disabled');
-        this.domElements.syncErrorMessage.textContent = connectionResult.error || 'Connection test failed';
+        this.updateSyncStatus('error', i18n.getMessage('options_js_sync_connection_failed_disabled'));
+        this.domElements.syncErrorMessage.textContent = connectionResult.error || i18n.getMessage('options_js_sync_connection_test_failed');
         this.domElements.syncErrorMessage.style.display = 'block';
       }
     } catch (error) {
       logger.error('Error enabling auto sync:', error);
-      this.updateSyncStatus('error', 'Failed to enable auto sync');
+      this.updateSyncStatus('error', i18n.getMessage('options_js_sync_enable_auto_sync_failed'));
       this.domElements.syncErrorMessage.textContent = error.message;
       this.domElements.syncErrorMessage.style.display = 'block';
       this.domElements.syncEnabled.checked = false;
@@ -539,7 +562,7 @@ class OptionsPage {
   disableAutoSync() {
     try {
       // Clear status display
-      this.updateSyncStatus('idle', 'Not configured');
+      this.updateSyncStatus('idle', i18n.getMessage('options_js_sync_status_not_configured'));
 
       // Hide error messages
       this.domElements.syncErrorMessage.style.display = 'none';
@@ -609,7 +632,7 @@ class OptionsPage {
     if (saveBtn) {
       saveBtn.classList.remove('saved');
       saveBtn.classList.add('syncing');
-      saveBtn.querySelector('span').textContent = 'Syncing...';
+      saveBtn.querySelector('span').textContent = i18n.getMessage('options_js_syncing');
     }
 
     this.updateSyncStatus('syncing', 'Auto-syncing after save...');
@@ -617,14 +640,14 @@ class OptionsPage {
     try {
       const syncResult = await syncManager.fullSync();
       if (syncResult.success) {
-        this.updateSyncStatus('success', 'Sync completed successfully');
+        this.updateSyncStatus('success', i18n.getMessage('options_js_sync_completed_successfully'));
         logger.info('Auto-sync after save completed successfully');
 
         // Update save button to show sync success
         if (saveBtn) {
           saveBtn.classList.remove('syncing');
           saveBtn.classList.add('saved');
-          saveBtn.querySelector('span').textContent = 'Synced!';
+          saveBtn.querySelector('span').textContent = i18n.getMessage('options_js_sync_synced');
         }
       } else {
         this.updateSyncStatus('error', syncResult.message || 'Auto-sync failed');
@@ -634,7 +657,7 @@ class OptionsPage {
         if (saveBtn) {
           saveBtn.classList.remove('syncing');
           saveBtn.classList.add('error');
-          saveBtn.querySelector('span').textContent = 'Sync Error';
+          saveBtn.querySelector('span').textContent = i18n.getMessage('options_js_sync_error');
         }
       }
     } catch (error) {
@@ -645,7 +668,7 @@ class OptionsPage {
       if (saveBtn) {
         saveBtn.classList.remove('syncing');
         saveBtn.classList.add('error');
-        saveBtn.querySelector('span').textContent = 'Sync Error';
+        saveBtn.querySelector('span').textContent = i18n.getMessage('options_js_sync_error');
       }
     } finally {
       // After sync attempt, reload status from storage to reflect the final state
@@ -657,7 +680,7 @@ class OptionsPage {
       if (saveBtn) {
         setTimeout(() => {
           saveBtn.classList.remove('saved', 'error');
-          saveBtn.querySelector('span').textContent = 'Save';
+          saveBtn.querySelector('span').textContent = i18n.getMessage('options_js_save');
         }, 3000);
       }
     }
@@ -676,7 +699,7 @@ class OptionsPage {
       }
     } catch (error) {
       logger.error('Error loading sync status:', error);
-      this.updateSyncStatus('error', 'Failed to load sync status');
+      this.updateSyncStatus('error', i18n.getMessage('options_js_sync_load_status_error'));
     }
   }
 
@@ -708,21 +731,21 @@ class OptionsPage {
   getSyncStatusText(status) {
     switch (status.status) {
       case 'idle':
-        return status.isConfigured ? 'Ready to sync' : 'Not configured';
+        return status.isConfigured ? i18n.getMessage('options_js_sync_status_ready') : i18n.getMessage('options_js_sync_status_not_configured');
       case 'testing':
-        return 'Testing connection...';
+        return i18n.getMessage('options_js_sync_testing_connection');
       case 'uploading':
-        return 'Uploading data...';
+        return i18n.getMessage('options_js_sync_status_uploading');
       case 'downloading':
-        return 'Downloading data...';
+        return i18n.getMessage('options_js_sync_status_downloading');
       case 'syncing':
-        return 'Syncing data...';
+        return i18n.getMessage('options_js_sync_status_syncing');
       case 'success':
-        return 'Sync completed successfully';
+        return i18n.getMessage('options_js_sync_completed_successfully');
       case 'error':
-        return 'Configuration error';
+        return i18n.getMessage('options_js_sync_status_config_error');
       default:
-        return 'Unknown status';
+        return i18n.getMessage('options_js_sync_status_unknown');
     }
   }
 
@@ -735,11 +758,11 @@ class OptionsPage {
       // Add sync time information if provided
       if (lastSyncTime) {
         const syncDate = new Date(lastSyncTime);
-        displayText += `\nLast sync: ${this.formatSyncDate(syncDate)}`;
+        displayText += `\n${i18n.getMessage('options_js_sync_last_sync', [this.formatSyncDate(syncDate)])}`;
       } else if (status === 'success') {
         // For success status without specific time, use current time
         const now = new Date();
-        displayText += `\nLast sync: ${this.formatSyncDate(now)}`;
+        displayText += `\n${i18n.getMessage('options_js_sync_last_sync', [this.formatSyncDate(now)])}`;
       }
 
       statusText.textContent = displayText;
@@ -759,7 +782,7 @@ class OptionsPage {
       const gistId = this.domElements.gistId.value.trim();
 
       if (!token || !gistId) {
-        const result = { success: false, error: 'Token and Gist ID required' };
+        const result = { success: false, error: i18n.getMessage('options_js_sync_token_gist_required') };
         this.updateSyncStatus('error', result.error);
         return result;
       }
@@ -784,32 +807,32 @@ class OptionsPage {
 
           return {
             success: true,
-            message: response.message || 'Connection successful',
+            message: response.message || i18n.getMessage('options_js_sync_connection_successful'),
             gistInfo: response.gistInfo
           };
         } else {
           return {
             success: false,
             error: response.error || 'Unknown error',
-            message: response.message || 'Connection failed'
+            message: response.message || i18n.getMessage('options_js_sync_connection_failed')
           };
         }
       } else if (response.type === 'ERROR') {
         return {
           success: false,
-          error: response.error || 'Background script error'
+          error: response.error || i18n.getMessage('options_js_sync_bg_script_error')
         };
       } else {
         return {
           success: false,
-          error: 'Unexpected response from background script'
+          error: i18n.getMessage('options_js_sync_unexpected_response')
         };
       }
     } catch (error) {
       logger.error('Error testing sync connection:', error);
       return {
         success: false,
-        error: error.message || 'Test failed'
+        error: error.message || i18n.getMessage('options_js_sync_test_failed')
       };
     }
   }
@@ -820,8 +843,8 @@ class OptionsPage {
     const gistId = this.domElements.gistId.value.trim();
 
     const errors = [];
-    if (!token) errors.push('GitHub Token is required');
-    if (!gistId) errors.push('Gist ID is required');
+    if (!token) errors.push(i18n.getMessage('options_js_sync_github_token_required'));
+    if (!gistId) errors.push(i18n.getMessage('options_js_sync_gist_id_required'));
 
     return {
       isValid: errors.length === 0,
@@ -870,6 +893,125 @@ class OptionsPage {
     }
 
     logger.info(`Applied theme: ${theme}`);
+  }
+
+  // Setup language switcher
+  setupLanguageSwitcher() {
+    this.domElements.languageSelector.addEventListener('change', async (event) => {
+      const selectedLanguage = event.target.value;
+      logger.info(`Language changed to: ${selectedLanguage}`);
+      
+      try {
+        // Immediately apply language change using the new i18n system
+        await i18n.changeLanguage(selectedLanguage);
+        
+        // Mark the form as having unsaved changes so it will be saved
+        this.markAsChanged();
+        
+        // Show a success message
+        this.showLanguageChangeSuccess(selectedLanguage);
+        
+        logger.info(`Language successfully changed to: ${selectedLanguage}`);
+      } catch (error) {
+        logger.error('Failed to change language:', error);
+        
+        // Revert the selector to the previous language
+        this.domElements.languageSelector.value = i18n.getCurrentLanguage();
+        
+        // Show error message
+        this.showLanguageChangeError(error.message);
+      }
+    });
+  }
+
+  // Update language selector to show current language
+  updateLanguageSelector() {
+    const currentLanguage = i18n.getCurrentLanguage();
+    this.domElements.languageSelector.value = currentLanguage;
+    logger.info(`Language selector updated to: ${currentLanguage}`);
+  }
+
+  // Show language change success message
+  showLanguageChangeSuccess(language) {
+    const message = i18n.getMessage('options_language_change_success', [language]);
+    this.showTemporaryMessage(message, 'success');
+  }
+
+  // Show language change error message
+  showLanguageChangeError(errorMessage) {
+    const message = i18n.getMessage('options_language_change_error', [errorMessage]);
+    this.showTemporaryMessage(message, 'error');
+  }
+
+  // Show temporary message to user
+  showTemporaryMessage(message, type = 'info') {
+    // Create or get existing message container
+    let messageContainer = document.getElementById('languageChangeMessage');
+    if (!messageContainer) {
+      messageContainer = document.createElement('div');
+      messageContainer.id = 'languageChangeMessage';
+      messageContainer.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 16px;
+        border-radius: 4px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        max-width: 300px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        transition: opacity 0.3s ease;
+      `;
+      document.body.appendChild(messageContainer);
+    }
+
+    // Set message and style based on type
+    messageContainer.textContent = message;
+    messageContainer.className = `language-message ${type}`;
+    
+    // Apply type-specific styling
+    if (type === 'success') {
+      messageContainer.style.backgroundColor = '#4caf50';
+    } else if (type === 'error') {
+      messageContainer.style.backgroundColor = '#f44336';
+    } else {
+      messageContainer.style.backgroundColor = '#2196f3';
+    }
+
+    // Show message
+    messageContainer.style.opacity = '1';
+    messageContainer.style.display = 'block';
+
+    // Hide after 3 seconds
+    setTimeout(() => {
+      messageContainer.style.opacity = '0';
+      setTimeout(() => {
+        messageContainer.style.display = 'none';
+      }, 300);
+    }, 3000);
+  }
+
+  // Check for and display errors caught by global handlers
+  async displayCaughtError() {
+    const errorDisplayContainer = document.getElementById('errorDisplayContainer');
+    const errorDisplayContent = document.getElementById('errorDisplayContent');
+    const clearErrorBtn = document.getElementById('clearErrorBtn');
+
+    if (!errorDisplayContainer || !errorDisplayContent || !clearErrorBtn) return;
+
+    const result = await chrome.storage.local.get('last_error');
+    if (result.last_error) {
+      const error = result.last_error;
+      const errorString = `Page: ${error.page}\nTimestamp: ${error.timestamp}\nMessage: ${error.message}\nSource: ${error.source}:${error.lineno}:${error.colno}\nStack: ${error.error}`;
+      errorDisplayContent.textContent = errorString;
+      errorDisplayContainer.style.display = 'block';
+
+      clearErrorBtn.addEventListener('click', async () => {
+        await chrome.storage.local.remove('last_error');
+        errorDisplayContainer.style.display = 'none';
+      });
+    }
   }
 }
 
