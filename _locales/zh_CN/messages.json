@@ -958,5 +958,49 @@
   "global_cancel_button": {
     "message": "取消",
     "description": "Text for the cancel button."
+  },
+  "options_ui_config_import_confirm_title": {
+    "message": "确认配置导入",
+    "description": "Title for the configuration import confirmation dialog."
+  },
+  "options_ui_config_import_confirm_export_date": {
+    "message": "导出日期：$1",
+    "description": "Shows the export date of the configuration file."
+  },
+  "options_ui_config_import_confirm_version": {
+    "message": "版本：$1",
+    "description": "Shows the version of the configuration file."
+  },
+  "options_ui_config_import_confirm_exported_by": {
+    "message": "导出来源：$1",
+    "description": "Shows who exported the configuration file."
+  },
+  "options_ui_config_import_confirm_blacklist": {
+    "message": "黑名单模式：$1 个",
+    "description": "Shows the number of blacklist patterns to be imported."
+  },
+  "options_ui_config_import_confirm_sync": {
+    "message": "包含同步配置",
+    "description": "Indicates that sync configuration is included in the import."
+  },
+  "options_ui_config_import_confirm_footer": {
+    "message": "是否继续导入此配置？这将覆盖您当前的设置。",
+    "description": "Footer text for the configuration import confirmation dialog."
+  },
+  "options_ui_config_import_success": {
+    "message": "配置导入成功！",
+    "description": "Main success message after configuration import."
+  },
+  "options_ui_config_import_success_blacklist": {
+    "message": "已导入 $1 个黑名单模式",
+    "description": "Success message showing the number of blacklist patterns imported."
+  },
+  "options_ui_config_import_success_sync": {
+    "message": "同步配置已导入",
+    "description": "Success message indicating sync configuration was imported."
+  },
+  "options_ui_config_import_success_footer": {
+    "message": "页面将重新加载以应用新的设置。",
+    "description": "Footer text for the configuration import success message."
   }
 }

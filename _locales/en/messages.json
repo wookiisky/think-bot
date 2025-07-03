@@ -958,5 +958,49 @@
   "global_cancel_button": {
     "message": "Cancel",
     "description": "Text for the cancel button."
+  },
+  "options_ui_config_import_confirm_title": {
+    "message": "Confirm Configuration Import",
+    "description": "Title for the configuration import confirmation dialog."
+  },
+  "options_ui_config_import_confirm_export_date": {
+    "message": "Export Date: $1",
+    "description": "Shows the export date of the configuration file."
+  },
+  "options_ui_config_import_confirm_version": {
+    "message": "Version: $1",
+    "description": "Shows the version of the configuration file."
+  },
+  "options_ui_config_import_confirm_exported_by": {
+    "message": "Exported By: $1",
+    "description": "Shows who exported the configuration file."
+  },
+  "options_ui_config_import_confirm_blacklist": {
+    "message": "Blacklist patterns: $1",
+    "description": "Shows the number of blacklist patterns to be imported."
+  },
+  "options_ui_config_import_confirm_sync": {
+    "message": "Sync configuration included",
+    "description": "Indicates that sync configuration is included in the import."
+  },
+  "options_ui_config_import_confirm_footer": {
+    "message": "Do you want to proceed with importing this configuration? This will overwrite your current settings.",
+    "description": "Footer text for the configuration import confirmation dialog."
+  },
+  "options_ui_config_import_success": {
+    "message": "Configuration imported successfully!",
+    "description": "Main success message after configuration import."
+  },
+  "options_ui_config_import_success_blacklist": {
+    "message": "Imported $1 blacklist patterns",
+    "description": "Success message showing the number of blacklist patterns imported."
+  },
+  "options_ui_config_import_success_sync": {
+    "message": "Sync configuration imported",
+    "description": "Success message indicating sync configuration was imported."
+  },
+  "options_ui_config_import_success_footer": {
+    "message": "The page will reload to apply the new settings.",
+    "description": "Footer text for the configuration import success message."
   }
 }
