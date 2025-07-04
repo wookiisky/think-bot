@@ -65,38 +65,47 @@ export class QuickInputsManager {
     }
   }
   
-  // Remove a quick input
+  // Remove a quick input (soft delete)
   static removeQuickInput(item) {
-    item.remove();
+    // Mark as deleted for data collection and hide from view
+    item.dataset.deleted = 'true';
+    item.style.display = 'none';
   }
   
-  // Get all quick inputs as an array (ensuring IDs are preserved)
+  // Get all quick inputs as an array (ensuring IDs are preserved and soft deletes are handled)
   static getQuickInputs(domElements) {
     const items = domElements.quickInputsContainer.querySelectorAll('.quick-input-item');
     const quickInputs = [];
-    
+
     items.forEach(item => {
       const displayText = item.querySelector('.quick-input-display').value.trim();
       const sendText = item.querySelector('.quick-input-send').value.trim();
       const idInput = item.querySelector('.quick-input-id');
       const autoTriggerCheckbox = item.querySelector('.auto-trigger-checkbox');
-      
-      if (displayText && sendText) {
-        const id = idInput ? idInput.value : this.generateRandomId();
+      const isDeleted = item.dataset.deleted === 'true';
+      const id = idInput ? idInput.value : this.generateRandomId();
 
-        // Get auto-trigger setting directly from the checkbox in this item
+      // For deleted items, we only need the ID and the deleted flag.
+      // For active items, they must have display and send text.
+      if (isDeleted) {
+        quickInputs.push({
+          id,
+          isDeleted: true
+          // other fields are irrelevant
+        });
+      } else if (displayText && sendText) {
         const autoTriggerEnabled = autoTriggerCheckbox ? autoTriggerCheckbox.checked : false;
-
         quickInputs.push({
           id,
           displayText,
           sendText,
-          autoTrigger: autoTriggerEnabled
+          autoTrigger: autoTriggerEnabled,
+          isDeleted: false
           // Note: lastModified timestamp will be calculated during save by comparing with old config
         });
       }
     });
-    
+
     return quickInputs;
   }
   
@@ -154,26 +163,33 @@ export class QuickInputsManager {
     return quickInputs;
   }
   
-  // Render quick inputs from config (preserving existing IDs)
+  // Render quick inputs from config (preserving existing IDs and handling soft deletes)
   static renderQuickInputs(quickInputs, domElements) {
     // Clear existing quick inputs
     domElements.quickInputsContainer.innerHTML = '';
-    
+
+    let activeInputsCount = 0;
     // Add each quick input (they should already have IDs from storage)
     quickInputs.forEach(input => {
+      // Skip rendering for items marked as deleted
+      if (input.isDeleted) {
+        return;
+      }
+      
+      activeInputsCount++;
       // Ensure ID exists for backward compatibility
       const id = input.id || this.generateRandomId();
       this.addQuickInput(domElements, input.displayText, input.sendText, id);
-      
+
       // Set auto-trigger state immediately after adding the input
       this.setAutoTriggerState(id, input.autoTrigger || false, domElements);
     });
-    
-    // Add an empty one if none exist
-    if (quickInputs.length === 0) {
+
+    // Add an empty one if no active inputs exist
+    if (activeInputsCount === 0) {
       this.addQuickInput(domElements);
     }
-    
+
     // Update storage usage display for all items
     if (typeof StorageUsageDisplay !== 'undefined') {
       setTimeout(() => StorageUsageDisplay.updateAllUsageDisplays(domElements), 100);

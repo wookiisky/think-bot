@@ -282,6 +282,11 @@ syncManager.applyDownloadedData = async function(data) {
     // Clean up deletion records after merge is complete
     await this.cleanupDeletionRecords();
 
+    // Clean up soft-deleted quick inputs after successful sync and merge
+    if (data.config && data.config.quickInputs) {
+      await configManager.cleanupDeletedQuickInputs();
+    }
+
     syncLogger.info('All downloaded data applied successfully');
   } catch (error) {
     syncLogger.error('Error applying downloaded data:', error.message);

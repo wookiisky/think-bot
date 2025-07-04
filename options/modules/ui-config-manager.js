@@ -2,6 +2,9 @@
 // Handles configuration operations for the options page UI
 // Communicates with the storage config manager via message passing
 
+// Import QuickInputsManager
+import { QuickInputsManager } from './quick-inputs.js';
+
 // Import logger module
 const logger = window.logger ? window.logger.createModuleLogger('UIConfigManager') : console;
 
@@ -85,40 +88,8 @@ export class UIConfigManager {
   static buildConfigFromForm(domElements, modelManager) {
     logger.info('Building configuration from form values');
 
-    // Extract quick inputs from DOM with IDs preserved and auto-trigger settings
-    const quickInputs = [];
-    const quickInputItems = domElements.quickInputsContainer.querySelectorAll('.quick-input-item');
-    quickInputItems.forEach(item => {
-      const displayText = item.querySelector('.quick-input-display').value.trim();
-      const sendText = item.querySelector('.quick-input-send').value.trim();
-      const idInput = item.querySelector('.quick-input-id');
-      const autoTriggerCheckbox = item.querySelector('.auto-trigger-checkbox');
-
-      if (displayText && sendText) {
-        // Generate UUID-based ID if not present
-        let id = idInput ? idInput.value : null;
-        if (!id) {
-          const timestamp = Date.now().toString(36);
-          const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            const r = Math.random() * 16 | 0;
-            const v = c === 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-          });
-          id = `qi_${timestamp}_${uuid}`;
-        }
-
-        // Get auto-trigger setting directly from the checkbox in this item
-        const autoTrigger = autoTriggerCheckbox ? autoTriggerCheckbox.checked : false;
-
-        quickInputs.push({
-          id,
-          displayText,
-          sendText,
-          autoTrigger
-          // Note: lastModified timestamp will be calculated during save by comparing with old config
-        });
-      }
-    });
+    // Delegate quick inputs extraction to QuickInputsManager to handle soft deletes
+    const quickInputs = QuickInputsManager.getQuickInputs(domElements);
 
     const config = {
       llm_models: {

@@ -162,6 +162,9 @@ class OptionsPage {
         // Update storage usage display after save
         StorageUsageDisplay.updateAllUsageDisplays(this.domElements);
 
+        // Re-render quick inputs to remove any empty items that were filtered out during save
+        QuickInputsManager.renderQuickInputs(config.quickInputs || [], this.domElements);
+
         // Check if auto sync is enabled and perform sync
         if (syncSettings.enabled && typeof syncManager !== 'undefined') {
           logger.info('Auto sync enabled, performing sync after save');
@@ -181,8 +184,9 @@ class OptionsPage {
         this.showSaveError(saveBtn, result.error);
       }
     } catch (error) {
-      logger.error('Error during save');
-      this.showSaveError(saveBtn);
+      // Log detailed error for easier debugging
+      logger.error('Error during save:', error);
+      this.showSaveError(saveBtn, error?.message);
     }
   }
   
@@ -1015,8 +1019,18 @@ class OptionsPage {
   }
 }
 
-// Initialize the options page when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize options page when DOM is ready
+document.addEventListener('DOMContentLoaded', async () => {
+  // Initialize logger for options page
+  if (window.logger) {
+    // 使用configure方法进行配置，而不是不存在的init方法
+    window.logger.configure({
+      level: window.LOG_LEVELS.INFO,
+      enableConsole: true,
+      modulePrefix: true
+    });
+  }
+  
   const optionsPage = new OptionsPage();
-  optionsPage.init();
+  await optionsPage.init();
 });

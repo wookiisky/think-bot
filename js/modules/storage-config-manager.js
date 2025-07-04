@@ -335,9 +335,13 @@ storageConfigManager.saveAllQuickInputs = async function(quickInputs, forceTimes
     // Save new index
     await storageConfigManager.saveQuickInputsIndex(newIds);
 
-    // Clean up old quick inputs that are no longer needed
-    const idsToDelete = currentIndex.filter(id => !newIds.includes(id));
+    // With soft-delete, we no longer physically delete items here.
+    // Deletion is handled by a separate cleanup process after successful sync.
+    // We just save the new state of all items (including those marked as deleted).
+    const idsInNewConfig = new Set(newIds);
+    const idsToDelete = currentIndex.filter(id => !idsInNewConfig.has(id));
     if (idsToDelete.length > 0) {
+      storageConfigLogger.info(`Orphaned quick input IDs found during save, cleaning up: ${idsToDelete.join(', ')}`);
       const deletePromises = idsToDelete.map(id => storageConfigManager.deleteQuickInput(id));
       await Promise.all(deletePromises);
     }
@@ -535,15 +539,22 @@ storageConfigManager.saveConfig = async function(newConfig, isUserModification =
 
     if (processedConfig.llm_models && processedConfig.basic) {
       // New format
+      // Extract systemPrompt and exclude it from basic before saving main config to avoid duplicate large data
+      const { systemPrompt: extractedSystemPrompt, ...basicWithoutSystemPrompt } = processedConfig.basic;
+
       mainConfig = {
         llm_models: processedConfig.llm_models,
-        basic: processedConfig.basic
+        basic: basicWithoutSystemPrompt
       };
+
       quickInputs = processedConfig.quickInputs || storageConfigManager.getDefaultQuickInputs();
-      systemPrompt = processedConfig.basic.systemPrompt || storageConfigManager.getDefaultSystemPrompt();
+      systemPrompt = extractedSystemPrompt || storageConfigManager.getDefaultSystemPrompt();
     } else {
       // Old format - convert to new format for storage
       const oldLlmConfig = processedConfig.llm || { models: [] };
+      // Extract systemPrompt field and omit it from basic config to prevent duplication
+      const extractedSystemPrompt = processedConfig.systemPrompt || storageConfigManager.getDefaultSystemPrompt();
+
       mainConfig = {
         llm_models: {
           models: oldLlmConfig.models || []
@@ -552,15 +563,16 @@ storageConfigManager.saveConfig = async function(newConfig, isUserModification =
           defaultExtractionMethod: processedConfig.defaultExtractionMethod || 'readability',
           jinaApiKey: processedConfig.jinaApiKey || '',
           jinaResponseTemplate: processedConfig.jinaResponseTemplate || '# {title}\n\n**URL:** {url}\n\n**Description:** {description}\n\n## Content\n\n{content}',
-          systemPrompt: processedConfig.systemPrompt || storageConfigManager.getDefaultSystemPrompt(),
+          // systemPrompt removed here to avoid duplicate large data
           contentDisplayHeight: processedConfig.contentDisplayHeight || 100,
           theme: processedConfig.theme || 'system',
           defaultModelId: oldLlmConfig.defaultModelId || 'gemini-pro',
           lastModified: Date.now()
         }
       };
+
       quickInputs = processedConfig.quickInputs || storageConfigManager.getDefaultQuickInputs();
-      systemPrompt = processedConfig.systemPrompt || storageConfigManager.getDefaultSystemPrompt();
+      systemPrompt = extractedSystemPrompt;
     }
 
     // Compress system prompt using pako compression if available
@@ -709,10 +721,19 @@ storageConfigManager.calculateConfigTimestamps = function(newConfig, existingCon
 
   // Process Quick Inputs
   if (processedConfig.quickInputs && Array.isArray(processedConfig.quickInputs)) {
-    processedConfig.quickInputs.forEach(newItem => {
+    processedConfig.quickInputs.forEach((newItem, index, arr) => {
       const existingItem = existingConfig.quickInputs?.find(item => item.id === newItem.id);
 
       if (existingItem) {
+        // If the item is marked for deletion in the new config
+        if (newItem.isDeleted) {
+          // Replace the incomplete deleted item with the full item marked for deletion
+          const fullDeletedItem = { ...existingItem, isDeleted: true, lastModified: currentTime };
+          arr[index] = fullDeletedItem; // Replace item in the array
+          storageConfigLogger.debug(`Marked quick input for deletion with updated timestamp: ${fullDeletedItem.id}`);
+          return; // Continue to next item
+        }
+
         // Compare all fields to determine if item was actually modified
         const fieldsChanged = ['displayText', 'sendText', 'autoTrigger'].some(field =>
           existingItem[field] !== newItem[field]
@@ -820,6 +841,46 @@ storageConfigManager.addTimestampsToNewConfig = function(config) {
   }
 
   return processedConfig;
+};
+
+// Clean up quick inputs that are marked for deletion
+storageConfigManager.cleanupDeletedQuickInputs = async function() {
+  try {
+    storageConfigLogger.info('Starting cleanup of soft-deleted quick inputs.');
+    const allQuickInputs = await storageConfigManager.loadAllQuickInputs();
+    
+    const activeQuickInputs = [];
+    const idsToDelete = [];
+
+    allQuickInputs.forEach(item => {
+      if (item.isDeleted) {
+        idsToDelete.push(item.id);
+      } else {
+        activeQuickInputs.push(item);
+      }
+    });
+
+    if (idsToDelete.length > 0) {
+      storageConfigLogger.info(`Found ${idsToDelete.length} quick inputs to permanently delete.`);
+      
+      // Update the index to only contain active items
+      const activeIds = activeQuickInputs.map(item => item.id);
+      await storageConfigManager.saveQuickInputsIndex(activeIds);
+      
+      // Physically delete the items from storage
+      const deletePromises = idsToDelete.map(id => storageConfigManager.deleteQuickInput(id));
+      await Promise.all(deletePromises);
+      
+      storageConfigLogger.info('Cleanup of soft-deleted quick inputs completed successfully.');
+      return true;
+    } else {
+      storageConfigLogger.info('No soft-deleted quick inputs found to clean up.');
+      return false;
+    }
+  } catch (error) {
+    storageConfigLogger.error('Error during cleanup of soft-deleted quick inputs:', error.message);
+    throw error;
+  }
 };
 
 // Maintain backward compatibility by creating an alias
