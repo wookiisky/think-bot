@@ -312,6 +312,12 @@ export class PageListManager {
       return;
     }
 
+    // Check if confirmation is already visible
+    if (this.confirmationDialog.isConfirmationVisible()) {
+      moduleLogger.info('Confirmation dialog is already visible, ignoring delete request');
+      return;
+    }
+
     // Use mini confirmation instead of the full dialog
     const confirmed = await new Promise(resolve => {
       this.confirmationDialog.show({
