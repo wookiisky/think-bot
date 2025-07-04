@@ -872,7 +872,7 @@
     "description": "Title for the delete conversation button."
   },
   "page_list_manager_confirm_delete_message": {
-    "message": "您确定要删除此页面的对话吗？",
+    "message": "您确定要删除此页面的所有对话和提取的内容吗？",
     "description": "Confirmation message before deleting a page conversation."
   },
   "page_list_manager_confirm_delete_details": {
@@ -902,22 +902,6 @@
   "global_time_days_ago": {
     "message": "{days}天前",
     "description": "Text for a timestamp in days. {days} is a placeholder."
-  },
-  "confirmation_dialog_default_title": {
-    "message": "确认",
-    "description": "Default title for the confirmation dialog."
-  },
-  "confirmation_dialog_default_message": {
-    "message": "您确定吗？",
-    "description": "Default message for the confirmation dialog."
-  },
-  "confirmation_dialog_default_confirm_button": {
-    "message": "确认",
-    "description": "Default confirm button text for the confirmation dialog."
-  },
-  "confirmation_dialog_default_cancel_button": {
-    "message": "取消",
-    "description": "Default cancel button text for the confirmation dialog."
   },
   "global_loading_content": {
     "message": "正在加载内容...",

@@ -872,7 +872,7 @@
     "description": "Title for the delete conversation button."
   },
   "page_list_manager_confirm_delete_message": {
-    "message": "Are you sure you want to delete the conversation for this page?",
+    "message": "Are you sure you want to delete all conversations and extracted content for this page?",
     "description": "Confirmation message before deleting a page conversation."
   },
   "page_list_manager_confirm_delete_details": {
@@ -902,22 +902,6 @@
   "global_time_days_ago": {
     "message": "{days}d ago",
     "description": "Text for a timestamp in days. {days} is a placeholder."
-  },
-  "confirmation_dialog_default_title": {
-    "message": "Confirm",
-    "description": "Default title for the confirmation dialog."
-  },
-  "confirmation_dialog_default_message": {
-    "message": "Are you sure?",
-    "description": "Default message for the confirmation dialog."
-  },
-  "confirmation_dialog_default_confirm_button": {
-    "message": "Confirm",
-    "description": "Default confirm button text for the confirmation dialog."
-  },
-  "confirmation_dialog_default_cancel_button": {
-    "message": "Cancel",
-    "description": "Default cancel button text for the confirmation dialog."
   },
   "global_loading_content": {
     "message": "Loading content...",

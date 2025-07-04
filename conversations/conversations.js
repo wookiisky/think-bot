@@ -33,8 +33,9 @@ import { ModelSelector } from '../sidebar/modules/model-selector.js';
 
 // Import conversations-specific modules
 import { PageListManager } from './modules/page-list-manager.js';
-import { ConfirmationDialog } from './modules/confirmation-dialog.js';
 import { createConversationsExportHandler } from '../sidebar/modules/export-utils.js';
+// Import MiniConfirmation component from sidebar
+import { miniConfirmation } from '../sidebar/components/mini-confirmation.js';
 
 // Create logger
 const logger = createLogger('Conversations');
@@ -42,7 +43,6 @@ const logger = createLogger('Conversations');
 // Global variables
 let modelSelector = null;
 let pageListManager = null;
-let confirmationDialog = null;
 let currentRequestTabId = null;
 let currentStreamId = null;
 let currentUrl = null; // Track currently selected page URL
@@ -93,14 +93,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize model selector
     modelSelector = new ModelSelector();
     
-    // Initialize confirmation dialog
-    confirmationDialog = new ConfirmationDialog(
-      'confirmationDialog', 'confirmBtn', 'cancelBtn', 
-      'confirmationDialogTitle', 'confirmationDialogMessage', 'confirmationDialogDetails'
-    );
+    // Initialize mini confirmation dialog (replaces the old confirmation dialog)
+    // No need to create a new instance, use the imported singleton
     
-    // Initialize page list manager
-    pageListManager = new PageListManager(confirmationDialog);
+    // Initialize page list manager with mini confirmation
+    pageListManager = new PageListManager(miniConfirmation);
     await pageListManager.init(elements.pageListContainer, elements.pageSearchInput, {
       onPageSelect: loadPageConversation,
       onPageDelete: handlePageDelete

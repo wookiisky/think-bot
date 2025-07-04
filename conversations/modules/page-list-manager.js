@@ -3,8 +3,11 @@
  * Manages the left column page list functionality
  */
 
-import { logger } from '../../js/modules/logger.js';
+import '../../js/modules/logger.js';
 import { i18n } from '../../js/modules/i18n.js';
+
+// Create module logger
+const moduleLogger = logger.createModuleLogger('PageListManager');
 
 /**
  * Page List Manager for Conversations
@@ -47,6 +50,42 @@ export class PageListManager {
    */
   async loadPages() {
     try {
+      moduleLogger.info('Loading page list from storage');
+      
+      // Method 1: Try to get metadata using GET_ALL_PAGE_METADATA message (preferred)
+      try {
+        const response = await chrome.runtime.sendMessage({
+          type: 'GET_ALL_PAGE_METADATA'
+        });
+        
+        if (response && response.type === 'ALL_PAGE_METADATA_LOADED' && Array.isArray(response.pages)) {
+          moduleLogger.info(`Loaded ${response.pages.length} pages from GET_ALL_PAGE_METADATA`);
+          
+          // Convert array to page objects
+          this.pages = response.pages.map(page => ({
+            url: page.url,
+            title: page.title || '',
+            icon: page.icon || '',
+            timestamp: page.timestamp || 0,
+            lastUpdated: page.lastUpdated || 0
+          }));
+          
+          // Sort by last update
+          this.pages.sort((a, b) => (b.lastUpdated || 0) - (a.lastUpdated || 0));
+          this.filteredPages = [...this.pages];
+          
+          // Render the page list
+          this.renderPageList();
+          return;
+        } else {
+          moduleLogger.warn('GET_ALL_PAGE_METADATA returned invalid response:', response);
+        }
+      } catch (messageError) {
+        moduleLogger.warn('Error getting metadata via GET_ALL_PAGE_METADATA:', messageError);
+      }
+      
+      // Method 2: Fallback to direct pageMetadata access (legacy)
+      moduleLogger.info('Falling back to legacy pageMetadata access');
       const result = await chrome.storage.local.get(['pageMetadata']);
       const pageMetadata = result.pageMetadata || {};
       
@@ -62,8 +101,10 @@ export class PageListManager {
       
       // Render the page list
       this.renderPageList();
+      
+      moduleLogger.info(`Loaded ${this.pages.length} pages from legacy pageMetadata`);
     } catch (error) {
-      logger.error('Failed to load pages:', error);
+      moduleLogger.error('Failed to load pages:', error);
       this.showError(i18n.getMessage('page_list_manager_failed_to_load'));
     }
   }
@@ -233,7 +274,7 @@ export class PageListManager {
    * @param {string} url - Page URL
    */
   selectPage(url) {
-    logger.info('Selecting page:', url);
+    moduleLogger.info('Selecting page:', url);
     
     // Update selected state
     this.selectedPageUrl = url;
@@ -258,20 +299,34 @@ export class PageListManager {
    * @param {string} url - Page URL
    */
   async deletePage(url) {
-    logger.info('Requesting to delete page:', url);
+    moduleLogger.info('Requesting to delete page:', url);
     const page = this.pages.find(p => p.url === url);
     const pageTitle = page ? (page.title || page.url) : url;
+    
+    // Find the delete button element for this URL
+    const pageListItem = this.container.querySelector(`.page-list-item[data-url="${url}"]`);
+    const deleteBtn = pageListItem ? pageListItem.querySelector('.page-delete-btn') : null;
+    
+    if (!deleteBtn) {
+      moduleLogger.warn('Delete button not found for URL:', url);
+      return;
+    }
 
-    const confirmed = await this.confirmationDialog.show({
-      title: i18n.getMessage('global_confirm_deletion_title'),
-      message: i18n.getMessage('page_list_manager_confirm_delete_message'),
-      details: i18n.getMessage('page_list_manager_confirm_delete_details', { title: pageTitle }),
-      confirmText: i18n.getMessage('global_delete_button'),
-      cancelText: i18n.getMessage('global_cancel_button')
+    // Use mini confirmation instead of the full dialog
+    const confirmed = await new Promise(resolve => {
+      this.confirmationDialog.show({
+        target: deleteBtn,
+        message: i18n.getMessage('page_list_manager_confirm_delete_message'),
+        confirmText: i18n.getMessage('global_delete_button'),
+        cancelText: i18n.getMessage('global_cancel_button'),
+        confirmButtonClass: 'mini-btn-danger',
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false)
+      });
     });
 
     if (confirmed) {
-      logger.info('Deletion confirmed for page:', url);
+      moduleLogger.info('Deletion confirmed for page:', url);
       try {
         if (this.callbacks && this.callbacks.onPageDelete) {
           const result = await this.callbacks.onPageDelete(url);
@@ -279,17 +334,17 @@ export class PageListManager {
             this.pages = this.pages.filter(p => p.url !== url);
             this.filteredPages = this.filteredPages.filter(p => p.url !== url);
             this.renderPageList();
-            logger.info('Page deleted successfully from list:', url);
+            moduleLogger.info('Page deleted successfully from list:', url);
           } else {
             throw new Error('Deletion callback returned false');
           }
         }
       } catch (error) {
-        logger.error('Error during page deletion process:', error);
+        moduleLogger.error('Error during page deletion process:', error);
         // Optionally, show an error to the user
       }
     } else {
-      logger.info('Deletion cancelled for page:', url);
+      moduleLogger.info('Deletion cancelled for page:', url);
     }
   }
 
@@ -310,7 +365,7 @@ export class PageListManager {
     }
     
     this.renderPageList();
-    logger.info(`Filtered to ${this.filteredPages.length} pages with query: "${query}"`);
+    moduleLogger.info(`Filtered to ${this.filteredPages.length} pages with query: "${query}"`);
   }
 
   /**
@@ -347,9 +402,19 @@ export class PageListManager {
    * Refresh the page list
    */
   async refresh() {
-    logger.info('Refreshing page list');
+    moduleLogger.info('Refreshing page list');
     await this.loadPages();
-    this.renderPageList();
+    
+    // If there was a selected page, try to re-select it
+    if (this.selectedPageUrl) {
+      // Check if the page still exists
+      if (this.hasPage(this.selectedPageUrl)) {
+        this.selectPage(this.selectedPageUrl);
+      } else {
+        // Clear selection if page no longer exists
+        this.selectedPageUrl = null;
+      }
+    }
   }
 
   /**
@@ -365,7 +430,7 @@ export class PageListManager {
    * @param {string} url - Page URL to open
    */
   openPageInNewTab(url) {
-    logger.info('Opening page in new tab:', url);
+    moduleLogger.info('Opening page in new tab:', url);
     window.open(url, '_blank');
   }
 } 

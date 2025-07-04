@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="../sidebar/styles/buttons.css">
   <link rel="stylesheet" href="../sidebar/styles/markdown.css">
   <link rel="stylesheet" href="../sidebar/styles/content-extraction.css">
+  <!-- Mini confirmation styles -->
+  <link rel="stylesheet" href="../sidebar/styles/mini-confirmation.css">
   <!-- Conversations-specific styles (load last to override) -->
   <link rel="stylesheet" href="conversations.css">
 </head>
@@ -156,17 +158,5 @@
   
   <!-- Load module scripts -->
   <script src="conversations.js" type="module"></script>
-  <!-- Confirmation Dialog -->
-  <div id="confirmationDialog" class="confirmation-dialog-overlay hidden">
-    <div class="confirmation-dialog">
-      <h3 id="confirmationDialogTitle" data-i18n="global_confirm_deletion_title">Confirm Deletion</h3>
-      <p id="confirmationDialogMessage" data-i18n="conversations_confirm_delete_message">Are you sure you want to delete this conversation?</p>
-      <div id="confirmationDialogDetails" class="confirmation-details"></div>
-      <div class="confirmation-dialog-buttons">
-        <button id="confirmBtn" class="button-danger" data-i18n="global_delete_button">Delete</button>
-        <button id="cancelBtn" class="button-secondary" data-i18n="global_cancel_button">Cancel</button>
-      </div>
-    </div>
-  </div>
 </body>
 </html> 
