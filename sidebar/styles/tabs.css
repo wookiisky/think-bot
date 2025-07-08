@@ -63,9 +63,9 @@
 .tab.has-content::before {
   content: '';
   position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
+  left: -1px;
+  bottom: -1px;
+  width: calc(100% + 2px);
   height: 2px;
   background-color: var(--primary-color);
   border-radius: 0 0 0 0;
@@ -151,28 +151,28 @@
 .tab.loading::after {
   content: '';
   position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
+  left: -1px;
+  bottom: -1px;
+  width: calc(100% + 2px);
   height: 2px;
   background: linear-gradient(
     90deg,
-    #00d4aa 0%,
-    #4285f4 50%,
-    #00d4aa 100%
+    #F472B6 0%,
+    #FB923C 50%,
+    #F472B6 100%
   );
   background-size: 300% 100%;
   border-radius: 0 0 0 0;
   animation: tabLoadingFlow 5s linear infinite;
 }
 
-/* For active loading tabs, use green gradient */
+/* For active loading tabs, use contrasting gradient */
 .tab.loading.active::after {
   background: linear-gradient(
     90deg,
-    #3dca42 0%,
-    #22b039 50%,
-    #3dca42 100%
+    #F472B6 0%,
+    #FB923C 50%,
+    #F472B6 100%
   );
   background-size: 300% 100%;
 }
