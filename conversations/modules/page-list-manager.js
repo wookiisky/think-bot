@@ -424,6 +424,41 @@ export class PageListManager {
   }
 
   /**
+   * Update the title of a page in the page list
+   * @param {string} url - Page URL
+   * @param {string} newTitle - New title for the page
+   */
+  async updatePageTitle(url, newTitle) {
+    moduleLogger.info('Updating page title:', url, 'to:', newTitle);
+    
+    // Find and update the page in the pages array
+    const pageIndex = this.pages.findIndex(page => page.url === url);
+    if (pageIndex !== -1) {
+      this.pages[pageIndex].title = newTitle;
+      this.pages[pageIndex].lastUpdated = Date.now();
+      
+      // Update the filtered pages array as well
+      const filteredIndex = this.filteredPages.findIndex(page => page.url === url);
+      if (filteredIndex !== -1) {
+        this.filteredPages[filteredIndex].title = newTitle;
+        this.filteredPages[filteredIndex].lastUpdated = Date.now();
+      }
+      
+      // Re-render the page list to show the updated title
+      this.renderPageList();
+      
+      // Re-select the page if it was previously selected
+      if (this.selectedPageUrl === url) {
+        this.selectPage(url);
+      }
+      
+      moduleLogger.info('Page title updated successfully in page list');
+    } else {
+      moduleLogger.warn('Page not found in page list for title update:', url);
+    }
+  }
+
+  /**
    * Get currently selected page URL
    * @returns {string|null} Selected page URL
    */

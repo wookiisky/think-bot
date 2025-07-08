@@ -122,6 +122,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Set up message listeners
     setupMessageListeners();
     
+    // Set up title editing functionality
+    setupTitleEditing();
+    
     // Set up message buttons scroll effect
     EventHandler.setupMessageButtonsScroll(elements.chatContainer);
     
@@ -1430,4 +1433,161 @@ async function handleUrlParameters() {
   } catch (error) {
     logger.error('Error handling URL parameters:', error);
   }
+}
+
+/**
+ * Enable inline editing mode for page title
+ * @param {HTMLElement} titleElement - The page title element
+ */
+function enableTitleEdit(titleElement) {
+  if (!titleElement || titleElement.classList.contains('edit-mode')) {
+    return; // Already in edit mode
+  }
+
+  logger.info('Enabling title edit mode');
+  
+  // Store original content
+  const originalTitle = titleElement.textContent;
+  titleElement.setAttribute('data-original-title', originalTitle);
+  
+  // Add edit mode class
+  titleElement.classList.add('edit-mode');
+  
+  // Create input element
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'title-input';
+  input.value = originalTitle;
+  input.placeholder = 'Enter page title...';
+  
+  // Replace content with input
+  titleElement.innerHTML = '';
+  titleElement.appendChild(input);
+  
+  // Focus and select text
+  input.focus();
+  input.select();
+  
+  // Set up event listeners
+  input.addEventListener('blur', () => saveTitleEdit(titleElement));
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveTitleEdit(titleElement);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelTitleEdit(titleElement);
+    }
+  });
+  
+  // Prevent event bubbling to avoid conflicts
+  input.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+}
+
+/**
+ * Save the edited title
+ * @param {HTMLElement} titleElement - The page title element
+ */
+async function saveTitleEdit(titleElement) {
+  if (!titleElement || !titleElement.classList.contains('edit-mode')) {
+    return;
+  }
+
+  logger.info('Saving title edit');
+  
+  const input = titleElement.querySelector('.title-input');
+  if (!input) {
+    logger.warn('Title input not found');
+    return;
+  }
+
+  const newTitle = input.value.trim();
+  const originalTitle = titleElement.getAttribute('data-original-title');
+  
+  // Remove edit mode
+  titleElement.classList.remove('edit-mode');
+  titleElement.removeAttribute('data-original-title');
+  
+  // If title hasn't changed, just restore original
+  if (newTitle === originalTitle || newTitle === '') {
+    titleElement.textContent = originalTitle;
+    return;
+  }
+  
+  // Update the title display
+  titleElement.textContent = newTitle;
+  
+  // Save to storage
+  if (currentUrl) {
+    try {
+      // Update page metadata with custom title using existing handler
+      await chrome.runtime.sendMessage({
+        type: 'SAVE_PAGE_STATE',
+        url: currentUrl,
+        title: newTitle, // Pass title as separate parameter
+        pageState: {
+          customTitle: true,
+          lastModified: Date.now()
+        }
+      });
+      
+      // Update page list if available
+      if (pageListManager) {
+        await pageListManager.updatePageTitle(currentUrl, newTitle);
+      }
+      
+      logger.info('Title saved successfully:', newTitle);
+    } catch (error) {
+      logger.error('Error saving title:', error);
+      // Revert to original title on error
+      titleElement.textContent = originalTitle;
+    }
+  } else {
+    logger.warn('No current URL to save title for');
+    titleElement.textContent = originalTitle;
+  }
+}
+
+/**
+ * Cancel title editing and restore original title
+ * @param {HTMLElement} titleElement - The page title element
+ */
+function cancelTitleEdit(titleElement) {
+  if (!titleElement || !titleElement.classList.contains('edit-mode')) {
+    return;
+  }
+
+  logger.info('Canceling title edit');
+  
+  const originalTitle = titleElement.getAttribute('data-original-title');
+  
+  // Remove edit mode
+  titleElement.classList.remove('edit-mode');
+  titleElement.removeAttribute('data-original-title');
+  
+  // Restore original title
+  titleElement.textContent = originalTitle;
+}
+
+/**
+ * Setup title editing functionality
+ */
+function setupTitleEditing() {
+  const elements = window.conversationsElements;
+  
+  if (!elements.pageTitle) {
+    logger.warn('Page title element not found, skipping title editing setup');
+    return;
+  }
+  
+  // Add click event listener to enable editing
+  elements.pageTitle.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    enableTitleEdit(elements.pageTitle);
+  });
+  
+  logger.info('Title editing functionality set up');
 }

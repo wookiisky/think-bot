@@ -398,6 +398,51 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+}
+
+.page-info-header .page-title:hover {
+  background-color: var(--hover-color);
+  border-color: var(--border-color);
+}
+
+/* Edit mode styles */
+.page-info-header .page-title.edit-mode {
+  cursor: text;
+  padding: 0;
+  background: transparent;
+  border: none;
+  margin: 0 0 6px 0;
+}
+
+.page-info-header .page-title.edit-mode .title-input {
+  width: 100%;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color);
+  background-color: var(--input-background, var(--background-color));
+  border: 2px solid var(--primary-color);
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin: 0;
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.15);
+}
+
+.page-info-header .page-title.edit-mode .title-input:focus {
+  border-color: #3b78e7;
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.25);
+  transform: translateY(-1px);
+}
+
+.page-info-header .page-title.edit-mode .title-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
 }
 
 .page-url-container {
