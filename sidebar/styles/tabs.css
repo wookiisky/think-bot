@@ -74,7 +74,7 @@
 }
 
 .tab.has-content.active::before {
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: #FFA500;
   opacity: 1;
 }
 
@@ -157,9 +157,11 @@
   height: 2px;
   background: linear-gradient(
     90deg,
-    #F472B6 0%,
-    #FB923C 50%,
-    #F472B6 100%
+    #FFB6C1 0%,
+    #FFA500 25%,
+    #32CD32 50%,
+    #FFA500 75%,
+    #FFB6C1 100%
   );
   background-size: 300% 100%;
   border-radius: 0 0 0 0;
@@ -170,19 +172,21 @@
 .tab.loading.active::after {
   background: linear-gradient(
     90deg,
-    #F472B6 0%,
-    #FB923C 50%,
-    #F472B6 100%
+    #FFB6C1 0%,
+    #FFA500 25%,
+    #32CD32 50%,
+    #FFA500 75%,
+    #FFB6C1 100%
   );
   background-size: 300% 100%;
 }
 
 @keyframes tabLoadingFlow {
   0% {
-    background-position: -300% 0;
+    background-position: 300% 0;
   }
   100% {
-    background-position: 300% 0;
+    background-position: -300% 0;
   }
 }
 
