@@ -504,11 +504,11 @@
     "description": "Title for the clear page data button."
   },
   "sidebar_title_openChatPage": {
-    "message": "Open chat page",
+    "message": "Open Conversations page",
     "description": "Title for the open chat page button."
   },
   "sidebar_title_openConfigPage": {
-    "message": "Open configuration page",
+    "message": "Open Options page",
     "description": "Title for the open configuration page button."
   },
   "sidebar_text_extractingContent": {

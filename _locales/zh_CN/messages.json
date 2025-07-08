@@ -504,7 +504,7 @@
     "description": "Title for the clear page data button."
   },
   "sidebar_title_openChatPage": {
-    "message": "打开聊天页面",
+    "message": "打开对话页面",
     "description": "Title for the open chat page button."
   },
   "sidebar_title_openConfigPage": {

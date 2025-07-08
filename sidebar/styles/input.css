@@ -17,7 +17,7 @@
   width: 85px;
   padding: 4px 6px;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 0;
   font-size: 11px;
   font-family: inherit;
   background-color: var(--bg-color);
@@ -58,7 +58,7 @@
 #userInput {
   flex: 1;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 0;
   padding: 4px 8px;
   font-size: 14px;
   resize: none; /* Disable native resize to use custom drag handle */
@@ -100,7 +100,7 @@
   line-height: 1;
   color: #666;
   padding: 2px 4px;
-  border-radius: 3px;
+  border-radius: 0;
   transition: all 0.2s ease;
   margin-left: 8px;
 }
@@ -120,7 +120,7 @@
 .image-preview img {
   max-height: 100%;
   max-width: 100%;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 /* Input resize handle */
@@ -198,7 +198,7 @@
 .button-icon {
   width: 26px;
   height: 26px;
-  border-radius: 6px;
+  border-radius: 0;
   border: 1px solid var(--border-color);
   background-color: transparent;
   color: var(--text-color);

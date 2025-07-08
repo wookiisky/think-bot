@@ -32,7 +32,7 @@
   line-height: 1.5;
   background-color: var(--light-gray);
   padding: 4px;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 /* Loading states */
@@ -159,7 +159,7 @@
   width: 40px;
   height: 2px;
   background-color: var(--border-color);
-  border-radius: 1px;
+  border-radius: 0;
   transition: background-color 0.2s ease;
 }
 

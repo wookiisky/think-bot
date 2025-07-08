@@ -15,7 +15,7 @@
   position: relative;
   background-color: transparent;
   border: 1px solid var(--selector-gray-light);
-  border-radius: 6px;
+  border-radius: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -38,7 +38,7 @@
   background-color: var(--selector-orange);
   transition: all 0.25s ease;
   transform: translateX(-50%);
-  border-radius: 1px;
+  border-radius: 0;
 }
 
 /* Hover state - only orange border, no color change */
