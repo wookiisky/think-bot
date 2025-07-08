@@ -68,8 +68,7 @@
 }
 
 .mini-btn-cancel:focus {
-  outline: 2px solid var(--mini-focus-color, #4285f4);
-  outline-offset: 1px;
+  outline: none;
 }
 
 .mini-btn-confirm {
