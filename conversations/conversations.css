@@ -118,20 +118,17 @@
   cursor: pointer;
   transition: all 0.15s ease;
   position: relative;
-  border-left: 3px solid transparent;
   height: 22px;
 }
 
 /* 悬停状态 - 使用与选中相同的背景色 */
 .page-list-item:hover {
   background-color: var(--hover-color);
-  border-left: 3px solid var(--accent-color-alpha);
 }
 
 /* 选中状态 - 扁平化但醒目 */
 .page-list-item.selected {
   background-color: var(--accent-color-alpha);
-  border-left: 3px solid var(--accent-color);
 }
 
 /* 删除多余的装饰元素 */
@@ -540,12 +537,10 @@
 
 .dark-theme .page-list-item:hover {
   background-color: var(--hover-color);
-  border-left: 3px solid var(--accent-color-alpha);
 }
 
 .dark-theme .page-list-item.selected {
   background-color: var(--accent-color-alpha);
-  border-left: 3px solid var(--accent-color);
 }
 
 .dark-theme .page-list-item.selected .page-title {
