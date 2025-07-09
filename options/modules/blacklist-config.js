@@ -106,11 +106,14 @@ class BlacklistConfig {
     if (patterns.length === 0) {
       this.tableBody.innerHTML = `
         <tr>
-          <td class="empty-state" data-i18n="options_blacklist_no_patterns">
-            No blacklist patterns configured. Click "Add Pattern" to create one.
+          <td class="empty-state">
+            ${safeI18n.getMessage('options_blacklist_no_patterns')}
           </td>
         </tr>
       `;
+      
+      // Apply i18n translations to the dynamically generated empty state content
+      this.applyI18nToTable();
       return;
     }
 
@@ -118,6 +121,9 @@ class BlacklistConfig {
       const row = this.createPatternRow(pattern);
       this.tableBody.appendChild(row);
     });
+
+    // Apply i18n translations to the dynamically generated table content
+    this.applyI18nToTable();
   }
 
   /**
@@ -148,14 +154,12 @@ class BlacklistConfig {
           <div class="pattern-actions">
             <button type="button" class="icon-btn edit-btn"
                     data-pattern-id="${pattern.id}"
-                    data-i18n-title="options_blacklist_edit_pattern_title"
-                    title="Edit Pattern">
+                    title="${safeI18n.getMessage('options_blacklist_edit_pattern_title')}">
               <i class="material-icons">edit</i>
             </button>
             <button type="button" class="icon-btn delete-btn danger"
                     data-pattern-id="${pattern.id}"
-                    data-i18n-title="options_blacklist_delete_pattern_title"
-                    title="Delete Pattern">
+                    title="${safeI18n.getMessage('options_blacklist_delete_pattern_title')}">
               <i class="material-icons">delete</i>
             </button>
           </div>
@@ -320,28 +324,26 @@ class BlacklistConfig {
           <div class="modal-body">
             <form id="patternForm">
               <div class="form-group">
-                <label for="patternInput" data-i18n="options_blacklist_url_pattern_label">URL Pattern (Regex)</label>
+                <label for="patternInput">${safeI18n.getMessage('options_blacklist_url_pattern_label')}</label>
                 <input type="text" id="patternInput" class="form-control"
-                       data-i18n-placeholder="options_blacklist_url_pattern_placeholder"
-                       placeholder="e.g., google\\.com/search"
+                       placeholder="${safeI18n.getMessage('options_blacklist_url_pattern_placeholder')}"
                        value="${pattern ? this.escapeHtml(pattern.pattern) : ''}" required>
-                <small class="form-text" data-i18n="options_blacklist_url_pattern_description">Use regex pattern to match URLs (without protocol)</small>
+                <small class="form-text">${safeI18n.getMessage('options_blacklist_url_pattern_description')}</small>
               </div>
 
               <div class="form-group test-url-section">
-                <label for="testUrlInput" data-i18n="options_blacklist_test_url_label">Test URL (Optional)</label>
+                <label for="testUrlInput">${safeI18n.getMessage('options_blacklist_test_url_label')}</label>
                 <div class="test-url-container">
                   <input type="text" id="testUrlInput" class="form-control"
-                         data-i18n-placeholder="options_blacklist_test_url_placeholder"
-                         placeholder="e.g., https://www.google.com/search?q=test">
+                         placeholder="${safeI18n.getMessage('options_blacklist_test_url_placeholder')}">
                 </div>
                 <div id="testResult" class="test-result" style="display: none;"></div>
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="secondary-btn" id="patternDialogCancelBtn" data-i18n="options_blacklist_cancel_button">
-              Cancel
+            <button type="button" class="secondary-btn" id="patternDialogCancelBtn">
+              ${safeI18n.getMessage('options_blacklist_cancel_button')}
             </button>
             <button type="button" class="primary-btn" id="patternDialogSaveBtn">
               ${isEdit ? safeI18n.getMessage('options_blacklist_update_button') : safeI18n.getMessage('options_blacklist_add_pattern_button')}
@@ -357,6 +359,9 @@ class BlacklistConfig {
     // Add dialog to page
     document.body.insertAdjacentHTML('beforeend', dialogHtml);
 
+    // Apply i18n translations to the dynamically generated content
+    this.applyI18nToDialog();
+
     // Setup event listeners
     this.setupPatternDialogEventListeners();
 
@@ -364,6 +369,29 @@ class BlacklistConfig {
     setTimeout(() => {
       document.getElementById('patternInput').focus();
     }, 100);
+  }
+
+  /**
+   * Apply i18n translations to dynamically generated dialog content
+   */
+  applyI18nToDialog() {
+    const dialog = document.getElementById('patternDialog');
+    if (!dialog) return;
+
+    // Apply i18n to dynamically generated content if i18n system is available
+    if (typeof window !== 'undefined' && window.i18n && typeof window.i18n.applyToDOM === 'function') {
+      window.i18n.applyToDOM();
+    }
+  }
+
+  /**
+   * Apply i18n translations to table content
+   */
+  applyI18nToTable() {
+    // Apply i18n to dynamically generated table content if i18n system is available
+    if (typeof window !== 'undefined' && window.i18n && typeof window.i18n.applyToDOM === 'function') {
+      window.i18n.applyToDOM();
+    }
   }
 
   /**
@@ -471,7 +499,7 @@ class BlacklistConfig {
       testResult.innerHTML = `
         <div class="test-result-header">
           <i class="material-icons">error</i>
-          <span data-i18n="options_blacklist_test_error">Test Error</span>
+          <span>${safeI18n.getMessage('options_blacklist_test_error')}</span>
         </div>
         <div class="test-result-content">${this.escapeHtml(result.error)}</div>
       `;
@@ -481,18 +509,21 @@ class BlacklistConfig {
       testResult.innerHTML = `
         <div class="test-result-header">
           <i class="material-icons">${isMatch ? 'check_circle' : 'cancel'}</i>
-          <span data-i18n="${isMatch ? 'options_blacklist_test_match' : 'options_blacklist_test_no_match'}">${isMatch ? 'Pattern Matches' : 'Pattern Does Not Match'}</span>
+          <span>${safeI18n.getMessage(isMatch ? 'options_blacklist_test_match' : 'options_blacklist_test_no_match')}</span>
         </div>
         <div class="test-result-content">
           <div class="test-detail">
-            <strong data-i18n="options_blacklist_test_pattern_label">Pattern:</strong> <code>${this.escapeHtml(result.pattern)}</code>
+            <strong>${safeI18n.getMessage('options_blacklist_test_pattern_label')}</strong> <code>${this.escapeHtml(result.pattern)}</code>
           </div>
           <div class="test-detail">
-            <strong data-i18n="options_blacklist_test_tested_url_label">Tested URL:</strong> <code>${this.escapeHtml(result.testedUrl)}</code>
+            <strong>${safeI18n.getMessage('options_blacklist_test_tested_url_label')}</strong> <code>${this.escapeHtml(result.testedUrl)}</code>
           </div>
         </div>
       `;
     }
+
+    // Apply i18n translations to the dynamically generated test result content
+    this.applyI18nToDialog();
   }
 
   /**

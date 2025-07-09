@@ -219,6 +219,26 @@
     "message": "Add Pattern",
     "description": "Button text to add a blacklist pattern in the dialog."
   },
+  "options_blacklist_pattern_disabled_success": {
+    "message": "Pattern disabled successfully.",
+    "description": "Success message when a blacklist pattern is disabled."
+  },
+  "options_blacklist_pattern_enabled_success": {
+    "message": "Pattern enabled successfully.",
+    "description": "Success message when a blacklist pattern is enabled."
+  },
+  "options_blacklist_pattern_added_success": {
+    "message": "Pattern added successfully.",
+    "description": "Success message when a blacklist pattern is added."
+  },
+  "options_blacklist_confirm_delete": {
+    "message": "Are you sure you want to delete this pattern?",
+    "description": "Confirmation message before deleting a blacklist pattern."
+  },
+  "options_blacklist_delete_success": {
+    "message": "Pattern deleted successfully.",
+    "description": "Success message when a blacklist pattern is deleted."
+  },
   "options_quick_input_tabs_title": {
     "message": "Quick Input Tabs",
     "description": "Title for the quick input tabs section."
@@ -978,5 +998,117 @@
   "options_ui_config_import_cancelled": {
     "message": "Configuration import cancelled.",
     "description": "Message shown when the user cancels the configuration import."
+  },
+  "options_blacklist_update_failed": {
+    "message": "Failed to update blacklist pattern",
+    "description": "Error message when updating a blacklist pattern fails."
+  },
+  "options_blacklist_pattern_not_found": {
+    "message": "Pattern not found",
+    "description": "Error message when a blacklist pattern is not found."
+  },
+  "options_blacklist_delete_failed": {
+    "message": "Failed to delete blacklist pattern",
+    "description": "Error message when deleting a blacklist pattern fails."
+  },
+  "options_blacklist_save_failed": {
+    "message": "Failed to save blacklist pattern",
+    "description": "Error message when saving a blacklist pattern fails."
+  },
+  "options_blacklist_enter_pattern_error": {
+    "message": "Please enter a valid pattern",
+    "description": "Error message when user enters invalid pattern."
+  },
+  "options_blacklist_pattern_updated_success": {
+    "message": "Pattern updated successfully",
+    "description": "Success message when a blacklist pattern is updated."
+  },
+  "options_blacklist_edit_dialog_title": {
+    "message": "Edit Blacklist Pattern",
+    "description": "Title for the edit blacklist pattern dialog."
+  },
+  "options_blacklist_update_button": {
+    "message": "Update",
+    "description": "Button text to update a blacklist pattern."
+  },
+  "options_blacklist_cancel_button": {
+    "message": "Cancel",
+    "description": "Button text to cancel pattern dialog."
+  },
+  "options_blacklist_no_patterns": {
+    "message": "No blacklist patterns configured. Click \"Add Pattern\" to create one.",
+    "description": "Message shown when no blacklist patterns are configured."
+  },
+  "options_blacklist_url_pattern_label": {
+    "message": "URL Pattern (Regex)",
+    "description": "Label for the URL pattern input field."
+  },
+  "options_blacklist_url_pattern_placeholder": {
+    "message": "e.g., google\\.com/search",
+    "description": "Placeholder for the URL pattern input field."
+  },
+  "options_blacklist_url_pattern_description": {
+    "message": "Use regex pattern to match URLs (without protocol)",
+    "description": "Description for the URL pattern input field."
+  },
+  "options_blacklist_test_url_label": {
+    "message": "Test URL (Optional)",
+    "description": "Label for the test URL input field."
+  },
+  "options_blacklist_test_url_placeholder": {
+    "message": "e.g., https://www.google.com/search?q=test",
+    "description": "Placeholder for the test URL input field."
+  },
+  "options_blacklist_test_error": {
+    "message": "Test Error",
+    "description": "Header for test error results."
+  },
+  "options_blacklist_test_match": {
+    "message": "Pattern Matches",
+    "description": "Message when pattern matches test URL."
+  },
+  "options_blacklist_test_no_match": {
+    "message": "Pattern Does Not Match",
+    "description": "Message when pattern does not match test URL."
+  },
+  "options_blacklist_test_pattern_label": {
+    "message": "Pattern:",
+    "description": "Label for pattern in test results."
+  },
+  "options_blacklist_test_tested_url_label": {
+    "message": "Tested URL:",
+    "description": "Label for tested URL in test results."
+  },
+  "options_blacklist_reset_confirm_title": {
+    "message": "Reset Blacklist to Default",
+    "description": "Title for reset confirmation dialog."
+  },
+  "options_blacklist_reset_confirm_line1": {
+    "message": "This will delete all your custom blacklist patterns.",
+    "description": "First line of reset confirmation message."
+  },
+  "options_blacklist_reset_confirm_line2": {
+    "message": "You currently have {count} pattern(s) configured.",
+    "description": "Second line of reset confirmation message."
+  },
+  "options_blacklist_reset_confirm_line3": {
+    "message": "The default patterns will be restored.",
+    "description": "Third line of reset confirmation message."
+  },
+  "options_blacklist_reset_confirm_line4": {
+    "message": "This action cannot be undone.",
+    "description": "Fourth line of reset confirmation message."
+  },
+  "options_blacklist_reset_confirm_line5": {
+    "message": "Do you want to continue?",
+    "description": "Fifth line of reset confirmation message."
+  },
+  "options_blacklist_reset_success": {
+    "message": "Blacklist reset to default successfully",
+    "description": "Success message when blacklist is reset to default."
+  },
+  "options_blacklist_reset_failed": {
+    "message": "Failed to reset blacklist to default",
+    "description": "Error message when reset to default fails."
   }
 }

@@ -219,6 +219,26 @@
     "message": "添加模式",
     "description": "Button text to add a blacklist pattern in the dialog."
   },
+  "options_blacklist_pattern_disabled_success": {
+    "message": "模式已成功禁用。",
+    "description": "Success message when a blacklist pattern is disabled."
+  },
+  "options_blacklist_pattern_enabled_success": {
+    "message": "模式已成功启用。",
+    "description": "Success message when a blacklist pattern is enabled."
+  },
+  "options_blacklist_pattern_added_success": {
+    "message": "模式已成功添加。",
+    "description": "Success message when a blacklist pattern is added."
+  },
+  "options_blacklist_confirm_delete": {
+    "message": "您确定要删除此模式吗？",
+    "description": "Confirmation message before deleting a blacklist pattern."
+  },
+  "options_blacklist_delete_success": {
+    "message": "模式已成功删除。",
+    "description": "Success message when a blacklist pattern is deleted."
+  },
   "options_quick_input_tabs_title": {
     "message": "快捷输入标签",
     "description": "Title for the quick input tabs section."
@@ -978,5 +998,117 @@
   "options_ui_config_import_cancelled": {
     "message": "配置导入已取消。",
     "description": "Message shown when the user cancels the configuration import."
+  },
+  "options_blacklist_update_failed": {
+    "message": "更新黑名单模式失败",
+    "description": "Error message when updating a blacklist pattern fails."
+  },
+  "options_blacklist_pattern_not_found": {
+    "message": "未找到模式",
+    "description": "Error message when a blacklist pattern is not found."
+  },
+  "options_blacklist_delete_failed": {
+    "message": "删除黑名单模式失败",
+    "description": "Error message when deleting a blacklist pattern fails."
+  },
+  "options_blacklist_save_failed": {
+    "message": "保存黑名单模式失败",
+    "description": "Error message when saving a blacklist pattern fails."
+  },
+  "options_blacklist_enter_pattern_error": {
+    "message": "请输入有效的模式",
+    "description": "Error message when user enters invalid pattern."
+  },
+  "options_blacklist_pattern_updated_success": {
+    "message": "模式更新成功",
+    "description": "Success message when a blacklist pattern is updated."
+  },
+  "options_blacklist_edit_dialog_title": {
+    "message": "编辑黑名单模式",
+    "description": "Title for the edit blacklist pattern dialog."
+  },
+  "options_blacklist_update_button": {
+    "message": "更新",
+    "description": "Button text to update a blacklist pattern."
+  },
+  "options_blacklist_cancel_button": {
+    "message": "取消",
+    "description": "Button text to cancel pattern dialog."
+  },
+  "options_blacklist_no_patterns": {
+    "message": "未配置黑名单模式。点击\"添加模式\"创建一个。",
+    "description": "Message shown when no blacklist patterns are configured."
+  },
+  "options_blacklist_url_pattern_label": {
+    "message": "URL 模式（正则表达式）",
+    "description": "Label for the URL pattern input field."
+  },
+  "options_blacklist_url_pattern_placeholder": {
+    "message": "例如：google\\.com/search",
+    "description": "Placeholder for the URL pattern input field."
+  },
+  "options_blacklist_url_pattern_description": {
+    "message": "使用正则表达式模式匹配URL（不包括协议）",
+    "description": "Description for the URL pattern input field."
+  },
+  "options_blacklist_test_url_label": {
+    "message": "测试URL（可选）",
+    "description": "Label for the test URL input field."
+  },
+  "options_blacklist_test_url_placeholder": {
+    "message": "例如：https://www.google.com/search?q=test",
+    "description": "Placeholder for the test URL input field."
+  },
+  "options_blacklist_test_error": {
+    "message": "测试错误",
+    "description": "Header for test error results."
+  },
+  "options_blacklist_test_match": {
+    "message": "模式匹配",
+    "description": "Message when pattern matches test URL."
+  },
+  "options_blacklist_test_no_match": {
+    "message": "模式不匹配",
+    "description": "Message when pattern does not match test URL."
+  },
+  "options_blacklist_test_pattern_label": {
+    "message": "模式：",
+    "description": "Label for pattern in test results."
+  },
+  "options_blacklist_test_tested_url_label": {
+    "message": "测试的URL：",
+    "description": "Label for tested URL in test results."
+  },
+  "options_blacklist_reset_confirm_title": {
+    "message": "重置黑名单为默认",
+    "description": "Title for reset confirmation dialog."
+  },
+  "options_blacklist_reset_confirm_line1": {
+    "message": "这将删除您的所有自定义黑名单模式。",
+    "description": "First line of reset confirmation message."
+  },
+  "options_blacklist_reset_confirm_line2": {
+    "message": "您当前配置了 {count} 个模式。",
+    "description": "Second line of reset confirmation message."
+  },
+  "options_blacklist_reset_confirm_line3": {
+    "message": "默认模式将被恢复。",
+    "description": "Third line of reset confirmation message."
+  },
+  "options_blacklist_reset_confirm_line4": {
+    "message": "此操作无法撤消。",
+    "description": "Fourth line of reset confirmation message."
+  },
+  "options_blacklist_reset_confirm_line5": {
+    "message": "您是否要继续？",
+    "description": "Fifth line of reset confirmation message."
+  },
+  "options_blacklist_reset_success": {
+    "message": "黑名单重置为默认成功",
+    "description": "Success message when blacklist is reset to default."
+  },
+  "options_blacklist_reset_failed": {
+    "message": "重置黑名单为默认失败",
+    "description": "Error message when reset to default fails."
   }
 }
