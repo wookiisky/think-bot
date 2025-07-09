@@ -3,3 +3,7 @@
 GEMINI.md
 CLAUDE.md
 .roomodes
+
+# YoYo AI version control directory
+.yoyo/
+.vscode/settings.json

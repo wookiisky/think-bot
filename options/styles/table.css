@@ -132,8 +132,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px !important;
+  width: 18px;
   height: 18px;
+  min-width: 18px;
+  min-height: 18px;
 }
 
 .pattern-actions .icon-btn:hover {

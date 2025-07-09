@@ -30,14 +30,15 @@
 }
 
 .blacklist-controls .secondary-btn {
-  display: flex;
+  /* Inherit all styles from standard .secondary-btn */
+  display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.8rem;
+  justify-content: center;
 }
 
 .blacklist-controls .secondary-btn .material-icons {
-  font-size: 16px;
+  font-size: 14px;
+  /* Inherit icon size from standard .btn .material-icons (14px) */
 }
 
 /* Blacklist Table - extends table.css */

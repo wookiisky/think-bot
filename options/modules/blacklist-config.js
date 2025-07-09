@@ -152,7 +152,7 @@ class BlacklistConfig {
                     title="Edit Pattern">
               <i class="material-icons">edit</i>
             </button>
-            <button type="button" class="icon-btn delete-btn"
+            <button type="button" class="icon-btn delete-btn danger"
                     data-pattern-id="${pattern.id}"
                     data-i18n-title="options_blacklist_delete_pattern_title"
                     title="Delete Pattern">

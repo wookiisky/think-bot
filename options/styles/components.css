@@ -1,51 +1,12 @@
 /* Reusable Components */
 
-/* Icon Buttons */
-.icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--text-secondary);
-  transition: all var(--transition-normal) ease;
-}
-
-.icon-btn:hover {
-  background-color: var(--light-gray);
-  color: var(--error-color);
-}
-
-.icon-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.icon-btn .material-icons {
-  font-size: 18px;
-}
-
-/* Small Icon Buttons */
-.icon-btn.small {
-  width: 20px;
-  height: 20px;
-  padding: 0.2rem;
-}
-
-.icon-btn.small .material-icons {
-  font-size: 14px;
-}
 
 /* Toggle Switch */
 .toggle-switch {
   position: relative;
   display: inline-block;
-  width: 44px;
-  height: 24px;
+  width: 36px;
+  height: 20px;
   margin: 0;
   flex-shrink: 0;
 }
@@ -72,8 +33,8 @@
 .slider:before {
   position: absolute;
   content: "";
-  height: 18px;
-  width: 18px;
+  height: 14px;
+  width: 14px;
   left: 3px;
   top: 3px;
   background-color: white;
@@ -94,32 +55,31 @@ input:checked + .slider:hover {
 }
 
 input:checked + .slider:before {
-  transform: translateX(20px);
+  transform: translateX(16px);
 }
 
 input:focus + .slider {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
+  outline: none;
 }
 
 /* Small Toggle Switch */
 .toggle-switch.small {
-  width: 32px;
-  height: 18px;
+  width: 26px;
+  height: 14px;
 }
 
 .toggle-switch.small .slider {
 }
 
 .toggle-switch.small .slider:before {
-  height: 12px;
-  width: 12px;
-  left: 3px;
-  top: 3px;
+  height: 10px;
+  width: 10px;
+  left: 2px;
+  top: 2px;
 }
 
 .toggle-switch.small input:checked + .slider:before {
-  transform: translateX(14px);
+  transform: translateX(12px);
 }
 
 /* Toggle Switch Label */

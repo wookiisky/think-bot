@@ -72,7 +72,7 @@ export class ModelManager {
                    data-model-index="${index}" class="model-toggle">
             <span class="slider round"></span>
           </label>
-          <button type="button" class="remove-model-btn icon-btn"
+          <button type="button" class="remove-model-btn icon-btn danger"
                   data-model-index="${index}" data-i18n-title="options_model_remove_button_title" title="Remove Model">
             <i class="material-icons">delete</i>
           </button>
