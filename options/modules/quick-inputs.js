@@ -47,22 +47,10 @@ export class QuickInputsManager {
     hiddenIdInput.value = id || this.generateRandomId();
     template.querySelector('.quick-input-item').appendChild(hiddenIdInput);
     
-    // Initialize storage status for empty items
-    const storageStatus = template.querySelector('.storage-status');
-    if (storageStatus && !displayText && !sendText) {
-      storageStatus.textContent = '0%';
-      storageStatus.setAttribute('data-tooltip', 'Storage usage: 0B / 8KB (0%)');
-      storageStatus.removeAttribute('title');
-      storageStatus.className = 'storage-status storage-low';
-    }
     
     // Add to container
     domElements.quickInputsContainer.appendChild(template);
     
-    // Update storage usage display for the new item
-    if (typeof StorageUsageDisplay !== 'undefined') {
-      setTimeout(() => StorageUsageDisplay.updateAllUsageDisplays(domElements), 100);
-    }
   }
   
   // Remove a quick input (soft delete)
@@ -190,10 +178,6 @@ export class QuickInputsManager {
       this.addQuickInput(domElements);
     }
 
-    // Update storage usage display for all items
-    if (typeof StorageUsageDisplay !== 'undefined') {
-      setTimeout(() => StorageUsageDisplay.updateAllUsageDisplays(domElements), 100);
-    }
   }
   
   // Set up drag-and-drop functionality using SortableJS

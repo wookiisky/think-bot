@@ -7,7 +7,6 @@ import { UIConfigManager } from './modules/ui-config-manager.js';
 import { FormHandler } from './modules/form-handler.js';
 import { QuickInputsManager } from './modules/quick-inputs.js';
 import { ModelManager } from './modules/model-manager.js';
-import { StorageUsageDisplay } from './modules/storage-usage.js';
 import { i18n } from '../js/modules/i18n.js';
 
 // Import logger module
@@ -88,8 +87,6 @@ class OptionsPage {
       // Toggle appropriate settings based on current values
       FormHandler.toggleExtractionMethodSettings(this.domElements, this.domGroups);
 
-      // Initialize storage usage display
-      StorageUsageDisplay.init(this.domElements);
 
       // Load sync status after form is populated
       await this.loadSyncStatus();
@@ -134,14 +131,6 @@ class OptionsPage {
       // Build sync config from form
       const syncSettings = this.buildSyncConfigFromForm();
 
-      // Validate configuration size before saving
-      const sizeErrors = UIConfigManager.validateConfigurationSize(config);
-
-      if (sizeErrors.length > 0) {
-        logger.warn('Configuration size validation failed');
-        UIConfigManager.displayStorageErrors(sizeErrors, saveBtn);
-        return;
-      }
 
       // Show saving state
       saveBtn.classList.add('saving');
@@ -159,8 +148,6 @@ class OptionsPage {
         
         saveBtn.querySelector('span').textContent = i18n.getMessage('options_js_saved');
         
-        // Update storage usage display after save
-        StorageUsageDisplay.updateAllUsageDisplays(this.domElements);
 
         // Re-render quick inputs to remove any empty items that were filtered out during save
         QuickInputsManager.renderQuickInputs(config.quickInputs || [], this.domElements);
