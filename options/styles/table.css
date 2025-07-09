@@ -2,7 +2,6 @@
 
 .table-container {
   border: 1px solid var(--border-color);
-  border-radius: 5px;
   overflow: hidden;
   background: var(--bg-color);
   box-shadow: var(--shadow-sm);
@@ -89,7 +88,6 @@
   font-size: 0.65rem;
   background: var(--code-bg);
   padding: 0.2rem 0.35rem;
-  border-radius: 3px;
   border: 1px solid var(--border-color);
   word-break: break-all;
   display: block;
@@ -126,7 +124,6 @@
 .pattern-actions .icon-btn {
   margin: 0;
   padding: 0.15rem;
-  border-radius: 3px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -201,7 +198,6 @@
 
   .table-container {
     overflow-x: auto;
-    border-radius: 3px;
   }
 
   .table {

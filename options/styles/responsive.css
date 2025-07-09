@@ -113,7 +113,6 @@
   }
 
   .btn-group .btn {
-    border-radius: 3px;
     border-right: 1px solid var(--border-color);
     margin-bottom: 0.25rem;
   }
