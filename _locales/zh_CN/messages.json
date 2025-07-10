@@ -47,6 +47,10 @@
     "message": "清除",
     "description": "Button text for clearing the cache."
   },
+  "options_confirm_clear_all_cache": {
+    "message": "您确定要清除所有缓存吗？此操作无法撤销，并将删除所有本地存储的对话和提取的内容。",
+    "description": "清除所有缓存的确认消息。"
+  },
   "options_default_model_title": {
     "message": "默认模型",
     "description": "Title for the default model section."
@@ -1131,29 +1135,9 @@
     "message": "测试的URL：",
     "description": "Label for tested URL in test results."
   },
-  "options_blacklist_reset_confirm_title": {
-    "message": "重置黑名单为默认",
-    "description": "Title for reset confirmation dialog."
-  },
-  "options_blacklist_reset_confirm_line1": {
-    "message": "这将删除您的所有自定义黑名单模式。",
-    "description": "First line of reset confirmation message."
-  },
-  "options_blacklist_reset_confirm_line2": {
-    "message": "您当前配置了 {count} 个模式。",
-    "description": "Second line of reset confirmation message."
-  },
-  "options_blacklist_reset_confirm_line3": {
-    "message": "默认模式将被恢复。",
-    "description": "Third line of reset confirmation message."
-  },
-  "options_blacklist_reset_confirm_line4": {
-    "message": "此操作无法撤消。",
-    "description": "Fourth line of reset confirmation message."
-  },
-  "options_blacklist_reset_confirm_line5": {
-    "message": "您是否要继续？",
-    "description": "Fifth line of reset confirmation message."
+  "options_blacklist_reset_confirm_message": {
+    "message": "默认模式将被恢复。\n\n此操作无法撤消。\n\n您是否要继续？",
+    "description": "Complete reset confirmation message including all details."
   },
   "options_blacklist_reset_success": {
     "message": "黑名单重置为默认成功",
@@ -1170,5 +1154,41 @@
   "common_cancel": {
     "message": "取消",
     "description": "Common cancel button text."
+  },
+  "common_clear": {
+    "message": "清除",
+    "description": "Common clear button text."
+  },
+  "common_reset": {
+    "message": "重置",
+    "description": "Common reset button text."
+  },
+  "options_ui_config_reset_confirm": {
+    "message": "您确定要将所有设置重置为默认值吗？此操作无法撤消。",
+    "description": "Confirmation message for resetting configuration to defaults."
+  },
+  "options_ui_config_export_error": {
+    "message": "导出配置失败。请重试。",
+    "description": "Error message when configuration export fails."
+  },
+  "options_ui_config_import_invalid_file": {
+    "message": "无效的文件类型。请选择 JSON 文件。",
+    "description": "Error message when selected file is not JSON."
+  },
+  "options_ui_config_import_invalid_format": {
+    "message": "无效的配置格式。请选择有效的配置文件。",
+    "description": "Error message when configuration format is invalid."
+  },
+  "options_ui_config_import_missing_field": {
+    "message": "缺少必需字段：$1",
+    "description": "Error message when a required field is missing. $1 is the name of the missing field."
+  },
+  "options_ui_config_import_save_error": {
+    "message": "保存导入的配置失败。请重试。",
+    "description": "Error message when saving imported configuration fails."
+  },
+  "options_ui_config_import_generic_error": {
+    "message": "导入失败：$1",
+    "description": "Generic error message for import failures. $1 is the error details."
   }
 }

@@ -47,6 +47,10 @@
     "message": "Clear",
     "description": "Button text for clearing the cache."
   },
+  "options_confirm_clear_all_cache": {
+    "message": "Are you sure you want to clear all cache? This action cannot be undone and will remove all locally stored conversations and extracted content.",
+    "description": "Confirmation message for clearing all cache."
+  },
   "options_default_model_title": {
     "message": "Default Model",
     "description": "Title for the default model section."
@@ -1131,29 +1135,9 @@
     "message": "Tested URL:",
     "description": "Label for tested URL in test results."
   },
-  "options_blacklist_reset_confirm_title": {
-    "message": "Reset Blacklist to Default",
-    "description": "Title for reset confirmation dialog."
-  },
-  "options_blacklist_reset_confirm_line1": {
-    "message": "This will delete all your custom blacklist patterns.",
-    "description": "First line of reset confirmation message."
-  },
-  "options_blacklist_reset_confirm_line2": {
-    "message": "You currently have {count} pattern(s) configured.",
-    "description": "Second line of reset confirmation message."
-  },
-  "options_blacklist_reset_confirm_line3": {
-    "message": "The default patterns will be restored.",
-    "description": "Third line of reset confirmation message."
-  },
-  "options_blacklist_reset_confirm_line4": {
-    "message": "This action cannot be undone.",
-    "description": "Fourth line of reset confirmation message."
-  },
-  "options_blacklist_reset_confirm_line5": {
-    "message": "Do you want to continue?",
-    "description": "Fifth line of reset confirmation message."
+  "options_blacklist_reset_confirm_message": {
+    "message": "The default patterns will be restored.\n\nThis action cannot be undone.\n\nDo you want to continue?",
+    "description": "Complete reset confirmation message including all details."
   },
   "options_blacklist_reset_success": {
     "message": "Blacklist reset to default successfully",
@@ -1168,7 +1152,43 @@
     "description": "Common delete button text."
   },
   "common_cancel": {
-    "message": "Cancel", 
+    "message": "Cancel",
     "description": "Common cancel button text."
+  },
+  "common_clear": {
+    "message": "Clear",
+    "description": "Common clear button text."
+  },
+  "common_reset": {
+    "message": "Reset",
+    "description": "Common reset button text."
+  },
+  "options_ui_config_reset_confirm": {
+    "message": "Are you sure you want to reset all settings to their default values? This action cannot be undone.",
+    "description": "Confirmation message for resetting configuration to defaults."
+  },
+  "options_ui_config_export_error": {
+    "message": "Failed to export configuration. Please try again.",
+    "description": "Error message when configuration export fails."
+  },
+  "options_ui_config_import_invalid_file": {
+    "message": "Invalid file type. Please select a JSON file.",
+    "description": "Error message when selected file is not JSON."
+  },
+  "options_ui_config_import_invalid_format": {
+    "message": "Invalid configuration format. Please select a valid configuration file.",
+    "description": "Error message when configuration format is invalid."
+  },
+  "options_ui_config_import_missing_field": {
+    "message": "Missing required field: $1",
+    "description": "Error message when a required field is missing. $1 is the name of the missing field."
+  },
+  "options_ui_config_import_save_error": {
+    "message": "Failed to save imported configuration. Please try again.",
+    "description": "Error message when saving imported configuration fails."
+  },
+  "options_ui_config_import_generic_error": {
+    "message": "Import failed: $1",
+    "description": "Generic error message for import failures. $1 is the error details."
   }
 }

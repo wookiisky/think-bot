@@ -421,7 +421,7 @@ class ConfirmationDialog {
    */
   confirmReset(options = {}) {
     return this.show({
-      type: 'warning',
+      type: 'danger',
       message: options.message || i18n.getMessage('confirmationDialog_resetMessage'),
       confirmText: options.confirmText || i18n.getMessage('confirmationDialog_resetButton'),
       cancelText: options.cancelText || i18n.getMessage('confirmationDialog_cancel'),
@@ -435,7 +435,7 @@ class ConfirmationDialog {
    */
   confirmClear(options = {}) {
     return this.show({
-      type: 'warning',
+      type: 'danger',
       message: options.message || i18n.getMessage('confirmationDialog_clearMessage'),
       confirmText: options.confirmText || i18n.getMessage('confirmationDialog_clearButton'),
       cancelText: options.cancelText || i18n.getMessage('confirmationDialog_cancel'),

@@ -4,6 +4,8 @@
 
 // Import QuickInputsManager
 import { QuickInputsManager } from './quick-inputs.js';
+// Import confirmation dialog
+import { confirmationDialog } from '../../js/modules/ui/confirmation-dialog.js';
 
 // Import logger module
 const logger = window.logger ? window.logger.createModuleLogger('UIConfigManager') : console;
@@ -60,28 +62,40 @@ export class UIConfigManager {
 
   // Reset settings to defaults via message passing
   static async resetSettings() {
-    if (!confirm(i18n.getMessage('options_ui_config_reset_confirm'))) {
-      return false;
-    }
+    return new Promise((resolve) => {
+      // Find the reset button for positioning
+      const resetBtn = document.getElementById('resetBtn');
+      
+      confirmationDialog.confirmReset({
+        target: resetBtn,
+        message: i18n.getMessage('options_ui_config_reset_confirm'),
+        confirmText: i18n.getMessage('common_reset') || 'Reset',
+        cancelText: i18n.getMessage('common_cancel') || 'Cancel',
+        onConfirm: async () => {
+          try {
+            logger.info('Resetting settings to defaults');
 
-    try {
-      logger.info('Resetting settings to defaults');
+            const response = await chrome.runtime.sendMessage({
+              type: 'RESET_CONFIG'
+            });
 
-      const response = await chrome.runtime.sendMessage({
-        type: 'RESET_CONFIG'
+            if (response && response.type === 'CONFIG_RESET') {
+              location.reload();
+              resolve(true);
+            } else {
+              logger.error('Failed to reset configuration');
+              resolve(false);
+            }
+          } catch (error) {
+            logger.error('Error resetting settings:', error.message);
+            resolve(false);
+          }
+        },
+        onCancel: () => {
+          resolve(false);
+        }
       });
-
-      if (response && response.type === 'CONFIG_RESET') {
-        location.reload();
-        return true;
-      } else {
-        logger.error('Failed to reset configuration');
-        return false;
-      }
-    } catch (error) {
-      logger.error('Error resetting settings:', error.message);
-      return false;
-    }
+    });
   }
   
   // Build config object from form values for UI operations

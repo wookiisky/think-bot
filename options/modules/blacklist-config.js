@@ -607,32 +607,30 @@ class BlacklistConfig {
     const currentPatterns = await blacklistManager.getPatterns();
     const patternCount = currentPatterns.length;
 
-    const confirmed = confirm(
-      `${safeI18n.getMessage('options_blacklist_reset_confirm_title')}\n\n` +
-      `${safeI18n.getMessage('options_blacklist_reset_confirm_line1')}\n` +
-      `${safeI18n.getMessage('options_blacklist_reset_confirm_line2', { count: patternCount })}\n` +
-      `${safeI18n.getMessage('options_blacklist_reset_confirm_line3')}\n` +
-      `${safeI18n.getMessage('options_blacklist_reset_confirm_line4')}\n\n` +
-      `${safeI18n.getMessage('options_blacklist_reset_confirm_line5')}`
-    );
+    // Find the reset button for positioning
+    const resetBtn = document.getElementById('resetBlacklistBtn');
 
-    if (!confirmed) {
-      return;
-    }
-
-    try {
-      const success = await blacklistManager.resetToDefaults();
-      if (success) {
-        await this.loadAndRenderPatterns();
-        this.showSuccess(safeI18n.getMessage('options_blacklist_reset_success'));
-        blacklistConfigLogger.info('Blacklist patterns reset to defaults');
-      } else {
-        this.showError(safeI18n.getMessage('options_blacklist_reset_failed'));
+    confirmationDialog.confirmReset({
+      target: resetBtn,
+      message: safeI18n.getMessage('options_blacklist_reset_confirm_message'),
+      confirmText: safeI18n.getMessage('common_reset') || 'Reset',
+      cancelText: safeI18n.getMessage('common_cancel') || 'Cancel',
+      onConfirm: async () => {
+        try {
+          const success = await blacklistManager.resetToDefaults();
+          if (success) {
+            await this.loadAndRenderPatterns();
+            this.showSuccess(safeI18n.getMessage('options_blacklist_reset_success'));
+            blacklistConfigLogger.info('Blacklist patterns reset to defaults');
+          } else {
+            this.showError(safeI18n.getMessage('options_blacklist_reset_failed'));
+          }
+        } catch (error) {
+          blacklistConfigLogger.error('Error resetting blacklist patterns:', error);
+          this.showError(safeI18n.getMessage('options_blacklist_reset_failed'));
+        }
       }
-    } catch (error) {
-      blacklistConfigLogger.error('Error resetting blacklist patterns:', error);
-      this.showError(safeI18n.getMessage('options_blacklist_reset_failed'));
-    }
+    });
   }
 
 

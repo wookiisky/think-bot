@@ -9,6 +9,7 @@ import { QuickInputsManager } from './modules/quick-inputs.js';
 import { ModelManager } from './modules/model-manager.js';
 import { blacklistConfig } from './modules/blacklist-config.js';
 import { i18n } from '../js/modules/i18n.js';
+import { confirmationDialog } from '../js/modules/ui/confirmation-dialog.js';
 
 // Import logger module
 const logger = window.logger ? window.logger.createModuleLogger('Options') : console;
@@ -351,29 +352,40 @@ class OptionsPage {
 
   // Clear all cached data (pages, chats, states, and unified page data)
   async clearAllCache() {
-    try {
-      const items = await chrome.storage.local.get(null);
-      const keysToRemove = [];
-      for (const key in items) {
-        if (key.startsWith(CACHE_KEYS.CHAT_PREFIX) ||
-            key.startsWith(CACHE_KEYS.PAGE_PREFIX) ||
-            key === CACHE_KEYS.RECENT_URLS) {
-          keysToRemove.push(key);
+    // Get clear cache button for positioning
+    const clearBtn = this.domElements.clearAllCacheBtn;
+    
+    confirmationDialog.confirmClear({
+      target: clearBtn,
+      message: i18n.getMessage('options_confirm_clear_all_cache') || 'Are you sure you want to clear all cached data? This action cannot be undone.',
+      confirmText: i18n.getMessage('common_clear') || 'Clear',
+      cancelText: i18n.getMessage('common_cancel') || 'Cancel',
+      onConfirm: async () => {
+        try {
+          const items = await chrome.storage.local.get(null);
+          const keysToRemove = [];
+          for (const key in items) {
+            if (key.startsWith(CACHE_KEYS.CHAT_PREFIX) ||
+                key.startsWith(CACHE_KEYS.PAGE_PREFIX) ||
+                key === CACHE_KEYS.RECENT_URLS) {
+              keysToRemove.push(key);
+            }
+          }
+
+          if (keysToRemove.length > 0) {
+            await chrome.storage.local.remove(keysToRemove);
+            logger.info(`Cleared ${keysToRemove.length} cache items`);
+          }
+
+          // Reload cache stats to update UI
+          await this.loadCacheStats();
+
+        } catch (error) {
+          logger.error('Error clearing cache', error);
+          alert(i18n.getMessage('options_js_clear_cache_error'));
         }
       }
-
-      if (keysToRemove.length > 0) {
-        await chrome.storage.local.remove(keysToRemove);
-        logger.info(`Cleared ${keysToRemove.length} cache items`);
-      }
-
-      // Reload cache stats to update UI
-      await this.loadCacheStats();
-
-    } catch (error) {
-      logger.error('Error clearing cache', error);
-      alert(i18n.getMessage('options_js_clear_cache_error'));
-    }
+    });
   }
 
   // Export configuration to JSON file
