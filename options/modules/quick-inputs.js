@@ -1,6 +1,10 @@
 // Quick Inputs Manager
 // Handles quick input buttons management with drag-and-drop support
 
+// Import confirmation dialog
+import { confirmationDialog } from '../../js/modules/ui/confirmation-dialog.js';
+import { i18n } from '../../js/modules/i18n.js';
+
 export class QuickInputsManager {
   
   static changeCallback = null;
@@ -213,12 +217,25 @@ export class QuickInputsManager {
     // Quick input remove button delegation
     domElements.quickInputsContainer.addEventListener('click', e => {
       if (e.target.closest('.remove-quick-input-btn')) {
+        e.stopPropagation(); // Prevent event bubbling to avoid immediate dialog dismissal
+        const removeBtn = e.target.closest('.remove-quick-input-btn');
         const item = e.target.closest('.quick-input-item');
         if (item) {
-          this.removeQuickInput(item);
-          if (this.changeCallback) {
-            this.changeCallback();
-          }
+          // Get the display text for the confirmation message
+          const displayText = item.querySelector('.quick-input-display').value.trim() || i18n.getMessage('options_quick_input_default_name');
+          
+          confirmationDialog.confirmDelete({
+            target: removeBtn,
+            message: i18n.getMessage('options_quick_input_remove_confirm_with_name', [displayText]),
+            confirmText: i18n.getMessage('confirmationDialog_deleteButton'),
+            cancelText: i18n.getMessage('confirmationDialog_cancel'),
+            onConfirm: () => {
+              this.removeQuickInput(item);
+              if (this.changeCallback) {
+                this.changeCallback();
+              }
+            }
+          });
         }
       }
     });

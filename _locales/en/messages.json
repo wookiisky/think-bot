@@ -307,6 +307,14 @@
     "message": "Are you sure you want to remove this model?",
     "description": "Confirmation message for removing a model."
   },
+  "options_model_remove_confirm_with_name": {
+    "message": "Are you sure you want to delete \"$1\"?",
+    "description": "Confirmation message for removing a model with name. $1 is the model name."
+  },
+  "options_model_unnamed": {
+    "message": "Unnamed Model",
+    "description": "Default name for models without a name."
+  },
   "options_model_new_name": {
     "message": "New Model $1",
     "description": "Default name for new models. $1 is a placeholder."
@@ -330,6 +338,14 @@
   "options_quick_input_remove_button_title": {
     "message": "Remove Quick Input",
     "description": "Title for the remove quick input button."
+  },
+  "options_quick_input_remove_confirm_with_name": {
+    "message": "Are you sure you want to delete \"$1\"?",
+    "description": "Confirmation message for deleting a quick input with its name as parameter."
+  },
+  "options_quick_input_default_name": {
+    "message": "this quick input",
+    "description": "Default name used when a quick input has no display text."
   },
   "options_quick_input_placeholder_message": {
     "message": "Message to send when clicked (use {CONTENT} placeholder)",
@@ -614,6 +630,42 @@
   "sidebar_miniConfirmation_confirm": {
     "message": "Confirm",
     "description": "Confirm button text for the mini confirmation."
+  },
+  "confirmationDialog_areYouSure": {
+    "message": "Are you sure?",
+    "description": "Default confirmation message."
+  },
+  "confirmationDialog_cancel": {
+    "message": "Cancel",
+    "description": "Cancel button text for the confirmation dialog."
+  },
+  "confirmationDialog_confirm": {
+    "message": "Confirm",
+    "description": "Confirm button text for the confirmation dialog."
+  },
+  "confirmationDialog_deleteMessage": {
+    "message": "Are you sure you want to delete this item?",
+    "description": "Default delete confirmation message."
+  },
+  "confirmationDialog_deleteButton": {
+    "message": "Delete",
+    "description": "Delete button text for the confirmation dialog."
+  },
+  "confirmationDialog_resetMessage": {
+    "message": "Are you sure you want to reset to defaults?",
+    "description": "Default reset confirmation message."
+  },
+  "confirmationDialog_resetButton": {
+    "message": "Reset",
+    "description": "Reset button text for the confirmation dialog."
+  },
+  "confirmationDialog_clearMessage": {
+    "message": "Are you sure you want to clear all data?",
+    "description": "Default clear confirmation message."
+  },
+  "confirmationDialog_clearButton": {
+    "message": "Clear",
+    "description": "Clear button text for the confirmation dialog."
   },
   "sidebar_chatManager_title_stopGenerating": {
     "message": "Stop generating response",
@@ -1110,5 +1162,13 @@
   "options_blacklist_reset_failed": {
     "message": "Failed to reset blacklist to default",
     "description": "Error message when reset to default fails."
+  },
+  "common_delete": {
+    "message": "Delete",
+    "description": "Common delete button text."
+  },
+  "common_cancel": {
+    "message": "Cancel", 
+    "description": "Common cancel button text."
   }
 }

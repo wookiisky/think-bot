@@ -1,6 +1,9 @@
 // Model Manager
 // Handles multiple LLM model configurations with drag-and-drop support
 
+// Import confirmation dialog
+import { confirmationDialog } from '../../js/modules/ui/confirmation-dialog.js';
+
 // Import logger module
 const logger = window.logger ? window.logger.createModuleLogger('ModelManager') : console;
 
@@ -205,15 +208,29 @@ export class ModelManager {
 
   // Remove a model configuration
   removeModel(index) {
-    if (confirm(i18n.getMessage('options_model_remove_confirm'))) {
-      this.models.splice(index, 1);
-      this.renderModels();
-      this.updateDefaultModelSelector();
-      logger.info(`Removed model at index ${index}`);
-      if (this.changeCallback) {
-        this.changeCallback();
+    const model = this.models[index];
+    if (!model) return;
+
+    // Find the delete button element for positioning
+    const deleteBtn = document.querySelector(`.model-config-item[data-index="${index}"] .remove-model-btn`);
+    const modelName = model.name || i18n.getMessage('options_model_unnamed') || 'Unnamed Model';
+
+    confirmationDialog.confirmDelete({
+      target: deleteBtn,
+      message: i18n.getMessage('options_model_remove_confirm_with_name', [modelName]) || 
+               `Are you sure you want to delete "${modelName}"?`,
+      confirmText: i18n.getMessage('common_delete') || 'Delete',
+      cancelText: i18n.getMessage('common_cancel') || 'Cancel',
+      onConfirm: () => {
+        this.models.splice(index, 1);
+        this.renderModels();
+        this.updateDefaultModelSelector();
+        logger.info(`Removed model at index ${index}`);
+        if (this.changeCallback) {
+          this.changeCallback();
+        }
       }
-    }
+    });
   }
 
   // Toggle model enabled state
@@ -353,6 +370,7 @@ export class ModelManager {
       const index = parseInt(modelItem.dataset.index, 10);
 
       if (target.classList.contains('remove-model-btn') || target.closest('.remove-model-btn')) {
+        e.stopPropagation(); // Prevent event bubbling to avoid immediate dialog dismissal
         this.removeModel(index);
       } else if (target.classList.contains('model-toggle')) {
         this.toggleModel(index, target.checked);

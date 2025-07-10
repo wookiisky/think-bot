@@ -307,6 +307,14 @@
     "message": "您确定要移除此模型吗？",
     "description": "Confirmation message for removing a model."
   },
+  "options_model_remove_confirm_with_name": {
+    "message": "您确定要删除 \"$1\" 吗？",
+    "description": "Confirmation message for removing a model with name. $1 is the model name."
+  },
+  "options_model_unnamed": {
+    "message": "未命名模型",
+    "description": "Default name for models without a name."
+  },
   "options_model_new_name": {
     "message": "新模型 $1",
     "description": "Default name for new models. $1 is a placeholder."
@@ -330,6 +338,14 @@
   "options_quick_input_remove_button_title": {
     "message": "移除快捷输入",
     "description": "Title for the remove quick input button."
+  },
+  "options_quick_input_remove_confirm_with_name": {
+    "message": "您确定要删除 \"$1\" 吗？",
+    "description": "Confirmation message for deleting a quick input with its name as parameter."
+  },
+  "options_quick_input_default_name": {
+    "message": "此快捷输入",
+    "description": "Default name used when a quick input has no display text."
   },
   "options_quick_input_placeholder_message": {
     "message": "点击时发送的消息 (使用 {CONTENT} 占位符)",
@@ -614,6 +630,42 @@
   "sidebar_miniConfirmation_confirm": {
     "message": "确认",
     "description": "Confirm button text for the mini confirmation."
+  },
+  "confirmationDialog_areYouSure": {
+    "message": "您确定吗？",
+    "description": "Default confirmation message."
+  },
+  "confirmationDialog_cancel": {
+    "message": "取消",
+    "description": "Cancel button text for the confirmation dialog."
+  },
+  "confirmationDialog_confirm": {
+    "message": "确认",
+    "description": "Confirm button text for the confirmation dialog."
+  },
+  "confirmationDialog_deleteMessage": {
+    "message": "您确定要删除此项吗？",
+    "description": "Default delete confirmation message."
+  },
+  "confirmationDialog_deleteButton": {
+    "message": "删除",
+    "description": "Delete button text for the confirmation dialog."
+  },
+  "confirmationDialog_resetMessage": {
+    "message": "您确定要重置为默认设置吗？",
+    "description": "Default reset confirmation message."
+  },
+  "confirmationDialog_resetButton": {
+    "message": "重置",
+    "description": "Reset button text for the confirmation dialog."
+  },
+  "confirmationDialog_clearMessage": {
+    "message": "您确定要清除所有数据吗？",
+    "description": "Default clear confirmation message."
+  },
+  "confirmationDialog_clearButton": {
+    "message": "清除",
+    "description": "Clear button text for the confirmation dialog."
   },
   "sidebar_chatManager_title_stopGenerating": {
     "message": "停止生成响应",
@@ -1110,5 +1162,13 @@
   "options_blacklist_reset_failed": {
     "message": "重置黑名单为默认失败",
     "description": "Error message when reset to default fails."
+  },
+  "common_delete": {
+    "message": "删除",
+    "description": "Common delete button text."
+  },
+  "common_cancel": {
+    "message": "取消",
+    "description": "Common cancel button text."
   }
 }

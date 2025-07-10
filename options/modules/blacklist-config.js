@@ -3,6 +3,9 @@
  * Handles the blacklist patterns table and related operations
  */
 
+// Import confirmation dialog
+import { confirmationDialog } from '../../js/modules/ui/confirmation-dialog.js';
+
 // Create module logger
 const blacklistConfigLogger = logger.createModuleLogger('BlacklistConfig');
 
@@ -198,7 +201,8 @@ class BlacklistConfig {
     // Delete button
     const deleteBtn = row.querySelector('.delete-btn');
     if (deleteBtn) {
-      deleteBtn.addEventListener('click', () => {
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent event bubbling to avoid immediate dialog dismissal
         this.deletePattern(pattern.id);
       });
     }
@@ -238,18 +242,24 @@ class BlacklistConfig {
         return;
       }
 
-      const confirmed = confirm(safeI18n.getMessage('options_blacklist_confirm_delete', { description: pattern.pattern }));
-      if (!confirmed) {
-        return;
-      }
+      // Find the delete button element for positioning
+      const deleteBtn = document.querySelector(`[data-pattern-id="${patternId}"].delete-btn`);
 
-      const success = await blacklistManager.deletePattern(patternId);
-      if (success) {
-        await this.loadAndRenderPatterns();
-        this.showSuccess(safeI18n.getMessage('options_blacklist_delete_success'));
-      } else {
-        this.showError(safeI18n.getMessage('options_blacklist_delete_failed'));
-      }
+      confirmationDialog.confirmDelete({
+        target: deleteBtn,
+        message: safeI18n.getMessage('options_blacklist_confirm_delete', { description: pattern.pattern }),
+        confirmText: safeI18n.getMessage('common_delete') || 'Delete',
+        cancelText: safeI18n.getMessage('common_cancel') || 'Cancel',
+        onConfirm: async () => {
+          const success = await blacklistManager.deletePattern(patternId);
+          if (success) {
+            await this.loadAndRenderPatterns();
+            this.showSuccess(safeI18n.getMessage('options_blacklist_delete_success'));
+          } else {
+            this.showError(safeI18n.getMessage('options_blacklist_delete_failed'));
+          }
+        }
+      });
     } catch (error) {
       blacklistConfigLogger.error('Error deleting pattern:', error);
       this.showError(safeI18n.getMessage('options_blacklist_delete_failed'));
@@ -636,3 +646,6 @@ class BlacklistConfig {
 
 // Create global instance
 const blacklistConfig = new BlacklistConfig();
+
+// Export for module usage
+export { blacklistConfig };

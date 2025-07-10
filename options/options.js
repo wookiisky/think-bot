@@ -7,6 +7,7 @@ import { UIConfigManager } from './modules/ui-config-manager.js';
 import { FormHandler } from './modules/form-handler.js';
 import { QuickInputsManager } from './modules/quick-inputs.js';
 import { ModelManager } from './modules/model-manager.js';
+import { blacklistConfig } from './modules/blacklist-config.js';
 import { i18n } from '../js/modules/i18n.js';
 
 // Import logger module
@@ -44,11 +45,7 @@ class OptionsPage {
     await this.loadCacheStats();
 
     // Initialize blacklist configuration
-    if (typeof blacklistConfig !== 'undefined') {
-      await blacklistConfig.init();
-    } else {
-      logger.warn('Blacklist configuration module not loaded');
-    }
+    await blacklistConfig.init();
 
     // Set up event listeners
     this.setupEventListeners();

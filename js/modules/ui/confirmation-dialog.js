@@ -34,6 +34,7 @@ class ConfirmationDialog {
     this.targetElement = null;
     this.isInitialized = false;
     this.currentType = 'default';
+    this.outsideClickHandler = null;
   }
 
   /**
@@ -58,10 +59,10 @@ class ConfirmationDialog {
     this.confirmationElement.className = 'confirmation-dialog';
     this.confirmationElement.innerHTML = `
       <div class="confirmation-dialog-content">
-        <div class="confirmation-dialog-message">Are you sure?</div>
+        <div class="confirmation-dialog-message" data-i18n="confirmationDialog_areYouSure">Are you sure?</div>
         <div class="confirmation-dialog-actions">
-          <button class="confirmation-btn confirmation-btn-cancel" type="button">Cancel</button>
-          <button class="confirmation-btn confirmation-btn-confirm" type="button">Confirm</button>
+          <button class="confirmation-btn confirmation-btn-cancel" type="button" data-i18n="confirmationDialog_cancel">Cancel</button>
+          <button class="confirmation-btn confirmation-btn-confirm" type="button" data-i18n="confirmationDialog_confirm">Confirm</button>
         </div>
       </div>
       <div class="confirmation-dialog-arrow"></div>
@@ -69,6 +70,18 @@ class ConfirmationDialog {
 
     // Add to document body
     document.body.appendChild(this.confirmationElement);
+    
+    // Apply i18n translations to the newly created elements
+    if (i18n && i18n.applyToDOM) {
+      // Apply translations to elements with data-i18n attributes
+      this.confirmationElement.querySelectorAll('[data-i18n]').forEach(elem => {
+        const key = elem.getAttribute('data-i18n');
+        if (key) {
+          elem.textContent = i18n.getMessage(key);
+        }
+      });
+    }
+    
     logger.debug('Created confirmation dialog element');
   }
 
@@ -113,13 +126,6 @@ class ConfirmationDialog {
       this.handleCancel();
     });
 
-    // Click outside to cancel
-    document.addEventListener('click', (e) => {
-      if (this.isVisible && !this.confirmationElement.contains(e.target) && e.target !== this.targetElement) {
-        this.handleCancel();
-      }
-    });
-
     // Escape key
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && this.isVisible) {
@@ -159,16 +165,15 @@ class ConfirmationDialog {
     }
 
     if (this.isVisible) {
-      logger.warn('Confirmation dialog is already visible');
       return;
     }
 
     const {
       target = null,
       title = null,
-      message = 'Are you sure?',
-      confirmText = 'Confirm',
-      cancelText = 'Cancel',
+      message = i18n.getMessage('confirmationDialog_areYouSure'),
+      confirmText = i18n.getMessage('confirmationDialog_confirm'),
+      cancelText = i18n.getMessage('confirmationDialog_cancel'),
       type = 'default',
       onConfirm = () => {},
       onCancel = () => {}
@@ -218,6 +223,21 @@ class ConfirmationDialog {
     setTimeout(() => {
       this.confirmationElement.classList.add('visible');
     }, 10);
+
+    // Set up outside click handler - delay to avoid catching the triggering click
+    if (this.outsideClickHandler) {
+      document.removeEventListener('click', this.outsideClickHandler);
+    }
+    
+    this.outsideClickHandler = (e) => {
+      if (this.isVisible && !this.confirmationElement.contains(e.target) && e.target !== this.targetElement) {
+        this.handleCancel();
+      }
+    };
+    
+    setTimeout(() => {
+      document.addEventListener('click', this.outsideClickHandler);
+    }, 0);
 
     // Focus management - focus cancel button for destructive actions
     setTimeout(() => {
@@ -335,6 +355,11 @@ class ConfirmationDialog {
       return;
     }
 
+    // Remove outside click handler when hiding
+    if (this.outsideClickHandler) {
+      document.removeEventListener('click', this.outsideClickHandler);
+    }
+
     this.confirmationElement.classList.remove('visible');
 
     setTimeout(() => {
@@ -383,9 +408,9 @@ class ConfirmationDialog {
   confirmDelete(options = {}) {
     return this.show({
       type: 'danger',
-      message: options.message || 'Are you sure you want to delete this item?',
-      confirmText: options.confirmText || 'Delete',
-      cancelText: options.cancelText || 'Cancel',
+      message: options.message || i18n.getMessage('confirmationDialog_deleteMessage'),
+      confirmText: options.confirmText || i18n.getMessage('confirmationDialog_deleteButton'),
+      cancelText: options.cancelText || i18n.getMessage('confirmationDialog_cancel'),
       ...options
     });
   }
@@ -397,9 +422,9 @@ class ConfirmationDialog {
   confirmReset(options = {}) {
     return this.show({
       type: 'warning',
-      message: options.message || 'Are you sure you want to reset to defaults?',
-      confirmText: options.confirmText || 'Reset',
-      cancelText: options.cancelText || 'Cancel',
+      message: options.message || i18n.getMessage('confirmationDialog_resetMessage'),
+      confirmText: options.confirmText || i18n.getMessage('confirmationDialog_resetButton'),
+      cancelText: options.cancelText || i18n.getMessage('confirmationDialog_cancel'),
       ...options
     });
   }
@@ -411,9 +436,9 @@ class ConfirmationDialog {
   confirmClear(options = {}) {
     return this.show({
       type: 'warning',
-      message: options.message || 'Are you sure you want to clear all data?',
-      confirmText: options.confirmText || 'Clear',
-      cancelText: options.cancelText || 'Cancel',
+      message: options.message || i18n.getMessage('confirmationDialog_clearMessage'),
+      confirmText: options.confirmText || i18n.getMessage('confirmationDialog_clearButton'),
+      cancelText: options.cancelText || i18n.getMessage('confirmationDialog_cancel'),
       ...options
     });
   }
@@ -430,6 +455,11 @@ class ConfirmationDialog {
    * Destroy the confirmation dialog component
    */
   destroy() {
+    // Remove outside click handler
+    if (this.outsideClickHandler) {
+      document.removeEventListener('click', this.outsideClickHandler);
+    }
+    
     if (this.confirmationElement && this.confirmationElement.parentNode) {
       this.confirmationElement.parentNode.removeChild(this.confirmationElement);
     }
@@ -440,6 +470,7 @@ class ConfirmationDialog {
     this.targetElement = null;
     this.currentType = 'default';
     this.isInitialized = false;
+    this.outsideClickHandler = null;
     
     logger.info('ConfirmationDialog destroyed');
   }
