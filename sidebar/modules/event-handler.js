@@ -11,7 +11,7 @@ import * as ContentExtractor from './content-extractor.js';
 import * as ChatManager from './chat-manager.js';
 import * as ResizeHandler from './resize-handler.js';
 import * as ImageHandler from './image-handler.js';
-import { miniConfirmation } from '../components/mini-confirmation.js';
+import { confirmationDialog } from '../../js/modules/ui/confirmation-dialog.js';
 import { createSidebarExportHandler } from './export-utils.js';
 
 
@@ -138,13 +138,13 @@ const setupEventListeners = (elements, modelSelector, onTabAction) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // Show mini confirmation near the clicked button
-    miniConfirmation.show({
+    // Show confirmation dialog near the clicked button
+    confirmationDialog.show({
       target: elements.clearPageDataBtn,
       message: 'Clear all page data? This action cannot be undone.',
       confirmText: 'Clear',
       cancelText: 'Cancel',
-      confirmButtonClass: 'mini-btn-danger',
+      type: 'danger',
       onConfirm: () => {
         logger.info('User confirmed clearing page data');
         clearAllPageData();

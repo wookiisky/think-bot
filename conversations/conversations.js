@@ -35,7 +35,7 @@ import { ModelSelector } from '../sidebar/modules/model-selector.js';
 import { PageListManager } from './modules/page-list-manager.js';
 import { createConversationsExportHandler } from '../sidebar/modules/export-utils.js';
 // Import MiniConfirmation component from sidebar
-import { miniConfirmation } from '../sidebar/components/mini-confirmation.js';
+import { confirmationDialog } from '../js/modules/ui/confirmation-dialog.js';
 
 // Create logger
 const logger = createLogger('Conversations');
@@ -93,11 +93,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize model selector
     modelSelector = new ModelSelector();
     
-    // Initialize mini confirmation dialog (replaces the old confirmation dialog)
-    // No need to create a new instance, use the imported singleton
+    // Initialize confirmation dialog
+    confirmationDialog.init();
     
-    // Initialize page list manager with mini confirmation
-    pageListManager = new PageListManager(miniConfirmation);
+    // Initialize page list manager with confirmation dialog
+    pageListManager = new PageListManager(confirmationDialog);
     await pageListManager.init(elements.pageListContainer, elements.pageSearchInput, {
       onPageSelect: loadPageConversation,
       onPageDelete: handlePageDelete

@@ -313,7 +313,7 @@ export class PageListManager {
     }
 
     // Check if confirmation is already visible
-    if (this.confirmationDialog.isConfirmationVisible()) {
+    if (this.confirmationDialog.isDialogVisible()) {
       moduleLogger.info('Confirmation dialog is already visible, ignoring delete request');
       return;
     }
@@ -325,7 +325,7 @@ export class PageListManager {
         message: i18n.getMessage('page_list_manager_confirm_delete_message'),
         confirmText: i18n.getMessage('global_delete_button'),
         cancelText: i18n.getMessage('global_cancel_button'),
-        confirmButtonClass: 'mini-btn-danger',
+        type: 'danger',
         onConfirm: () => resolve(true),
         onCancel: () => resolve(false)
       });
