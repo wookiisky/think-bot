@@ -16,6 +16,21 @@
   align-items: center;
 }
 
+/* Ensure perfect vertical alignment for sync toggle */
+.sync-toggle-container .toggle-switch-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  line-height: 1;
+  min-height: 20px; /* Match toggle height */
+}
+
+.sync-toggle-container .toggle-switch {
+  vertical-align: middle;
+  margin: 0;
+  flex-shrink: 0;
+}
+
 .sync-status {
   margin-top: 0px;
   padding: 0;
