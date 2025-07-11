@@ -70,9 +70,13 @@ input, select, textarea {
 
 /* Specific styles for select elements */
 select {
-  padding: 0.3rem 0.5rem;
-  height: 32px;
+  padding: 0.2rem 0.5rem;
+  height: 26px;
   cursor: pointer;
+  line-height: 1.1;
+  vertical-align: top;
+  display: inline-block;
+  box-sizing: border-box;
 }
 
 /* Specific styles for input elements */
@@ -81,7 +85,7 @@ input[type="number"],
 input[type="password"],
 input[type="url"],
 input[type="email"] {
-  height: 32px;
+  height: 26px;
 }
 
 textarea {
