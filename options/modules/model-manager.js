@@ -84,10 +84,10 @@ export class ModelManager {
       <div class="model-details-column">
         <div class="model-form">
           <div class="form-grid">
-            <div class="form-group">
-              <label data-i18n="options_model_display_name_label">Display Name</label>
-              <input type="text" class="model-name-input" value="${model.name || ''}"
-                     data-model-index="${index}" data-field="name">
+            <div class="floating-label-field">
+              <input type="text" class="model-name-input" id="model-name-${index}" value="${model.name || ''}"
+                     data-model-index="${index}" data-field="name" placeholder=" ">
+              <label for="model-name-${index}" class="floating-label" data-i18n="options_model_display_name_label">Display Name</label>
             </div>
             <div class="form-group">
               <label data-i18n="options_model_provider_label">Provider</label>
@@ -103,17 +103,17 @@ export class ModelManager {
             ${this.renderModelSpecificFields(model, index)}
           </div>
           <div class="form-grid">
-            <div class="form-group">
-              <label data-i18n="options_model_max_tokens_label">Max Tokens</label>
-              <input type="number" class="model-max-tokens" value="${model.maxTokens || 2048}"
+            <div class="floating-label-field">
+              <input type="number" class="model-max-tokens" id="model-max-tokens-${index}" value="${model.maxTokens || 2048}"
                      data-model-index="${index}" data-field="maxTokens"
-                     data-i18n-placeholder="options_model_max_tokens_placeholder" placeholder="e.g., 2048" min="1" max="100000">
+                     placeholder=" " min="1" max="100000">
+              <label for="model-max-tokens-${index}" class="floating-label" data-i18n="options_model_max_tokens_label">Max Tokens</label>
             </div>
-            <div class="form-group">
-              <label data-i18n="options_model_temperature_label">Temperature</label>
-              <input type="number" class="model-temperature" value="${model.temperature || 0.7}"
+            <div class="floating-label-field">
+              <input type="number" class="model-temperature" id="model-temperature-${index}" value="${model.temperature || 0.7}"
                      data-model-index="${index}" data-field="temperature"
-                     data-i18n-placeholder="options_model_temperature_placeholder" placeholder="0.0 - 1.0" min="0" max="1" step="0.1">
+                     placeholder=" " min="0" max="1" step="0.1">
+              <label for="model-temperature-${index}" class="floating-label" data-i18n="options_model_temperature_label">Temperature</label>
             </div>
           </div>
         </div>
@@ -126,63 +126,61 @@ export class ModelManager {
   renderModelSpecificFields(model, index) {
     if (model.provider === 'openai') {
       return `
-        <div class="form-group">
-          <label data-i18n="options_model_base_url_label">Base URL</label>
-          <input type="text" class="model-base-url" value="${model.baseUrl || 'https://api.openai.com'}"
-                 data-model-index="${index}" data-field="baseUrl">
+        <div class="floating-label-field">
+          <input type="text" class="model-base-url" id="model-base-url-${index}" value="${model.baseUrl || 'https://api.openai.com'}"
+                 data-model-index="${index}" data-field="baseUrl" placeholder=" ">
+          <label for="model-base-url-${index}" class="floating-label" data-i18n="options_model_base_url_label">Base URL</label>
         </div>
-        <div class="form-group">
-          <label data-i18n="options_model_api_key_label">API Key</label>
-          <input type="password" class="model-api-key" value="${model.apiKey || ''}"
-                 data-model-index="${index}" data-field="apiKey">
+        <div class="floating-label-field">
+          <input type="password" class="model-api-key" id="model-api-key-${index}" value="${model.apiKey || ''}"
+                 data-model-index="${index}" data-field="apiKey" placeholder=" ">
+          <label for="model-api-key-${index}" class="floating-label" data-i18n="options_model_api_key_label">API Key</label>
         </div>
-        <div class="form-group">
-          <label data-i18n="options_model_model_label">Model</label>
-          <input type="text" class="model-model" value="${model.model || 'gpt-3.5-turbo'}"
-                 data-model-index="${index}" data-field="model">
+        <div class="floating-label-field">
+          <input type="text" class="model-model" id="model-model-${index}" value="${model.model || 'gpt-3.5-turbo'}"
+                 data-model-index="${index}" data-field="model" placeholder=" ">
+          <label for="model-model-${index}" class="floating-label" data-i18n="options_model_model_label">Model</label>
         </div>
       `;
     } else if (model.provider === 'gemini') {
       return `
-        <div class="form-group">
-          <label data-i18n="options_model_base_url_label">Base URL</label>
-          <input type="text" class="model-base-url" value="${model.baseUrl || 'https://generativelanguage.googleapis.com'}"
-                 data-model-index="${index}" data-field="baseUrl">
+        <div class="floating-label-field">
+          <input type="text" class="model-base-url" id="model-base-url-${index}" value="${model.baseUrl || 'https://generativelanguage.googleapis.com'}"
+                 data-model-index="${index}" data-field="baseUrl" placeholder=" ">
+          <label for="model-base-url-${index}" class="floating-label" data-i18n="options_model_base_url_label">Base URL</label>
         </div>
-        <div class="form-group">
-          <label data-i18n="options_model_api_key_label">API Key</label>
-          <input type="password" class="model-api-key" value="${model.apiKey || ''}"
-                 data-model-index="${index}" data-field="apiKey">
+        <div class="floating-label-field">
+          <input type="password" class="model-api-key" id="model-api-key-${index}" value="${model.apiKey || ''}"
+                 data-model-index="${index}" data-field="apiKey" placeholder=" ">
+          <label for="model-api-key-${index}" class="floating-label" data-i18n="options_model_api_key_label">API Key</label>
         </div>
-        <div class="form-group">
-          <label data-i18n="options_model_model_label">Model</label>
-          <input type="text" class="model-model" value="${model.model || 'gemini-pro'}"
-                 data-model-index="${index}" data-field="model">
+        <div class="floating-label-field">
+          <input type="text" class="model-model" id="model-model-${index}" value="${model.model || 'gemini-pro'}"
+                 data-model-index="${index}" data-field="model" placeholder=" ">
+          <label for="model-model-${index}" class="floating-label" data-i18n="options_model_model_label">Model</label>
         </div>
       `;
     } else if (model.provider === 'azure_openai') {
       return `
-        <div class="form-group">
-          <label data-i18n="options_model_azure_endpoint_label">Endpoint</label>
-          <input type="text" class="model-azure-endpoint" value="${model.endpoint || ''}"
-                 data-model-index="${index}" data-field="endpoint"
-                 data-i18n-placeholder="options_model_azure_endpoint_placeholder" placeholder="https://your-resource.openai.azure.com">
+        <div class="floating-label-field">
+          <input type="text" class="model-azure-endpoint" id="model-azure-endpoint-${index}" value="${model.endpoint || ''}"
+                 data-model-index="${index}" data-field="endpoint" placeholder=" ">
+          <label for="model-azure-endpoint-${index}" class="floating-label" data-i18n="options_model_azure_endpoint_label">Endpoint</label>
         </div>
-        <div class="form-group">
-          <label data-i18n="options_model_api_key_label">API Key</label>
-          <input type="password" class="model-api-key" value="${model.apiKey || ''}"
-                 data-model-index="${index}" data-field="apiKey">
+        <div class="floating-label-field">
+          <input type="password" class="model-api-key" id="model-api-key-${index}" value="${model.apiKey || ''}"
+                 data-model-index="${index}" data-field="apiKey" placeholder=" ">
+          <label for="model-api-key-${index}" class="floating-label" data-i18n="options_model_api_key_label">API Key</label>
         </div>
-        <div class="form-group">
-          <label data-i18n="options_model_azure_deployment_name_label">Deployment Name</label>
-          <input type="text" class="model-azure-deployment-name" value="${model.deploymentName || ''}"
-                 data-model-index="${index}" data-field="deploymentName">
+        <div class="floating-label-field">
+          <input type="text" class="model-azure-deployment-name" id="model-azure-deployment-name-${index}" value="${model.deploymentName || ''}"
+                 data-model-index="${index}" data-field="deploymentName" placeholder=" ">
+          <label for="model-azure-deployment-name-${index}" class="floating-label" data-i18n="options_model_azure_deployment_name_label">Deployment Name</label>
         </div>
-        <div class="form-group">
-          <label data-i18n="options_model_azure_api_version_label">API Version</label>
-          <input type="text" class="model-azure-api-version" value="${model.apiVersion || '2025-01-01-preview'}"
-                 data-model-index="${index}" data-field="apiVersion"
-                 data-i18n-placeholder="options_model_azure_api_version_placeholder" placeholder="e.g., 2025-01-01-preview">
+        <div class="floating-label-field">
+          <input type="text" class="model-azure-api-version" id="model-azure-api-version-${index}" value="${model.apiVersion || '2025-01-01-preview'}"
+                 data-model-index="${index}" data-field="apiVersion" placeholder=" ">
+          <label for="model-azure-api-version-${index}" class="floating-label" data-i18n="options_model_azure_api_version_label">API Version</label>
         </div>
       `;
     }

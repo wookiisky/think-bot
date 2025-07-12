@@ -46,6 +46,40 @@
   gap: 0.5rem;
 }
 
+/* Special styles for floating label in quick input header */
+.quick-input-header-left .floating-label-field {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+  position: relative;
+}
+
+.quick-input-header-left .floating-label-field .floating-label {
+  position: absolute;
+  top: 50%;
+  left: 0.5rem;
+  transform: translateY(-50%);
+  background-color: var(--bg-color);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  z-index: 1;
+  padding: 0 0.25rem;
+}
+
+.quick-input-header-left .floating-label-field input:focus ~ .floating-label,
+.quick-input-header-left .floating-label-field input:not(:placeholder-shown) ~ .floating-label,
+.quick-input-header-left .floating-label-field.has-value .floating-label {
+  top: 0;
+  left: 0.5rem;
+  transform: translateY(-50%);
+  font-size: 0.65rem;
+  color: var(--primary-color);
+  background-color: var(--bg-color);
+}
+
 .quick-input-display {
   flex: 1;
   min-width: 0;
@@ -53,6 +87,7 @@
   padding: 0.35rem 0.5rem;
   font-size: 0.8rem;
   height: 32px;
+  width: 100%;
 }
 
 .quick-input-display:focus {

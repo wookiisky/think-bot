@@ -15,7 +15,7 @@ var geminiProvider = (function() {
     } = BaseProvider;
     
     // Constants
-    const DEFAULT_MODEL = 'gemini-1.5-flash';
+    const DEFAULT_MODEL = 'gemini-2.5-flash';
     const DEFAULT_CONFIG = {
         temperature: 1.0,
         maxOutputTokens: 8192

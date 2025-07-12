@@ -89,6 +89,11 @@ class OptionsPage {
       // Load sync status after form is populated
       await this.loadSyncStatus();
     }
+    
+    // Initialize floating label manager after form is populated
+    if (window.floatingLabelManager) {
+      window.floatingLabelManager.refresh();
+    }
   }
 
   

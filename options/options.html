@@ -70,9 +70,9 @@
             <section class="settings-section sidebar-section">
               <h2 data-i18n="options_content_extraction_title">Content Extraction</h2>
               
-              <div class="form-group">
-                <label for="contentDisplayHeight" data-i18n="options_extracted_content_height_label">Extracted Content Height</label>
-                <input type="number" id="contentDisplayHeight" name="contentDisplayHeight" data-i18n-placeholder="options_extracted_content_height_placeholder" placeholder="e.g., 300" min="0" max="600">
+              <div class="floating-label-field">
+                <input type="number" id="contentDisplayHeight" name="contentDisplayHeight" placeholder=" " min="0" max="600">
+                <label for="contentDisplayHeight" class="floating-label" data-i18n="options_extracted_content_height_label">Extracted Content Height</label>
               </div>
               
               <div class="form-group">
@@ -83,14 +83,14 @@
                 </select>
               </div>
               
-              <div class="form-group" id="jinaApiKeyGroup">
-                <label for="jinaApiKey" data-i18n="options_jina_api_key_label">Jina AI API Key (Optional)</label>
-                <input type="password" id="jinaApiKey" name="jinaApiKey" data-i18n-placeholder="options_jina_api_key_placeholder" placeholder="Enter your Jina AI API key (optional)">
+              <div class="floating-label-field" id="jinaApiKeyGroup">
+                <input type="password" id="jinaApiKey" name="jinaApiKey" placeholder=" ">
+                <label for="jinaApiKey" class="floating-label" data-i18n="options_jina_api_key_label">Jina AI API Key (Optional)</label>
               </div>
               
-              <div class="form-group" id="jinaResponseTemplateGroup">
-                <label for="jinaResponseTemplate" data-i18n="options_jina_response_template_label">Jina AI Response Template</label>
-                <textarea id="jinaResponseTemplate" name="jinaResponseTemplate" rows="3" data-i18n-placeholder="options_jina_response_template_placeholder" placeholder="Enter template for formatting Jina AI response"></textarea>
+              <div class="floating-label-field" id="jinaResponseTemplateGroup">
+                <textarea id="jinaResponseTemplate" name="jinaResponseTemplate" rows="3" placeholder=" "></textarea>
+                <label for="jinaResponseTemplate" class="floating-label" data-i18n="options_jina_response_template_label">Jina AI Response Template</label>
                 <small data-i18n="options_jina_response_template_description">Template for formatting Jina AI JSON response. Available placeholders: {title}, {url}, {description}, {content}.</small>
               </div>
             </section>
@@ -123,8 +123,9 @@
             <!-- System Prompt -->
             <section class="settings-section sidebar-section">
               <h2 data-i18n="options_system_prompt_title">System Prompt</h2>
-              <div class="form-group">
-                <textarea id="systemPrompt" name="systemPrompt" rows="3" data-i18n-placeholder="options_system_prompt_placeholder" placeholder="Enter your system prompt template with {CONTENT} placeholder"></textarea>
+              <div class="floating-label-field">
+                <textarea id="systemPrompt" name="systemPrompt" rows="3" placeholder=" "></textarea>
+                <label for="systemPrompt" class="floating-label" data-i18n="options_system_prompt_placeholder">Enter your system prompt template with {CONTENT} placeholder</label>
               </div>
             </section>
 
@@ -136,15 +137,15 @@
               </p>
 
               <div id="syncConfigGroup" class="sync-config-group">
-                <div class="form-group">
-                  <label for="gistToken" data-i18n="options_github_token_label">GitHub Token</label>
-                  <input type="password" id="gistToken" name="gistToken" data-i18n-placeholder="options_github_token_placeholder" placeholder="Enter your GitHub Personal Access Token">
+                <div class="floating-label-field">
+                  <input type="password" id="gistToken" name="gistToken" placeholder=" ">
+                  <label for="gistToken" class="floating-label" data-i18n="options_github_token_label">GitHub Token</label>
                   <small><a href="https://github.com/settings/tokens" target="_blank" data-i18n="options_github_token_create_link">Create token</a><span data-i18n="options_github_token_permission_note">(Requires Gist permission)</span></small>
                 </div>
 
-                <div class="form-group">
-                  <label for="gistId" data-i18n="options_gist_id_label">Secret Gist ID</label>
-                  <input type="text" id="gistId" name="gistId" data-i18n-placeholder="options_gist_id_placeholder" placeholder="Secret gist ID without url">
+                <div class="floating-label-field">
+                  <input type="text" id="gistId" name="gistId" placeholder=" ">
+                  <label for="gistId" class="floating-label" data-i18n="options_gist_id_label">Secret Gist ID</label>
                   <small><span data-i18n="options_gist_id_create_link_prefix">Create a </span><a href="https://gist.github.com/" target="_blank" data-i18n="options_gist_id_create_link">secret Gist</a><span data-i18n="options_gist_id_create_link_suffix">(DO NOT create public gist)</span></small>
                 </div>
 
@@ -250,7 +251,10 @@
             <div class="drag-handle">
               <i class="material-icons">drag_indicator</i>
             </div>
-            <input type="text" class="quick-input-display" data-i18n-placeholder="options_quick_input_placeholder_button_text" placeholder="Button text (e.g. 'Summarize')">
+            <div class="floating-label-field">
+              <input type="text" class="quick-input-display" placeholder=" ">
+              <label class="floating-label" data-i18n="options_quick_input_placeholder_button_text">Button text (e.g. 'Summarize')</label>
+            </div>
           </div>
           <div class="quick-input-header-right">
             <label class="toggle-switch" data-i18n-title="options_quick_input_auto_trigger_title" title="Auto-trigger when sidebar opens">
@@ -264,8 +268,9 @@
         </div>
         
         <!-- Send Text -->
-        <div class="form-group">
-          <textarea class="quick-input-send" rows="5" data-i18n-placeholder="options_quick_input_placeholder_message" placeholder="Message to send when clicked (use {CONTENT} placeholder)"></textarea>
+        <div class="floating-label-field">
+          <textarea class="quick-input-send" rows="5" placeholder=" "></textarea>
+          <label class="floating-label" data-i18n="options_quick_input_placeholder_message">Message to send when clicked (use {CONTENT} placeholder)</label>
         </div>
       </div>
     </div>
@@ -283,6 +288,7 @@
   <script src="../js/modules/sync/data_serializer.js"></script>
   <script src="../js/modules/sync/sync_manager.js"></script>
   <script src="../js/lib/Sortable.min.js"></script>
+  <script src="modules/floating-label.js" type="module"></script>
   <script src="modules/blacklist-config.js" type="module"></script>
   <script src="options.js" type="module"></script>
 </body>

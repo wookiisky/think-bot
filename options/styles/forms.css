@@ -21,7 +21,7 @@
 .form-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.5rem;
+  
 }
 
 .form-grid.two-column {
@@ -245,4 +245,174 @@ textarea:disabled {
 
 .form-inline .form-control {
   width: auto;
+}
+
+/* Floating Label Input Field */
+.floating-label-field {
+  position: relative;
+  margin-bottom: 0.6rem;
+}
+
+.floating-label-field .floating-label {
+  position: absolute;
+  top: 50%;
+  left: 0.5rem;
+  transform: translateY(-50%);
+  background-color: var(--input-bg);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  z-index: 1;
+  padding: 0 0.25rem;
+}
+
+.floating-label-field input,
+.floating-label-field textarea {
+  width: 100%;
+  padding: 0.6rem 0.5rem 0.35rem 0.5rem;
+  border: 1px solid var(--border-color);
+  font-size: 0.8rem;
+  font-family: inherit;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  transition: all var(--transition-normal) ease;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+  line-height: 1.3;
+  box-sizing: border-box;
+}
+
+.floating-label-field input[type="text"], 
+.floating-label-field input[type="number"], 
+.floating-label-field input[type="password"],
+.floating-label-field input[type="url"],
+.floating-label-field input[type="email"] {
+  height: 32px;
+}
+
+.floating-label-field textarea {
+  min-height: 60px;
+  padding: 0.8rem 0.5rem 0.4rem 0.5rem;
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.floating-label-field input:focus,
+.floating-label-field textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background-color: var(--input-background);
+  box-shadow: 0 0 0 2px var(--accent-color-alpha), inset 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.floating-label-field input:hover,
+.floating-label-field textarea:hover {
+  border-color: var(--border-color-hover);
+}
+
+/* Floating label active state */
+.floating-label-field input:focus ~ .floating-label,
+.floating-label-field input:not(:placeholder-shown) ~ .floating-label,
+.floating-label-field textarea:focus ~ .floating-label,
+.floating-label-field textarea:not(:placeholder-shown) ~ .floating-label,
+.floating-label-field.has-value .floating-label {
+  top: 0;
+  left: 0.5rem;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  color: var(--primary-color);
+  background-color: var(--input-bg);
+}
+
+/* Focused state styling */
+.floating-label-field.focused input,
+.floating-label-field.focused textarea {
+  border-color: var(--primary-color);
+}
+
+.floating-label-field.focused .floating-label {
+  color: var(--primary-color);
+}
+
+/* For textarea specific positioning */
+.floating-label-field textarea ~ .floating-label {
+  top: 1rem;
+  transform: translateY(-50%);
+}
+
+.floating-label-field textarea:focus ~ .floating-label,
+.floating-label-field textarea:not(:placeholder-shown) ~ .floating-label,
+.floating-label-field.has-value textarea ~ .floating-label {
+  top: 0;
+  transform: translateY(-50%);
+}
+
+/* Ensure the floating label field works well within sidebar sections */
+.sidebar-section .floating-label-field:last-child {
+  margin-bottom: 0;
+}
+
+/* Support for error states */
+.floating-label-field.is-invalid input,
+.floating-label-field.is-invalid textarea {
+  border-color: var(--error-color);
+}
+
+.floating-label-field.is-invalid input:focus,
+.floating-label-field.is-invalid textarea:focus {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 2px rgba(217, 48, 37, 0.2);
+}
+
+.floating-label-field.is-invalid .floating-label {
+  color: var(--error-color);
+}
+
+/* Support for success states */
+.floating-label-field.is-valid input,
+.floating-label-field.is-valid textarea {
+  border-color: var(--success-color);
+}
+
+.floating-label-field.is-valid input:focus,
+.floating-label-field.is-valid textarea:focus {
+  border-color: var(--success-color);
+  box-shadow: 0 0 0 2px rgba(15, 157, 88, 0.2);
+}
+
+.floating-label-field.is-valid .floating-label {
+  color: var(--success-color);
+}
+
+/* Ensure smooth transitions for all floating label states */
+.floating-label-field .floating-label {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Prevent text selection on labels */
+.floating-label-field .floating-label {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Improve contrast for better accessibility */
+.floating-label-field input:focus ~ .floating-label,
+.floating-label-field textarea:focus ~ .floating-label,
+.floating-label-field.focused .floating-label {
+  font-weight: 500;
+}
+
+/* Ensure floating labels work properly with autofill */
+.floating-label-field input:-webkit-autofill ~ .floating-label,
+.floating-label-field input:-webkit-autofill:hover ~ .floating-label,
+.floating-label-field input:-webkit-autofill:focus ~ .floating-label {
+  top: 0;
+  left: 0.5rem;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  color: var(--primary-color);
+  background-color: var(--input-bg);
 }
