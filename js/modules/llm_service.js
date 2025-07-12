@@ -8,7 +8,7 @@ var llmService = {};
 const llmLogger = logger.createModuleLogger('LLMService');
 
 // Available provider names for validation
-const AVAILABLE_PROVIDERS = ['gemini', 'openai'];
+const AVAILABLE_PROVIDERS = ['gemini', 'openai', 'azure_openai'];
 
 /**
  * Get global object safely across different JavaScript environments
@@ -29,16 +29,17 @@ function getGlobalObject(name) {
 function validateProvider(provider) {
   if (!AVAILABLE_PROVIDERS.includes(provider)) {
     const error = new Error(`Unsupported LLM provider: ${provider}. Available providers: ${AVAILABLE_PROVIDERS.join(', ')}`);
-    llmLogger.error('Invalid provider specified', { 
-      requestedProvider: provider, 
-      availableProviders: AVAILABLE_PROVIDERS 
+    llmLogger.error('Invalid provider specified', {
+      requestedProvider: provider,
+      availableProviders: AVAILABLE_PROVIDERS
     });
     return error;
   }
   
   const providerMapping = {
     'gemini': { object: 'geminiProvider', file: 'gemini_provider.js' },
-    'openai': { object: 'openaiProvider', file: 'openai_provider.js' }
+    'openai': { object: 'openaiProvider', file: 'openai_provider.js' },
+    'azure_openai': { object: 'azureOpenaiProvider', file: 'azure_openai_provider.js' }
   };
   
   const providerInfo = providerMapping[provider];
@@ -66,7 +67,8 @@ function validateProvider(provider) {
 function getProviderExecutor(provider) {
   const providerMapping = {
     'gemini': () => getGlobalObject('geminiProvider'),
-    'openai': () => getGlobalObject('openaiProvider')
+    'openai': () => getGlobalObject('openaiProvider'),
+    'azure_openai': () => getGlobalObject('azureOpenaiProvider')
   };
   
   return providerMapping[provider]();
@@ -118,6 +120,7 @@ llmService.callLLM = async function(
     
     // Get provider executor and delegate to it
     const providerExecutor = getProviderExecutor(llmConfig.provider);
+
     llmLogger.info('call llm, system prompt', { systemPrompt }, 'messages', messages);
     await providerExecutor.execute(
       messages,

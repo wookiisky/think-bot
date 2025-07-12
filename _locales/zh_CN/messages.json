@@ -244,11 +244,11 @@
     "description": "Success message when a blacklist pattern is deleted."
   },
   "options_quick_input_tabs_title": {
-    "message": "快捷输入标签",
+    "message": "标签页",
     "description": "Title for the quick input tabs section."
   },
   "options_add_quick_input_button": {
-    "message": "添加快捷输入",
+    "message": "添加标签页",
     "description": "Button text to add a quick input."
   },
   "options_language_models_title": {
@@ -274,6 +274,30 @@
   "options_model_provider_gemini": {
     "message": "Google Gemini",
     "description": "Google Gemini provider option in the model provider selection."
+  },
+  "optionsAzureOpenAIProvider": {
+    "message": "Azure OpenAI",
+    "description": "Azure OpenAI provider option."
+  },
+  "options_model_azure_endpoint_label": {
+    "message": "Endpoint",
+    "description": "Label for Azure OpenAI endpoint."
+  },
+  "options_model_azure_endpoint_placeholder": {
+    "message": "https://your-resource.openai.azure.com",
+    "description": "Placeholder for Azure OpenAI endpoint."
+  },
+  "options_model_azure_deployment_name_label": {
+    "message": "Deployment Name",
+    "description": "Label for Azure OpenAI deployment name."
+  },
+  "options_model_azure_api_version_label": {
+    "message": "API 版本",
+    "description": "Label for Azure OpenAI API version."
+  },
+  "options_model_azure_api_version_placeholder": {
+    "message": "2025-01-01-preview",
+    "description": "Placeholder for Azure OpenAI API version input."
   },
   "options_model_base_url_label": {
     "message": "基础 URL",
@@ -320,7 +344,7 @@
     "description": "Default name for models without a name."
   },
   "options_model_new_name": {
-    "message": "新模型 $1",
+    "message": "模型 $1",
     "description": "Default name for new models. $1 is a placeholder."
   },
   "options_model_no_models_configured": {
@@ -328,17 +352,13 @@
     "description": "Message shown when no models are configured."
   },
   "options_quick_input_placeholder_button_text": {
-    "message": "按钮文本 (例如 “总结”)",
+    "message": "标签名称",
     "description": "Placeholder for the quick input button text."
   },
   "options_quick_input_auto_trigger_title": {
-    "message": "侧边栏打开时自动触发",
+    "message": "侧边栏打开时自动发送",
     "description": "Title for the auto-trigger toggle on a quick input."
-  },
-  "options_quick_input_storage_usage_tooltip": {
-    "message": "存储使用百分比",
-    "description": "Tooltip for the storage usage status on a quick input."
-  }, 
+  },  
   "options_quick_input_remove_button_title": {
     "message": "移除快捷输入",
     "description": "Title for the remove quick input button."

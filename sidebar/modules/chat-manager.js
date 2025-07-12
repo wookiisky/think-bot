@@ -704,6 +704,9 @@ const handleLlmError = (chatContainer, error, streamingMessageElement = null, on
         // Include original error data if it was an object
         ...(typeof error === 'object' && error !== null ? error : {})
       };
+      console.log('[ChatManager] Created enhanced error with errorDetails:', enhancedError);
+    } else {
+      console.log('[ChatManager] No errorDetails, using original error:', error);
     }
     
     // Handle error using unified error handler

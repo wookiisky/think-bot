@@ -21,11 +21,19 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
             llmConfig = {
                 provider: defaultModel.provider,
                 apiKey: defaultModel.apiKey,
-                baseUrl: defaultModel.baseUrl,
-                model: defaultModel.model,
                 maxTokens: defaultModel.maxTokens || 2048,
                 temperature: defaultModel.temperature || 0.7
             };
+            
+            // Add provider-specific fields
+            if (defaultModel.provider === 'azure_openai') {
+                llmConfig.endpoint = defaultModel.endpoint;
+                llmConfig.deploymentName = defaultModel.deploymentName;
+                llmConfig.apiVersion = defaultModel.apiVersion;
+            } else if (defaultModel.provider === 'openai' || defaultModel.provider === 'gemini') {
+                llmConfig.baseUrl = defaultModel.baseUrl;
+                llmConfig.model = defaultModel.model;
+            }
         }
 
         serviceLogger.info(`SEND_LLM: Using model ${defaultModel.name} (${defaultModel.provider})`);
@@ -140,32 +148,80 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                 errorDetails.status = err.status;
             }
             
-            // Create error JSON for storage and transmission
-            let errorJsonObject = null;
-            if (errorDetails.rawResponse) {
+            // Log error details for debugging
+            serviceLogger.info('SEND_LLM: Processing error details', {
+                hasRawResponse: !!errorDetails.rawResponse,
+                hasErrorData: !!errorDetails.errorData,
+                errorMessage: errorDetails.message,
+                errorType: errorDetails.type,
+                status: errorDetails.status
+            });
+            
+            // Create error message for storage and transmission
+            let errorMessage = null;
+            
+            // Priority 1: Use errorData if available (already parsed JSON)
+            if (errorDetails.errorData && typeof errorDetails.errorData === 'object' && Object.keys(errorDetails.errorData).length > 0) {
+                errorMessage = JSON.stringify(errorDetails.errorData, null, 2);
+                serviceLogger.info('SEND_LLM: Using errorData for error message', {
+                    errorDataKeys: Object.keys(errorDetails.errorData),
+                    errorMessage: errorMessage.substring(0, 200)
+                });
+            }
+            // Priority 2: Try to extract meaningful error message from raw response
+            else if (errorDetails.rawResponse) {
                 try {
-                    errorJsonObject = typeof errorDetails.rawResponse === 'string'
+                    const parsedResponse = typeof errorDetails.rawResponse === 'string'
                         ? JSON.parse(errorDetails.rawResponse)
                         : errorDetails.rawResponse;
+                    
+                    // Check if parsed response has meaningful content
+                    if (parsedResponse && typeof parsedResponse === 'object' && Object.keys(parsedResponse).length > 0) {
+                        // If it's a meaningful object, use it as error message directly
+                        errorMessage = JSON.stringify(parsedResponse, null, 2);
+                        serviceLogger.info('SEND_LLM: Parsed rawResponse successfully', {
+                            keys: Object.keys(parsedResponse),
+                            errorMessage: errorMessage.substring(0, 200)
+                        });
+                    } else {
+                        // If it's empty or meaningless, use the raw response as string
+                        errorMessage = typeof errorDetails.rawResponse === 'string' 
+                            ? errorDetails.rawResponse 
+                            : JSON.stringify(errorDetails.rawResponse);
+                        serviceLogger.info('SEND_LLM: Using rawResponse as string', {
+                            errorMessage: errorMessage.substring(0, 200)
+                        });
+                    }
                 } catch (parseError) {
-                    errorJsonObject = errorDetails.rawResponse;
-                }
-            }
-
-            if (!errorJsonObject) {
-                // For user cancellation, use the actual error message instead of generic message
-                if (errorDetails.message === 'Request was cancelled by user') {
-                    errorJsonObject = {
-                        message: errorDetails.message
-                    };
-                } else {
-                    errorJsonObject = {
-                        message: "No detailed error information available"
-                    };
+                    // If parsing fails, use raw response as string
+                    errorMessage = typeof errorDetails.rawResponse === 'string' 
+                        ? errorDetails.rawResponse 
+                        : String(errorDetails.rawResponse);
+                    serviceLogger.info('SEND_LLM: Failed to parse rawResponse, using as string', {
+                        parseError: parseError.message,
+                        errorMessage: errorMessage.substring(0, 200)
+                    });
                 }
             }
             
-            const errorJsonString = JSON.stringify(errorJsonObject);
+            // Priority 3: If we still don't have a meaningful error message, use fallback
+            if (!errorMessage || errorMessage.trim() === '' || errorMessage === '{}' || errorMessage === 'null' || errorMessage === 'undefined') {
+                if (errorDetails.message === 'Request was cancelled by user') {
+                    errorMessage = errorDetails.message;
+                } else {
+                    // Use the original error message or a meaningful fallback
+                    errorMessage = errorDetails.message || 'LLM service error - no detailed information available';
+                }
+                serviceLogger.info('SEND_LLM: Using fallback error message', {
+                    errorMessage: errorMessage
+                });
+            }
+
+            // Final log of what we're sending
+            serviceLogger.info('SEND_LLM: Final error message to send', {
+                errorMessage: errorMessage.substring(0, 300),
+                errorMessageLength: errorMessage.length
+            });
 
             // Check if this is a user cancellation - log as info instead of error
             if (errorDetails.message === 'Request was cancelled by user') {
@@ -177,7 +233,7 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
             try {
                 safeSendMessage({
                     type: 'LLM_ERROR',
-                    error: errorJsonString,
+                    error: errorMessage,
                     errorDetails: errorDetails,
                     tabId: tabId,
                     url: currentUrl
@@ -194,8 +250,8 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
             try {
                 // Update loading state to error
                 if (currentUrl && tabId) {
-                    await loadingStateCache.errorLoadingState(currentUrl, tabId, errorJsonString);
-                    broadcastLoadingStateUpdate(currentUrl, tabId, 'error', null, errorJsonString, null, errorDetails);
+                    await loadingStateCache.errorLoadingState(currentUrl, tabId, errorMessage);
+                    broadcastLoadingStateUpdate(currentUrl, tabId, 'error', null, errorMessage, null, errorDetails);
                 }
             } catch (error) {
                 serviceLogger.error('SEND_LLM: Error updating loading state to error:', error.message);

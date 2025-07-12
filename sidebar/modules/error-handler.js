@@ -113,52 +113,82 @@ class ProcessedError {
   }
   
   extractErrorDetails() {
-    if (typeof this.originalError === 'string') {
-      this.message = this.originalError;
-      this.userMessage = this.createUserFriendlyMessage(this.originalError);
-    } else if (this.originalError instanceof Error) {
-      this.message = this.originalError.message;
-      this.stack = this.originalError.stack;
-      this.name = this.originalError.name;
-      this.userMessage = this.createUserFriendlyMessage(this.originalError.message);
+    let originalError = this.originalError;
+    
+    console.log('[ErrorHandler] Extracting error details from:', originalError);
+    console.log('[ErrorHandler] Original error type:', typeof originalError);
+    
+    // Handle string errors directly
+    if (typeof originalError === 'string') {
+      this.message = originalError;
+      this.userMessage = this.createUserFriendlyMessage(originalError);
+      this.name = 'StringError';
+      console.log('[ErrorHandler] String error processed, message:', this.message);
+      return;
+    }
+    
+    // Handle enhanced errors with detailed information
+    if (originalError && typeof originalError === 'object') {
+      this.message = originalError.message || originalError.error || 'Unknown error';
+      this.name = originalError.name || originalError.constructor?.name || 'Error';
+      this.stack = originalError.stack;
+      this.status = originalError.status;
+      this.timestamp = originalError.timestamp || Date.now();
       
-      // Handle enhanced errors with rawResponse
-      if (this.originalError.name === 'EnhancedError') {
-        this.rawResponse = this.originalError.rawResponse;
-        this.errorData = this.originalError.errorData;
-        this.status = this.originalError.status;
+      console.log('[ErrorHandler] Object error processed, message:', this.message);
+      console.log('[ErrorHandler] Object error name:', this.name);
+      
+      // Check if this is already a formatted error message (JSON string)
+      if (typeof this.message === 'string' && this.message.trim().startsWith('{')) {
+        try {
+          const parsedError = JSON.parse(this.message);
+          this.directErrorObject = parsedError;
+          this.message = parsedError.message || parsedError.error || this.message;
+          console.log('[ErrorHandler] Parsed JSON from message:', parsedError);
+        } catch (parseError) {
+          // If parsing fails, treat as regular string message
+          this.directErrorObject = null;
+          console.log('[ErrorHandler] Failed to parse JSON from message:', parseError.message);
+        }
       }
-    } else if (typeof this.originalError === 'object' && this.originalError !== null) {
-      this.message = this.originalError.message || 'Unknown error';
-      this.userMessage = this.createUserFriendlyMessage(this.message);
-      this.rawResponse = this.originalError.rawResponse;
-      this.errorData = this.originalError.errorData;
-      this.status = this.originalError.status;
-      this.name = this.originalError.name;
+      
+      // Extract raw response and error data
+      if (originalError.name === 'EnhancedError' || originalError.rawResponse) {
+        this.rawResponse = originalError.rawResponse;
+        this.errorData = originalError.errorData;
+        console.log('[ErrorHandler] Enhanced error with rawResponse:', !!this.rawResponse);
+        console.log('[ErrorHandler] Enhanced error with errorData:', !!this.errorData);
+      }
+      
+      // Handle direct error objects passed from processed errors
+      if (originalError.directErrorObject) {
+        this.directErrorObject = originalError.directErrorObject;
+        console.log('[ErrorHandler] Direct error object found:', this.directErrorObject);
+      }
     } else {
-      this.message = 'Unknown error occurred';
-      this.userMessage = i18n.getMessage('sidebar_errorHandler_error_unexpected');
+      // Fallback for other types
+      this.message = String(originalError) || 'Unknown error';
+      this.name = 'UnknownError';
+      console.log('[ErrorHandler] Fallback error processed, message:', this.message);
     }
 
     // Ensure we always have valid message and userMessage
-    if (!this.message || this.message.trim() === '') {
-      this.message = 'Unknown error occurred';
+    if (!this.message || this.message.trim() === '' || this.message === '{}' || this.message === 'null' || this.message === 'undefined') {
+      this.message = 'LLM service error - no detailed information available';
+      console.log('[ErrorHandler] Applied fallback message:', this.message);
     }
 
     if (!this.userMessage || this.userMessage.trim() === '') {
       this.userMessage = this.createUserFriendlyMessage(this.message);
     }
 
-    // Handle special case where message is the generic "No detailed error information available"
-    if (this.message === 'No detailed error information available') {
-      this.message = i18n.getMessage('sidebar_errorHandler_error_llmService');
-      this.userMessage = i18n.getMessage('sidebar_errorHandler_error_failedToGetResponse');
-    }
-
     // Handle user cancellation case
     if (this.message === 'Request was cancelled by user') {
       this.userMessage = i18n.getMessage('sidebar_errorHandler_error_requestCancelled');
     }
+    
+    console.log('[ErrorHandler] Final processed message:', this.message);
+    console.log('[ErrorHandler] Final user message:', this.userMessage);
   }
   
   createUserFriendlyMessage(message) {
@@ -218,7 +248,40 @@ class ProcessedError {
   }
   
   formatDetailedError() {
-    // Always show raw response if available for debugging
+    console.log('[ErrorHandler] Formatting detailed error, message type:', typeof this.message);
+    console.log('[ErrorHandler] Message content:', this.message);
+    console.log('[ErrorHandler] Has directErrorObject:', !!this.directErrorObject);
+    console.log('[ErrorHandler] Has rawResponse:', !!this.rawResponse);
+    
+    // For string messages that are already formatted JSON, return as-is
+    if (typeof this.message === 'string' && this.message.trim().startsWith('{')) {
+      try {
+        // Try to parse and re-format for better readability
+        const parsed = JSON.parse(this.message);
+        const formatted = JSON.stringify(parsed, null, 2);
+        console.log('[ErrorHandler] Formatted JSON message:', formatted);
+        return formatted;
+      } catch (parseError) {
+        // If parsing fails, return the original message
+        console.log('[ErrorHandler] Failed to parse JSON message, returning original:', this.message);
+        return this.message;
+      }
+    }
+    
+    // For direct error objects (like parsed JSON from API responses), show them directly
+    if (this.directErrorObject) {
+      try {
+        const jsonStr = JSON.stringify(this.directErrorObject, null, 2);
+        console.log('[ErrorHandler] Displaying direct error object:', jsonStr);
+        return jsonStr;
+      } catch (stringifyError) {
+        console.log('[ErrorHandler] Failed to stringify direct error object:', stringifyError);
+        // If stringify fails, fallback to string representation
+        return this.message || 'Unknown error occurred';
+      }
+    }
+    
+    // For raw response errors, show the raw response if available
     if (this.rawResponse) {
       try {
         const errorJsonObject = typeof this.rawResponse === 'string' 
@@ -226,36 +289,41 @@ class ProcessedError {
           : this.rawResponse;
         
         // Return only the raw response, formatted as JSON
-        return JSON.stringify(errorJsonObject, null, 2);
+        const formatted = JSON.stringify(errorJsonObject, null, 2);
+        console.log('[ErrorHandler] Formatted raw response:', formatted);
+        return formatted;
       } catch (parseError) {
-        // If JSON parsing fails, show raw response as is, but inside a formatted object for context
-        const formattedError = {
-          userMessage: i18n.getMessage('sidebar_errorHandler_error_parseRawResponse'),
-          originalError: this.message,
-          rawResponse: this.rawResponse,
-          parseError: parseError.message,
-          timestamp: new Date(this.timestamp).toISOString()
-        };
-        
-        return JSON.stringify(formattedError, null, 2);
+        // If JSON parsing fails, show raw response as is
+        console.log('[ErrorHandler] Failed to parse raw response, returning as-is:', this.rawResponse);
+        return this.rawResponse;
       }
     }
     
-    // For errors without raw response, show enhanced error details
+    // For simple string messages, return as-is without wrapping in JSON
+    if (typeof this.message === 'string' && !this.message.trim().startsWith('{')) {
+      console.log('[ErrorHandler] Returning simple string message:', this.message);
+      return this.message;
+    }
+    
+    // For errors without raw response or direct error object, show enhanced error details only if needed
     const errorDetails = {
-      userMessage: this.userMessage,
-      originalError: this.message,
-      errorType: this.name || 'Unknown',
-      errorCategory: this.type,
-      severity: this.severity,
-      ...(this.stack && { stack: this.stack }),
-      ...(this.errorData && { errorData: this.errorData }),
+      message: this.message,
+      ...(this.name && this.name !== 'StringError' && { errorType: this.name }),
       ...(this.status && { status: this.status }),
+      ...(this.errorData && { errorData: this.errorData }),
       ...(this.context && Object.keys(this.context).length > 0 && { context: this.context }),
       timestamp: new Date(this.timestamp).toISOString()
     };
 
-    return JSON.stringify(errorDetails, null, 2);
+    // If we only have a message, return it directly
+    if (Object.keys(errorDetails).length <= 2) { // message + timestamp
+      console.log('[ErrorHandler] Returning simple message (no additional details):', this.message);
+      return this.message;
+    }
+
+    const formatted = JSON.stringify(errorDetails, null, 2);
+    console.log('[ErrorHandler] Returning formatted error details:', formatted);
+    return formatted;
   }
 }
 

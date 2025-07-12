@@ -333,6 +333,195 @@ var BaseProvider = (function() {
         }
     }
     
+    // Common OpenAI-compatible utilities (shared between OpenAI and Azure OpenAI)
+    const OpenAIUtils = {
+        // Build OpenAI-compatible messages array with image support
+        buildMessages(messages, systemPrompt, imageBase64, model, logger) {
+            const openaiMessages = [];
+
+            if (systemPrompt) {
+                openaiMessages.push({
+                    role: 'system',
+                    content: systemPrompt
+                });
+            }
+
+            for (const message of messages) {
+                if (
+                    message.role === 'user' &&
+                    imageBase64 &&
+                    message === messages[messages.length - 1]
+                ) {
+                    // Validate image data format
+                    if (!imageBase64.startsWith('data:image/')) {
+                        logger.error('Invalid image format - must be data URL');
+                        throw new Error('Invalid image format');
+                    }
+
+                    // Log image processing for debugging
+                    logger.info('Processing image with model', {
+                        model,
+                        imageSize: imageBase64.length,
+                        hasText: !!message.content
+                    });
+
+                    openaiMessages.push({
+                        role: 'user',
+                        content: [
+                            { type: 'text', text: message.content || 'Please analyze this image.' },
+                            {
+                                type: 'image_url',
+                                image_url: {
+                                    url: imageBase64,
+                                    detail: 'auto'
+                                }
+                            }
+                        ]
+                    });
+                } else {
+                    // Handle text-only messages
+                    openaiMessages.push({
+                        role: message.role,
+                        content: message.content
+                    });
+                }
+            }
+
+            // Log final message structure for debugging
+            logger.info('Built OpenAI-compatible messages', {
+                messageCount: openaiMessages.length,
+                hasImageContent: openaiMessages.some(msg => 
+                    Array.isArray(msg.content) && 
+                    msg.content.some(content => content.type === 'image_url')
+                )
+            });
+
+            return openaiMessages;
+        },
+
+        // Handle OpenAI-compatible streaming response
+        async handleStream(response, streamCallback, doneCallback, errorCallback, logger, providerName = 'OpenAI', abortController = null, url = null, tabId = null) {
+            const monitor = StreamUtils.createStreamMonitor();
+            let finishReason = null;
+            
+            logger.info('[Stream] Starting stream processing', { 
+                timestamp: monitor.startTime,
+                responseStatus: response.status,
+                contentType: response.headers.get('content-type')
+            });
+
+            try {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let buffer = '';
+                let fullResponse = '';
+
+                while (true) {
+                    // Check if request was aborted
+                    if (abortController && abortController.signal.aborted) {
+                        logger.info('[Stream] Request was aborted, stopping stream processing');
+                        throw new Error('Request was cancelled by user');
+                    }
+
+                    // Additional check for loading state cancellation (fallback safety)
+                    if (url && tabId && typeof loadingStateCache !== 'undefined') {
+                        try {
+                            const loadingState = await loadingStateCache.getLoadingState(url, tabId);
+                            if (loadingState && loadingState.status === 'cancelled') {
+                                logger.info('[Stream] Loading state is cancelled, stopping stream processing');
+                                throw new Error('Request was cancelled by user');
+                            }
+                        } catch (stateError) {
+                            // Don't fail the stream for state check errors, just log
+                            logger.warn('[Stream] Error checking loading state:', stateError.message);
+                        }
+                    }
+
+                    const { done, value } = await reader.read();
+
+                    if (done) {
+                        const stats = StreamUtils.getStreamStats(monitor, fullResponse);
+                        logger.info('[Stream] Stream completed normally', { ...stats, finishReason });
+                        break;
+                    }
+
+                    if (!value || value.length === 0) {
+                        StreamUtils.updateMonitor(monitor, 0);
+                        logger.warn('[Stream] Empty read from stream', {
+                            consecutiveEmptyReads: monitor.consecutiveEmptyReads,
+                            timeSinceLastChunk: Date.now() - monitor.lastChunkTime
+                        });
+
+                        if (StreamUtils.shouldAbortStream(monitor)) {
+                            logger.error('[Stream] Too many consecutive empty reads, aborting stream',
+                                StreamUtils.getStreamStats(monitor, fullResponse));
+                            throw new Error(`Stream interrupted: ${monitor.consecutiveEmptyReads} consecutive empty reads`);
+                        }
+                        continue;
+                    }
+
+                    StreamUtils.updateMonitor(monitor, value.length);
+                    const chunk = decoder.decode(value, { stream: true });
+                    buffer += chunk;
+
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6).trim();
+                            if (data === '[DONE]') {
+                                const stats = StreamUtils.getStreamStats(monitor, fullResponse);
+                                logger.info('[Stream] Received [DONE] signal', { ...stats, finishReason });
+                                doneCallback(fullResponse, finishReason);
+                                return;
+                            }
+
+                            try {
+                                const parsedData = JSON.parse(data);
+                                if (parsedData.choices?.[0]?.delta?.content) {
+                                    const textChunk = parsedData.choices[0].delta.content;
+                                    fullResponse += textChunk;
+                                    streamCallback(textChunk);
+                                } else if (parsedData.choices?.[0]?.finish_reason) {
+                                    finishReason = parsedData.choices[0].finish_reason;
+                                    logger.info('[Stream] Stream finished with reason', {
+                                        finishReason,
+                                        totalChunks: monitor.totalChunks,
+                                        finalResponseLength: fullResponse.length
+                                    });
+                                }
+                            } catch (parseError) {
+                                logger.error('[Stream] Error parsing stream data:', parseError.message);
+                            }
+                        }
+                    }
+                }
+                
+                // Handle case where stream ends without [DONE] signal
+                if (fullResponse.length > 0) {
+                    logger.warn('[Stream] Stream ended without [DONE] signal, processing accumulated response');
+                    doneCallback(fullResponse, finishReason);
+                } else {
+                    logger.error('[Stream] Stream ended with no content received');
+                    throw new Error('Stream ended without receiving any content');
+                }
+                
+            } catch (error) {
+                const stats = StreamUtils.getStreamStats(monitor, fullResponse);
+
+                // Check if this is a user cancellation - log as info instead of error
+                if (error.message === 'Request was cancelled by user') {
+                    logger.info('[Stream] Request cancelled by user:', { error: error.message, ...stats });
+                } else {
+                    logger.error(`[Stream] Error in ${providerName} stream processing:`, { error: error.message, ...stats });
+                }
+
+                errorCallback(error);
+            }
+        }
+    };
+
     // Export all utilities and classes
     return {
         EnhancedError,
@@ -340,6 +529,7 @@ var BaseProvider = (function() {
         StreamUtils,
         ApiUtils,
         ValidationUtils,
+        OpenAIUtils,
         Provider,
         logger: baseProviderLogger
     };

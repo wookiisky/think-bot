@@ -1211,6 +1211,10 @@ function setupMessageListeners() {
 
       const activeTabId = TabManager.getActiveTabId();
 
+      // Log raw error for debugging
+      console.log('[Conversations] Raw error received:', error);
+      console.log('[Conversations] Raw errorDetails received:', errorDetails);
+
       // Only process error content for current URL and active tab
       if (url === currentUrl && tabId === activeTabId) {
         // Mark stream as failed in monitor
@@ -1220,14 +1224,17 @@ function setupMessageListeners() {
           currentStreamId = null;
         }
         
-        // Handle JSON formatted error message
+        // Use the error message directly, no JSON parsing
         let processedError = error;
-        try {
-          const errorObj = JSON.parse(error);
-          processedError = errorObj;
-        } catch (parseError) {
-          processedError = error;
+        
+        // Ensure we always have a meaningful error message
+        if (!processedError || processedError.trim() === '' || processedError === '{}' || processedError === 'null' || processedError === 'undefined') {
+          processedError = 'LLM service error - no detailed information available';
         }
+        
+        console.log('[Conversations] Processing error message:', processedError);
+        console.log('[Conversations] Error message length:', processedError.length);
+        console.log('[Conversations] Error message first 200 chars:', processedError.substring(0, 200));
         
         ChatManager.handleLlmError(
           window.conversationsElements.chatContainer,
@@ -1244,7 +1251,8 @@ function setupMessageListeners() {
         
         logger.info(`LLM error processed for conversations page tab ${tabId}`);
       } else {
-
+        // For other tabs, just log and update loading state
+        logger.info(`LLM error received for non-active tab ${tabId}, current active: ${activeTabId}`);
       }
     },
     

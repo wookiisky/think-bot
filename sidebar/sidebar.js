@@ -262,6 +262,10 @@ function setupMessageListeners() {
         activeTabId: activeTabId,
         urlMatch: url === currentUrl
       });
+
+      // Log raw error for debugging
+      console.log('[Sidebar] Raw error received:', error);
+      console.log('[Sidebar] Raw errorDetails received:', errorDetails);
       
       // Always update tab loading state regardless of which tab is currently active
       if (url === currentUrl) {
@@ -282,16 +286,17 @@ function setupMessageListeners() {
           currentStreamId = null; // Clear current stream
         }
         
-        // Handle JSON formatted error message
+        // Use the error message directly, no JSON parsing
         let processedError = error;
-        try {
-          // Try to parse if it's JSON string
-          const errorObj = JSON.parse(error);
-          processedError = errorObj; // Use parsed object
-        } catch (parseError) {
-          // If not JSON, treat as string
-          processedError = error;
+        
+        // Ensure we always have a meaningful error message
+        if (!processedError || processedError.trim() === '' || processedError === '{}' || processedError === 'null' || processedError === 'undefined') {
+          processedError = 'LLM service error - no detailed information available';
         }
+        
+        console.log('[Sidebar] Processing error message:', processedError);
+        console.log('[Sidebar] Error message length:', processedError.length);
+        console.log('[Sidebar] Error message first 200 chars:', processedError.substring(0, 200));
         
         // Always handle error - let ChatManager.handleLlmError decide on duplicates
         // This ensures send button is always re-enabled
@@ -310,7 +315,8 @@ function setupMessageListeners() {
         
         logger.info(`LLM error processed for tab ${tabId}`);
       } else {
-
+        // For other tabs, just log and update loading state
+        logger.info(`LLM error received for non-active tab ${tabId}, current active: ${activeTabId}`);
       }
     },
     

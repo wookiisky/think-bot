@@ -95,6 +95,7 @@ export class ModelManager {
                       data-model-index="${index}">
                 <option value="openai" ${model.provider === 'openai' ? 'selected' : ''} data-i18n="options_model_provider_openai">OpenAI Compatible</option>
                 <option value="gemini" ${model.provider === 'gemini' ? 'selected' : ''} data-i18n="options_model_provider_gemini">Google Gemini</option>
+                <option value="azure_openai" ${model.provider === 'azure_openai' ? 'selected' : ''} data-i18n="optionsAzureOpenAIProvider">Azure OpenAI</option>
               </select>
             </div>
           </div>
@@ -157,6 +158,31 @@ export class ModelManager {
           <label data-i18n="options_model_model_label">Model</label>
           <input type="text" class="model-model" value="${model.model || 'gemini-pro'}"
                  data-model-index="${index}" data-field="model">
+        </div>
+      `;
+    } else if (model.provider === 'azure_openai') {
+      return `
+        <div class="form-group">
+          <label data-i18n="options_model_azure_endpoint_label">Endpoint</label>
+          <input type="text" class="model-azure-endpoint" value="${model.endpoint || ''}"
+                 data-model-index="${index}" data-field="endpoint"
+                 data-i18n-placeholder="options_model_azure_endpoint_placeholder" placeholder="https://your-resource.openai.azure.com">
+        </div>
+        <div class="form-group">
+          <label data-i18n="options_model_api_key_label">API Key</label>
+          <input type="password" class="model-api-key" value="${model.apiKey || ''}"
+                 data-model-index="${index}" data-field="apiKey">
+        </div>
+        <div class="form-group">
+          <label data-i18n="options_model_azure_deployment_name_label">Deployment Name</label>
+          <input type="text" class="model-azure-deployment-name" value="${model.deploymentName || ''}"
+                 data-model-index="${index}" data-field="deploymentName">
+        </div>
+        <div class="form-group">
+          <label data-i18n="options_model_azure_api_version_label">API Version</label>
+          <input type="text" class="model-azure-api-version" value="${model.apiVersion || '2025-01-01-preview'}"
+                 data-model-index="${index}" data-field="apiVersion"
+                 data-i18n-placeholder="options_model_azure_api_version_placeholder" placeholder="e.g., 2025-01-01-preview">
         </div>
       `;
     }
@@ -251,11 +277,26 @@ export class ModelManager {
   // Update a model field
   updateModelField(index, field, value) {
     if (this.models[index]) {
+      let originalValue = value;
+      
+      // Special handling for Azure OpenAI endpoint: extract domain from full URL
+      if (field === 'endpoint' && this.models[index].provider === 'azure_openai' && value) {
+        value = this.extractDomainFromUrl(value);
+      }
+      
       // Only update timestamp if the value actually changed
       const oldValue = this.models[index][field];
       if (oldValue !== value) {
         this.models[index][field] = value;
         this.models[index].lastModified = Date.now(); // Update timestamp for sync merging
+
+        // If the value was modified (e.g., URL domain extraction), update the input field display
+        if (originalValue !== value) {
+          const inputElement = document.querySelector(`[data-model-index="${index}"][data-field="${field}"]`);
+          if (inputElement) {
+            inputElement.value = value;
+          }
+        }
 
         if (field === 'name') {
           this.updateDefaultModelSelector();
@@ -265,6 +306,43 @@ export class ModelManager {
           this.changeCallback();
         }
       }
+    }
+  }
+
+  // Extract domain from URL for Azure OpenAI endpoint
+  extractDomainFromUrl(url) {
+    try {
+      // Remove any leading/trailing whitespace
+      url = url.trim();
+      
+      // If it's already just a domain (no path), return as is
+      if (!url.includes('/') || url.match(/^https?:\/\/[^\/]+$/)) {
+        return url;
+      }
+      
+      // Parse the URL to extract protocol and hostname
+      const urlObj = new URL(url);
+      const extractedDomain = `${urlObj.protocol}//${urlObj.hostname}`;
+      
+      // Log the domain extraction for user feedback
+      logger.info(`Azure OpenAI endpoint domain extracted: ${url} -> ${extractedDomain}`);
+      
+      return extractedDomain;
+    } catch (error) {
+      // If URL parsing fails, try to extract domain manually
+      logger.warn('Failed to parse URL, attempting manual extraction:', error);
+      
+      // Manual extraction for common cases
+      const match = url.match(/^(https?:\/\/[^\/]+)/);
+      if (match) {
+        const extractedDomain = match[1];
+        logger.info(`Azure OpenAI endpoint domain extracted (manual): ${url} -> ${extractedDomain}`);
+        return extractedDomain;
+      }
+      
+      // If all else fails, return the original value
+      logger.warn('Could not extract domain from URL, returning original value:', url);
+      return url;
     }
   }
 
@@ -282,6 +360,15 @@ export class ModelManager {
       } else if (provider === 'gemini') {
         this.models[index].baseUrl = this.models[index].baseUrl || 'https://generativelanguage.googleapis.com';
         this.models[index].model = this.models[index].model || 'gemini-pro';
+      } else if (provider === 'azure_openai') {
+        // For Azure, baseUrl and model are not used in the same way.
+        // We use endpoint and deploymentName instead.
+        // Clear out fields from other providers to avoid confusion.
+        delete this.models[index].baseUrl;
+        delete this.models[index].model;
+        this.models[index].endpoint = this.models[index].endpoint || '';
+        this.models[index].deploymentName = this.models[index].deploymentName || '';
+        this.models[index].apiVersion = this.models[index].apiVersion || '2025-01-01-preview';
       }
 
       this.models[index].maxTokens = this.models[index].maxTokens || 2048;
@@ -297,10 +384,16 @@ export class ModelManager {
 
   // Check if a model has all required fields filled
   isModelComplete(model) {
-    if (!model.name || !model.apiKey || !model.model || !model.baseUrl) {
+    if (!model.name || !model.apiKey) {
       return false;
     }
-    return true;
+    if (model.provider === 'openai' || model.provider === 'gemini') {
+      return !!(model.model && model.baseUrl);
+    }
+    if (model.provider === 'azure_openai') {
+      return !!(model.endpoint && model.deploymentName && model.apiVersion);
+    }
+    return false;
   }
   
   // Get all models that are enabled and have complete configurations
@@ -482,6 +575,7 @@ export class ModelManager {
   getValidDefaultModelOptions() {
     return this.getCompleteModels();
   }
+
 }
 
 // Note: Removed global window.modelManager to comply with CSP 

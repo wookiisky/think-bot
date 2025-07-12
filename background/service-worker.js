@@ -17,6 +17,7 @@ importScripts('../js/modules/sync/sync_config.js');
 importScripts('../js/modules/llm_provider/base_provider.js');
 importScripts('../js/modules/llm_provider/gemini_provider.js');
 importScripts('../js/modules/llm_provider/openai_provider.js');
+importScripts('../js/modules/llm_provider/azure_openai_provider.js');
 importScripts('../js/modules/llm_service.js');
 // importScripts('../js/modules/jina_ai_service.js'); // Removed as it does not exist
 

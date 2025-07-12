@@ -275,6 +275,30 @@
     "message": "Google Gemini",
     "description": "Google Gemini provider option in the model provider selection."
   },
+  "optionsAzureOpenAIProvider": {
+    "message": "Azure OpenAI",
+    "description": "Azure OpenAI provider option."
+  },
+  "options_model_azure_endpoint_label": {
+    "message": "Endpoint",
+    "description": "Label for Azure OpenAI endpoint."
+  },
+  "options_model_azure_endpoint_placeholder": {
+    "message": "https://your-resource.openai.azure.com",
+    "description": "Placeholder for Azure OpenAI endpoint."
+  },
+  "options_model_azure_deployment_name_label": {
+    "message": "Deployment Name",
+    "description": "Label for Azure OpenAI deployment name."
+  },
+  "options_model_azure_api_version_label": {
+    "message": "API Version",
+    "description": "Label for Azure OpenAI API version."
+  },
+  "options_model_azure_api_version_placeholder": {
+    "message": "e.g., 2025-01-01-preview",
+    "description": "Placeholder for Azure OpenAI API version input."
+  },
   "options_model_base_url_label": {
     "message": "Base URL",
     "description": "Label for the model base URL input."
@@ -334,11 +358,7 @@
   "options_quick_input_auto_trigger_title": {
     "message": "Auto-trigger when sidebar opens",
     "description": "Title for the auto-trigger toggle on a quick input."
-  },
-  "options_quick_input_storage_usage_tooltip": {
-    "message": "Storage usage percentage",
-    "description": "Tooltip for the storage usage status on a quick input."
-  },
+  },  
   "options_quick_input_remove_button_title": {
     "message": "Remove Quick Input",
     "description": "Title for the remove quick input button."
