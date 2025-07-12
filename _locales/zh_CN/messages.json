@@ -284,7 +284,7 @@
     "description": "Label for Azure OpenAI endpoint."
   },
   "options_model_azure_endpoint_placeholder": {
-    "message": "https://your-resource.openai.azure.com",
+    "message": "https://your-resource.openai.azure.com 或粘贴完整API URL自动填充所有字段",
     "description": "Placeholder for Azure OpenAI endpoint."
   },
   "options_model_azure_deployment_name_label": {

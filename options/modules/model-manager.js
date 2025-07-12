@@ -281,7 +281,16 @@ export class ModelManager {
       
       // Special handling for Azure OpenAI endpoint: extract domain from full URL
       if (field === 'endpoint' && this.models[index].provider === 'azure_openai' && value) {
-        value = this.extractDomainFromUrl(value);
+        // Check if this is a complete Azure OpenAI API URL and parse it
+        const parsedUrl = this.parseAzureOpenAIUrl(value);
+        if (parsedUrl) {
+          // Update all related fields from the parsed URL
+          this.updateMultipleAzureFields(index, parsedUrl);
+          return; // Exit early as we've handled all updates
+        } else {
+          // If not a complete URL, just extract domain
+          value = this.extractDomainFromUrl(value);
+        }
       }
       
       // Only update timestamp if the value actually changed
@@ -305,6 +314,88 @@ export class ModelManager {
         if (this.changeCallback) {
           this.changeCallback();
         }
+      }
+    }
+  }
+
+  // Parse complete Azure OpenAI API URL to extract endpoint, deployment name, and API version
+  parseAzureOpenAIUrl(url) {
+    try {
+      // Remove any leading/trailing whitespace and @ symbol
+      url = url.trim().replace(/^@/, '');
+      
+      // Check if this looks like a complete Azure OpenAI API URL
+      const azureOpenAIPattern = /^https:\/\/([^\/]+)\/openai\/deployments\/([^\/]+)\/chat\/completions\?api-version=([^&\s]+)/;
+      const match = url.match(azureOpenAIPattern);
+      
+      if (match) {
+        const [, hostname, deploymentName, apiVersion] = match;
+        const endpoint = `https://${hostname}`;
+        
+        logger.info(`Parsed Azure OpenAI URL: ${url}`);
+        logger.info(`  -> endpoint: ${endpoint}`);
+        logger.info(`  -> deploymentName: ${deploymentName}`);
+        logger.info(`  -> apiVersion: ${apiVersion}`);
+        
+        return {
+          endpoint,
+          deploymentName,
+          apiVersion
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      logger.warn('Failed to parse Azure OpenAI URL:', error);
+      return null;
+    }
+  }
+
+  // Update multiple Azure OpenAI fields from parsed URL
+  updateMultipleAzureFields(index, parsedData) {
+    if (!this.models[index]) return;
+    
+    const { endpoint, deploymentName, apiVersion } = parsedData;
+    let hasChanges = false;
+    
+    // Update endpoint
+    if (this.models[index].endpoint !== endpoint) {
+      this.models[index].endpoint = endpoint;
+      hasChanges = true;
+    }
+    
+    // Update deployment name
+    if (this.models[index].deploymentName !== deploymentName) {
+      this.models[index].deploymentName = deploymentName;
+      hasChanges = true;
+    }
+    
+    // Update API version
+    if (this.models[index].apiVersion !== apiVersion) {
+      this.models[index].apiVersion = apiVersion;
+      hasChanges = true;
+    }
+    
+    if (hasChanges) {
+      // Update timestamp for sync merging
+      this.models[index].lastModified = Date.now();
+      
+      // Update all input fields in the UI
+      const endpointInput = document.querySelector(`[data-model-index="${index}"][data-field="endpoint"]`);
+      const deploymentInput = document.querySelector(`[data-model-index="${index}"][data-field="deploymentName"]`);
+      const apiVersionInput = document.querySelector(`[data-model-index="${index}"][data-field="apiVersion"]`);
+      
+      if (endpointInput) endpointInput.value = endpoint;
+      if (deploymentInput) deploymentInput.value = deploymentName;
+      if (apiVersionInput) apiVersionInput.value = apiVersion;
+      
+      logger.info(`Updated multiple Azure OpenAI fields for model ${index}`);
+      logger.info(`  endpoint: ${endpoint}`);
+      logger.info(`  deploymentName: ${deploymentName}`);
+      logger.info(`  apiVersion: ${apiVersion}`);
+      
+      if (this.changeCallback) {
+        this.changeCallback();
       }
     }
   }
