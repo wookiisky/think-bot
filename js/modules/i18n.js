@@ -106,15 +106,18 @@ const i18n = {
     try {
       // First try to get from custom translations
       let message = this.translations[this.currentLanguage]?.[key];
+      let isFromCustomTranslations = !!message;
       
       // If not found in current language, try fallback language
       if (!message && this.currentLanguage !== this.fallbackLanguage) {
         message = this.translations[this.fallbackLanguage]?.[key];
+        isFromCustomTranslations = !!message;
       }
       
       // If still not found, try Chrome i18n API
       if (!message) {
         message = chrome.i18n.getMessage(key, substitutions);
+        isFromCustomTranslations = false;
       }
       
       // If still not found, return the key as fallback
@@ -123,11 +126,15 @@ const i18n = {
         return key;
       }
       
-      // Handle substitutions for custom translations
-      if (substitutions) {
+      // Handle substitutions for custom translations only
+      // Chrome i18n API handles substitutions automatically
+      if (isFromCustomTranslations && substitutions) {
         if (Array.isArray(substitutions)) {
           // Array format: ['value1', 'value2', ...]
           substitutions.forEach((sub, index) => {
+            // Handle Chrome i18n API format {0}, {1}, etc.
+            message = message.replace(`{${index}}`, sub);
+            // Also handle custom format $1, $2, etc. for backward compatibility
             message = message.replace(`$${index + 1}`, sub);
           });
         } else if (typeof substitutions === 'object') {
@@ -154,6 +161,8 @@ const i18n = {
         } else {
           // String format: 'value'
           message = message.replace('$1', substitutions);
+          // Also handle Chrome i18n API format {0} for single substitution
+          message = message.replace('{0}', substitutions);
         }
       }
       

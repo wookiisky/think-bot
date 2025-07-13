@@ -13,6 +13,7 @@ import * as ResizeHandler from './resize-handler.js';
 import * as ImageHandler from './image-handler.js';
 import { confirmationDialog } from '../../js/modules/ui/confirmation-dialog.js';
 import { createSidebarExportHandler } from './export-utils.js';
+import { i18n } from '../../js/modules/i18n.js';
 
 
 const logger = createLogger('EventHandler');
@@ -141,9 +142,9 @@ const setupEventListeners = (elements, modelSelector, onTabAction) => {
     // Show confirmation dialog near the clicked button
     confirmationDialog.show({
       target: elements.clearPageDataBtn,
-      message: 'Clear all page data? This action cannot be undone.',
-      confirmText: 'Clear',
-      cancelText: 'Cancel',
+      message: i18n.getMessage('confirmationDialog_clearMessage'),
+      confirmText: i18n.getMessage('common_clear'),
+      cancelText: i18n.getMessage('common_cancel'),
       type: 'danger',
       onConfirm: () => {
         logger.info('User confirmed clearing page data');

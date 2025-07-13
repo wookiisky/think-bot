@@ -27,18 +27,6 @@
     "message": "重置为默认值",
     "description": "Button text for resetting settings to default."
   },
-  "options_save_button": {
-    "message": "保存",
-    "description": "Button text for saving settings."
-  },
-  "options_cache_label": {
-    "message": "本地数据：",
-    "description": "Label for the cache display."
-  },
-  "options_clear_cache_button": {
-    "message": "清除",
-    "description": "Button text for clearing the cache."
-  },
   "options_confirm_clear_all_cache": {
     "message": "您确定要清除所有缓存吗？此操作无法撤销，并将删除所有本地存储的对话和提取的内容。",
     "description": "清除所有缓存的确认消息。"
@@ -153,7 +141,11 @@
   },
   "options_sync_status_not_configured": {
     "message": "未配置",
-    "description": "Default status for sync."
+    "description": "Status text when sync is not configured."
+  },
+  "options_js_sync_last_sync": {
+    "message": "上次同步: {0}",
+    "description": "Text showing the last sync time with date parameter."
   },
   "options_blacklist_settings_title": {
     "message": "黑名单设置",
@@ -162,14 +154,6 @@
   "options_blacklist_description": {
     "message": "黑名单网址，标签页自动发送前确认",
     "description": "Description for the blacklist settings."
-  },
-  "options_blacklist_add_button": {
-    "message": "添加",
-    "description": "Button text to add a blacklist pattern."
-  },
-  "options_blacklist_reset_button": {
-    "message": "重置",
-    "description": "Button text to reset the blacklist."
   },
   "options_blacklist_edit_pattern_title": {
     "message": "编辑模式",
@@ -206,10 +190,6 @@
   "options_quick_input_tabs_title": {
     "message": "标签页",
     "description": "Title for the quick input tabs section."
-  },
-  "options_add_quick_input_button": {
-    "message": "添加标签页",
-    "description": "Button text to add a quick input."
   },
   "options_language_models_title": {
     "message": "语言模型",
@@ -271,10 +251,6 @@
     "message": "温度",
     "description": "Label for the model temperature input."
   },
-  "options_model_remove_button_title": {
-    "message": "移除模型",
-    "description": "Title for the remove model button."
-  },
   "options_model_unnamed": {
     "message": "未命名模型",
     "description": "Default name for models without a name."
@@ -291,10 +267,6 @@
     "message": "侧边栏打开时自动发送",
     "description": "Title for the auto-trigger toggle on a quick input."
   },
-  "options_quick_input_remove_button_title": {
-    "message": "移除",
-    "description": "Title for the remove quick input button."
-  },
   "options_quick_input_default_name": {
     "message": "新标签页",
     "description": "Default name used when a quick input has no display text."
@@ -310,10 +282,6 @@
   "options_js_saved": {
     "message": "已保存！",
     "description": "Text displayed when saved successfully."
-  },
-  "options_js_save": {
-    "message": "保存",
-    "description": "Default text for the save button."
   },
   "options_js_error": {
     "message": "错误",
@@ -345,11 +313,7 @@
   },
   "options_js_sync_testing_connection": {
     "message": "正在测试连接...",
-    "description": "Status message for testing sync connection."
-  },
-  "options_js_syncing": {
-    "message": "同步中...",
-    "description": "Status message for syncing."
+    "description": "测试连接时的同步状态。"
   },
   "options_js_sync_save_config_error": {
     "message": "保存同步配置失败",
@@ -364,8 +328,8 @@
     "description": "Detailed error message for sync config not saved properly."
   },
   "options_js_sync_completed_successfully": {
-    "message": "同步成功完成",
-    "description": "Success message for sync."
+    "message": "同步完成",
+    "description": "同步完成时的成功消息。"
   },
   "options_js_sync_failed_after_test": {
     "message": "连接测试后同步失败",
@@ -390,10 +354,6 @@
   "options_js_sync_enable_auto_sync_failed": {
     "message": "启用自动同步失败",
     "description": "Error message when enabling auto-sync fails."
-  },
-  "options_js_sync_status_not_configured": {
-    "message": "未配置",
-    "description": "Sync status when not configured."
   },
   "options_js_sync_synced": {
     "message": "已同步！",
@@ -440,28 +400,24 @@
     "description": "Validation error for missing Gist ID."
   },
   "options_js_sync_status_ready": {
-    "message": "准备同步",
-    "description": "Sync status when ready."
+    "message": "就绪",
+    "description": "准备同步时的同步状态。"
   },
   "options_js_sync_status_uploading": {
-    "message": "正在上传数据...",
-    "description": "Sync status when uploading."
+    "message": "正在上传...",
+    "description": "上传数据时的同步状态。"
   },
   "options_js_sync_status_downloading": {
-    "message": "正在下载数据...",
-    "description": "Sync status when downloading."
-  },
-  "options_js_sync_status_syncing": {
-    "message": "正在同步数据...",
-    "description": "Sync status when syncing."
+    "message": "正在下载...",
+    "description": "下载数据时的同步状态。"
   },
   "options_js_sync_status_config_error": {
     "message": "配置错误",
-    "description": "Sync status for a configuration error."
+    "description": "配置错误时的同步状态。"
   },
   "options_js_sync_status_unknown": {
     "message": "未知状态",
-    "description": "Sync status when the status is unknown."
+    "description": "状态未知时的同步状态。"
   },
   "sidebar_title_extractWithJina": {
     "message": "使用 Jina AI 提取",
@@ -503,93 +459,21 @@
     "message": "已附上图片",
     "description": "Header text for the attached image preview."
   },
-  "sidebar_placeholder_ask": {
-    "message": "提问...",
-    "description": "Placeholder for the user input textarea."
-  },
-  "sidebar_title_sendMessage": {
-    "message": "发送消息",
-    "description": "Title for the send message button."
-  },
-  "sidebar_title_includePageContent": {
-    "message": "在提示中包含页面内容",
-    "description": "Title for the include page content button."
-  },
-  "sidebar_title_stopAndClear": {
-    "message": "停止生成并清除对话",
-    "description": "Title for the stop and clear button."
-  },
-  "sidebar_title_exportConversation": {
-    "message": "导出对话",
-    "description": "Title for the export conversation button."
-  },
   "sidebar_js_blacklistConfirm": {
     "message": "此页面在您的黑名单中。是否继续？",
     "description": "Confirmation message for blacklisted pages."
   },
-  "sidebar_js_responseStoppedByUser": {
+  "common_response_stopped_by_user": {
     "message": "用户已停止生成响应。",
-    "description": "Message indicating the user stopped the response."
+    "description": "通用的用户停止响应消息。"
   },
   "sidebar_chatMessage_placeholder_edit": {
-    "message": "编辑您的消息... (ESC 取消, Ctrl+Enter 保存)",
-    "description": "Placeholder for the message edit textarea."
+    "message": "编辑您的消息...",
+    "description": "编辑消息的占位符。"
   },
   "sidebar_chatMessage_title_edit": {
-    "message": "在外部单击时自动保存。ESC 取消, Ctrl+Enter 保存。",
-    "description": "Title for the message edit textarea."
-  },
-  "sidebar_confirmationOverlay_title": {
-    "message": "确认",
-    "description": "Title for the confirmation overlay."
-  },
-  "sidebar_confirmationOverlay_areYouSure": {
-    "message": "您确定要继续吗？",
-    "description": "Default message for the confirmation overlay."
-  },
-  "sidebar_confirmationOverlay_cancel": {
-    "message": "取消",
-    "description": "Cancel button text for the confirmation overlay."
-  },
-  "sidebar_confirmationOverlay_confirm": {
-    "message": "确认",
-    "description": "Confirm button text for the confirmation overlay."
-  },
-  "confirmationDialog_areYouSure": {
-    "message": "您确定吗？",
-    "description": "Default confirmation message."
-  },
-  "confirmationDialog_cancel": {
-    "message": "取消",
-    "description": "Cancel button text for the confirmation dialog."
-  },
-  "confirmationDialog_confirm": {
-    "message": "确认",
-    "description": "Confirm button text for the confirmation dialog."
-  },
-  "confirmationDialog_deleteMessage": {
-    "message": "您确定要删除此项吗？",
-    "description": "Default delete confirmation message."
-  },
-  "confirmationDialog_deleteButton": {
-    "message": "删除",
-    "description": "Delete button text for the confirmation dialog."
-  },
-  "confirmationDialog_resetMessage": {
-    "message": "您确定要重置为默认设置吗？",
-    "description": "Default reset confirmation message."
-  },
-  "confirmationDialog_resetButton": {
-    "message": "重置",
-    "description": "Reset button text for the confirmation dialog."
-  },
-  "confirmationDialog_clearMessage": {
-    "message": "您确定要清除所有数据吗？",
-    "description": "Default clear confirmation message."
-  },
-  "confirmationDialog_clearButton": {
-    "message": "清除",
-    "description": "Clear button text for the confirmation dialog."
+    "message": "按 Ctrl+Enter 保存或 Escape 取消",
+    "description": "编辑消息的标题/工具提示。"
   },
   "sidebar_chatManager_title_stopGenerating": {
     "message": "停止生成响应",
@@ -603,21 +487,9 @@
     "message": "复制文本",
     "description": "Title for the copy text button."
   },
-  "sidebar_chatManager_title_copyMarkdown": {
-    "message": "复制 Markdown",
-    "description": "Title for the copy markdown button."
-  },
-  "sidebar_chatManager_title_retry": {
-    "message": "重试",
-    "description": "Title for the retry button."
-  },
   "sidebar_chatManager_title_scrollToTop": {
     "message": "滚动到顶部",
     "description": "Title for the scroll to top button."
-  },
-  "sidebar_chatManager_title_copyAsMarkdown": {
-    "message": "复制 Markdown",
-    "description": "Title for the copy as markdown button."
   },
   "sidebar_chatManager_title_scrollToBottom": {
     "message": "滚动到底部",
@@ -751,11 +623,7 @@
     "message": "未提取任何内容",
     "description": "Error message when no content is extracted."
   },
-  "sidebar_tabManager_text_chat": {
-    "message": "聊天",
-    "description": "Text for the default chat tab."
-  },
-  "sidebar_tabManager_text_retryingMessage": {
+  "sidebar_tabManager_retryingMessage": {
     "message": "正在重试消息...",
     "description": "Text displayed when retrying a message."
   },
@@ -791,10 +659,6 @@
     "message": "加载页面对话失败",
     "description": "Error message when a page conversation fails to load."
   },
-  "conversations_js_response_stopped": {
-    "message": "用户已停止生成响应。",
-    "description": "Message indicating the user stopped the response generation."
-  },
   "export_default_title": {
     "message": "对话",
     "description": "Default title for an exported conversation file."
@@ -802,10 +666,6 @@
   "export_untitled_page": {
     "message": "无标题",
     "description": "Default title for a page without a title."
-  },
-  "export_default_tab_name": {
-    "message": "聊天",
-    "description": "Default tab name for an exported conversation."
   },
   "export_unknown_role": {
     "message": "未知",
@@ -863,34 +723,6 @@
     "message": "加载内容失败。",
     "description": "Error message when content loading fails."
   },
-  "global_ask_placeholder": {
-    "message": "提问...",
-    "description": "Placeholder for the user input textarea."
-  },
-  "global_send_message_title": {
-    "message": "发送消息",
-    "description": "Title for the send message button."
-  },
-  "global_include_page_content_title": {
-    "message": "在提示中包含页面内容",
-    "description": "Title for the include page content button."
-  },
-  "global_stop_and_clear_title": {
-    "message": "停止生成并清除对话",
-    "description": "Title for the stop and clear button."
-  },
-  "global_export_conversation_title": {
-    "message": "导出对话",
-    "description": "Title for the export conversation button."
-  },
-  "global_delete_button": {
-    "message": "删除",
-    "description": "Text for the delete button."
-  },
-  "global_cancel_button": {
-    "message": "取消",
-    "description": "Text for the cancel button."
-  },
   "options_ui_config_import_confirm_title": {
     "message": "确认配置导入",
     "description": "Title for the configuration import confirmation dialog."
@@ -934,14 +766,6 @@
   "options_blacklist_edit_dialog_title": {
     "message": "编辑黑名单模式",
     "description": "Title for the edit blacklist pattern dialog."
-  },
-  "options_blacklist_update_button": {
-    "message": "更新",
-    "description": "Button text to update a blacklist pattern."
-  },
-  "options_blacklist_cancel_button": {
-    "message": "取消",
-    "description": "Button text to cancel pattern dialog."
   },
   "options_blacklist_no_patterns": {
     "message": "未配置黑名单模式。点击\"添加模式\"创建一个。",
@@ -991,22 +815,6 @@
     "message": "重置黑名单为默认失败",
     "description": "Error message when reset to default fails."
   },
-  "common_delete": {
-    "message": "删除",
-    "description": "Common delete button text."
-  },
-  "common_cancel": {
-    "message": "取消",
-    "description": "Common cancel button text."
-  },
-  "common_clear": {
-    "message": "清除",
-    "description": "Common clear button text."
-  },
-  "common_reset": {
-    "message": "重置",
-    "description": "Common reset button text."
-  },
   "options_ui_config_reset_confirm": {
     "message": "您确定要将所有设置重置为默认值吗？此操作无法撤消。",
     "description": "Confirmation message for resetting configuration to defaults."
@@ -1026,5 +834,145 @@
   "options_ui_config_import_save_error": {
     "message": "保存导入的配置失败。请重试。",
     "description": "Error message when saving imported configuration fails."
+  },
+  "common_save": {
+    "message": "保存",
+    "description": "通用保存按钮文本。"
+  },
+  "common_delete": {
+    "message": "删除",
+    "description": "通用删除按钮文本。"
+  },
+  "common_cancel": {
+    "message": "取消",
+    "description": "通用取消按钮文本。"
+  },
+  "common_confirm": {
+    "message": "确认",
+    "description": "通用确认按钮文本。"
+  },
+  "common_clear": {
+    "message": "清除",
+    "description": "通用清除按钮文本。"
+  },
+  "common_reset": {
+    "message": "重置",
+    "description": "通用重置按钮文本。"
+  },
+  "common_add": {
+    "message": "添加",
+    "description": "通用添加按钮文本。"
+  },
+  "common_update": {
+    "message": "更新",
+    "description": "通用更新按钮文本。"
+  },
+  "common_retry": {
+    "message": "重试",
+    "description": "通用重试按钮文本。"
+  },
+  "common_remove": {
+    "message": "移除",
+    "description": "通用移除按钮文本。"
+  },
+  "common_ask_placeholder": {
+    "message": "提问...",
+    "description": "通用提问占位符文本。"
+  },
+  "common_send_message": {
+    "message": "发送消息",
+    "description": "通用发送消息按钮标题。"
+  },
+  "common_include_page_content": {
+    "message": "将页面内容插入到system prompt中",
+    "description": "通用包含页面内容按钮标题。"
+  },
+  "common_stop_and_clear": {
+    "message": "停止生成并清除对话",
+    "description": "通用停止并清除按钮标题。"
+  },
+  "common_export_conversation": {
+    "message": "导出对话",
+    "description": "通用导出对话按钮标题。"
+  },
+  "common_copy_markdown": {
+    "message": "复制 Markdown",
+    "description": "通用复制Markdown按钮标题。"
+  },
+  "common_chat": {
+    "message": "聊天",
+    "description": "通用聊天文本。"
+  },
+  "common_syncing": {
+    "message": "同步中...",
+    "description": "通用同步状态文本。"
+  },
+  "common_confirm_are_you_sure": {
+    "message": "您确定吗？",
+    "description": "通用确认对话框消息。"
+  },
+  "common_confirm_delete_message": {
+    "message": "您确定要删除此项吗？",
+    "description": "通用删除确认消息。"
+  },
+  "common_confirm_reset_message": {
+    "message": "您确定要重置为默认设置吗？",
+    "description": "通用重置确认消息。"
+  },
+  "common_confirm_clear_message": {
+    "message": "您确定要清除所有数据吗？",
+    "description": "通用清除确认消息。"
+  },
+  "common_confirmation_title": {
+    "message": "确认",
+    "description": "通用确认对话框标题。"
+  },
+  "common_cache_label": {
+    "message": "本地数据：",
+    "description": "通用缓存标签。"
+  },
+  "common_options_js_save": {
+    "message": "保存",
+    "description": "通用保存按钮默认文本。"
+  },
+  "options_cache_label": {
+    "message": "本地数据：",
+    "description": "Label for the cache display."
+  },
+  "options_clear_cache_button": {
+    "message": "清除",
+    "description": "Button text for clearing the cache."
+  },
+  "options_blacklist_add_button": {
+    "message": "添加",
+    "description": "Button text to add a blacklist pattern."
+  },
+  "options_blacklist_reset_button": {
+    "message": "重置",
+    "description": "Button text to reset the blacklist."
+  },
+  "options_add_quick_input_button": {
+    "message": "添加快速输入",
+    "description": "Button text to add a quick input."
+  },
+  "sidebar_title_stopAndClear": {
+    "message": "停止生成并清除对话",
+    "description": "Title for the stop and clear button."
+  },
+  "confirmationDialog_deleteMessage": {
+    "message": "您确定要删除此项吗？",
+    "description": "Default delete confirmation message."
+  },
+  "confirmationDialog_resetMessage": {
+    "message": "您确定要重置为默认设置吗？",
+    "description": "Default reset confirmation message."
+  },
+  "confirmationDialog_clearMessage": {
+    "message": "您确定要清除所有数据吗？",
+    "description": "Default clear confirmation message."
+  },
+  "sidebar_chatManager_title_copyAsMarkdown": {
+    "message": "复制为 Markdown",
+    "description": "Title for the copy as markdown button."
   }
 }

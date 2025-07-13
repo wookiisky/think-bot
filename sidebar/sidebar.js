@@ -437,7 +437,7 @@ function handleLoadingStateUpdate(message) {
         if (streamingMessage) {
           const contentDiv = streamingMessage.querySelector('.message-content');
           if (contentDiv) {
-            contentDiv.innerHTML = `<span style="color: var(--text-color); font-style: italic;">${i18n.getMessage('sidebar_js_responseStoppedByUser')}</span>`;
+            contentDiv.innerHTML = `<span style="color: var(--text-color); font-style: italic;">${i18n.getMessage('common_response_stopped_by_user')}</span>`;
           }
           streamingMessage.removeAttribute('data-streaming');
         }

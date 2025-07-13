@@ -234,10 +234,12 @@ export class QuickInputsManager {
           
           confirmationDialog.confirmDelete({
             target: removeBtn,
-            message: i18n.getMessage('options_quick_input_remove_confirm_with_name', [displayText]),
-            confirmText: i18n.getMessage('confirmationDialog_deleteButton'),
-            cancelText: i18n.getMessage('confirmationDialog_cancel'),
+            message: i18n.getMessage('common_confirm_delete_message') || 
+                     'Are you sure you want to delete this item?',
+            confirmText: i18n.getMessage('common_delete'),
+            cancelText: i18n.getMessage('common_cancel'),
             onConfirm: () => {
+              console.log(`Removing quick input: ${displayText}`);
               this.removeQuickInput(item);
               if (this.changeCallback) {
                 this.changeCallback();

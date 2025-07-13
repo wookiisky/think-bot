@@ -55,7 +55,7 @@ const initTabManager = (container, chatContainer, onTabClick) => {
   // Initialize with default chat tab
   tabs = [{
     id: 'chat',
-    displayText: i18n.getMessage('sidebar_tabManager_text_chat'),
+    displayText: i18n.getMessage('common_chat'),
     isDefault: true,
     isActive: true,
     hasInitialized: true,
@@ -88,7 +88,7 @@ const loadTabs = async (container, chatContainer, onTabClick) => {
     // Create tabs array starting with default chat tab
     tabs = [{
       id: 'chat',
-      displayText: i18n.getMessage('sidebar_tabManager_text_chat'),
+      displayText: i18n.getMessage('common_chat'),
       isDefault: true,
       isActive: true,
       hasInitialized: true,
@@ -730,7 +730,7 @@ const checkAndRestoreLoadingState = async (currentUrl, tabId, chatContainer) => 
           
           // Add context if this was a retry operation
           if (loadingState.isRetry) {
-            loadingMessage += `<div class="loading-context">${i18n.getMessage('sidebar_tabManager_text_retryingMessage')}</div>`;
+            loadingMessage += `<div class="loading-context">${i18n.getMessage('sidebar_tabManager_retryingMessage')}</div>`;
           } else if (loadingState.lastMessageContent) {
             const shortContent = loadingState.lastMessageContent.length > 50
               ? loadingState.lastMessageContent.substring(0, 50) + '...'

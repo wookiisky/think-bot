@@ -27,10 +27,6 @@
     "message": "Reset to Defaults",
     "description": "Button text for resetting settings to default."
   },
-  "options_save_button": {
-    "message": "Save",
-    "description": "Button text for saving settings."
-  },
   "options_cache_label": {
     "message": "Local Data:",
     "description": "Label for the cache display."
@@ -153,7 +149,11 @@
   },
   "options_sync_status_not_configured": {
     "message": "Not configured",
-    "description": "Default status for sync."
+    "description": "Status text when sync is not configured."
+  },
+  "options_js_sync_last_sync": {
+    "message": "Last sync: {0}",
+    "description": "Text showing the last sync time with date parameter."
   },
   "options_blacklist_settings_title": {
     "message": "Blacklist Settings",
@@ -271,10 +271,6 @@
     "message": "Temperature",
     "description": "Label for the model temperature input."
   },
-  "options_model_remove_button_title": {
-    "message": "Remove Model",
-    "description": "Title for the remove model button."
-  },
   "options_model_unnamed": {
     "message": "Unnamed Model",
     "description": "Default name for models without a name."
@@ -291,10 +287,6 @@
     "message": "Auto-trigger when sidebar opens",
     "description": "Title for the auto-trigger toggle on a quick input."
   },
-  "options_quick_input_remove_button_title": {
-    "message": "Remove Quick Input",
-    "description": "Title for the remove quick input button."
-  },
   "options_quick_input_default_name": {
     "message": "quick input",
     "description": "Default name used when a quick input has no display text."
@@ -310,10 +302,6 @@
   "options_js_saved": {
     "message": "Saved!",
     "description": "Text displayed when saved successfully."
-  },
-  "options_js_save": {
-    "message": "Save",
-    "description": "Default text for the save button."
   },
   "options_js_error": {
     "message": "Error",
@@ -345,11 +333,7 @@
   },
   "options_js_sync_testing_connection": {
     "message": "Testing connection...",
-    "description": "Status message for testing sync connection."
-  },
-  "options_js_syncing": {
-    "message": "Syncing...",
-    "description": "Status message for syncing."
+    "description": "Sync status when testing connection."
   },
   "options_js_sync_save_config_error": {
     "message": "Failed to save sync configuration",
@@ -365,7 +349,7 @@
   },
   "options_js_sync_completed_successfully": {
     "message": "Sync completed successfully",
-    "description": "Success message for sync."
+    "description": "Success message when sync completes."
   },
   "options_js_sync_failed_after_test": {
     "message": "Sync failed after connection test",
@@ -390,10 +374,6 @@
   "options_js_sync_enable_auto_sync_failed": {
     "message": "Failed to enable auto sync",
     "description": "Error message when enabling auto-sync fails."
-  },
-  "options_js_sync_status_not_configured": {
-    "message": "Not configured",
-    "description": "Sync status when not configured."
   },
   "options_js_sync_synced": {
     "message": "Synced!",
@@ -440,28 +420,24 @@
     "description": "Validation error for missing Gist ID."
   },
   "options_js_sync_status_ready": {
-    "message": "Ready to sync",
-    "description": "Sync status when ready."
+    "message": "Ready",
+    "description": "Sync status when ready to sync."
   },
   "options_js_sync_status_uploading": {
-    "message": "Uploading data...",
-    "description": "Sync status when uploading."
+    "message": "Uploading...",
+    "description": "Sync status when uploading data."
   },
   "options_js_sync_status_downloading": {
-    "message": "Downloading data...",
-    "description": "Sync status when downloading."
-  },
-  "options_js_sync_status_syncing": {
-    "message": "Syncing data...",
-    "description": "Sync status when syncing."
+    "message": "Downloading...",
+    "description": "Sync status when downloading data."
   },
   "options_js_sync_status_config_error": {
     "message": "Configuration error",
-    "description": "Sync status for a configuration error."
+    "description": "Sync status when there's a configuration error."
   },
   "options_js_sync_status_unknown": {
     "message": "Unknown status",
-    "description": "Sync status when the status is unknown."
+    "description": "Sync status when status is unknown."
   },
   "sidebar_title_extractWithJina": {
     "message": "Extract with Jina AI",
@@ -503,93 +479,37 @@
     "message": "Image attached",
     "description": "Header text for the attached image preview."
   },
-  "sidebar_placeholder_ask": {
-    "message": "Ask ...",
-    "description": "Placeholder for the user input textarea."
-  },
-  "sidebar_title_sendMessage": {
-    "message": "Send message",
-    "description": "Title for the send message button."
-  },
-  "sidebar_title_includePageContent": {
-    "message": "Include page content in prompt",
-    "description": "Title for the include page content button."
-  },
   "sidebar_title_stopAndClear": {
     "message": "Stop generating and clear conversation",
     "description": "Title for the stop and clear button."
-  },
-  "sidebar_title_exportConversation": {
-    "message": "Export conversation",
-    "description": "Title for the export conversation button."
   },
   "sidebar_js_blacklistConfirm": {
     "message": "This page is in your blacklist. Do you want to continue using Think Bot?",
     "description": "Confirmation message for blacklisted pages."
   },
-  "sidebar_js_responseStoppedByUser": {
-    "message": "Response generation stopped by user.",
-    "description": "Message indicating the user stopped the response."
-  },
   "sidebar_chatMessage_placeholder_edit": {
-    "message": "Edit your message... (ESC to cancel, Ctrl+Enter to save)",
-    "description": "Placeholder for the message edit textarea."
+    "message": "Edit your message...",
+    "description": "Placeholder for editing a message."
   },
   "sidebar_chatMessage_title_edit": {
-    "message": "Auto-saves when you click outside. ESC to cancel, Ctrl+Enter to save.",
-    "description": "Title for the message edit textarea."
-  },
-  "sidebar_confirmationOverlay_title": {
-    "message": "Confirmation",
-    "description": "Title for the confirmation overlay."
-  },
-  "sidebar_confirmationOverlay_areYouSure": {
-    "message": "Are you sure you want to proceed?",
-    "description": "Default message for the confirmation overlay."
-  },
-  "sidebar_confirmationOverlay_cancel": {
-    "message": "Cancel",
-    "description": "Cancel button text for the confirmation overlay."
-  },
-  "sidebar_confirmationOverlay_confirm": {
-    "message": "Confirm",
-    "description": "Confirm button text for the confirmation overlay."
-  },
-  "confirmationDialog_areYouSure": {
-    "message": "Are you sure?",
-    "description": "Default confirmation message."
-  },
-  "confirmationDialog_cancel": {
-    "message": "Cancel",
-    "description": "Cancel button text for the confirmation dialog."
-  },
-  "confirmationDialog_confirm": {
-    "message": "Confirm",
-    "description": "Confirm button text for the confirmation dialog."
+    "message": "Press Ctrl+Enter to save or Escape to cancel",
+    "description": "Title/tooltip for editing a message."
   },
   "confirmationDialog_deleteMessage": {
     "message": "Are you sure you want to delete this item?",
     "description": "Default delete confirmation message."
   },
-  "confirmationDialog_deleteButton": {
-    "message": "Delete",
-    "description": "Delete button text for the confirmation dialog."
-  },
   "confirmationDialog_resetMessage": {
     "message": "Are you sure you want to reset to defaults?",
     "description": "Default reset confirmation message."
-  },
-  "confirmationDialog_resetButton": {
-    "message": "Reset",
-    "description": "Reset button text for the confirmation dialog."
   },
   "confirmationDialog_clearMessage": {
     "message": "Are you sure you want to clear all data?",
     "description": "Default clear confirmation message."
   },
-  "confirmationDialog_clearButton": {
-    "message": "Clear",
-    "description": "Clear button text for the confirmation dialog."
+  "common_confirm_delete_message": {
+    "message": "Are you sure you want to delete this item?",
+    "description": "Common delete confirmation message."
   },
   "sidebar_chatManager_title_stopGenerating": {
     "message": "Stop generating response",
@@ -602,14 +522,6 @@
   "sidebar_chatManager_title_copyText": {
     "message": "Copy Text",
     "description": "Title for the copy text button."
-  },
-  "sidebar_chatManager_title_copyMarkdown": {
-    "message": "Copy Markdown",
-    "description": "Title for the copy markdown button."
-  },
-  "sidebar_chatManager_title_retry": {
-    "message": "Retry",
-    "description": "Title for the retry button."
   },
   "sidebar_chatManager_title_scrollToTop": {
     "message": "Scroll to Top",
@@ -751,14 +663,6 @@
     "message": "No content extracted",
     "description": "Error message when no content is extracted."
   },
-  "sidebar_tabManager_text_chat": {
-    "message": "Chat",
-    "description": "Text for the default chat tab."
-  },
-  "sidebar_tabManager_text_retryingMessage": {
-    "message": "Retrying message...",
-    "description": "Text displayed when retrying a message."
-  },
   "conversations_page_title": {
     "message": "Think Bot - Conversations",
     "description": "The title of the conversations page."
@@ -791,10 +695,6 @@
     "message": "Failed to load page conversation",
     "description": "Error message when a page conversation fails to load."
   },
-  "conversations_js_response_stopped": {
-    "message": "Response generation stopped by user.",
-    "description": "Message indicating the user stopped the response generation."
-  },
   "export_default_title": {
     "message": "Conversation",
     "description": "Default title for an exported conversation file."
@@ -802,10 +702,6 @@
   "export_untitled_page": {
     "message": "Untitled",
     "description": "Default title for a page without a title."
-  },
-  "export_default_tab_name": {
-    "message": "chat",
-    "description": "Default tab name for an exported conversation."
   },
   "export_unknown_role": {
     "message": "Unknown",
@@ -863,34 +759,6 @@
     "message": "Failed to load content.",
     "description": "Error message when content loading fails."
   },
-  "global_ask_placeholder": {
-    "message": "Ask ...",
-    "description": "Placeholder for the user input textarea."
-  },
-  "global_send_message_title": {
-    "message": "Send message",
-    "description": "Title for the send message button."
-  },
-  "global_include_page_content_title": {
-    "message": "Include page content in prompt",
-    "description": "Title for the include page content button."
-  },
-  "global_stop_and_clear_title": {
-    "message": "Stop generating and clear conversation",
-    "description": "Title for the stop and clear button."
-  },
-  "global_export_conversation_title": {
-    "message": "Export conversation",
-    "description": "Title for the export conversation button."
-  },
-  "global_delete_button": {
-    "message": "Delete",
-    "description": "Text for the delete button."
-  },
-  "global_cancel_button": {
-    "message": "Cancel",
-    "description": "Text for the cancel button."
-  },
   "options_ui_config_import_confirm_title": {
     "message": "Confirm Configuration Import",
     "description": "Title for the configuration import confirmation dialog."
@@ -934,14 +802,6 @@
   "options_blacklist_edit_dialog_title": {
     "message": "Edit Blacklist Pattern",
     "description": "Title for the edit blacklist pattern dialog."
-  },
-  "options_blacklist_update_button": {
-    "message": "Update",
-    "description": "Button text to update a blacklist pattern."
-  },
-  "options_blacklist_cancel_button": {
-    "message": "Cancel",
-    "description": "Button text to cancel pattern dialog."
   },
   "options_blacklist_no_patterns": {
     "message": "No blacklist patterns configured. Click \"Add Pattern\" to create one.",
@@ -999,6 +859,10 @@
     "message": "Cancel",
     "description": "Common cancel button text."
   },
+  "common_confirm": {
+    "message": "Confirm",
+    "description": "Common confirm button text."
+  },
   "common_clear": {
     "message": "Clear",
     "description": "Common clear button text."
@@ -1026,5 +890,89 @@
   "options_ui_config_import_save_error": {
     "message": "Failed to save imported configuration. Please try again.",
     "description": "Error message when saving imported configuration fails."
+  },
+  "common_save": {
+    "message": "Save",
+    "description": "Common save button text."
+  },
+  "common_remove": {
+    "message": "Remove",
+    "description": "Common remove button text."
+  },
+  "common_confirm_are_you_sure": {
+    "message": "Are you sure?",
+    "description": "Common confirmation dialog message."
+  },
+  "common_confirmation_title": {
+    "message": "Confirmation",
+    "description": "Common confirmation dialog title."
+  },
+  "common_syncing": {
+    "message": "Syncing...",
+    "description": "Common sync status message."
+  },
+  "common_response_stopped_by_user": {
+    "message": "Response generation stopped by user.",
+    "description": "Generic message when user stops response generation."
+  },
+  "sidebar_tabManager_retryingMessage": {
+    "message": "Retrying message...",
+    "description": "Text displayed when retrying a message."
+  },
+  "common_add": {
+    "message": "Add",
+    "description": "Common add button text."
+  },
+  "common_update": {
+    "message": "Update",
+    "description": "Common update button text."
+  },
+  "common_retry": {
+    "message": "Retry",
+    "description": "Common retry button text."
+  },
+  "common_ask_placeholder": {
+    "message": "Ask...",
+    "description": "Common ask placeholder text."
+  },
+  "common_send_message": {
+    "message": "Send Message",
+    "description": "Common send message button title."
+  },
+  "common_include_page_content": {
+    "message": "Include page content in system prompt",
+    "description": "Common include page content button title."
+  },
+  "common_stop_and_clear": {
+    "message": "Stop generating and clear conversation",
+    "description": "Common stop and clear button title."
+  },
+  "common_export_conversation": {
+    "message": "Export Conversation",
+    "description": "Common export conversation button title."
+  },
+  "common_copy_markdown": {
+    "message": "Copy Markdown",
+    "description": "Common copy markdown button title."
+  },
+  "common_chat": {
+    "message": "Chat",
+    "description": "Common chat text."
+  },
+  "common_confirm_reset_message": {
+    "message": "Are you sure you want to reset to defaults?",
+    "description": "Common reset confirmation message."
+  },
+  "common_confirm_clear_message": {
+    "message": "Are you sure you want to clear all data?",
+    "description": "Common clear confirmation message."
+  },
+  "common_cache_label": {
+    "message": "Local Data:",
+    "description": "Common cache label."
+  },
+  "common_options_js_save": {
+    "message": "Save",
+    "description": "Common save button default text."
   }
 }

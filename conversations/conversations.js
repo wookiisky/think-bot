@@ -1315,7 +1315,7 @@ function setupMessageListeners() {
           if (streamingMessage) {
             const contentDiv = streamingMessage.querySelector('.message-content');
             if (contentDiv) {
-              contentDiv.innerHTML = `<span style="color: var(--text-color); font-style: italic;">${i18n.getMessage('conversations_js_response_stopped')}</span>`;
+              contentDiv.innerHTML = `<span style="color: var(--text-color); font-style: italic;">${i18n.getMessage('common_response_stopped_by_user')}</span>`;
             }
             streamingMessage.removeAttribute('data-streaming');
           }

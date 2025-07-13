@@ -82,7 +82,7 @@ export class ModelManager {
             <span class="slider round"></span>
           </label>
           <button type="button" class="remove-model-btn icon-btn danger"
-                  data-model-index="${index}" data-i18n-title="options_model_remove_button_title" title="Remove Model">
+                  data-model-index="${index}" data-i18n-title="common_remove" title="Remove Model">
             <i class="material-icons">delete</i>
           </button>
         </div>
@@ -248,15 +248,15 @@ export class ModelManager {
 
     confirmationDialog.confirmDelete({
       target: deleteBtn,
-      message: i18n.getMessage('options_model_remove_confirm_with_name', [modelName]) || 
-               `Are you sure you want to delete "${modelName}"?`,
+      message: i18n.getMessage('common_confirm_delete_message') || 
+               'Are you sure you want to delete this item?',
       confirmText: i18n.getMessage('common_delete') || 'Delete',
       cancelText: i18n.getMessage('common_cancel') || 'Cancel',
       onConfirm: () => {
         this.models.splice(index, 1);
         this.renderModels();
         this.updateDefaultModelSelector();
-        logger.info(`Removed model at index ${index}`);
+        logger.info(`Removed model "${modelName}" at index ${index}`);
         if (this.changeCallback) {
           this.changeCallback();
         }

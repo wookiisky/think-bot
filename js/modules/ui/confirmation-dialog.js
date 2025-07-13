@@ -59,10 +59,10 @@ class ConfirmationDialog {
     this.confirmationElement.className = 'confirmation-dialog';
     this.confirmationElement.innerHTML = `
       <div class="confirmation-dialog-content">
-        <div class="confirmation-dialog-message" data-i18n="confirmationDialog_areYouSure">Are you sure?</div>
+        <div class="confirmation-dialog-message" data-i18n="common_confirm_are_you_sure">Are you sure?</div>
         <div class="confirmation-dialog-actions">
-          <button class="confirmation-btn confirmation-btn-cancel" type="button" data-i18n="confirmationDialog_cancel">Cancel</button>
-          <button class="confirmation-btn confirmation-btn-confirm" type="button" data-i18n="confirmationDialog_confirm">Confirm</button>
+          <button class="confirmation-btn confirmation-btn-cancel" type="button" data-i18n="common_cancel">Cancel</button>
+          <button class="confirmation-btn confirmation-btn-confirm" type="button" data-i18n="common_confirm">Confirm</button>
         </div>
       </div>
       <div class="confirmation-dialog-arrow"></div>
@@ -171,9 +171,9 @@ class ConfirmationDialog {
     const {
       target = null,
       title = null,
-      message = i18n.getMessage('confirmationDialog_areYouSure'),
-      confirmText = i18n.getMessage('confirmationDialog_confirm'),
-      cancelText = i18n.getMessage('confirmationDialog_cancel'),
+      message = i18n.getMessage('common_confirm_are_you_sure'),
+      confirmText = i18n.getMessage('common_confirm'),
+      cancelText = i18n.getMessage('common_cancel'),
       type = 'default',
       onConfirm = () => {},
       onCancel = () => {}
@@ -409,8 +409,8 @@ class ConfirmationDialog {
     return this.show({
       type: 'danger',
       message: options.message || i18n.getMessage('confirmationDialog_deleteMessage'),
-      confirmText: options.confirmText || i18n.getMessage('confirmationDialog_deleteButton'),
-      cancelText: options.cancelText || i18n.getMessage('confirmationDialog_cancel'),
+      confirmText: options.confirmText || i18n.getMessage('common_delete'),
+      cancelText: options.cancelText || i18n.getMessage('common_cancel'),
       ...options
     });
   }

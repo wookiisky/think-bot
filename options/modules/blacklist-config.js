@@ -247,7 +247,8 @@ class BlacklistConfig {
 
       confirmationDialog.confirmDelete({
         target: deleteBtn,
-        message: safeI18n.getMessage('options_blacklist_confirm_delete', { description: pattern.pattern }),
+        message: safeI18n.getMessage('common_confirm_delete_message') || 
+                 'Are you sure you want to delete this item?',
         confirmText: safeI18n.getMessage('common_delete') || 'Delete',
         cancelText: safeI18n.getMessage('common_cancel') || 'Cancel',
         onConfirm: async () => {
@@ -255,6 +256,7 @@ class BlacklistConfig {
           if (success) {
             await this.loadAndRenderPatterns();
             this.showSuccess(safeI18n.getMessage('options_blacklist_delete_success'));
+            blacklistConfigLogger.info(`Deleted blacklist pattern: ${pattern.pattern}`);
           } else {
             this.showError(safeI18n.getMessage('options_blacklist_delete_failed'));
           }
@@ -353,10 +355,10 @@ class BlacklistConfig {
           </div>
           <div class="modal-footer">
             <button type="button" class="secondary-btn" id="patternDialogCancelBtn">
-              ${safeI18n.getMessage('options_blacklist_cancel_button')}
+              ${safeI18n.getMessage('common_cancel')}
             </button>
             <button type="button" class="primary-btn" id="patternDialogSaveBtn">
-              ${isEdit ? safeI18n.getMessage('options_blacklist_update_button') : safeI18n.getMessage('options_blacklist_add_pattern_button')}
+              ${isEdit ? safeI18n.getMessage('common_update') : safeI18n.getMessage('options_blacklist_add_pattern_button')}
             </button>
           </div>
         </div>

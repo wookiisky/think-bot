@@ -28,7 +28,7 @@ async function handleExportConversation(request, sender, sendResponse) {
 
     // 2. Sanitize filename parts
     const sanitizedPageTitle = sanitizeForFilename(pageTitle);
-    const sanitizedTabName = sanitizeForFilename(quickInputTabName || chrome.i18n.getMessage('export_default_tab_name'));
+    const sanitizedTabName = sanitizeForFilename(quickInputTabName || chrome.i18n.getMessage('common_chat'));
 
     // 3. Generate timestamp with seconds to avoid filename conflicts
     const now = new Date();

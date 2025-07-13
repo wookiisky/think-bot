@@ -164,7 +164,7 @@ class OptionsPage {
           setTimeout(() => {
             if (saveBtn.classList.contains('saved')) {
               saveBtn.classList.remove('saved');
-              saveBtn.querySelector('span').textContent = i18n.getMessage('options_js_save');
+              saveBtn.querySelector('span').textContent = i18n.getMessage('common_options_js_save');
             }
           }, 2000);
         }
@@ -198,7 +198,7 @@ class OptionsPage {
     // Reset button state after 3 seconds
     setTimeout(() => {
       saveBtn.classList.remove('error');
-      saveBtn.querySelector('span').textContent = i18n.getMessage('options_js_save');
+      saveBtn.querySelector('span').textContent = i18n.getMessage('common_options_js_save');
     }, 3000);
   }
   
@@ -467,7 +467,7 @@ class OptionsPage {
 
       if (connectionResult && connectionResult.success) {
         // Connection successful, now perform initial sync
-        this.updateSyncStatus('syncing', i18n.getMessage('options_js_syncing'));
+        this.updateSyncStatus('syncing', i18n.getMessage('common_syncing'));
 
         if (typeof syncManager !== 'undefined') {
           try {
@@ -567,7 +567,7 @@ class OptionsPage {
   disableAutoSync() {
     try {
       // Clear status display
-      this.updateSyncStatus('idle', i18n.getMessage('options_js_sync_status_not_configured'));
+      this.updateSyncStatus('idle', i18n.getMessage('options_sync_status_not_configured'));
 
       // Hide error messages
       this.domElements.syncErrorMessage.style.display = 'none';
@@ -637,7 +637,7 @@ class OptionsPage {
     if (saveBtn) {
       saveBtn.classList.remove('saved');
       saveBtn.classList.add('syncing');
-      saveBtn.querySelector('span').textContent = i18n.getMessage('options_js_syncing');
+      saveBtn.querySelector('span').textContent = i18n.getMessage('common_syncing');
     }
 
     this.updateSyncStatus('syncing', 'Auto-syncing after save...');
@@ -685,7 +685,7 @@ class OptionsPage {
       if (saveBtn) {
         setTimeout(() => {
           saveBtn.classList.remove('saved', 'error');
-          saveBtn.querySelector('span').textContent = i18n.getMessage('options_js_save');
+          saveBtn.querySelector('span').textContent = i18n.getMessage('common_options_js_save');
         }, 3000);
       }
     }
@@ -736,7 +736,7 @@ class OptionsPage {
   getSyncStatusText(status) {
     switch (status.status) {
       case 'idle':
-        return status.isConfigured ? i18n.getMessage('options_js_sync_status_ready') : i18n.getMessage('options_js_sync_status_not_configured');
+        return status.isConfigured ? i18n.getMessage('options_js_sync_status_ready') : i18n.getMessage('options_sync_status_not_configured');
       case 'testing':
         return i18n.getMessage('options_js_sync_testing_connection');
       case 'uploading':
@@ -744,7 +744,7 @@ class OptionsPage {
       case 'downloading':
         return i18n.getMessage('options_js_sync_status_downloading');
       case 'syncing':
-        return i18n.getMessage('options_js_sync_status_syncing');
+        return i18n.getMessage('common_syncing');
       case 'success':
         return i18n.getMessage('options_js_sync_completed_successfully');
       case 'error':

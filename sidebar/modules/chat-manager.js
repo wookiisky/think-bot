@@ -150,7 +150,7 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
         
         if (success) {
           // Update UI to show cancellation
-          contentDiv.innerHTML = `<span style="color: var(--text-color); font-style: italic;">${i18n.getMessage('sidebar_js_responseStoppedByUser')}</span>`;
+          contentDiv.innerHTML = `<span style="color: var(--text-color); font-style: italic;">${i18n.getMessage('common_response_stopped_by_user')}</span>`;
           messageDiv.removeAttribute('data-streaming');
           
           // Update tab loading state
@@ -282,14 +282,14 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
     const copyMarkdownButton = document.createElement('button');
     copyMarkdownButton.className = 'btn-base message-action-btn';
     copyMarkdownButton.innerHTML = '<i class="material-icons">code</i>';
-    copyMarkdownButton.title = i18n.getMessage('sidebar_chatManager_title_copyMarkdown');
+    copyMarkdownButton.title = i18n.getMessage('common_copy_markdown');
     copyMarkdownButton.onclick = () => copyMessageMarkdown(content);
     
     // Retry button
     const retryButton = document.createElement('button');
     retryButton.className = 'btn-base message-action-btn';
     retryButton.innerHTML = '<i class="material-icons">refresh</i>';
-    retryButton.title = i18n.getMessage('sidebar_chatManager_title_retry');
+    retryButton.title = i18n.getMessage('common_retry');
     retryButton.onclick = () => retryMessage(messageDiv, (messageId, messageContent) => {
       // Simply remove all subsequent messages
       const allMessages = Array.from(chatContainer.querySelectorAll('.chat-message'));
@@ -351,7 +351,7 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
     const copyMarkdownButton = document.createElement('button');
     copyMarkdownButton.className = 'btn-base message-action-btn';
     copyMarkdownButton.innerHTML = '<i class="material-icons">code</i>';
-    copyMarkdownButton.title = i18n.getMessage('sidebar_chatManager_title_copyMarkdown');
+    copyMarkdownButton.title = i18n.getMessage('common_copy_markdown');
     copyMarkdownButton.onclick = () => copyMessageMarkdown(content);
 
     // Scroll to bottom button
