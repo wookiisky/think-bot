@@ -44,7 +44,7 @@
     "description": "Title for the cache settings section."
   },
   "options_cache_label": {
-    "message": "缓存：",
+    "message": "本地数据：",
     "description": "Label for the cache display."
   },
   "options_clear_cache_button": {
@@ -64,7 +64,7 @@
     "description": "Label for the default model selection."
   },
   "options_content_extraction_title": {
-    "message": "内容提取",
+    "message": "网页内容提取",
     "description": "Title for the content extraction section."
   },
   "options_extracted_content_height_label": {
@@ -72,7 +72,7 @@
     "description": "Label for the extracted content height input."
   },
   "options_extracted_content_height_placeholder": {
-    "message": "例如, 300",
+    "message": "300",
     "description": "Placeholder for the extracted content height input."
   },
   "options_default_extraction_method_label": {
@@ -156,7 +156,7 @@
     "description": "Title for the cloud sync section."
   },
   "options_cloud_sync_description": {
-    "message": "同步您的配置 (包括模型密钥) 和数据",
+    "message": "同步您的配置 (！包括模型密钥！) 和页面、聊天数据",
     "description": "Description for the cloud sync section."
   },
   "options_github_token_label": {
@@ -208,7 +208,7 @@
     "description": "Title for the blacklist settings section."
   },
   "options_blacklist_description": {
-    "message": "请求前确认",
+    "message": "黑名单网址，标签页自动发送前确认",
     "description": "Description for the blacklist settings."
   },
   "options_blacklist_add_button": {
@@ -272,11 +272,11 @@
     "description": "Button text to add a new language model."
   },
   "options_model_display_name_label": {
-    "message": "模型名称",
+    "message": "模型显示名称",
     "description": "Label for the model display name input."
   },
   "options_model_provider_label": {
-    "message": "模型服务",
+    "message": "服务提供商",
     "description": "Label for the model provider selection."
   },
   "options_model_provider_openai": {

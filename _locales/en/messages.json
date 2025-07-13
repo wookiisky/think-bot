@@ -44,7 +44,7 @@
     "description": "Title for the cache settings section."
   },
   "options_cache_label": {
-    "message": "Cache:",
+    "message": "Local Data:",
     "description": "Label for the cache display."
   },
   "options_clear_cache_button": {
@@ -52,7 +52,7 @@
     "description": "Button text for clearing the cache."
   },
   "options_confirm_clear_all_cache": {
-    "message": "Are you sure you want to clear all cache? This action cannot be undone and will remove all locally stored conversations and extracted content.",
+    "message": "Are you sure you want to clear all local data? This action cannot be undone and will remove all locally stored conversations and extracted content.",
     "description": "Confirmation message for clearing all cache."
   },
   "options_basic_settings_title": {
@@ -68,11 +68,11 @@
     "description": "Title for the content extraction section."
   },
   "options_extracted_content_height_label": {
-    "message": "Extracted Content Height",
+    "message": "Content Area Height",
     "description": "Label for the extracted content height input."
   },
   "options_extracted_content_height_placeholder": {
-    "message": "e.g., 300",
+    "message": "300",
     "description": "Placeholder for the extracted content height input."
   },
   "options_default_extraction_method_label": {
@@ -148,7 +148,7 @@
     "description": "Title for the system prompt section."
   },
   "options_system_prompt_placeholder": {
-    "message": "Enter your system prompt template with {CONTENT} placeholder",
+    "message": "System prompt",
     "description": "Placeholder for the system prompt textarea."
   },
   "options_cloud_sync_title": {
@@ -156,7 +156,7 @@
     "description": "Title for the cloud sync section."
   },
   "options_cloud_sync_description": {
-    "message": "Sync your config (<strong>INCLUDE api-key</strong>) and data",
+    "message": "Sync your config (!INCLUDE api-key!), page and chat data",
     "description": "Description for the cloud sync section."
   },
   "options_github_token_label": {
@@ -176,19 +176,19 @@
     "description": "Note about Gist permission for the GitHub token."
   },
   "options_gist_id_label": {
-    "message": "Secret Gist ID",
+    "message": "SECRET Gist ID",
     "description": "Label for the Gist ID input."
   },
   "options_gist_id_placeholder": {
-    "message": "Secret gist ID without url",
+    "message": "SECRET gist ID (without url)",
     "description": "Placeholder for the Gist ID input."
   },
   "options_gist_id_create_link_prefix": {
-    "message": "Create a ",
+    "message": "Create a",
     "description": "Prefix for the Gist creation link."
   },
   "options_gist_id_create_link": {
-    "message": "secret Gist",
+    "message": "SECRET Gist",
     "description": "Link text to create a secret Gist."
   },
   "options_gist_id_create_link_suffix": {
@@ -196,7 +196,7 @@
     "description": "Suffix for the Gist creation link."
   },
   "options_sync_on_save_label": {
-    "message": "Sync when Save",
+    "message": "Sync when Save settings",
     "description": "Label for the sync on save toggle."
   },
   "options_sync_status_not_configured": {
@@ -208,7 +208,7 @@
     "description": "Title for the blacklist settings section."
   },
   "options_blacklist_description": {
-    "message": "Confirm before run Think Bot",
+    "message": "For url in blacklist, confirm before run auto-trigger tabs",
     "description": "Description for the blacklist settings."
   },
   "options_blacklist_add_button": {
@@ -364,7 +364,7 @@
     "description": "Message shown when no models are configured."
   },
   "options_quick_input_placeholder_button_text": {
-    "message": "Button text (e.g. 'Summarize')",
+    "message": "Tab name",
     "description": "Placeholder for the quick input button text."
   },
   "options_quick_input_auto_trigger_title": {
@@ -380,11 +380,11 @@
     "description": "Confirmation message for deleting a quick input with its name as parameter."
   },
   "options_quick_input_default_name": {
-    "message": "this quick input",
+    "message": "quick input",
     "description": "Default name used when a quick input has no display text."
   },
   "options_quick_input_placeholder_message": {
-    "message": "Message to send when clicked (use {CONTENT} placeholder)",
+    "message": "Message to send when clicked",
     "description": "Placeholder for the quick input message."
   },
   "options_js_saving": {
