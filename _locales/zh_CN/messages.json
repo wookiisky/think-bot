@@ -1,978 +1,726 @@
 {
   "appName": {
-    "message": "洞察助手",
-    "description": "The name of the extension."
+    "message": "洞察助手"
   },
   "options_header_title_text": {
-    "message": "洞察助手设置",
-    "description": "The main title on the options page."
+    "message": "洞察助手设置"
   },
   "options_language_label": {
-    "message": "语言",
-    "description": "Label for the language selection."
+    "message": "语言"
   },
   "options_page_title": {
-    "message": "设置",
-    "description": "The title of the options page."
+    "message": "设置"
   },
   "options_export_config_button": {
-    "message": "导出配置",
-    "description": "Button text for exporting configuration."
+    "message": "导出配置"
   },
   "options_import_config_button": {
-    "message": "导入配置",
-    "description": "Button text for importing configuration."
+    "message": "导入配置"
   },
   "options_reset_defaults_button": {
-    "message": "重置为默认值",
-    "description": "Button text for resetting settings to default."
+    "message": "重置为默认值"
   },
   "options_confirm_clear_all_cache": {
-    "message": "您确定要清除所有缓存吗？此操作无法撤销，并将删除所有本地存储的对话和提取的内容。",
-    "description": "清除所有缓存的确认消息。"
+    "message": "您确定要清除所有缓存吗？此操作无法撤销，并将删除所有本地存储的对话和提取的内容。"
   },
   "options_basic_settings_title": {
-    "message": "基础设置",
-    "description": "Title for the basic setting section."
+    "message": "基础设置"
   },
   "options_default_model_label": {
-    "message": "默认模型",
-    "description": "Label for the default model selection."
+    "message": "默认模型"
   },
   "options_content_extraction_title": {
-    "message": "网页内容提取",
-    "description": "Title for the content extraction section."
+    "message": "网页内容提取"
   },
   "options_extracted_content_height_label": {
-    "message": "内容区域高度",
-    "description": "Label for the extracted content height input."
+    "message": "内容区域高度"
   },
   "options_default_extraction_method_label": {
-    "message": "默认提取方法",
-    "description": "Label for the default extraction method select."
+    "message": "默认提取方法"
   },
   "options_extraction_method_readability": {
-    "message": "Readability.js (默认)",
-    "description": "Readability.js option for extraction method."
+    "message": "Readability.js (默认)"
   },
   "options_extraction_method_jina": {
-    "message": "Jina AI",
-    "description": "Jina AI option for extraction method."
+    "message": "Jina AI"
   },
   "options_jina_api_key_label": {
-    "message": "Jina AI API 密钥 (可选)",
-    "description": "Label for the Jina AI API key input."
+    "message": "Jina AI API 密钥 (可选)"
   },
   "options_jina_response_template_label": {
-    "message": "Jina AI 响应模板",
-    "description": "Label for the Jina AI response template textarea."
+    "message": "Jina AI 响应模板"
   },
   "options_jina_response_template_description": {
-    "message": "用于格式化 Jina AI JSON 响应的模板。可用占位符：{title}、{url}、{description}、{content}。",
-    "description": "Description for the Jina AI response template."
+    "message": "用于格式化 Jina AI JSON 响应的模板。可用占位符：{title}、{url}、{description}、{content}。"
   },
   "options_theme_label": {
-    "message": "主题",
-    "description": "Label for the theme selection."
+    "message": "主题"
   },
   "options_theme_light": {
-    "message": "浅色",
-    "description": "Light theme option."
+    "message": "浅色"
   },
   "options_theme_dark": {
-    "message": "深色",
-    "description": "Dark theme option."
+    "message": "深色"
   },
   "options_theme_system": {
-    "message": "系统",
-    "description": "System theme option."
+    "message": "系统"
   },
   "options_language_english": {
-    "message": "English",
-    "description": "English language option."
+    "message": "English"
   },
   "options_language_chinese": {
-    "message": "简体中文",
-    "description": "Chinese language option."
+    "message": "简体中文"
   },
   "options_system_prompt_placeholder": {
-    "message": "系统提示词",
-    "description": "Placeholder for the system prompt textarea."
+    "message": "系统提示词"
   },
   "options_cloud_sync_title": {
-    "message": "云同步",
-    "description": "Title for the cloud sync section."
+    "message": "云同步"
   },
   "options_cloud_sync_description": {
-    "message": "同步您的配置 (！包括模型密钥！) 和页面、聊天数据",
-    "description": "Description for the cloud sync section."
+    "message": "同步您的配置 (！包括模型密钥！) 和页面、聊天数据"
   },
   "options_github_token_label": {
-    "message": "GitHub 令牌",
-    "description": "Label for the GitHub token input."
+    "message": "GitHub 令牌"
   },
   "options_github_token_create_link": {
-    "message": "创建令牌",
-    "description": "Link text to create a GitHub token."
+    "message": "创建令牌"
   },
   "options_github_token_permission_note": {
-    "message": "(需要 Gist 权限)",
-    "description": "Note about Gist permission for the GitHub token."
+    "message": "(需要 Gist 权限)"
   },
   "options_gist_id_label": {
-    "message": "Secret Gist ID",
-    "description": "Label for the Gist ID input."
+    "message": "Secret Gist ID"
   },
   "options_gist_id_create_link_prefix": {
-    "message": "创建一个 ",
-    "description": "Prefix for the Gist creation link."
+    "message": "创建一个 "
   },
   "options_gist_id_create_link": {
-    "message": "secret Gist",
-    "description": "Link text to create a secret Gist."
+    "message": "secret Gist"
   },
   "options_gist_id_create_link_suffix": {
-    "message": "(不要创建公开的 gist)",
-    "description": "Suffix for the Gist creation link."
+    "message": "(不要创建公开的 gist)"
   },
   "options_sync_on_save_label": {
-    "message": "保存时同步",
-    "description": "Label for the sync on save toggle."
+    "message": "保存时同步"
   },
   "options_sync_status_not_configured": {
-    "message": "未配置",
-    "description": "Status text when sync is not configured."
+    "message": "未配置"
   },
   "options_js_sync_last_sync": {
-    "message": "上次同步: {0}",
-    "description": "Text showing the last sync time with date parameter."
+    "message": "上次同步: {0}"
   },
   "options_blacklist_settings_title": {
-    "message": "黑名单设置",
-    "description": "Title for the blacklist settings section."
+    "message": "黑名单设置"
   },
   "options_blacklist_description": {
-    "message": "黑名单网址，标签页自动发送前确认",
-    "description": "Description for the blacklist settings."
+    "message": "黑名单网址，标签页自动发送前确认"
   },
   "options_blacklist_edit_pattern_title": {
-    "message": "编辑模式",
-    "description": "Title for the edit blacklist pattern dialog."
+    "message": "编辑模式"
   },
   "options_blacklist_delete_pattern_title": {
-    "message": "删除模式",
-    "description": "Title for the delete blacklist pattern dialog."
+    "message": "删除模式"
   },
   "options_blacklist_add_dialog_title": {
-    "message": "添加黑名单模式",
-    "description": "Title for the add blacklist pattern dialog."
+    "message": "添加黑名单模式"
   },
   "options_blacklist_add_pattern_button": {
-    "message": "添加模式",
-    "description": "Button text to add a blacklist pattern in the dialog."
+    "message": "添加模式"
   },
   "options_blacklist_pattern_disabled_success": {
-    "message": "模式已成功禁用。",
-    "description": "Success message when a blacklist pattern is disabled."
+    "message": "模式已成功禁用。"
   },
   "options_blacklist_pattern_enabled_success": {
-    "message": "模式已成功启用。",
-    "description": "Success message when a blacklist pattern is enabled."
+    "message": "模式已成功启用。"
   },
   "options_blacklist_pattern_added_success": {
-    "message": "模式已成功添加。",
-    "description": "Success message when a blacklist pattern is added."
+    "message": "模式已成功添加。"
   },
   "options_blacklist_delete_success": {
-    "message": "模式已成功删除。",
-    "description": "Success message when a blacklist pattern is deleted."
+    "message": "模式已成功删除。"
   },
   "options_quick_input_tabs_title": {
-    "message": "标签页",
-    "description": "Title for the quick input tabs section."
+    "message": "标签页"
   },
   "options_language_models_title": {
-    "message": "语言模型",
-    "description": "Title for the language models section."
+    "message": "语言模型"
   },
   "options_add_new_model_button": {
-    "message": "添加新模型",
-    "description": "Button text to add a new language model."
+    "message": "添加新模型"
   },
   "options_model_display_name_label": {
-    "message": "模型显示名称",
-    "description": "Label for the model display name input."
+    "message": "模型显示名称"
   },
   "options_model_provider_label": {
-    "message": "服务提供商",
-    "description": "Label for the model provider selection."
+    "message": "服务提供商"
   },
   "options_model_provider_openai": {
-    "message": "OpenAI 兼容",
-    "description": "OpenAI provider option in the model provider selection."
+    "message": "OpenAI 兼容"
   },
   "options_model_provider_gemini": {
-    "message": "Google Gemini",
-    "description": "Google Gemini provider option in the model provider selection."
+    "message": "Google Gemini"
   },
   "optionsAzureOpenAIProvider": {
-    "message": "Azure OpenAI",
-    "description": "Azure OpenAI provider option."
+    "message": "Azure OpenAI"
   },
   "options_model_azure_endpoint_label": {
-    "message": "Endpoint",
-    "description": "Label for Azure OpenAI endpoint."
+    "message": "Endpoint"
   },
   "options_model_azure_deployment_name_label": {
-    "message": "Deployment 名称",
-    "description": "Label for Azure OpenAI deployment name."
+    "message": "Deployment 名称"
   },
   "options_model_azure_api_version_label": {
-    "message": "API 版本",
-    "description": "Label for Azure OpenAI API version."
+    "message": "API 版本"
   },
   "options_model_base_url_label": {
-    "message": "服务 URL",
-    "description": "Label for the model base URL input."
+    "message": "服务 URL"
   },
   "options_model_api_key_label": {
-    "message": "API 密钥",
-    "description": "Label for the model API key input."
+    "message": "API 密钥"
   },
   "options_model_model_label": {
-    "message": "模型",
-    "description": "Label for the model name input."
+    "message": "模型"
   },
   "options_model_max_tokens_label": {
-    "message": "最大 token 数",
-    "description": "Label for the model max tokens input."
+    "message": "最大 token 数"
   },
   "options_model_temperature_label": {
-    "message": "温度",
-    "description": "Label for the model temperature input."
+    "message": "温度"
   },
   "options_model_unnamed": {
-    "message": "未命名模型",
-    "description": "Default name for models without a name."
+    "message": "未命名模型"
   },
   "options_model_no_models_configured": {
-    "message": "未配置模型",
-    "description": "Message shown when no models are configured."
+    "message": "未配置模型"
   },
   "options_quick_input_placeholder_button_text": {
-    "message": "标签页名称",
-    "description": "Placeholder for the quick input button text."
+    "message": "标签页名称"
   },
   "options_quick_input_auto_trigger_title": {
-    "message": "侧边栏打开时自动发送",
-    "description": "Title for the auto-trigger toggle on a quick input."
+    "message": "侧边栏打开时自动发送"
   },
   "options_quick_input_default_name": {
-    "message": "新标签页",
-    "description": "Default name used when a quick input has no display text."
+    "message": "新标签页"
   },
   "options_quick_input_placeholder_message": {
-    "message": "点击时发送",
-    "description": "Placeholder for the quick input message."
+    "message": "点击时发送"
   },
   "options_js_saving": {
-    "message": "保存中...",
-    "description": "Text displayed when saving."
+    "message": "保存中..."
   },
   "options_js_saved": {
-    "message": "已保存！",
-    "description": "Text displayed when saved successfully."
+    "message": "已保存！"
   },
   "options_js_error": {
-    "message": "错误",
-    "description": "Text displayed on error."
+    "message": "错误"
   },
   "options_js_cache_stats_error": {
-    "message": "加载缓存统计信息时出错",
-    "description": "Error message when loading cache stats fails."
+    "message": "加载缓存统计信息时出错"
   },
   "options_js_clear_cache_error": {
-    "message": "清除缓存时出错。请查看控制台了解详情。",
-    "description": "Error message when clearing cache fails."
+    "message": "清除缓存时出错。请查看控制台了解详情。"
   },
   "options_js_export_error": {
-    "message": "导出配置失败。请查看控制台了解详情。",
-    "description": "Error message when exporting config fails."
+    "message": "导出配置失败。请查看控制台了解详情。"
   },
   "options_js_import_error": {
-    "message": "导入配置失败。请查看控制台了解详情。",
-    "description": "Error message when importing config fails."
+    "message": "导入配置失败。请查看控制台了解详情。"
   },
   "options_js_sync_github_token": {
-    "message": "GitHub 令牌",
-    "description": "GitHub Token field name."
+    "message": "GitHub 令牌"
   },
   "options_js_sync_gist_id": {
-    "message": "Gist ID",
-    "description": "Gist ID field name."
+    "message": "Gist ID"
   },
   "options_js_sync_testing_connection": {
-    "message": "正在测试连接...",
-    "description": "测试连接时的同步状态。"
+    "message": "正在测试连接..."
   },
   "options_js_sync_save_config_error": {
-    "message": "保存同步配置失败",
-    "description": "Error message when saving sync config fails."
+    "message": "保存同步配置失败"
   },
   "options_js_sync_config_not_saved_properly": {
-    "message": "配置未正确保存",
-    "description": "Error message when sync config is not saved properly."
+    "message": "配置未正确保存"
   },
   "options_js_sync_config_not_saved_properly_details": {
-    "message": "配置未正确保存。请重试。",
-    "description": "Detailed error message for sync config not saved properly."
+    "message": "配置未正确保存。请重试。"
   },
   "options_js_sync_completed_successfully": {
-    "message": "同步完成",
-    "description": "同步完成时的成功消息。"
+    "message": "同步完成"
   },
   "options_js_sync_failed_after_test": {
-    "message": "连接测试后同步失败",
-    "description": "Error message for sync failing after a successful connection test."
+    "message": "连接测试后同步失败"
   },
   "options_js_sync_operation_failed": {
-    "message": "同步操作失败",
-    "description": "Generic error message for a failed sync operation."
+    "message": "同步操作失败"
   },
   "options_js_sync_initial_sync_failed": {
-    "message": "初始同步失败",
-    "description": "Error message for a failed initial sync."
+    "message": "初始同步失败"
   },
   "options_js_sync_connection_failed_disabled": {
-    "message": "连接失败 - 自动同步已禁用",
-    "description": "Error message when connection fails and auto-sync is disabled."
+    "message": "连接失败 - 自动同步已禁用"
   },
   "options_js_sync_connection_test_failed": {
-    "message": "连接测试失败",
-    "description": "Error message for a failed connection test."
+    "message": "连接测试失败"
   },
   "options_js_sync_enable_auto_sync_failed": {
-    "message": "启用自动同步失败",
-    "description": "Error message when enabling auto-sync fails."
+    "message": "启用自动同步失败"
   },
   "options_js_sync_synced": {
-    "message": "已同步！",
-    "description": "Status message when sync is complete."
+    "message": "已同步！"
   },
   "options_js_sync_error": {
-    "message": "同步错误",
-    "description": "Error status for sync."
+    "message": "同步错误"
   },
   "options_js_sync_load_status_error": {
-    "message": "加载同步状态失败",
-    "description": "Error message when loading sync status fails."
+    "message": "加载同步状态失败"
   },
   "options_js_sync_token_gist_required": {
-    "message": "需要令牌和 Gist ID",
-    "description": "Error message when token and Gist ID are missing."
+    "message": "需要令牌和 Gist ID"
   },
   "options_js_sync_connection_successful": {
-    "message": "连接成功",
-    "description": "Success message for sync connection test."
+    "message": "连接成功"
   },
   "options_js_sync_connection_failed": {
-    "message": "连接失败",
-    "description": "Error message for a failed sync connection."
+    "message": "连接失败"
   },
   "options_js_sync_bg_script_error": {
-    "message": "后台脚本错误",
-    "description": "Error message for an error in the background script."
+    "message": "后台脚本错误"
   },
   "options_js_sync_unexpected_response": {
-    "message": "来自后台脚本的意外响应",
-    "description": "Error message for an unexpected response from the background script."
+    "message": "来自后台脚本的意外响应"
   },
   "options_js_sync_test_failed": {
-    "message": "测试失败",
-    "description": "Generic error message for a failed test."
+    "message": "测试失败"
   },
   "options_js_sync_github_token_required": {
-    "message": "需要 GitHub 令牌",
-    "description": "Validation error for missing GitHub token."
+    "message": "需要 GitHub 令牌"
   },
   "options_js_sync_gist_id_required": {
-    "message": "需要 Gist ID",
-    "description": "Validation error for missing Gist ID."
+    "message": "需要 Gist ID"
   },
   "options_js_sync_status_ready": {
-    "message": "就绪",
-    "description": "准备同步时的同步状态。"
+    "message": "就绪"
   },
   "options_js_sync_status_uploading": {
-    "message": "正在上传...",
-    "description": "上传数据时的同步状态。"
+    "message": "正在上传..."
   },
   "options_js_sync_status_downloading": {
-    "message": "正在下载...",
-    "description": "下载数据时的同步状态。"
+    "message": "正在下载..."
   },
   "options_js_sync_status_config_error": {
-    "message": "配置错误",
-    "description": "配置错误时的同步状态。"
+    "message": "配置错误"
   },
   "options_js_sync_status_unknown": {
-    "message": "未知状态",
-    "description": "状态未知时的同步状态。"
+    "message": "未知状态"
   },
   "sidebar_title_extractWithJina": {
-    "message": "使用 Jina AI 提取",
-    "description": "Title for the Jina AI extraction button."
+    "message": "使用 Jina AI 提取"
   },
   "sidebar_title_extractWithReadability": {
-    "message": "使用 Readability.js 提取",
-    "description": "Title for the Readability.js extraction button."
+    "message": "使用 Readability.js 提取"
   },
   "sidebar_title_copyExtractedContent": {
-    "message": "复制提取的内容",
-    "description": "Title for the copy content button."
+    "message": "复制提取的内容"
   },
   "sidebar_title_retryExtraction": {
-    "message": "重试提取",
-    "description": "Title for the retry extraction button."
+    "message": "重试提取"
   },
   "sidebar_title_clearAllPageData": {
-    "message": "清除所有页面数据",
-    "description": "Title for the clear page data button."
+    "message": "清除所有页面数据"
   },
   "sidebar_title_openChatPage": {
-    "message": "打开对话页面",
-    "description": "Title for the open chat page button."
+    "message": "打开对话页面"
   },
   "sidebar_title_openConfigPage": {
-    "message": "打开配置页面",
-    "description": "Title for the open configuration page button."
+    "message": "打开配置页面"
   },
   "sidebar_text_extractingContent": {
-    "message": "正在提取内容...",
-    "description": "Text displayed while extracting content."
+    "message": "正在提取内容..."
   },
   "sidebar_text_failedToExtractContent": {
-    "message": "提取内容失败。",
-    "description": "Error message when content extraction fails."
+    "message": "提取内容失败。"
   },
   "sidebar_text_imageAttached": {
-    "message": "已附上图片",
-    "description": "Header text for the attached image preview."
+    "message": "已附上图片"
   },
   "sidebar_js_blacklistConfirm": {
-    "message": "此页面在您的黑名单中。是否继续？",
-    "description": "Confirmation message for blacklisted pages."
+    "message": "此页面在您的黑名单中。是否继续？"
   },
   "common_response_stopped_by_user": {
-    "message": "用户已停止生成响应。",
-    "description": "通用的用户停止响应消息。"
+    "message": "用户已停止生成响应。"
   },
   "sidebar_chatMessage_placeholder_edit": {
-    "message": "编辑您的消息...",
-    "description": "编辑消息的占位符。"
+    "message": "编辑您的消息..."
   },
   "sidebar_chatMessage_title_edit": {
-    "message": "按 Ctrl+Enter 保存或 Escape 取消",
-    "description": "编辑消息的标题/工具提示。"
+    "message": "按 Ctrl+Enter 保存或 Escape 取消"
   },
   "sidebar_chatManager_title_stopGenerating": {
-    "message": "停止生成响应",
-    "description": "Title for the stop generating button in a chat message."
+    "message": "停止生成响应"
   },
   "sidebar_chatManager_title_editMessage": {
-    "message": "编辑消息",
-    "description": "Title for the edit message button."
+    "message": "编辑消息"
   },
   "sidebar_chatManager_title_copyText": {
-    "message": "复制文本",
-    "description": "Title for the copy text button."
+    "message": "复制文本"
   },
   "sidebar_chatManager_title_scrollToTop": {
-    "message": "滚动到顶部",
-    "description": "Title for the scroll to top button."
+    "message": "滚动到顶部"
   },
   "sidebar_chatManager_title_scrollToBottom": {
-    "message": "滚动到底部",
-    "description": "Title for the scroll to bottom button."
+    "message": "滚动到底部"
   },
   "sidebar_chatManager_finishReason_maxTokens": {
-    "message": "由于达到最大token限制，响应被截断。响应可能不完整。",
-    "description": "Warning for response truncated due to token limit."
+    "message": "由于达到最大token限制，响应被截断。响应可能不完整。"
   },
   "sidebar_chatManager_finishReason_safety": {
-    "message": "由于内容策略限制，响应已停止。",
-    "description": "Warning for response stopped due to safety reasons."
+    "message": "由于内容策略限制，响应已停止。"
   },
   "sidebar_chatManager_finishReason_recitation": {
-    "message": "由于潜在的版权内容，响应已停止。",
-    "description": "Warning for response stopped due to recitation."
+    "message": "由于潜在的版权内容，响应已停止。"
   },
   "sidebar_chatManager_finishReason_other": {
-    "message": "响应因未知原因结束。",
-    "description": "Warning for response ended for an unknown reason."
+    "message": "响应因未知原因结束。"
   },
   "sidebar_chatManager_toast_textCopied": {
-    "message": "文本已复制到剪贴板",
-    "description": "Toast message when text is copied."
+    "message": "文本已复制到剪贴板"
   },
   "sidebar_chatManager_log_failedToCopyText": {
-    "message": "复制文本失败：",
-    "description": "Log message when copying text fails."
+    "message": "复制文本失败："
   },
   "sidebar_chatManager_toast_markdownCopied": {
-    "message": "Markdown 已复制到剪贴板",
-    "description": "Toast message when markdown is copied."
+    "message": "Markdown 已复制到剪贴板"
   },
   "sidebar_chatManager_toast_errorCopyingMarkdown": {
-    "message": "复制 Markdown 出错",
-    "description": "Toast message when copying markdown fails."
+    "message": "复制 Markdown 出错"
   },
   "sidebar_chatManager_error_failedToSend": {
-    "message": "向 AI 发送消息失败。请检查服务工作线程日志。",
-    "description": "Error message when sending a message to the AI fails."
+    "message": "向 AI 发送消息失败。请检查服务工作线程日志。"
   },
   "sidebar_chatManager_error_failedToSendLlm": {
-    "message": "向 LLM 发送消息失败",
-    "description": "Error message when sending a message to the LLM fails."
+    "message": "向 LLM 发送消息失败"
   },
   "sidebar_contentExtractor_error_accessContent": {
-    "message": "访问当前内容时出错",
-    "description": "Error message when accessing content fails."
+    "message": "访问当前内容时出错"
   },
   "sidebar_contentExtractor_error_backgroundScript": {
-    "message": "与后台脚本通信失败",
-    "description": "Error message when communication with the background script fails."
+    "message": "与后台脚本通信失败"
   },
   "sidebar_contentExtractor_warn_noContentToCopy": {
-    "message": "没有可复制的内容",
-    "description": "Warning message when there is no content to copy."
+    "message": "没有可复制的内容"
   },
   "sidebar_contentExtractor_error_failedToCopy": {
-    "message": "复制内容失败：",
-    "description": "Error message when copying content fails."
+    "message": "复制内容失败："
   },
   "sidebar_errorHandler_error_unexpected": {
-    "message": "发生意外错误。请重试。",
-    "description": "Generic unexpected error message."
+    "message": "发生意外错误。请重试。"
   },
   "sidebar_errorHandler_error_failedToGetResponse": {
-    "message": "从 AI 服务获取响应失败。请重试。",
-    "description": "Error message when failing to get a response from the AI service."
+    "message": "从 AI 服务获取响应失败。请重试。"
   },
   "sidebar_errorHandler_error_requestCancelled": {
-    "message": "请求已被用户取消。",
-    "description": "Error message when a request is cancelled by the user."
+    "message": "请求已被用户取消。"
   },
   "sidebar_errorHandler_error_contentScript": {
-    "message": "内容脚本未连接。请重新加载页面再试。",
-    "description": "Error message for a disconnected content script."
+    "message": "内容脚本未连接。请重新加载页面再试。"
   },
   "sidebar_errorHandler_error_pageNotReady": {
-    "message": "页面内容未准备好或内容脚本有问题。请等待页面完全加载后再试。",
-    "description": "Error message when the page is not ready."
+    "message": "页面内容未准备好或内容脚本有问题。请等待页面完全加载后再试。"
   },
   "sidebar_errorHandler_error_pageLoading": {
-    "message": "页面内容未准备好，请等待页面完全加载后重试。",
-    "description": "Error message when the page is still loading."
+    "message": "页面内容未准备好，请等待页面完全加载后重试。"
   },
   "sidebar_errorHandler_error_readabilityLoad": {
-    "message": "Readability 库加载失败。请重试或联系支持人员。",
-    "description": "Error message when the Readability library fails to load."
+    "message": "Readability 库加载失败。请重试或联系支持人员。"
   },
   "sidebar_errorHandler_error_readabilityExtract": {
-    "message": "Readability 提取失败。页面内容可能不适合提取。请尝试刷新页面。",
-    "description": "Error message when Readability extraction fails."
+    "message": "Readability 提取失败。页面内容可能不适合提取。请尝试刷新页面。"
   },
   "sidebar_errorHandler_error_noHtml": {
-    "message": "无法获取页面内容。请重新加载页面再试。",
-    "description": "Error message when no HTML content is available."
+    "message": "无法获取页面内容。请重新加载页面再试。"
   },
   "sidebar_errorHandler_error_processing": {
-    "message": "内容处理错误。请重试或重新加载页面。",
-    "description": "Error message for a content processing error."
+    "message": "内容处理错误。请重试或重新加载页面。"
   },
   "sidebar_errorHandler_error_offscreen": {
-    "message": "内容处理服务不可用。请重试。",
-    "description": "Error message for an unavailable offscreen service."
+    "message": "内容处理服务不可用。请重试。"
   },
   "sidebar_errorHandler_error_extractFailed": {
-    "message": "从页面提取内容失败。请重试或重新加载页面。",
-    "description": "Error message when content extraction fails."
+    "message": "从页面提取内容失败。请重试或重新加载页面。"
   },
   "sidebar_errorHandler_error_network": {
-    "message": "网络连接错误。请检查您的网络连接并重试。",
-    "description": "Error message for a network error."
+    "message": "网络连接错误。请检查您的网络连接并重试。"
   },
   "sidebar_errorHandler_error_timeout": {
-    "message": "请求超时。请重试。",
-    "description": "Error message for a request timeout."
+    "message": "请求超时。请重试。"
   },
   "sidebar_uiManager_text_restrictedPage": {
-    "message": "受限页面",
-    "description": "Title for the restricted page message."
+    "message": "受限页面"
   },
   "sidebar_uiManager_text_restrictedPageMessage": {
-    "message": "无法在 Chrome 内部页面（chrome://, chrome-extension:// 等）上工作。",
-    "description": "Message explaining why the page is restricted."
+    "message": "无法在 Chrome 内部页面（chrome://, chrome-extension:// 等）上工作。"
   },
   "sidebar_uiManager_text_restrictedPageGuidance": {
-    "message": "只能在常规网页使用该扩展程序。",
-    "description": "Guidance for the user on a restricted page."
+    "message": "只能在常规网页使用该扩展程序。"
   },
   "sidebar_uiManager_error_noContentExtracted": {
-    "message": "未提取任何内容",
-    "description": "Error message when no content is extracted."
+    "message": "未提取任何内容"
   },
   "sidebar_tabManager_retryingMessage": {
-    "message": "正在重试消息...",
-    "description": "Text displayed when retrying a message."
+    "message": "正在重试消息..."
   },
   "conversations_page_title": {
-    "message": "洞察助手 - 对话",
-    "description": "The title of the conversations page."
+    "message": "洞察助手 - 对话"
   },
   "conversations_search_placeholder": {
-    "message": "搜索页面...",
-    "description": "Placeholder for the page search input in conversations."
+    "message": "搜索页面..."
   },
   "conversations_empty_list_title": {
-    "message": "暂无对话",
-    "description": "Title for the empty page list in conversations."
+    "message": "暂无对话"
   },
   "conversations_empty_list_subtitle": {
-    "message": "浏览页面并开始聊天，即可在此处看到对话记录",
-    "description": "Subtitle for the empty page list in conversations."
+    "message": "浏览页面并开始聊天，即可在此处看到对话记录"
   },
   "conversations_welcome_subtitle": {
-    "message": "从左侧选择一个页面以查看其内容并继续聊天。",
-    "description": "Subtitle for the welcome screen in conversations."
+    "message": "从左侧选择一个页面以查看其内容并继续聊天。"
   },
   "conversations_js_cannot_extract": {
-    "message": "无法从此页面类型提取内容。请导航到常规网页。",
-    "description": "Error message when content extraction is not possible."
+    "message": "无法从此页面类型提取内容。请导航到常规网页。"
   },
   "conversations_js_no_cached_content": {
-    "message": "此页面没有缓存内容。请先访问该页面以提取内容。",
-    "description": "Error message when there is no cached content for a page."
+    "message": "此页面没有缓存内容。请先访问该页面以提取内容。"
   },
   "conversations_js_failed_to_load": {
-    "message": "加载页面对话失败",
-    "description": "Error message when a page conversation fails to load."
+    "message": "加载页面对话失败"
   },
   "export_default_title": {
-    "message": "对话",
-    "description": "Default title for an exported conversation file."
+    "message": "对话"
   },
   "export_untitled_page": {
-    "message": "无标题",
-    "description": "Default title for a page without a title."
+    "message": "无标题"
   },
   "export_unknown_role": {
-    "message": "未知",
-    "description": "Default role for a message in an exported conversation."
+    "message": "未知"
   },
   "global_error_no_url": {
-    "message": "未提供 URL",
-    "description": "Error message when a URL is not provided."
+    "message": "未提供 URL"
   },
   "global_error_failed_to_clear_storage": {
-    "message": "从存储中清除数据失败",
-    "description": "Error message when clearing data from storage fails."
+    "message": "从存储中清除数据失败"
   },
   "global_error_failed_to_soft_delete": {
-    "message": "从存储中软删除数据失败",
-    "description": "Error message when soft deleting data from storage fails."
+    "message": "从存储中软删除数据失败"
   },
   "page_list_manager_failed_to_load": {
-    "message": "加载对话失败",
-    "description": "Error message when loading conversations in the page list manager fails."
+    "message": "加载对话失败"
   },
   "page_list_manager_tooltip_no_extraction_time": {
-    "message": "无提取时间",
-    "description": "Tooltip text for when there is no extraction time."
+    "message": "无提取时间"
   },
   "page_list_manager_open_in_new_tab_title": {
-    "message": "在新标签页中打开",
-    "description": "Title for the open in new tab button."
+    "message": "在新标签页中打开"
   },
   "page_list_manager_delete_conversation_title": {
-    "message": "删除此对话",
-    "description": "Title for the delete conversation button."
+    "message": "删除此对话"
   },
   "page_list_manager_confirm_delete_message": {
-    "message": "您确定要删除此页面的所有对话和提取的内容吗？",
-    "description": "Confirmation message before deleting a page conversation."
+    "message": "您确定要删除此页面的所有对话和提取的内容吗？"
   },
   "page_list_manager_empty_list_title": {
-    "message": "未找到对话",
-    "description": "Title for the empty page list in the page list manager."
+    "message": "未找到对话"
   },
   "page_list_manager_empty_list_subtitle": {
-    "message": "浏览页面并开始聊天，即可在此处看到对话记录",
-    "description": "Subtitle for the empty page list in the page list manager."
+    "message": "浏览页面并开始聊天，即可在此处看到对话记录"
   },
   "global_time_just_now": {
-    "message": "刚刚",
-    "description": "Text for a very recent timestamp."
+    "message": "刚刚"
   },
   "global_loading_content": {
-    "message": "正在加载内容...",
-    "description": "Text displayed while loading content."
+    "message": "正在加载内容..."
   },
   "global_failed_to_load_content": {
-    "message": "加载内容失败。",
-    "description": "Error message when content loading fails."
+    "message": "加载内容失败。"
   },
   "options_ui_config_import_confirm_title": {
-    "message": "确认配置导入",
-    "description": "Title for the configuration import confirmation dialog."
+    "message": "确认配置导入"
   },
   "options_ui_config_import_confirm_footer": {
-    "message": "是否继续导入此配置？这将覆盖您当前的设置。",
-    "description": "Footer text for the configuration import confirmation dialog."
+    "message": "是否继续导入此配置？这将覆盖您当前的设置。"
   },
   "options_ui_config_import_success": {
-    "message": "配置导入成功！",
-    "description": "Main success message after configuration import."
+    "message": "配置导入成功！"
   },
   "options_ui_config_import_success_footer": {
-    "message": "页面将重新加载以应用新的设置。",
-    "description": "Footer text for the configuration import success message."
+    "message": "页面将重新加载以应用新的设置。"
   },
   "options_blacklist_update_failed": {
-    "message": "更新黑名单模式失败",
-    "description": "Error message when updating a blacklist pattern fails."
+    "message": "更新黑名单模式失败"
   },
   "options_blacklist_pattern_not_found": {
-    "message": "未找到模式",
-    "description": "Error message when a blacklist pattern is not found."
+    "message": "未找到模式"
   },
   "options_blacklist_delete_failed": {
-    "message": "删除黑名单模式失败",
-    "description": "Error message when deleting a blacklist pattern fails."
+    "message": "删除黑名单模式失败"
   },
   "options_blacklist_save_failed": {
-    "message": "保存黑名单模式失败",
-    "description": "Error message when saving a blacklist pattern fails."
+    "message": "保存黑名单模式失败"
   },
   "options_blacklist_enter_pattern_error": {
-    "message": "请输入有效的模式",
-    "description": "Error message when user enters invalid pattern."
+    "message": "请输入有效的模式"
   },
   "options_blacklist_pattern_updated_success": {
-    "message": "模式更新成功",
-    "description": "Success message when a blacklist pattern is updated."
+    "message": "模式更新成功"
   },
   "options_blacklist_edit_dialog_title": {
-    "message": "编辑黑名单模式",
-    "description": "Title for the edit blacklist pattern dialog."
+    "message": "编辑黑名单模式"
   },
   "options_blacklist_no_patterns": {
-    "message": "未配置黑名单模式。点击\"添加模式\"创建一个。",
-    "description": "Message shown when no blacklist patterns are configured."
+    "message": "未配置黑名单模式。点击\"添加模式\"创建一个。"
   },
   "options_blacklist_url_pattern_label": {
-    "message": "URL 模式（正则表达式）",
-    "description": "Label for the URL pattern input field."
+    "message": "URL 模式（正则表达式）"
   },
   "options_blacklist_url_pattern_placeholder": {
-    "message": "例如：google\\.com/search",
-    "description": "Placeholder for the URL pattern input field."
+    "message": "例如：google\\.com/search"
   },
   "options_blacklist_url_pattern_description": {
-    "message": "使用正则表达式模式匹配URL（不包括协议）",
-    "description": "Description for the URL pattern input field."
+    "message": "使用正则表达式模式匹配URL（不包括协议）"
   },
   "options_blacklist_test_url_label": {
-    "message": "测试URL（可选）",
-    "description": "Label for the test URL input field."
+    "message": "测试URL（可选）"
   },
   "options_blacklist_test_url_placeholder": {
-    "message": "例如：https://www.google.com/search?q=test",
-    "description": "Placeholder for the test URL input field."
+    "message": "例如：https://www.google.com/search?q=test"
   },
   "options_blacklist_test_error": {
-    "message": "测试错误",
-    "description": "Header for test error results."
+    "message": "测试错误"
   },
   "options_blacklist_test_pattern_label": {
-    "message": "模式：",
-    "description": "Label for pattern in test results."
+    "message": "模式："
   },
   "options_blacklist_test_tested_url_label": {
-    "message": "测试的URL：",
-    "description": "Label for tested URL in test results."
+    "message": "测试的URL："
   },
   "options_blacklist_reset_confirm_message": {
-    "message": "默认模式将被恢复。\n\n此操作无法撤消。\n\n您是否要继续？",
-    "description": "Complete reset confirmation message including all details."
+    "message": "默认模式将被恢复。\n\n此操作无法撤消。\n\n您是否要继续？"
   },
   "options_blacklist_reset_success": {
-    "message": "黑名单重置为默认成功",
-    "description": "Success message when blacklist is reset to default."
+    "message": "黑名单重置为默认成功"
   },
   "options_blacklist_reset_failed": {
-    "message": "重置黑名单为默认失败",
-    "description": "Error message when reset to default fails."
+    "message": "重置黑名单为默认失败"
   },
   "options_ui_config_reset_confirm": {
-    "message": "您确定要将所有设置重置为默认值吗？此操作无法撤消。",
-    "description": "Confirmation message for resetting configuration to defaults."
+    "message": "您确定要将所有设置重置为默认值吗？此操作无法撤消。"
   },
   "options_ui_config_export_error": {
-    "message": "导出配置失败。请重试。",
-    "description": "Error message when configuration export fails."
+    "message": "导出配置失败。请重试。"
   },
   "options_ui_config_import_invalid_file": {
-    "message": "无效的文件类型。请选择 JSON 文件。",
-    "description": "Error message when selected file is not JSON."
+    "message": "无效的文件类型。请选择 JSON 文件。"
   },
   "options_ui_config_import_invalid_format": {
-    "message": "无效的配置格式。请选择有效的配置文件。",
-    "description": "Error message when configuration format is invalid."
+    "message": "无效的配置格式。请选择有效的配置文件。"
   },
   "options_ui_config_import_save_error": {
-    "message": "保存导入的配置失败。请重试。",
-    "description": "Error message when saving imported configuration fails."
+    "message": "保存导入的配置失败。请重试。"
   },
   "common_save": {
-    "message": "保存",
-    "description": "通用保存按钮文本。"
+    "message": "保存"
   },
   "common_delete": {
-    "message": "删除",
-    "description": "通用删除按钮文本。"
+    "message": "删除"
   },
   "common_cancel": {
-    "message": "取消",
-    "description": "通用取消按钮文本。"
+    "message": "取消"
   },
   "common_confirm": {
-    "message": "确认",
-    "description": "通用确认按钮文本。"
+    "message": "确认"
   },
   "common_clear": {
-    "message": "清除",
-    "description": "通用清除按钮文本。"
+    "message": "清除"
   },
   "common_reset": {
-    "message": "重置",
-    "description": "通用重置按钮文本。"
+    "message": "重置"
   },
   "common_add": {
-    "message": "添加",
-    "description": "通用添加按钮文本。"
+    "message": "添加"
   },
   "common_update": {
-    "message": "更新",
-    "description": "通用更新按钮文本。"
+    "message": "更新"
   },
   "common_retry": {
-    "message": "重试",
-    "description": "通用重试按钮文本。"
+    "message": "重试"
   },
   "common_remove": {
-    "message": "移除",
-    "description": "通用移除按钮文本。"
+    "message": "移除"
   },
   "common_ask_placeholder": {
-    "message": "提问...",
-    "description": "通用提问占位符文本。"
+    "message": "提问..."
   },
   "common_send_message": {
-    "message": "发送消息",
-    "description": "通用发送消息按钮标题。"
+    "message": "发送消息"
   },
   "common_include_page_content": {
-    "message": "将页面内容插入到system prompt中",
-    "description": "通用包含页面内容按钮标题。"
+    "message": "将页面内容插入到system prompt中"
   },
   "common_stop_and_clear": {
-    "message": "停止生成并清除对话",
-    "description": "通用停止并清除按钮标题。"
+    "message": "停止生成并清除对话"
   },
   "common_export_conversation": {
-    "message": "导出对话",
-    "description": "通用导出对话按钮标题。"
+    "message": "导出对话"
   },
   "common_copy_markdown": {
-    "message": "复制 Markdown",
-    "description": "通用复制Markdown按钮标题。"
+    "message": "复制 Markdown"
   },
   "common_chat": {
-    "message": "聊天",
-    "description": "通用聊天文本。"
+    "message": "聊天"
   },
   "common_syncing": {
-    "message": "同步中...",
-    "description": "通用同步状态文本。"
+    "message": "同步中..."
   },
   "common_confirm_are_you_sure": {
-    "message": "您确定吗？",
-    "description": "通用确认对话框消息。"
+    "message": "您确定吗？"
   },
   "common_confirm_delete_message": {
-    "message": "您确定要删除此项吗？",
-    "description": "通用删除确认消息。"
+    "message": "您确定要删除此项吗？"
   },
   "common_confirm_reset_message": {
-    "message": "您确定要重置为默认设置吗？",
-    "description": "通用重置确认消息。"
+    "message": "您确定要重置为默认设置吗？"
   },
   "common_confirm_clear_message": {
-    "message": "您确定要清除所有数据吗？",
-    "description": "通用清除确认消息。"
+    "message": "您确定要清除所有数据吗？"
   },
   "common_confirmation_title": {
-    "message": "确认",
-    "description": "通用确认对话框标题。"
+    "message": "确认"
   },
   "common_cache_label": {
-    "message": "本地数据：",
-    "description": "通用缓存标签。"
+    "message": "本地数据："
   },
   "common_options_js_save": {
-    "message": "保存",
-    "description": "通用保存按钮默认文本。"
+    "message": "保存"
   },
   "options_cache_label": {
-    "message": "本地数据：",
-    "description": "Label for the cache display."
+    "message": "本地数据："
   },
   "options_clear_cache_button": {
-    "message": "清除",
-    "description": "Button text for clearing the cache."
+    "message": "清除"
   },
   "options_blacklist_add_button": {
-    "message": "添加",
-    "description": "Button text to add a blacklist pattern."
+    "message": "添加"
   },
   "options_blacklist_reset_button": {
-    "message": "重置",
-    "description": "Button text to reset the blacklist."
+    "message": "重置"
   },
   "options_add_quick_input_button": {
-    "message": "添加快速输入",
-    "description": "Button text to add a quick input."
+    "message": "添加快速输入"
   },
   "sidebar_title_stopAndClear": {
-    "message": "停止生成并清除对话",
-    "description": "Title for the stop and clear button."
+    "message": "停止生成并清除对话"
   },
-  "confirmationDialog_deleteMessage": {
-    "message": "您确定要删除此项吗？",
-    "description": "Default delete confirmation message."
-  },
-  "confirmationDialog_resetMessage": {
-    "message": "您确定要重置为默认设置吗？",
-    "description": "Default reset confirmation message."
-  },
-  "confirmationDialog_clearMessage": {
-    "message": "您确定要清除所有数据吗？",
-    "description": "Default clear confirmation message."
-  },
+
   "sidebar_chatManager_title_copyAsMarkdown": {
-    "message": "复制为 Markdown",
-    "description": "Title for the copy as markdown button."
+    "message": "复制为 Markdown"
   }
 }

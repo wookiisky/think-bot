@@ -142,7 +142,7 @@ const setupEventListeners = (elements, modelSelector, onTabAction) => {
     // Show confirmation dialog near the clicked button
     confirmationDialog.show({
       target: elements.clearPageDataBtn,
-      message: i18n.getMessage('confirmationDialog_clearMessage'),
+      message: i18n.getMessage('common_confirm_clear_message'),
       confirmText: i18n.getMessage('common_clear'),
       cancelText: i18n.getMessage('common_cancel'),
       type: 'danger',

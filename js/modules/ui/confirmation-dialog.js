@@ -408,7 +408,7 @@ class ConfirmationDialog {
   confirmDelete(options = {}) {
     return this.show({
       type: 'danger',
-      message: options.message || i18n.getMessage('confirmationDialog_deleteMessage'),
+      message: options.message || i18n.getMessage('common_confirm_delete_message'),
       confirmText: options.confirmText || i18n.getMessage('common_delete'),
       cancelText: options.cancelText || i18n.getMessage('common_cancel'),
       ...options
@@ -422,7 +422,7 @@ class ConfirmationDialog {
   confirmReset(options = {}) {
     return this.show({
       type: 'danger',
-      message: options.message || i18n.getMessage('confirmationDialog_resetMessage'),
+      message: options.message || i18n.getMessage('common_confirm_reset_message'),
       confirmText: options.confirmText || i18n.getMessage('confirmationDialog_resetButton'),
       cancelText: options.cancelText || i18n.getMessage('confirmationDialog_cancel'),
       ...options
@@ -436,7 +436,7 @@ class ConfirmationDialog {
   confirmClear(options = {}) {
     return this.show({
       type: 'danger',
-      message: options.message || i18n.getMessage('confirmationDialog_clearMessage'),
+      message: options.message || i18n.getMessage('common_confirm_clear_message'),
       confirmText: options.confirmText || i18n.getMessage('confirmationDialog_clearButton'),
       cancelText: options.cancelText || i18n.getMessage('confirmationDialog_cancel'),
       ...options

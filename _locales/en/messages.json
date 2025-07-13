@@ -1,978 +1,726 @@
 {
   "appName": {
-    "message": "Think Bot",
-    "description": "The name of the extension."
-  },
-  "options_header_title_text": {
-    "message": "Think Bot Settings",
-    "description": "The main title on the options page."
-  },
-  "options_language_label": {
-    "message": "Language",
-    "description": "Label for the language selection."
-  },
-  "options_page_title": {
-    "message": "Think Bot Settings",
-    "description": "The title of the options page."
-  },
-  "options_export_config_button": {
-    "message": "Export Configuration",
-    "description": "Button text for exporting configuration."
-  },
-  "options_import_config_button": {
-    "message": "Import Configuration",
-    "description": "Button text for importing configuration."
-  },
-  "options_reset_defaults_button": {
-    "message": "Reset to Defaults",
-    "description": "Button text for resetting settings to default."
-  },
-  "options_cache_label": {
-    "message": "Local Data:",
-    "description": "Label for the cache display."
-  },
-  "options_clear_cache_button": {
-    "message": "Clear",
-    "description": "Button text for clearing the cache."
-  },
-  "options_confirm_clear_all_cache": {
-    "message": "Are you sure you want to clear all local data? This action cannot be undone and will remove all locally stored conversations and extracted content.",
-    "description": "Confirmation message for clearing all cache."
-  },
-  "options_basic_settings_title": {
-    "message": "Basic Settings",
-    "description": "Title for the basic setting section."
-  },
-  "options_default_model_label": {
-    "message": "Model",
-    "description": "Label for the default model selection."
-  },
-  "options_content_extraction_title": {
-    "message": "Content Extraction",
-    "description": "Title for the content extraction section."
-  },
-  "options_extracted_content_height_label": {
-    "message": "Content Area Height",
-    "description": "Label for the extracted content height input."
-  },
-  "options_default_extraction_method_label": {
-    "message": "Default Extraction Method",
-    "description": "Label for the default extraction method select."
-  },
-  "options_extraction_method_readability": {
-    "message": "Readability.js (Default)",
-    "description": "Readability.js option for extraction method."
-  },
-  "options_extraction_method_jina": {
-    "message": "Jina AI",
-    "description": "Jina AI option for extraction method."
-  },
-  "options_jina_api_key_label": {
-    "message": "Jina AI API Key (Optional)",
-    "description": "Label for the Jina AI API key input."
-  },
-  "options_jina_response_template_label": {
-    "message": "Jina AI Response Template",
-    "description": "Label for the Jina AI response template textarea."
-  },
-  "options_jina_response_template_description": {
-    "message": "Template for formatting Jina AI JSON response. Available placeholders: {title}, {url}, {description}, {content}.",
-    "description": "Description for the Jina AI response template."
-  },
-  "options_theme_label": {
-    "message": "Theme",
-    "description": "Label for the theme selection."
-  },
-  "options_theme_light": {
-    "message": "Light",
-    "description": "Light theme option."
-  },
-  "options_theme_dark": {
-    "message": "Dark",
-    "description": "Dark theme option."
-  },
-  "options_theme_system": {
-    "message": "System",
-    "description": "System theme option."
-  },
-  "options_language_english": {
-    "message": "English",
-    "description": "English language option."
-  },
-  "options_language_chinese": {
-    "message": "简体中文",
-    "description": "Chinese language option."
-  },
-  "options_system_prompt_placeholder": {
-    "message": "System prompt",
-    "description": "Placeholder for the system prompt textarea."
-  },
-  "options_cloud_sync_title": {
-    "message": "Cloud Sync",
-    "description": "Title for the cloud sync section."
-  },
-  "options_cloud_sync_description": {
-    "message": "Sync your config (!INCLUDE api-key!), page and chat data",
-    "description": "Description for the cloud sync section."
-  },
-  "options_github_token_label": {
-    "message": "GitHub Token",
-    "description": "Label for the GitHub token input."
-  },
-  "options_github_token_create_link": {
-    "message": "Create token",
-    "description": "Link text to create a GitHub token."
-  },
-  "options_github_token_permission_note": {
-    "message": "(Requires Gist permission)",
-    "description": "Note about Gist permission for the GitHub token."
-  },
-  "options_gist_id_label": {
-    "message": "SECRET Gist ID",
-    "description": "Label for the Gist ID input."
-  },
-  "options_gist_id_create_link_prefix": {
-    "message": "Create a",
-    "description": "Prefix for the Gist creation link."
-  },
-  "options_gist_id_create_link": {
-    "message": "SECRET Gist",
-    "description": "Link text to create a secret Gist."
-  },
-  "options_gist_id_create_link_suffix": {
-    "message": "(DO NOT create public gist)",
-    "description": "Suffix for the Gist creation link."
-  },
-  "options_sync_on_save_label": {
-    "message": "Sync when Save settings",
-    "description": "Label for the sync on save toggle."
-  },
-  "options_sync_status_not_configured": {
-    "message": "Not configured",
-    "description": "Status text when sync is not configured."
-  },
-  "options_js_sync_last_sync": {
-    "message": "Last sync: {0}",
-    "description": "Text showing the last sync time with date parameter."
-  },
-  "options_blacklist_settings_title": {
-    "message": "Blacklist Settings",
-    "description": "Title for the blacklist settings section."
-  },
-  "options_blacklist_description": {
-    "message": "For url in blacklist, confirm before run auto-trigger tabs",
-    "description": "Description for the blacklist settings."
-  },
-  "options_blacklist_add_button": {
-    "message": "Add",
-    "description": "Button text to add a blacklist pattern."
-  },
-  "options_blacklist_reset_button": {
-    "message": "Reset",
-    "description": "Button text to reset the blacklist."
-  },
-  "options_blacklist_edit_pattern_title": {
-    "message": "Edit Pattern",
-    "description": "Title for the edit blacklist pattern dialog."
-  },
-  "options_blacklist_delete_pattern_title": {
-    "message": "Delete Pattern",
-    "description": "Title for the delete blacklist pattern dialog."
-  },
-  "options_blacklist_add_dialog_title": {
-    "message": "Add Blacklist Pattern",
-    "description": "Title for the add blacklist pattern dialog."
-  },
-  "options_blacklist_add_pattern_button": {
-    "message": "Add Pattern",
-    "description": "Button text to add a blacklist pattern in the dialog."
-  },
-  "options_blacklist_pattern_disabled_success": {
-    "message": "Pattern disabled successfully.",
-    "description": "Success message when a blacklist pattern is disabled."
-  },
-  "options_blacklist_pattern_enabled_success": {
-    "message": "Pattern enabled successfully.",
-    "description": "Success message when a blacklist pattern is enabled."
-  },
-  "options_blacklist_pattern_added_success": {
-    "message": "Pattern added successfully.",
-    "description": "Success message when a blacklist pattern is added."
-  },
-  "options_blacklist_delete_success": {
-    "message": "Pattern deleted successfully.",
-    "description": "Success message when a blacklist pattern is deleted."
-  },
-  "options_quick_input_tabs_title": {
-    "message": "Quick Input Tabs",
-    "description": "Title for the quick input tabs section."
-  },
-  "options_add_quick_input_button": {
-    "message": "Add Quick Input",
-    "description": "Button text to add a quick input."
-  },
-  "options_language_models_title": {
-    "message": "Language Models",
-    "description": "Title for the language models section."
-  },
-  "options_add_new_model_button": {
-    "message": "Add New Model",
-    "description": "Button text to add a new language model."
-  },
-  "options_model_display_name_label": {
-    "message": "Display Name",
-    "description": "Label for the model display name input."
-  },
-  "options_model_provider_label": {
-    "message": "Provider",
-    "description": "Label for the model provider selection."
-  },
-  "options_model_provider_openai": {
-    "message": "OpenAI Compatible",
-    "description": "OpenAI provider option in the model provider selection."
-  },
-  "options_model_provider_gemini": {
-    "message": "Google Gemini",
-    "description": "Google Gemini provider option in the model provider selection."
-  },
-  "optionsAzureOpenAIProvider": {
-    "message": "Azure OpenAI",
-    "description": "Azure OpenAI provider option."
-  },
-  "options_model_azure_endpoint_label": {
-    "message": "Endpoint",
-    "description": "Label for Azure OpenAI endpoint."
-  },
-  "options_model_azure_deployment_name_label": {
-    "message": "Deployment Name",
-    "description": "Label for Azure OpenAI deployment name."
-  },
-  "options_model_azure_api_version_label": {
-    "message": "API Version",
-    "description": "Label for Azure OpenAI API version."
-  },
-  "options_model_base_url_label": {
-    "message": "Base URL",
-    "description": "Label for the model base URL input."
-  },
-  "options_model_api_key_label": {
-    "message": "API Key",
-    "description": "Label for the model API key input."
-  },
-  "options_model_model_label": {
-    "message": "Model",
-    "description": "Label for the model name input."
-  },
-  "options_model_max_tokens_label": {
-    "message": "Max Tokens",
-    "description": "Label for the model max tokens input."
-  },
-  "options_model_temperature_label": {
-    "message": "Temperature",
-    "description": "Label for the model temperature input."
-  },
-  "options_model_unnamed": {
-    "message": "Unnamed Model",
-    "description": "Default name for models without a name."
-  },
-  "options_model_no_models_configured": {
-    "message": "No models configured",
-    "description": "Message shown when no models are configured."
-  },
-  "options_quick_input_placeholder_button_text": {
-    "message": "Tab name",
-    "description": "Placeholder for the quick input button text."
-  },
-  "options_quick_input_auto_trigger_title": {
-    "message": "Auto-trigger when sidebar opens",
-    "description": "Title for the auto-trigger toggle on a quick input."
-  },
-  "options_quick_input_default_name": {
-    "message": "quick input",
-    "description": "Default name used when a quick input has no display text."
-  },
-  "options_quick_input_placeholder_message": {
-    "message": "Message to send when clicked",
-    "description": "Placeholder for the quick input message."
-  },
-  "options_js_saving": {
-    "message": "Saving...",
-    "description": "Text displayed when saving."
-  },
-  "options_js_saved": {
-    "message": "Saved!",
-    "description": "Text displayed when saved successfully."
-  },
-  "options_js_error": {
-    "message": "Error",
-    "description": "Text displayed on error."
-  },
-  "options_js_cache_stats_error": {
-    "message": "Error loading cache statistics",
-    "description": "Error message when loading cache stats fails."
-  },
-  "options_js_clear_cache_error": {
-    "message": "Error clearing cache. See console for details.",
-    "description": "Error message when clearing cache fails."
-  },
-  "options_js_export_error": {
-    "message": "Failed to export configuration. Please check the console for details.",
-    "description": "Error message when exporting config fails."
-  },
-  "options_js_import_error": {
-    "message": "Failed to import configuration. Please check the console for details.",
-    "description": "Error message when importing config fails."
-  },
-  "options_js_sync_github_token": {
-    "message": "GitHub Token",
-    "description": "GitHub Token field name."
-  },
-  "options_js_sync_gist_id": {
-    "message": "Gist ID",
-    "description": "Gist ID field name."
-  },
-  "options_js_sync_testing_connection": {
-    "message": "Testing connection...",
-    "description": "Sync status when testing connection."
-  },
-  "options_js_sync_save_config_error": {
-    "message": "Failed to save sync configuration",
-    "description": "Error message when saving sync config fails."
-  },
-  "options_js_sync_config_not_saved_properly": {
-    "message": "Configuration not saved properly",
-    "description": "Error message when sync config is not saved properly."
-  },
-  "options_js_sync_config_not_saved_properly_details": {
-    "message": "Configuration was not saved properly. Please try again.",
-    "description": "Detailed error message for sync config not saved properly."
-  },
-  "options_js_sync_completed_successfully": {
-    "message": "Sync completed successfully",
-    "description": "Success message when sync completes."
-  },
-  "options_js_sync_failed_after_test": {
-    "message": "Sync failed after connection test",
-    "description": "Error message for sync failing after a successful connection test."
-  },
-  "options_js_sync_operation_failed": {
-    "message": "Sync operation failed",
-    "description": "Generic error message for a failed sync operation."
-  },
-  "options_js_sync_initial_sync_failed": {
-    "message": "Initial sync failed",
-    "description": "Error message for a failed initial sync."
-  },
-  "options_js_sync_connection_failed_disabled": {
-    "message": "Connection failed - Auto sync disabled",
-    "description": "Error message when connection fails and auto-sync is disabled."
-  },
-  "options_js_sync_connection_test_failed": {
-    "message": "Connection test failed",
-    "description": "Error message for a failed connection test."
-  },
-  "options_js_sync_enable_auto_sync_failed": {
-    "message": "Failed to enable auto sync",
-    "description": "Error message when enabling auto-sync fails."
-  },
-  "options_js_sync_synced": {
-    "message": "Synced!",
-    "description": "Status message when sync is complete."
-  },
-  "options_js_sync_error": {
-    "message": "Sync Error",
-    "description": "Error status for sync."
-  },
-  "options_js_sync_load_status_error": {
-    "message": "Failed to load sync status",
-    "description": "Error message when loading sync status fails."
-  },
-  "options_js_sync_token_gist_required": {
-    "message": "Token and Gist ID required",
-    "description": "Error message when token and Gist ID are missing."
-  },
-  "options_js_sync_connection_successful": {
-    "message": "Connection successful",
-    "description": "Success message for sync connection test."
-  },
-  "options_js_sync_connection_failed": {
-    "message": "Connection failed",
-    "description": "Error message for a failed sync connection."
-  },
-  "options_js_sync_bg_script_error": {
-    "message": "Background script error",
-    "description": "Error message for an error in the background script."
-  },
-  "options_js_sync_unexpected_response": {
-    "message": "Unexpected response from background script",
-    "description": "Error message for an unexpected response from the background script."
-  },
-  "options_js_sync_test_failed": {
-    "message": "Test failed",
-    "description": "Generic error message for a failed test."
-  },
-  "options_js_sync_github_token_required": {
-    "message": "GitHub Token is required",
-    "description": "Validation error for missing GitHub token."
-  },
-  "options_js_sync_gist_id_required": {
-    "message": "Gist ID is required",
-    "description": "Validation error for missing Gist ID."
-  },
-  "options_js_sync_status_ready": {
-    "message": "Ready",
-    "description": "Sync status when ready to sync."
-  },
-  "options_js_sync_status_uploading": {
-    "message": "Uploading...",
-    "description": "Sync status when uploading data."
-  },
-  "options_js_sync_status_downloading": {
-    "message": "Downloading...",
-    "description": "Sync status when downloading data."
-  },
-  "options_js_sync_status_config_error": {
-    "message": "Configuration error",
-    "description": "Sync status when there's a configuration error."
-  },
-  "options_js_sync_status_unknown": {
-    "message": "Unknown status",
-    "description": "Sync status when status is unknown."
-  },
-  "sidebar_title_extractWithJina": {
-    "message": "Extract with Jina AI",
-    "description": "Title for the Jina AI extraction button."
-  },
-  "sidebar_title_extractWithReadability": {
-    "message": "Extract with Readability.js",
-    "description": "Title for the Readability.js extraction button."
-  },
-  "sidebar_title_copyExtractedContent": {
-    "message": "Copy extracted content",
-    "description": "Title for the copy content button."
-  },
-  "sidebar_title_retryExtraction": {
-    "message": "Retry extraction",
-    "description": "Title for the retry extraction button."
-  },
-  "sidebar_title_clearAllPageData": {
-    "message": "Clear all page data",
-    "description": "Title for the clear page data button."
-  },
-  "sidebar_title_openChatPage": {
-    "message": "Open Conversations page",
-    "description": "Title for the open chat page button."
-  },
-  "sidebar_title_openConfigPage": {
-    "message": "Open Options page",
-    "description": "Title for the open configuration page button."
-  },
-  "sidebar_text_extractingContent": {
-    "message": "Extracting content...",
-    "description": "Text displayed while extracting content."
-  },
-  "sidebar_text_failedToExtractContent": {
-    "message": "Failed to extract content.",
-    "description": "Error message when content extraction fails."
-  },
-  "sidebar_text_imageAttached": {
-    "message": "Image attached",
-    "description": "Header text for the attached image preview."
-  },
-  "sidebar_title_stopAndClear": {
-    "message": "Stop generating and clear conversation",
-    "description": "Title for the stop and clear button."
-  },
-  "sidebar_js_blacklistConfirm": {
-    "message": "This page is in your blacklist. Do you want to continue using Think Bot?",
-    "description": "Confirmation message for blacklisted pages."
-  },
-  "sidebar_chatMessage_placeholder_edit": {
-    "message": "Edit your message...",
-    "description": "Placeholder for editing a message."
-  },
-  "sidebar_chatMessage_title_edit": {
-    "message": "Press Ctrl+Enter to save or Escape to cancel",
-    "description": "Title/tooltip for editing a message."
-  },
-  "confirmationDialog_deleteMessage": {
-    "message": "Are you sure you want to delete this item?",
-    "description": "Default delete confirmation message."
-  },
-  "confirmationDialog_resetMessage": {
-    "message": "Are you sure you want to reset to defaults?",
-    "description": "Default reset confirmation message."
-  },
-  "confirmationDialog_clearMessage": {
-    "message": "Are you sure you want to clear all data?",
-    "description": "Default clear confirmation message."
-  },
-  "common_confirm_delete_message": {
-    "message": "Are you sure you want to delete this item?",
-    "description": "Common delete confirmation message."
-  },
-  "sidebar_chatManager_title_stopGenerating": {
-    "message": "Stop generating response",
-    "description": "Title for the stop generating button in a chat message."
-  },
-  "sidebar_chatManager_title_editMessage": {
-    "message": "Edit Message",
-    "description": "Title for the edit message button."
-  },
-  "sidebar_chatManager_title_copyText": {
-    "message": "Copy Text",
-    "description": "Title for the copy text button."
-  },
-  "sidebar_chatManager_title_scrollToTop": {
-    "message": "Scroll to Top",
-    "description": "Title for the scroll to top button."
-  },
-  "sidebar_chatManager_title_copyAsMarkdown": {
-    "message": "Copy as Markdown",
-    "description": "Title for the copy as markdown button."
-  },
-  "sidebar_chatManager_title_scrollToBottom": {
-    "message": "Scroll to Bottom",
-    "description": "Title for the scroll to bottom button."
-  },
-  "sidebar_chatManager_finishReason_maxTokens": {
-    "message": "Response was truncated due to maximum token limit. The response may be incomplete.",
-    "description": "Warning for response truncated due to token limit."
-  },
-  "sidebar_chatManager_finishReason_safety": {
-    "message": "Response was stopped due to content policy restrictions.",
-    "description": "Warning for response stopped due to safety reasons."
-  },
-  "sidebar_chatManager_finishReason_recitation": {
-    "message": "Response was stopped due to potential copyright content.",
-    "description": "Warning for response stopped due to recitation."
-  },
-  "sidebar_chatManager_finishReason_other": {
-    "message": "Response ended for an unknown reason.",
-    "description": "Warning for response ended for an unknown reason."
-  },
-  "sidebar_chatManager_toast_textCopied": {
-    "message": "Text copied to clipboard",
-    "description": "Toast message when text is copied."
-  },
-  "sidebar_chatManager_log_failedToCopyText": {
-    "message": "Failed to copy text:",
-    "description": "Log message when copying text fails."
-  },
-  "sidebar_chatManager_toast_markdownCopied": {
-    "message": "Markdown copied to clipboard",
-    "description": "Toast message when markdown is copied."
-  },
-  "sidebar_chatManager_toast_errorCopyingMarkdown": {
-    "message": "Error copying markdown",
-    "description": "Toast message when copying markdown fails."
-  },
-  "sidebar_chatManager_error_failedToSend": {
-    "message": "Failed to send message to the AI. Check service worker logs.",
-    "description": "Error message when sending a message to the AI fails."
-  },
-  "sidebar_chatManager_error_failedToSendLlm": {
-    "message": "Failed to send message to LLM",
-    "description": "Error message when sending a message to the LLM fails."
-  },
-  "sidebar_contentExtractor_error_accessContent": {
-    "message": "Error accessing current content",
-    "description": "Error message when accessing content fails."
-  },
-  "sidebar_contentExtractor_error_backgroundScript": {
-    "message": "Failed to communicate with the background script",
-    "description": "Error message when communication with the background script fails."
-  },
-  "sidebar_contentExtractor_warn_noContentToCopy": {
-    "message": "No content to copy",
-    "description": "Warning message when there is no content to copy."
-  },
-  "sidebar_contentExtractor_error_failedToCopy": {
-    "message": "Failed to copy content:",
-    "description": "Error message when copying content fails."
-  },
-  "sidebar_errorHandler_error_unexpected": {
-    "message": "An unexpected error occurred. Please try again.",
-    "description": "Generic unexpected error message."
-  },
-  "sidebar_errorHandler_error_failedToGetResponse": {
-    "message": "Failed to get response from AI service. Please try again.",
-    "description": "Error message when failing to get a response from the AI service."
-  },
-  "sidebar_errorHandler_error_requestCancelled": {
-    "message": "Request was cancelled by user.",
-    "description": "Error message when a request is cancelled by the user."
-  },
-  "sidebar_errorHandler_error_contentScript": {
-    "message": "Content script not connected. Please reload the page and try again.",
-    "description": "Error message for a disconnected content script."
-  },
-  "sidebar_errorHandler_error_pageNotReady": {
-    "message": "Page content not ready or content script issue. Please wait for the page to load fully and try again.",
-    "description": "Error message when the page is not ready."
-  },
-  "sidebar_errorHandler_error_pageLoading": {
-    "message": "Page content not ready, please wait for page to load fully and retry.",
-    "description": "Error message when the page is still loading."
-  },
-  "sidebar_errorHandler_error_readabilityLoad": {
-    "message": "Readability library failed to load. Please try again or contact support.",
-    "description": "Error message when the Readability library fails to load."
-  },
-  "sidebar_errorHandler_error_readabilityExtract": {
-    "message": "Readability extraction failed. The page content may not be suitable for extraction. Try refreshing the page.",
-    "description": "Error message when Readability extraction fails."
-  },
-  "sidebar_errorHandler_error_noHtml": {
-    "message": "Unable to get page content. Please reload the page and try again.",
-    "description": "Error message when no HTML content is available."
-  },
-  "sidebar_errorHandler_error_processing": {
-    "message": "Content processing error. Please try again or reload the page.",
-    "description": "Error message for a content processing error."
-  },
-  "sidebar_errorHandler_error_offscreen": {
-    "message": "Content processing service unavailable. Please try again.",
-    "description": "Error message for an unavailable offscreen service."
-  },
-  "sidebar_errorHandler_error_extractFailed": {
-    "message": "Failed to extract content from the page. Please try again or reload the page.",
-    "description": "Error message when content extraction fails."
-  },
-  "sidebar_errorHandler_error_network": {
-    "message": "Network connection error. Please check your internet connection and try again.",
-    "description": "Error message for a network error."
-  },
-  "sidebar_errorHandler_error_timeout": {
-    "message": "Request timed out. Please try again.",
-    "description": "Error message for a request timeout."
-  },
-  "sidebar_uiManager_text_restrictedPage": {
-    "message": "Restricted Page",
-    "description": "Title for the restricted page message."
-  },
-  "sidebar_uiManager_text_restrictedPageMessage": {
-    "message": "Think Bot cannot work on Chrome internal pages (chrome://, chrome-extension://, etc.).",
-    "description": "Message explaining why the page is restricted."
-  },
-  "sidebar_uiManager_text_restrictedPageGuidance": {
-    "message": "Please navigate to a regular webpage to use the extension.",
-    "description": "Guidance for the user on a restricted page."
-  },
-  "sidebar_uiManager_error_noContentExtracted": {
-    "message": "No content extracted",
-    "description": "Error message when no content is extracted."
-  },
-  "conversations_page_title": {
-    "message": "Think Bot - Conversations",
-    "description": "The title of the conversations page."
-  },
-  "conversations_search_placeholder": {
-    "message": "Search pages...",
-    "description": "Placeholder for the page search input in conversations."
-  },
-  "conversations_empty_list_title": {
-    "message": "No conversations yet",
-    "description": "Title for the empty page list in conversations."
-  },
-  "conversations_empty_list_subtitle": {
-    "message": "Browse pages and chat to see conversations here",
-    "description": "Subtitle for the empty page list in conversations."
-  },
-  "conversations_welcome_subtitle": {
-    "message": "Select a page from the left to view its content and continue chatting.",
-    "description": "Subtitle for the welcome screen in conversations."
-  },
-  "conversations_js_cannot_extract": {
-    "message": "Cannot extract content from this page type. Please navigate to a regular web page.",
-    "description": "Error message when content extraction is not possible."
-  },
-  "conversations_js_no_cached_content": {
-    "message": "No cached content available for this page. Visit the page first to extract content.",
-    "description": "Error message when there is no cached content for a page."
-  },
-  "conversations_js_failed_to_load": {
-    "message": "Failed to load page conversation",
-    "description": "Error message when a page conversation fails to load."
-  },
-  "export_default_title": {
-    "message": "Conversation",
-    "description": "Default title for an exported conversation file."
-  },
-  "export_untitled_page": {
-    "message": "Untitled",
-    "description": "Default title for a page without a title."
-  },
-  "export_unknown_role": {
-    "message": "Unknown",
-    "description": "Default role for a message in an exported conversation."
-  },
-  "global_error_no_url": {
-    "message": "No URL provided",
-    "description": "Error message when a URL is not provided."
-  },
-  "global_error_failed_to_clear_storage": {
-    "message": "Failed to clear data from storage",
-    "description": "Error message when clearing data from storage fails."
-  },
-  "global_error_failed_to_soft_delete": {
-    "message": "Failed to soft delete data from storage",
-    "description": "Error message when soft deleting data from storage fails."
-  },
-  "page_list_manager_failed_to_load": {
-    "message": "Failed to load conversations",
-    "description": "Error message when loading conversations in the page list manager fails."
-  },
-  "page_list_manager_tooltip_no_extraction_time": {
-    "message": "No extraction time",
-    "description": "Tooltip text for when there is no extraction time."
-  },
-  "page_list_manager_open_in_new_tab_title": {
-    "message": "Open in new tab",
-    "description": "Title for the open in new tab button."
-  },
-  "page_list_manager_delete_conversation_title": {
-    "message": "Delete this conversation",
-    "description": "Title for the delete conversation button."
-  },
-  "page_list_manager_confirm_delete_message": {
-    "message": "Are you sure you want to delete all conversations and extracted content for this page?",
-    "description": "Confirmation message before deleting a page conversation."
-  },
-  "page_list_manager_empty_list_title": {
-    "message": "No conversations found",
-    "description": "Title for the empty page list in the page list manager."
-  },
-  "page_list_manager_empty_list_subtitle": {
-    "message": "Browse pages and chat to see conversations here",
-    "description": "Subtitle for the empty page list in the page list manager."
-  },
-  "global_time_just_now": {
-    "message": "Just now",
-    "description": "Text for a very recent timestamp."
-  },
-  "global_loading_content": {
-    "message": "Loading content...",
-    "description": "Text displayed while loading content."
-  },
-  "global_failed_to_load_content": {
-    "message": "Failed to load content.",
-    "description": "Error message when content loading fails."
-  },
-  "options_ui_config_import_confirm_title": {
-    "message": "Confirm Configuration Import",
-    "description": "Title for the configuration import confirmation dialog."
-  },
-  "options_ui_config_import_confirm_footer": {
-    "message": "Do you want to proceed with importing this configuration? This will overwrite your current settings.",
-    "description": "Footer text for the configuration import confirmation dialog."
-  },
-  "options_ui_config_import_success": {
-    "message": "Configuration imported successfully!",
-    "description": "Main success message after configuration import."
-  },
-  "options_ui_config_import_success_footer": {
-    "message": "The page will reload to apply the new settings.",
-    "description": "Footer text for the configuration import success message."
-  },
-  "options_blacklist_update_failed": {
-    "message": "Failed to update blacklist pattern",
-    "description": "Error message when updating a blacklist pattern fails."
-  },
-  "options_blacklist_pattern_not_found": {
-    "message": "Pattern not found",
-    "description": "Error message when a blacklist pattern is not found."
-  },
-  "options_blacklist_delete_failed": {
-    "message": "Failed to delete blacklist pattern",
-    "description": "Error message when deleting a blacklist pattern fails."
-  },
-  "options_blacklist_save_failed": {
-    "message": "Failed to save blacklist pattern",
-    "description": "Error message when saving a blacklist pattern fails."
-  },
-  "options_blacklist_enter_pattern_error": {
-    "message": "Please enter a valid pattern",
-    "description": "Error message when user enters invalid pattern."
-  },
-  "options_blacklist_pattern_updated_success": {
-    "message": "Pattern updated successfully",
-    "description": "Success message when a blacklist pattern is updated."
-  },
-  "options_blacklist_edit_dialog_title": {
-    "message": "Edit Blacklist Pattern",
-    "description": "Title for the edit blacklist pattern dialog."
-  },
-  "options_blacklist_no_patterns": {
-    "message": "No blacklist patterns configured. Click \"Add Pattern\" to create one.",
-    "description": "Message shown when no blacklist patterns are configured."
-  },
-  "options_blacklist_url_pattern_label": {
-    "message": "URL Pattern (Regex)",
-    "description": "Label for the URL pattern input field."
-  },
-  "options_blacklist_url_pattern_placeholder": {
-    "message": "e.g., google\\.com/search",
-    "description": "Placeholder for the URL pattern input field."
-  },
-  "options_blacklist_url_pattern_description": {
-    "message": "Use regex pattern to match URLs (without protocol)",
-    "description": "Description for the URL pattern input field."
-  },
-  "options_blacklist_test_url_label": {
-    "message": "Test URL (Optional)",
-    "description": "Label for the test URL input field."
-  },
-  "options_blacklist_test_url_placeholder": {
-    "message": "e.g., https://www.google.com/search?q=test",
-    "description": "Placeholder for the test URL input field."
-  },
-  "options_blacklist_test_error": {
-    "message": "Test Error",
-    "description": "Header for test error results."
-  },
-  "options_blacklist_test_pattern_label": {
-    "message": "Pattern:",
-    "description": "Label for pattern in test results."
-  },
-  "options_blacklist_test_tested_url_label": {
-    "message": "Tested URL:",
-    "description": "Label for tested URL in test results."
-  },
-  "options_blacklist_reset_confirm_message": {
-    "message": "The default patterns will be restored.\n\nThis action cannot be undone.\n\nDo you want to continue?",
-    "description": "Complete reset confirmation message including all details."
-  },
-  "options_blacklist_reset_success": {
-    "message": "Blacklist reset to default successfully",
-    "description": "Success message when blacklist is reset to default."
-  },
-  "options_blacklist_reset_failed": {
-    "message": "Failed to reset blacklist to default",
-    "description": "Error message when reset to default fails."
-  },
-  "common_delete": {
-    "message": "Delete",
-    "description": "Common delete button text."
-  },
-  "common_cancel": {
-    "message": "Cancel",
-    "description": "Common cancel button text."
-  },
-  "common_confirm": {
-    "message": "Confirm",
-    "description": "Common confirm button text."
-  },
-  "common_clear": {
-    "message": "Clear",
-    "description": "Common clear button text."
-  },
-  "common_reset": {
-    "message": "Reset",
-    "description": "Common reset button text."
-  },
-  "options_ui_config_reset_confirm": {
-    "message": "Are you sure you want to reset all settings to their default values? This action cannot be undone.",
-    "description": "Confirmation message for resetting configuration to defaults."
-  },
-  "options_ui_config_export_error": {
-    "message": "Failed to export configuration. Please try again.",
-    "description": "Error message when configuration export fails."
-  },
-  "options_ui_config_import_invalid_file": {
-    "message": "Invalid file type. Please select a JSON file.",
-    "description": "Error message when selected file is not JSON."
-  },
-  "options_ui_config_import_invalid_format": {
-    "message": "Invalid configuration format. Please select a valid configuration file.",
-    "description": "Error message when configuration format is invalid."
-  },
-  "options_ui_config_import_save_error": {
-    "message": "Failed to save imported configuration. Please try again.",
-    "description": "Error message when saving imported configuration fails."
-  },
-  "common_save": {
-    "message": "Save",
-    "description": "Common save button text."
-  },
-  "common_remove": {
-    "message": "Remove",
-    "description": "Common remove button text."
-  },
-  "common_confirm_are_you_sure": {
-    "message": "Are you sure?",
-    "description": "Common confirmation dialog message."
-  },
-  "common_confirmation_title": {
-    "message": "Confirmation",
-    "description": "Common confirmation dialog title."
-  },
-  "common_syncing": {
-    "message": "Syncing...",
-    "description": "Common sync status message."
-  },
-  "common_response_stopped_by_user": {
-    "message": "Response generation stopped by user.",
-    "description": "Generic message when user stops response generation."
-  },
-  "sidebar_tabManager_retryingMessage": {
-    "message": "Retrying message...",
-    "description": "Text displayed when retrying a message."
+    "message": "Think Bot"
   },
   "common_add": {
-    "message": "Add",
-    "description": "Common add button text."
-  },
-  "common_update": {
-    "message": "Update",
-    "description": "Common update button text."
-  },
-  "common_retry": {
-    "message": "Retry",
-    "description": "Common retry button text."
+    "message": "Add"
   },
   "common_ask_placeholder": {
-    "message": "Ask...",
-    "description": "Common ask placeholder text."
-  },
-  "common_send_message": {
-    "message": "Send Message",
-    "description": "Common send message button title."
-  },
-  "common_include_page_content": {
-    "message": "Include page content in system prompt",
-    "description": "Common include page content button title."
-  },
-  "common_stop_and_clear": {
-    "message": "Stop generating and clear conversation",
-    "description": "Common stop and clear button title."
-  },
-  "common_export_conversation": {
-    "message": "Export Conversation",
-    "description": "Common export conversation button title."
-  },
-  "common_copy_markdown": {
-    "message": "Copy Markdown",
-    "description": "Common copy markdown button title."
-  },
-  "common_chat": {
-    "message": "Chat",
-    "description": "Common chat text."
-  },
-  "common_confirm_reset_message": {
-    "message": "Are you sure you want to reset to defaults?",
-    "description": "Common reset confirmation message."
-  },
-  "common_confirm_clear_message": {
-    "message": "Are you sure you want to clear all data?",
-    "description": "Common clear confirmation message."
+    "message": "Ask..."
   },
   "common_cache_label": {
-    "message": "Local Data:",
-    "description": "Common cache label."
+    "message": "Local Data:"
+  },
+  "common_cancel": {
+    "message": "Cancel"
+  },
+  "common_chat": {
+    "message": "Chat"
+  },
+  "common_clear": {
+    "message": "Clear"
+  },
+  "common_confirm": {
+    "message": "Confirm"
+  },
+  "common_confirm_are_you_sure": {
+    "message": "Are you sure?"
+  },
+  "common_confirm_clear_message": {
+    "message": "Are you sure you want to clear all data?"
+  },
+  "common_confirm_delete_message": {
+    "message": "Are you sure you want to delete this item?"
+  },
+  "common_confirm_reset_message": {
+    "message": "Are you sure you want to reset to defaults?"
+  },
+  "common_confirmation_title": {
+    "message": "Confirmation"
+  },
+  "common_copy_markdown": {
+    "message": "Copy Markdown"
+  },
+  "common_delete": {
+    "message": "Delete"
+  },
+  "common_export_conversation": {
+    "message": "Export Conversation"
+  },
+  "common_include_page_content": {
+    "message": "Include page content in system prompt"
   },
   "common_options_js_save": {
-    "message": "Save",
-    "description": "Common save button default text."
+    "message": "Save"
+  },
+  "common_remove": {
+    "message": "Remove"
+  },
+  "common_reset": {
+    "message": "Reset"
+  },
+  "common_response_stopped_by_user": {
+    "message": "Response generation stopped by user."
+  },
+  "common_retry": {
+    "message": "Retry"
+  },
+  "common_save": {
+    "message": "Save"
+  },
+  "common_send_message": {
+    "message": "Send Message"
+  },
+  "common_stop_and_clear": {
+    "message": "Stop generating and clear conversation"
+  },
+  "common_syncing": {
+    "message": "Syncing..."
+  },
+  "common_update": {
+    "message": "Update"
+  },
+
+  "conversations_empty_list_subtitle": {
+    "message": "Browse pages and chat to see conversations here"
+  },
+  "conversations_empty_list_title": {
+    "message": "No conversations yet"
+  },
+  "conversations_js_cannot_extract": {
+    "message": "Cannot extract content from this page type. Please navigate to a regular web page."
+  },
+  "conversations_js_failed_to_load": {
+    "message": "Failed to load page conversation"
+  },
+  "conversations_js_no_cached_content": {
+    "message": "No cached content available for this page. Visit the page first to extract content."
+  },
+  "conversations_page_title": {
+    "message": "Think Bot - Conversations"
+  },
+  "conversations_search_placeholder": {
+    "message": "Search pages..."
+  },
+  "conversations_welcome_subtitle": {
+    "message": "Select a page from the left to view its content and continue chatting."
+  },
+  "export_default_title": {
+    "message": "Conversation"
+  },
+  "export_unknown_role": {
+    "message": "Unknown"
+  },
+  "export_untitled_page": {
+    "message": "Untitled"
+  },
+  "global_error_failed_to_clear_storage": {
+    "message": "Failed to clear data from storage"
+  },
+  "global_error_failed_to_soft_delete": {
+    "message": "Failed to soft delete data from storage"
+  },
+  "global_error_no_url": {
+    "message": "No URL provided"
+  },
+  "global_failed_to_load_content": {
+    "message": "Failed to load content."
+  },
+  "global_loading_content": {
+    "message": "Loading content..."
+  },
+  "global_time_just_now": {
+    "message": "Just now"
+  },
+  "options_add_new_model_button": {
+    "message": "Add New Model"
+  },
+  "options_add_quick_input_button": {
+    "message": "Add Quick Input"
+  },
+  "options_basic_settings_title": {
+    "message": "Basic Settings"
+  },
+  "options_blacklist_add_button": {
+    "message": "Add"
+  },
+  "options_blacklist_add_dialog_title": {
+    "message": "Add Blacklist Pattern"
+  },
+  "options_blacklist_add_pattern_button": {
+    "message": "Add Pattern"
+  },
+  "options_blacklist_delete_failed": {
+    "message": "Failed to delete blacklist pattern"
+  },
+  "options_blacklist_delete_pattern_title": {
+    "message": "Delete Pattern"
+  },
+  "options_blacklist_delete_success": {
+    "message": "Pattern deleted successfully."
+  },
+  "options_blacklist_description": {
+    "message": "For url in blacklist, confirm before run auto-trigger tabs"
+  },
+  "options_blacklist_edit_dialog_title": {
+    "message": "Edit Blacklist Pattern"
+  },
+  "options_blacklist_edit_pattern_title": {
+    "message": "Edit Pattern"
+  },
+  "options_blacklist_enter_pattern_error": {
+    "message": "Please enter a valid pattern"
+  },
+  "options_blacklist_no_patterns": {
+    "message": "No blacklist patterns configured. Click \"Add Pattern\" to create one."
+  },
+  "options_blacklist_pattern_added_success": {
+    "message": "Pattern added successfully."
+  },
+  "options_blacklist_pattern_disabled_success": {
+    "message": "Pattern disabled successfully."
+  },
+  "options_blacklist_pattern_enabled_success": {
+    "message": "Pattern enabled successfully."
+  },
+  "options_blacklist_pattern_not_found": {
+    "message": "Pattern not found"
+  },
+  "options_blacklist_pattern_updated_success": {
+    "message": "Pattern updated successfully"
+  },
+  "options_blacklist_reset_button": {
+    "message": "Reset"
+  },
+  "options_blacklist_reset_confirm_message": {
+    "message": "The default patterns will be restored.\n\nThis action cannot be undone.\n\nDo you want to continue?"
+  },
+  "options_blacklist_reset_failed": {
+    "message": "Failed to reset blacklist to default"
+  },
+  "options_blacklist_reset_success": {
+    "message": "Blacklist reset to default successfully"
+  },
+  "options_blacklist_save_failed": {
+    "message": "Failed to save blacklist pattern"
+  },
+  "options_blacklist_settings_title": {
+    "message": "Blacklist Settings"
+  },
+  "options_blacklist_test_error": {
+    "message": "Test Error"
+  },
+  "options_blacklist_test_pattern_label": {
+    "message": "Pattern:"
+  },
+  "options_blacklist_test_tested_url_label": {
+    "message": "Tested URL:"
+  },
+  "options_blacklist_test_url_label": {
+    "message": "Test URL (Optional)"
+  },
+  "options_blacklist_test_url_placeholder": {
+    "message": "e.g., https://www.google.com/search?q=test"
+  },
+  "options_blacklist_update_failed": {
+    "message": "Failed to update blacklist pattern"
+  },
+  "options_blacklist_url_pattern_description": {
+    "message": "Use regex pattern to match URLs (without protocol)"
+  },
+  "options_blacklist_url_pattern_label": {
+    "message": "URL Pattern (Regex)"
+  },
+  "options_blacklist_url_pattern_placeholder": {
+    "message": "e.g., google\\.com/search"
+  },
+  "options_cache_label": {
+    "message": "Local Data:"
+  },
+  "options_clear_cache_button": {
+    "message": "Clear"
+  },
+  "options_cloud_sync_description": {
+    "message": "Sync your config (!INCLUDE api-key!), page and chat data"
+  },
+  "options_cloud_sync_title": {
+    "message": "Cloud Sync"
+  },
+  "options_confirm_clear_all_cache": {
+    "message": "Are you sure you want to clear all local data? This action cannot be undone and will remove all locally stored conversations and extracted content."
+  },
+  "options_content_extraction_title": {
+    "message": "Content Extraction"
+  },
+  "options_default_extraction_method_label": {
+    "message": "Default Extraction Method"
+  },
+  "options_default_model_label": {
+    "message": "Model"
+  },
+  "options_export_config_button": {
+    "message": "Export Configuration"
+  },
+  "options_extracted_content_height_label": {
+    "message": "Content Area Height"
+  },
+  "options_extraction_method_jina": {
+    "message": "Jina AI"
+  },
+  "options_extraction_method_readability": {
+    "message": "Readability.js (Default)"
+  },
+  "options_gist_id_create_link": {
+    "message": "SECRET Gist"
+  },
+  "options_gist_id_create_link_prefix": {
+    "message": "Create a"
+  },
+  "options_gist_id_create_link_suffix": {
+    "message": "(DO NOT create public gist)"
+  },
+  "options_gist_id_label": {
+    "message": "SECRET Gist ID"
+  },
+  "options_github_token_create_link": {
+    "message": "Create token"
+  },
+  "options_github_token_label": {
+    "message": "GitHub Token"
+  },
+  "options_github_token_permission_note": {
+    "message": "(Requires Gist permission)"
+  },
+  "options_header_title_text": {
+    "message": "Think Bot Settings"
+  },
+  "options_import_config_button": {
+    "message": "Import Configuration"
+  },
+  "options_jina_api_key_label": {
+    "message": "Jina AI API Key (Optional)"
+  },
+  "options_jina_response_template_description": {
+    "message": "Template for formatting Jina AI JSON response. Available placeholders: {title}, {url}, {description}, {content}."
+  },
+  "options_jina_response_template_label": {
+    "message": "Jina AI Response Template"
+  },
+  "options_js_cache_stats_error": {
+    "message": "Error loading cache statistics"
+  },
+  "options_js_clear_cache_error": {
+    "message": "Error clearing cache. See console for details."
+  },
+  "options_js_error": {
+    "message": "Error"
+  },
+  "options_js_export_error": {
+    "message": "Failed to export configuration. Please check the console for details."
+  },
+  "options_js_import_error": {
+    "message": "Failed to import configuration. Please check the console for details."
+  },
+  "options_js_saved": {
+    "message": "Saved!"
+  },
+  "options_js_saving": {
+    "message": "Saving..."
+  },
+  "options_js_sync_bg_script_error": {
+    "message": "Background script error"
+  },
+  "options_js_sync_completed_successfully": {
+    "message": "Sync completed successfully"
+  },
+  "options_js_sync_config_not_saved_properly": {
+    "message": "Configuration not saved properly"
+  },
+  "options_js_sync_config_not_saved_properly_details": {
+    "message": "Configuration was not saved properly. Please try again."
+  },
+  "options_js_sync_connection_failed": {
+    "message": "Connection failed"
+  },
+  "options_js_sync_connection_failed_disabled": {
+    "message": "Connection failed - Auto sync disabled"
+  },
+  "options_js_sync_connection_successful": {
+    "message": "Connection successful"
+  },
+  "options_js_sync_connection_test_failed": {
+    "message": "Connection test failed"
+  },
+  "options_js_sync_enable_auto_sync_failed": {
+    "message": "Failed to enable auto sync"
+  },
+  "options_js_sync_error": {
+    "message": "Sync Error"
+  },
+  "options_js_sync_failed_after_test": {
+    "message": "Sync failed after connection test"
+  },
+  "options_js_sync_gist_id": {
+    "message": "Gist ID"
+  },
+  "options_js_sync_gist_id_required": {
+    "message": "Gist ID is required"
+  },
+  "options_js_sync_github_token": {
+    "message": "GitHub Token"
+  },
+  "options_js_sync_github_token_required": {
+    "message": "GitHub Token is required"
+  },
+  "options_js_sync_initial_sync_failed": {
+    "message": "Initial sync failed"
+  },
+  "options_js_sync_last_sync": {
+    "message": "Last sync: {0}"
+  },
+  "options_js_sync_load_status_error": {
+    "message": "Failed to load sync status"
+  },
+  "options_js_sync_operation_failed": {
+    "message": "Sync operation failed"
+  },
+  "options_js_sync_save_config_error": {
+    "message": "Failed to save sync configuration"
+  },
+  "options_js_sync_status_config_error": {
+    "message": "Configuration error"
+  },
+  "options_js_sync_status_downloading": {
+    "message": "Downloading..."
+  },
+  "options_js_sync_status_ready": {
+    "message": "Ready"
+  },
+  "options_js_sync_status_unknown": {
+    "message": "Unknown status"
+  },
+  "options_js_sync_status_uploading": {
+    "message": "Uploading..."
+  },
+  "options_js_sync_synced": {
+    "message": "Synced!"
+  },
+  "options_js_sync_test_failed": {
+    "message": "Test failed"
+  },
+  "options_js_sync_testing_connection": {
+    "message": "Testing connection..."
+  },
+  "options_js_sync_token_gist_required": {
+    "message": "Token and Gist ID required"
+  },
+  "options_js_sync_unexpected_response": {
+    "message": "Unexpected response from background script"
+  },
+  "options_language_chinese": {
+    "message": "简体中文"
+  },
+  "options_language_english": {
+    "message": "English"
+  },
+  "options_language_label": {
+    "message": "Language"
+  },
+  "options_language_models_title": {
+    "message": "Language Models"
+  },
+  "options_model_api_key_label": {
+    "message": "API Key"
+  },
+  "options_model_azure_api_version_label": {
+    "message": "API Version"
+  },
+  "options_model_azure_deployment_name_label": {
+    "message": "Deployment Name"
+  },
+  "options_model_azure_endpoint_label": {
+    "message": "Endpoint"
+  },
+  "options_model_base_url_label": {
+    "message": "Base URL"
+  },
+  "options_model_display_name_label": {
+    "message": "Display Name"
+  },
+  "options_model_max_tokens_label": {
+    "message": "Max Tokens"
+  },
+  "options_model_model_label": {
+    "message": "Model"
+  },
+  "options_model_no_models_configured": {
+    "message": "No models configured"
+  },
+  "options_model_provider_gemini": {
+    "message": "Google Gemini"
+  },
+  "options_model_provider_label": {
+    "message": "Provider"
+  },
+  "options_model_provider_openai": {
+    "message": "OpenAI Compatible"
+  },
+  "options_model_temperature_label": {
+    "message": "Temperature"
+  },
+  "options_model_unnamed": {
+    "message": "Unnamed Model"
+  },
+  "options_page_title": {
+    "message": "Think Bot Settings"
+  },
+  "options_quick_input_auto_trigger_title": {
+    "message": "Auto-trigger when sidebar opens"
+  },
+  "options_quick_input_default_name": {
+    "message": "quick input"
+  },
+  "options_quick_input_placeholder_button_text": {
+    "message": "Tab name"
+  },
+  "options_quick_input_placeholder_message": {
+    "message": "Message to send when clicked"
+  },
+  "options_quick_input_tabs_title": {
+    "message": "Quick Input Tabs"
+  },
+  "options_reset_defaults_button": {
+    "message": "Reset to Defaults"
+  },
+  "options_sync_on_save_label": {
+    "message": "Sync when Save settings"
+  },
+  "options_sync_status_not_configured": {
+    "message": "Not configured"
+  },
+  "options_system_prompt_placeholder": {
+    "message": "System prompt"
+  },
+  "options_theme_dark": {
+    "message": "Dark"
+  },
+  "options_theme_label": {
+    "message": "Theme"
+  },
+  "options_theme_light": {
+    "message": "Light"
+  },
+  "options_theme_system": {
+    "message": "System"
+  },
+  "options_ui_config_export_error": {
+    "message": "Failed to export configuration. Please try again."
+  },
+  "options_ui_config_import_confirm_footer": {
+    "message": "Do you want to proceed with importing this configuration? This will overwrite your current settings."
+  },
+  "options_ui_config_import_confirm_title": {
+    "message": "Confirm Configuration Import"
+  },
+  "options_ui_config_import_invalid_file": {
+    "message": "Invalid file type. Please select a JSON file."
+  },
+  "options_ui_config_import_invalid_format": {
+    "message": "Invalid configuration format. Please select a valid configuration file."
+  },
+  "options_ui_config_import_save_error": {
+    "message": "Failed to save imported configuration. Please try again."
+  },
+  "options_ui_config_import_success": {
+    "message": "Configuration imported successfully!"
+  },
+  "options_ui_config_import_success_footer": {
+    "message": "The page will reload to apply the new settings."
+  },
+  "options_ui_config_reset_confirm": {
+    "message": "Are you sure you want to reset all settings to their default values? This action cannot be undone."
+  },
+  "optionsAzureOpenAIProvider": {
+    "message": "Azure OpenAI"
+  },
+  "page_list_manager_confirm_delete_message": {
+    "message": "Are you sure you want to delete all conversations and extracted content for this page?"
+  },
+  "page_list_manager_delete_conversation_title": {
+    "message": "Delete this conversation"
+  },
+  "page_list_manager_empty_list_subtitle": {
+    "message": "Browse pages and chat to see conversations here"
+  },
+  "page_list_manager_empty_list_title": {
+    "message": "No conversations found"
+  },
+  "page_list_manager_failed_to_load": {
+    "message": "Failed to load conversations"
+  },
+  "page_list_manager_open_in_new_tab_title": {
+    "message": "Open in new tab"
+  },
+  "page_list_manager_tooltip_no_extraction_time": {
+    "message": "No extraction time"
+  },
+  "sidebar_chatManager_error_failedToSend": {
+    "message": "Failed to send message to the AI. Check service worker logs."
+  },
+  "sidebar_chatManager_error_failedToSendLlm": {
+    "message": "Failed to send message to LLM"
+  },
+  "sidebar_chatManager_finishReason_maxTokens": {
+    "message": "Response was truncated due to maximum token limit. The response may be incomplete."
+  },
+  "sidebar_chatManager_finishReason_other": {
+    "message": "Response ended for an unknown reason."
+  },
+  "sidebar_chatManager_finishReason_recitation": {
+    "message": "Response was stopped due to potential copyright content."
+  },
+  "sidebar_chatManager_finishReason_safety": {
+    "message": "Response was stopped due to content policy restrictions."
+  },
+  "sidebar_chatManager_log_failedToCopyText": {
+    "message": "Failed to copy text:"
+  },
+  "sidebar_chatManager_title_copyAsMarkdown": {
+    "message": "Copy as Markdown"
+  },
+  "sidebar_chatManager_title_copyText": {
+    "message": "Copy Text"
+  },
+  "sidebar_chatManager_title_editMessage": {
+    "message": "Edit Message"
+  },
+  "sidebar_chatManager_title_scrollToBottom": {
+    "message": "Scroll to Bottom"
+  },
+  "sidebar_chatManager_title_scrollToTop": {
+    "message": "Scroll to Top"
+  },
+  "sidebar_chatManager_title_stopGenerating": {
+    "message": "Stop generating response"
+  },
+  "sidebar_chatManager_toast_errorCopyingMarkdown": {
+    "message": "Error copying markdown"
+  },
+  "sidebar_chatManager_toast_markdownCopied": {
+    "message": "Markdown copied to clipboard"
+  },
+  "sidebar_chatManager_toast_textCopied": {
+    "message": "Text copied to clipboard"
+  },
+  "sidebar_chatMessage_placeholder_edit": {
+    "message": "Edit your message..."
+  },
+  "sidebar_chatMessage_title_edit": {
+    "message": "Press Ctrl+Enter to save or Escape to cancel"
+  },
+  "sidebar_contentExtractor_error_accessContent": {
+    "message": "Error accessing current content"
+  },
+  "sidebar_contentExtractor_error_backgroundScript": {
+    "message": "Failed to communicate with the background script"
+  },
+  "sidebar_contentExtractor_error_failedToCopy": {
+    "message": "Failed to copy content:"
+  },
+  "sidebar_contentExtractor_warn_noContentToCopy": {
+    "message": "No content to copy"
+  },
+  "sidebar_errorHandler_error_contentScript": {
+    "message": "Content script not connected. Please reload the page and try again."
+  },
+  "sidebar_errorHandler_error_extractFailed": {
+    "message": "Failed to extract content from the page. Please try again or reload the page."
+  },
+  "sidebar_errorHandler_error_failedToGetResponse": {
+    "message": "Failed to get response from AI service. Please try again."
+  },
+  "sidebar_errorHandler_error_network": {
+    "message": "Network connection error. Please check your internet connection and try again."
+  },
+  "sidebar_errorHandler_error_noHtml": {
+    "message": "Unable to get page content. Please reload the page and try again."
+  },
+  "sidebar_errorHandler_error_offscreen": {
+    "message": "Content processing service unavailable. Please try again."
+  },
+  "sidebar_errorHandler_error_pageLoading": {
+    "message": "Page content not ready, please wait for page to load fully and retry."
+  },
+  "sidebar_errorHandler_error_pageNotReady": {
+    "message": "Page content not ready or content script issue. Please wait for the page to load fully and try again."
+  },
+  "sidebar_errorHandler_error_processing": {
+    "message": "Content processing error. Please try again or reload the page."
+  },
+  "sidebar_errorHandler_error_readabilityExtract": {
+    "message": "Readability extraction failed. The page content may not be suitable for extraction. Try refreshing the page."
+  },
+  "sidebar_errorHandler_error_readabilityLoad": {
+    "message": "Readability library failed to load. Please try again or contact support."
+  },
+  "sidebar_errorHandler_error_requestCancelled": {
+    "message": "Request was cancelled by user."
+  },
+  "sidebar_errorHandler_error_timeout": {
+    "message": "Request timed out. Please try again."
+  },
+  "sidebar_errorHandler_error_unexpected": {
+    "message": "An unexpected error occurred. Please try again."
+  },
+  "sidebar_js_blacklistConfirm": {
+    "message": "This page is in your blacklist. Do you want to continue using Think Bot?"
+  },
+  "sidebar_tabManager_retryingMessage": {
+    "message": "Retrying message..."
+  },
+  "sidebar_text_extractingContent": {
+    "message": "Extracting content..."
+  },
+  "sidebar_text_failedToExtractContent": {
+    "message": "Failed to extract content."
+  },
+  "sidebar_text_imageAttached": {
+    "message": "Image attached"
+  },
+  "sidebar_title_clearAllPageData": {
+    "message": "Clear all page data"
+  },
+  "sidebar_title_copyExtractedContent": {
+    "message": "Copy extracted content"
+  },
+  "sidebar_title_extractWithJina": {
+    "message": "Extract with Jina AI"
+  },
+  "sidebar_title_extractWithReadability": {
+    "message": "Extract with Readability.js"
+  },
+  "sidebar_title_openChatPage": {
+    "message": "Open Conversations page"
+  },
+  "sidebar_title_openConfigPage": {
+    "message": "Open Options page"
+  },
+  "sidebar_title_retryExtraction": {
+    "message": "Retry extraction"
+  },
+  "sidebar_title_stopAndClear": {
+    "message": "Stop generating and clear conversation"
+  },
+  "sidebar_uiManager_error_noContentExtracted": {
+    "message": "No content extracted"
+  },
+  "sidebar_uiManager_text_restrictedPage": {
+    "message": "Restricted Page"
+  },
+  "sidebar_uiManager_text_restrictedPageGuidance": {
+    "message": "Please navigate to a regular webpage to use the extension."
+  },
+  "sidebar_uiManager_text_restrictedPageMessage": {
+    "message": "Think Bot cannot work on Chrome internal pages (chrome://, chrome-extension://, etc.)."
   }
 }
