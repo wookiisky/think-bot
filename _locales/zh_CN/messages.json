@@ -11,6 +11,10 @@
     "message": "语言",
     "description": "The title for the language selection section."
   },
+  "options_language_label": {
+    "message": "语言",
+    "description": "Label for the language selection."
+  },
   "options_language_reload_alert": {
     "message": "语言设置已更改。请重新加载页面以应用更改。",
     "description": "Alert message shown after changing the language."
@@ -51,16 +55,20 @@
     "message": "您确定要清除所有缓存吗？此操作无法撤销，并将删除所有本地存储的对话和提取的内容。",
     "description": "清除所有缓存的确认消息。"
   },
-  "options_default_model_title": {
+  "options_basic_settings_title": {
+    "message": "基础设置",
+    "description": "Title for the basic setting section."
+  },
+  "options_default_model_label": {
     "message": "默认模型",
-    "description": "Title for the default model section."
+    "description": "Label for the default model selection."
   },
   "options_content_extraction_title": {
     "message": "内容提取",
     "description": "Title for the content extraction section."
   },
   "options_extracted_content_height_label": {
-    "message": "提取内容高度",
+    "message": "内容区域高度",
     "description": "Label for the extracted content height input."
   },
   "options_extracted_content_height_placeholder": {
@@ -103,6 +111,10 @@
     "message": "主题",
     "description": "Title for the theme section."
   },
+  "options_theme_label": {
+    "message": "主题",
+    "description": "Label for the theme selection."
+  },
   "options_theme_light": {
     "message": "浅色",
     "description": "Light theme option."
@@ -136,7 +148,7 @@
     "description": "Title for the system prompt section."
   },
   "options_system_prompt_placeholder": {
-    "message": "输入您的系统提示模板，使用 {CONTENT} 占位符",
+    "message": "系统提示词",
     "description": "Placeholder for the system prompt textarea."
   },
   "options_cloud_sync_title": {
@@ -260,11 +272,11 @@
     "description": "Button text to add a new language model."
   },
   "options_model_display_name_label": {
-    "message": "显示名称",
+    "message": "模型名称",
     "description": "Label for the model display name input."
   },
   "options_model_provider_label": {
-    "message": "提供商",
+    "message": "模型服务",
     "description": "Label for the model provider selection."
   },
   "options_model_provider_openai": {
@@ -288,7 +300,7 @@
     "description": "Placeholder for Azure OpenAI endpoint."
   },
   "options_model_azure_deployment_name_label": {
-    "message": "Deployment Name",
+    "message": "Deployment 名称",
     "description": "Label for Azure OpenAI deployment name."
   },
   "options_model_azure_api_version_label": {
@@ -300,7 +312,7 @@
     "description": "Placeholder for Azure OpenAI API version input."
   },
   "options_model_base_url_label": {
-    "message": "基础 URL",
+    "message": "服务 URL",
     "description": "Label for the model base URL input."
   },
   "options_model_api_key_label": {
@@ -312,11 +324,11 @@
     "description": "Label for the model name input."
   },
   "options_model_max_tokens_label": {
-    "message": "最大令牌数",
+    "message": "最大 token 数",
     "description": "Label for the model max tokens input."
   },
   "options_model_max_tokens_placeholder": {
-    "message": "例如，2048",
+    "message": "10240",
     "description": "Placeholder for the model max tokens input."
   },
   "options_model_temperature_label": {
@@ -352,7 +364,7 @@
     "description": "Message shown when no models are configured."
   },
   "options_quick_input_placeholder_button_text": {
-    "message": "标签名称",
+    "message": "标签页名称",
     "description": "Placeholder for the quick input button text."
   },
   "options_quick_input_auto_trigger_title": {
@@ -360,7 +372,7 @@
     "description": "Title for the auto-trigger toggle on a quick input."
   },  
   "options_quick_input_remove_button_title": {
-    "message": "移除快捷输入",
+    "message": "移除",
     "description": "Title for the remove quick input button."
   },
   "options_quick_input_remove_confirm_with_name": {
@@ -368,11 +380,11 @@
     "description": "Confirmation message for deleting a quick input with its name as parameter."
   },
   "options_quick_input_default_name": {
-    "message": "此快捷输入",
+    "message": "新标签页",
     "description": "Default name used when a quick input has no display text."
   },
   "options_quick_input_placeholder_message": {
-    "message": "点击时发送的消息 (使用 {CONTENT} 占位符)",
+    "message": "点击时发送",
     "description": "Placeholder for the quick input message."
   },
   "options_js_saving": {

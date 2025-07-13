@@ -31,7 +31,7 @@ class FloatingLabelManager {
      * @param {HTMLElement} field - The floating label field container
      */
     processFloatingLabelField(field) {
-        const input = field.querySelector('input, textarea');
+        const input = field.querySelector('input, textarea, select');
         const label = field.querySelector('.floating-label');
         
         if (!input || !label) return;
@@ -69,6 +69,13 @@ class FloatingLabelManager {
             this.updateFloatingLabelState(field, input);
         });
 
+        // Handle select changes
+        if (input.tagName === 'SELECT') {
+            input.addEventListener('change', () => {
+                this.updateFloatingLabelState(field, input);
+            });
+        }
+
         // Handle focus/blur events for better visual feedback
         input.addEventListener('focus', () => {
             field.classList.add('focused');
@@ -79,23 +86,25 @@ class FloatingLabelManager {
             this.updateFloatingLabelState(field, input);
         });
 
-        // Handle autofill detection
-        input.addEventListener('animationstart', (e) => {
-            if (e.animationName === 'autofill') {
-                this.updateFloatingLabelState(field, input);
-            }
-        });
+        // Handle autofill detection (not applicable for select elements)
+        if (input.tagName !== 'SELECT') {
+            input.addEventListener('animationstart', (e) => {
+                if (e.animationName === 'autofill') {
+                    this.updateFloatingLabelState(field, input);
+                }
+            });
 
-        // Additional check for autofill state
-        const checkAutofill = () => {
-            if (input.matches(':-webkit-autofill') || input.value !== '') {
-                this.updateFloatingLabelState(field, input);
-            }
-        };
+            // Additional check for autofill state
+            const checkAutofill = () => {
+                if (input.matches(':-webkit-autofill') || input.value !== '') {
+                    this.updateFloatingLabelState(field, input);
+                }
+            };
 
-        // Check autofill periodically (for browsers that don't support animationstart)
-        setTimeout(checkAutofill, 100);
-        setTimeout(checkAutofill, 500);
+            // Check autofill periodically (for browsers that don't support animationstart)
+            setTimeout(checkAutofill, 100);
+            setTimeout(checkAutofill, 500);
+        }
     }
 
     /**
@@ -150,7 +159,7 @@ class FloatingLabelManager {
      * @returns {boolean} True if field structure is valid
      */
     validateFieldStructure(field) {
-        const input = field.querySelector('input, textarea');
+        const input = field.querySelector('input, textarea, select');
         const label = field.querySelector('.floating-label');
         
         if (!input || !label) {
@@ -158,8 +167,8 @@ class FloatingLabelManager {
             return false;
         }
 
-        // Check if input has proper placeholder
-        if (!input.hasAttribute('placeholder')) {
+        // Check if input has proper placeholder (not applicable for select elements)
+        if (input.tagName !== 'SELECT' && !input.hasAttribute('placeholder')) {
             input.setAttribute('placeholder', ' ');
         }
 
@@ -173,7 +182,7 @@ class FloatingLabelManager {
      */
     convertFormGroupToFloatingLabel(formGroup) {
         const label = formGroup.querySelector('label');
-        const input = formGroup.querySelector('input, textarea');
+        const input = formGroup.querySelector('input, textarea, select');
         
         if (!label || !input) return false;
 
@@ -184,8 +193,10 @@ class FloatingLabelManager {
         // Update label
         label.classList.add('floating-label');
 
-        // Update input
-        input.setAttribute('placeholder', ' ');
+        // Update input (not applicable for select elements)
+        if (input.tagName !== 'SELECT') {
+            input.setAttribute('placeholder', ' ');
+        }
 
         // Move label after input (required for CSS sibling selectors)
         if (input.nextSibling !== label) {

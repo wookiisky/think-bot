@@ -3,6 +3,7 @@
 
 // Import confirmation dialog
 import { confirmationDialog } from '../../js/modules/ui/confirmation-dialog.js';
+import { i18n } from '../../js/modules/i18n.js';
 
 // Import logger module
 const logger = window.logger ? window.logger.createModuleLogger('ModelManager') : console;
@@ -53,6 +54,11 @@ export class ModelManager {
     
     // Setup the inline add button event listener
     this.setupAddButtonListener();
+    
+    // Apply i18n translations to newly created DOM elements
+    if (typeof i18n !== 'undefined' && i18n.applyToDOM) {
+      i18n.applyToDOM();
+    }
   }
 
   // Create a single model configuration element
@@ -89,14 +95,15 @@ export class ModelManager {
                      data-model-index="${index}" data-field="name" placeholder=" ">
               <label for="model-name-${index}" class="floating-label" data-i18n="options_model_display_name_label">Display Name</label>
             </div>
-            <div class="form-group">
-              <label data-i18n="options_model_provider_label">Provider</label>
+            <div class="floating-label-field">
               <select class="model-provider-select"
+                      id="model-provider-${index}"
                       data-model-index="${index}">
                 <option value="openai" ${model.provider === 'openai' ? 'selected' : ''} data-i18n="options_model_provider_openai">OpenAI Compatible</option>
                 <option value="gemini" ${model.provider === 'gemini' ? 'selected' : ''} data-i18n="options_model_provider_gemini">Google Gemini</option>
                 <option value="azure_openai" ${model.provider === 'azure_openai' ? 'selected' : ''} data-i18n="optionsAzureOpenAIProvider">Azure OpenAI</option>
               </select>
+              <label for="model-provider-${index}" class="floating-label" data-i18n="options_model_provider_label">Provider</label>
             </div>
           </div>
           <div class="form-grid model-specific-fields" id="model-specific-${index}">

@@ -73,9 +73,9 @@
 .quick-input-header-left .floating-label-field input:not(:placeholder-shown) ~ .floating-label,
 .quick-input-header-left .floating-label-field.has-value .floating-label {
   top: 0;
-  left: 0.5rem;
+  left: 0.3rem;
   transform: translateY(-50%);
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: var(--primary-color);
   background-color: var(--bg-color);
 }

@@ -57,12 +57,35 @@
 
             <!-- Default Model -->
             <section class="settings-section sidebar-section">
-              <h2 data-i18n="options_default_model_title">Default Model</h2>
-              <div class="form-group">
-                <!-- <label for="defaultModelSelect">Model</label> -->
+              <h2 data-i18n="options_basic_settings_title">Basic Settings</h2>
+              <div class="floating-label-field">
                 <select id="defaultModelSelect" name="defaultModelSelect">
                   <!-- Options will be populated dynamically -->
                 </select>
+                <label for="defaultModelSelect" class="floating-label" data-i18n="options_default_model_label">Model</label>
+              </div>
+            
+              <div class="floating-label-field">
+                <select id="theme" name="theme">
+                  <option value="light" data-i18n="options_theme_light">Light</option>
+                  <option value="dark" data-i18n="options_theme_dark">Dark</option>
+                  <option value="system" data-i18n="options_theme_system">System</option>
+                </select>
+                <label for="theme" class="floating-label" data-i18n="options_theme_label">Theme</label>
+              </div>
+            
+              <div class="floating-label-field">
+                <select id="languageSelector" name="language">
+                  <option value="en" data-i18n="options_language_english">English</option>
+                  <option value="zh_CN" data-i18n="options_language_chinese">简体中文</option>
+                  <!-- More languages can be added here -->
+                </select>
+                <label for="languageSelector" class="floating-label" data-i18n="options_language_label">Language</label>
+              </div>
+            
+              <div class="floating-label-field">
+                <textarea id="systemPrompt" name="systemPrompt" rows="3" placeholder=" "></textarea>
+                <label for="systemPrompt" class="floating-label" data-i18n="options_system_prompt_placeholder">Enter your system prompt template with {CONTENT} placeholder</label>
               </div>
             </section>
 
@@ -75,12 +98,12 @@
                 <label for="contentDisplayHeight" class="floating-label" data-i18n="options_extracted_content_height_label">Extracted Content Height</label>
               </div>
               
-              <div class="form-group">
-                <label for="defaultExtractionMethod" data-i18n="options_default_extraction_method_label">Default Extraction Method</label>
+              <div class="floating-label-field">
                 <select id="defaultExtractionMethod" name="defaultExtractionMethod">
                   <option value="readability" data-i18n="options_extraction_method_readability">Readability.js (Default)</option>
                   <option value="jina" data-i18n="options_extraction_method_jina">Jina AI</option>
                 </select>
+                <label for="defaultExtractionMethod" class="floating-label" data-i18n="options_default_extraction_method_label">Default Extraction Method</label>
               </div>
               
               <div class="floating-label-field" id="jinaApiKeyGroup">
@@ -96,38 +119,7 @@
             </section>
 
             <!-- Theme -->
-            <section class="settings-section sidebar-section">
-              <h2 data-i18n="options_theme_title">Theme</h2>
-              <div class="form-group">
-                <!-- <label for="theme">Theme</label> -->
-                <select id="theme" name="theme">
-                  <option value="light" data-i18n="options_theme_light">Light</option>
-                  <option value="dark" data-i18n="options_theme_dark">Dark</option>
-                  <option value="system" data-i18n="options_theme_system">System</option>
-                </select>
-              </div>
-            </section>
-
-            <!-- Language -->
-            <section class="settings-section sidebar-section">
-              <h2 data-i18n="options_language_title">Language</h2>
-              <div class="form-group">
-                <select id="languageSelector" name="language">
-                  <option value="en" data-i18n="options_language_english">English</option>
-                  <option value="zh_CN" data-i18n="options_language_chinese">简体中文</option>
-                  <!-- More languages can be added here -->
-                </select>
-              </div>
-            </section>
-
-            <!-- System Prompt -->
-            <section class="settings-section sidebar-section">
-              <h2 data-i18n="options_system_prompt_title">System Prompt</h2>
-              <div class="floating-label-field">
-                <textarea id="systemPrompt" name="systemPrompt" rows="3" placeholder=" "></textarea>
-                <label for="systemPrompt" class="floating-label" data-i18n="options_system_prompt_placeholder">Enter your system prompt template with {CONTENT} placeholder</label>
-              </div>
-            </section>
+           
 
             <!-- Cloud Sync Settings -->
             <section class="settings-section sidebar-section">

@@ -21,7 +21,7 @@
 .form-grid {
   display: grid;
   grid-template-columns: 1fr;
-  
+
 }
 
 .form-grid.two-column {
@@ -55,7 +55,9 @@
 }
 
 /* Input Elements */
-input, select, textarea {
+input,
+select,
+textarea {
   width: 100%;
   padding: 0.35rem 0.5rem;
   border: 1px solid var(--border-color);
@@ -80,8 +82,8 @@ select {
 }
 
 /* Specific styles for input elements */
-input[type="text"], 
-input[type="number"], 
+input[type="text"],
+input[type="number"],
 input[type="password"],
 input[type="url"],
 input[type="email"] {
@@ -95,14 +97,18 @@ textarea {
   line-height: 1.4;
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   outline: none;
   border-color: var(--primary-color);
   background-color: var(--input-background);
   box-shadow: 0 0 0 2px var(--accent-color-alpha), inset 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
-input:hover, select:hover, textarea:hover {
+input:hover,
+select:hover,
+textarea:hover {
   border-color: var(--border-color-hover);
 }
 
@@ -142,8 +148,7 @@ input:hover, select:hover, textarea:hover {
   border-right: none;
 }
 
-.input-group .form-control:first-child {
-}
+.input-group .form-control:first-child {}
 
 .input-group .form-control:last-child {
   border-right: 1px solid var(--border-color);
@@ -153,8 +158,7 @@ input:hover, select:hover, textarea:hover {
   border-left: none;
 }
 
-.input-group .btn:last-child {
-}
+.input-group .btn:last-child {}
 
 /* Validation States */
 .form-control.is-valid {
@@ -250,7 +254,7 @@ textarea:disabled {
 /* Floating Label Input Field */
 .floating-label-field {
   position: relative;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.7rem;
 }
 
 .floating-label-field .floating-label {
@@ -269,9 +273,10 @@ textarea:disabled {
 }
 
 .floating-label-field input,
-.floating-label-field textarea {
+.floating-label-field textarea,
+.floating-label-field select {
   width: 100%;
-  padding: 0.6rem 0.5rem 0.35rem 0.5rem;
+  padding: 0.45rem 0.5rem 0.35rem 0.5rem;
   border: 1px solid var(--border-color);
   font-size: 0.8rem;
   font-family: inherit;
@@ -283,11 +288,12 @@ textarea:disabled {
   box-sizing: border-box;
 }
 
-.floating-label-field input[type="text"], 
-.floating-label-field input[type="number"], 
+.floating-label-field input[type="text"],
+.floating-label-field input[type="number"],
 .floating-label-field input[type="password"],
 .floating-label-field input[type="url"],
-.floating-label-field input[type="email"] {
+.floating-label-field input[type="email"],
+.floating-label-field select {
   height: 32px;
 }
 
@@ -299,7 +305,8 @@ textarea:disabled {
 }
 
 .floating-label-field input:focus,
-.floating-label-field textarea:focus {
+.floating-label-field textarea:focus,
+.floating-label-field select:focus {
   outline: none;
   border-color: var(--primary-color);
   background-color: var(--input-background);
@@ -307,15 +314,17 @@ textarea:disabled {
 }
 
 .floating-label-field input:hover,
-.floating-label-field textarea:hover {
+.floating-label-field textarea:hover,
+.floating-label-field select:hover {
   border-color: var(--border-color-hover);
 }
 
 /* Floating label active state */
-.floating-label-field input:focus ~ .floating-label,
-.floating-label-field input:not(:placeholder-shown) ~ .floating-label,
-.floating-label-field textarea:focus ~ .floating-label,
-.floating-label-field textarea:not(:placeholder-shown) ~ .floating-label,
+.floating-label-field input:focus~.floating-label,
+.floating-label-field input:not(:placeholder-shown)~.floating-label,
+.floating-label-field textarea:focus~.floating-label,
+.floating-label-field textarea:not(:placeholder-shown)~.floating-label,
+.floating-label-field select:focus~.floating-label,
 .floating-label-field.has-value .floating-label {
   top: 0;
   left: 0.5rem;
@@ -327,7 +336,8 @@ textarea:disabled {
 
 /* Focused state styling */
 .floating-label-field.focused input,
-.floating-label-field.focused textarea {
+.floating-label-field.focused textarea,
+.floating-label-field.focused select {
   border-color: var(--primary-color);
 }
 
@@ -336,14 +346,14 @@ textarea:disabled {
 }
 
 /* For textarea specific positioning */
-.floating-label-field textarea ~ .floating-label {
+.floating-label-field textarea~.floating-label {
   top: 1rem;
   transform: translateY(-50%);
 }
 
-.floating-label-field textarea:focus ~ .floating-label,
-.floating-label-field textarea:not(:placeholder-shown) ~ .floating-label,
-.floating-label-field.has-value textarea ~ .floating-label {
+.floating-label-field textarea:focus~.floating-label,
+.floating-label-field textarea:not(:placeholder-shown)~.floating-label,
+.floating-label-field.has-value textarea~.floating-label {
   top: 0;
   transform: translateY(-50%);
 }
@@ -355,12 +365,14 @@ textarea:disabled {
 
 /* Support for error states */
 .floating-label-field.is-invalid input,
-.floating-label-field.is-invalid textarea {
+.floating-label-field.is-invalid textarea,
+.floating-label-field.is-invalid select {
   border-color: var(--error-color);
 }
 
 .floating-label-field.is-invalid input:focus,
-.floating-label-field.is-invalid textarea:focus {
+.floating-label-field.is-invalid textarea:focus,
+.floating-label-field.is-invalid select:focus {
   border-color: var(--error-color);
   box-shadow: 0 0 0 2px rgba(217, 48, 37, 0.2);
 }
@@ -371,12 +383,14 @@ textarea:disabled {
 
 /* Support for success states */
 .floating-label-field.is-valid input,
-.floating-label-field.is-valid textarea {
+.floating-label-field.is-valid textarea,
+.floating-label-field.is-valid select {
   border-color: var(--success-color);
 }
 
 .floating-label-field.is-valid input:focus,
-.floating-label-field.is-valid textarea:focus {
+.floating-label-field.is-valid textarea:focus,
+.floating-label-field.is-valid select:focus {
   border-color: var(--success-color);
   box-shadow: 0 0 0 2px rgba(15, 157, 88, 0.2);
 }
@@ -399,20 +413,25 @@ textarea:disabled {
 }
 
 /* Improve contrast for better accessibility */
-.floating-label-field input:focus ~ .floating-label,
-.floating-label-field textarea:focus ~ .floating-label,
+.floating-label-field input:focus~.floating-label,
+.floating-label-field textarea:focus~.floating-label,
+.floating-label-field select:focus~.floating-label,
 .floating-label-field.focused .floating-label {
   font-weight: 500;
 }
 
 /* Ensure floating labels work properly with autofill */
-.floating-label-field input:-webkit-autofill ~ .floating-label,
-.floating-label-field input:-webkit-autofill:hover ~ .floating-label,
-.floating-label-field input:-webkit-autofill:focus ~ .floating-label {
+.floating-label-field input:-webkit-autofill~.floating-label,
+.floating-label-field input:-webkit-autofill:hover~.floating-label,
+.floating-label-field input:-webkit-autofill:focus~.floating-label {
   top: 0;
   left: 0.5rem;
   transform: translateY(-50%);
   font-size: 0.7rem;
   color: var(--primary-color);
   background-color: var(--input-bg);
+}
+
+.quick-input-form .floating-label-field {
+  margin-bottom: 0;
 }

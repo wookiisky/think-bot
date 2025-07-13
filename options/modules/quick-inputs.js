@@ -55,6 +55,10 @@ export class QuickInputsManager {
     // Add to container
     domElements.quickInputsContainer.appendChild(template);
     
+    // Apply i18n translations to the newly added elements
+    if (typeof i18n !== 'undefined' && i18n.applyToDOM) {
+      i18n.applyToDOM();
+    }
   }
   
   // Remove a quick input (soft delete)
@@ -182,6 +186,10 @@ export class QuickInputsManager {
       this.addQuickInput(domElements);
     }
 
+    // Apply i18n translations to newly created DOM elements
+    if (typeof i18n !== 'undefined' && i18n.applyToDOM) {
+      i18n.applyToDOM();
+    }
   }
   
   // Set up drag-and-drop functionality using SortableJS

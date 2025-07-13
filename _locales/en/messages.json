@@ -11,6 +11,10 @@
     "message": "Language",
     "description": "The title for the language selection section."
   },
+  "options_language_label": {
+    "message": "Language",
+    "description": "Label for the language selection."
+  },
   "options_language_reload_alert": {
     "message": "Language setting has been changed. Please reload the page to apply the changes.",
     "description": "Alert message shown after changing the language."
@@ -51,9 +55,13 @@
     "message": "Are you sure you want to clear all cache? This action cannot be undone and will remove all locally stored conversations and extracted content.",
     "description": "Confirmation message for clearing all cache."
   },
-  "options_default_model_title": {
-    "message": "Default Model",
-    "description": "Title for the default model section."
+  "options_basic_settings_title": {
+    "message": "Basic Settings",
+    "description": "Title for the basic setting section."
+  },
+  "options_default_model_label": {
+    "message": "Model",
+    "description": "Label for the default model selection."
   },
   "options_content_extraction_title": {
     "message": "Content Extraction",
@@ -102,6 +110,10 @@
   "options_theme_title": {
     "message": "Theme",
     "description": "Title for the theme section."
+  },
+  "options_theme_label": {
+    "message": "Theme",
+    "description": "Label for the theme selection."
   },
   "options_theme_light": {
     "message": "Light",
