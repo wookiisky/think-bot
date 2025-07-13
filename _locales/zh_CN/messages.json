@@ -1,23 +1,15 @@
 {
   "appName": {
     "message": "洞察助手",
-    "description": "The name of the application."
+    "description": "The name of the extension."
   },
   "options_header_title_text": {
     "message": "洞察助手设置",
     "description": "The main title on the options page."
   },
-  "options_language_title": {
-    "message": "语言",
-    "description": "The title for the language selection section."
-  },
   "options_language_label": {
     "message": "语言",
     "description": "Label for the language selection."
-  },
-  "options_language_reload_alert": {
-    "message": "语言设置已更改。请重新加载页面以应用更改。",
-    "description": "Alert message shown after changing the language."
   },
   "options_page_title": {
     "message": "设置",
@@ -38,10 +30,6 @@
   "options_save_button": {
     "message": "保存",
     "description": "Button text for saving settings."
-  },
-  "options_cache_settings_title": {
-    "message": "缓存设置",
-    "description": "Title for the cache settings section."
   },
   "options_cache_label": {
     "message": "本地数据：",
@@ -71,10 +59,6 @@
     "message": "内容区域高度",
     "description": "Label for the extracted content height input."
   },
-  "options_extracted_content_height_placeholder": {
-    "message": "300",
-    "description": "Placeholder for the extracted content height input."
-  },
   "options_default_extraction_method_label": {
     "message": "默认提取方法",
     "description": "Label for the default extraction method select."
@@ -91,25 +75,13 @@
     "message": "Jina AI API 密钥 (可选)",
     "description": "Label for the Jina AI API key input."
   },
-  "options_jina_api_key_placeholder": {
-    "message": "输入您的 Jina AI API 密钥 (可选)",
-    "description": "Placeholder for the Jina AI API key input."
-  },
   "options_jina_response_template_label": {
     "message": "Jina AI 响应模板",
     "description": "Label for the Jina AI response template textarea."
   },
-  "options_jina_response_template_placeholder": {
-    "message": "输入用于格式化 Jina AI 响应的模板",
-    "description": "Placeholder for the Jina AI response template textarea."
-  },
   "options_jina_response_template_description": {
     "message": "用于格式化 Jina AI JSON 响应的模板。可用占位符：{title}、{url}、{description}、{content}。",
     "description": "Description for the Jina AI response template."
-  },
-  "options_theme_title": {
-    "message": "主题",
-    "description": "Title for the theme section."
   },
   "options_theme_label": {
     "message": "主题",
@@ -135,18 +107,6 @@
     "message": "简体中文",
     "description": "Chinese language option."
   },
-  "options_language_change_success": {
-    "message": "语言已成功切换至 $1。设置将自动保存。",
-    "description": "Success message when language is changed."
-  },
-  "options_language_change_error": {
-    "message": "切换语言失败：$1",
-    "description": "Error message when language change fails."
-  },
-  "options_system_prompt_title": {
-    "message": "系统提示",
-    "description": "Title for the system prompt section."
-  },
   "options_system_prompt_placeholder": {
     "message": "系统提示词",
     "description": "Placeholder for the system prompt textarea."
@@ -163,10 +123,6 @@
     "message": "GitHub 令牌",
     "description": "Label for the GitHub token input."
   },
-  "options_github_token_placeholder": {
-    "message": "输入您的 GitHub 个人访问令牌",
-    "description": "Placeholder for the GitHub token input."
-  },
   "options_github_token_create_link": {
     "message": "创建令牌",
     "description": "Link text to create a GitHub token."
@@ -178,10 +134,6 @@
   "options_gist_id_label": {
     "message": "Secret Gist ID",
     "description": "Label for the Gist ID input."
-  },
-  "options_gist_id_placeholder": {
-    "message": "Secret gist ID (不含 url)",
-    "description": "Placeholder for the Gist ID input."
   },
   "options_gist_id_create_link_prefix": {
     "message": "创建一个 ",
@@ -247,10 +199,6 @@
     "message": "模式已成功添加。",
     "description": "Success message when a blacklist pattern is added."
   },
-  "options_blacklist_confirm_delete": {
-    "message": "您确定要删除此模式吗？",
-    "description": "Confirmation message before deleting a blacklist pattern."
-  },
   "options_blacklist_delete_success": {
     "message": "模式已成功删除。",
     "description": "Success message when a blacklist pattern is deleted."
@@ -295,10 +243,6 @@
     "message": "Endpoint",
     "description": "Label for Azure OpenAI endpoint."
   },
-  "options_model_azure_endpoint_placeholder": {
-    "message": "https://your-resource.openai.azure.com 或粘贴完整API URL自动填充所有字段",
-    "description": "Placeholder for Azure OpenAI endpoint."
-  },
   "options_model_azure_deployment_name_label": {
     "message": "Deployment 名称",
     "description": "Label for Azure OpenAI deployment name."
@@ -306,10 +250,6 @@
   "options_model_azure_api_version_label": {
     "message": "API 版本",
     "description": "Label for Azure OpenAI API version."
-  },
-  "options_model_azure_api_version_placeholder": {
-    "message": "2025-01-01-preview",
-    "description": "Placeholder for Azure OpenAI API version input."
   },
   "options_model_base_url_label": {
     "message": "服务 URL",
@@ -327,37 +267,17 @@
     "message": "最大 token 数",
     "description": "Label for the model max tokens input."
   },
-  "options_model_max_tokens_placeholder": {
-    "message": "10240",
-    "description": "Placeholder for the model max tokens input."
-  },
   "options_model_temperature_label": {
     "message": "温度",
     "description": "Label for the model temperature input."
-  },
-  "options_model_temperature_placeholder": {
-    "message": "0.0 - 1.0",
-    "description": "Placeholder for the model temperature input."
   },
   "options_model_remove_button_title": {
     "message": "移除模型",
     "description": "Title for the remove model button."
   },
-  "options_model_remove_confirm": {
-    "message": "您确定要移除此模型吗？",
-    "description": "Confirmation message for removing a model."
-  },
-  "options_model_remove_confirm_with_name": {
-    "message": "您确定要删除 \"$1\" 吗？",
-    "description": "Confirmation message for removing a model with name. $1 is the model name."
-  },
   "options_model_unnamed": {
     "message": "未命名模型",
     "description": "Default name for models without a name."
-  },
-  "options_model_new_name": {
-    "message": "模型 $1",
-    "description": "Default name for new models. $1 is a placeholder."
   },
   "options_model_no_models_configured": {
     "message": "未配置模型",
@@ -370,14 +290,10 @@
   "options_quick_input_auto_trigger_title": {
     "message": "侧边栏打开时自动发送",
     "description": "Title for the auto-trigger toggle on a quick input."
-  },  
+  },
   "options_quick_input_remove_button_title": {
     "message": "移除",
     "description": "Title for the remove quick input button."
-  },
-  "options_quick_input_remove_confirm_with_name": {
-    "message": "您确定要删除 \"$1\" 吗？",
-    "description": "Confirmation message for deleting a quick input with its name as parameter."
   },
   "options_quick_input_default_name": {
     "message": "新标签页",
@@ -418,10 +334,6 @@
   "options_js_import_error": {
     "message": "导入配置失败。请查看控制台了解详情。",
     "description": "Error message when importing config fails."
-  },
-  "options_js_sync_missing_fields": {
-    "message": "缺少 $1",
-    "description": "Error message for missing sync fields. $1 is a placeholder."
   },
   "options_js_sync_github_token": {
     "message": "GitHub 令牌",
@@ -494,10 +406,6 @@
   "options_js_sync_load_status_error": {
     "message": "加载同步状态失败",
     "description": "Error message when loading sync status fails."
-  },
-  "options_js_sync_last_sync": {
-    "message": "上次同步：$1",
-    "description": "Text showing the last sync time. $1 is a placeholder."
   },
   "options_js_sync_token_gist_required": {
     "message": "需要令牌和 Gist ID",
@@ -623,10 +531,6 @@
     "message": "用户已停止生成响应。",
     "description": "Message indicating the user stopped the response."
   },
-  "sidebar_js_streamSilent": {
-    "message": "流已静默 {seconds} 秒。连接可能已中断。",
-    "description": "Warning message for a silent stream. {seconds} is a placeholder."
-  },
   "sidebar_chatMessage_placeholder_edit": {
     "message": "编辑您的消息... (ESC 取消, Ctrl+Enter 保存)",
     "description": "Placeholder for the message edit textarea."
@@ -650,22 +554,6 @@
   "sidebar_confirmationOverlay_confirm": {
     "message": "确认",
     "description": "Confirm button text for the confirmation overlay."
-  },
-  "sidebar_confirmationOverlay_matchedPattern": {
-    "message": "匹配的模式：{pattern}",
-    "description": "Text showing the matched blacklist pattern. {pattern} is a placeholder."
-  },
-  "sidebar_miniConfirmation_areYouSure": {
-    "message": "您确定吗？",
-    "description": "Default message for the mini confirmation."
-  },
-  "sidebar_miniConfirmation_cancel": {
-    "message": "取消",
-    "description": "Cancel button text for the mini confirmation."
-  },
-  "sidebar_miniConfirmation_confirm": {
-    "message": "确认",
-    "description": "Confirm button text for the mini confirmation."
   },
   "confirmationDialog_areYouSure": {
     "message": "您确定吗？",
@@ -751,10 +639,6 @@
     "message": "响应因未知原因结束。",
     "description": "Warning for response ended for an unknown reason."
   },
-  "sidebar_chatManager_finishReason_default": {
-    "message": "响应结束，原因：{reason}",
-    "description": "Default warning for response ending with a specific reason. {reason} is a placeholder."
-  },
   "sidebar_chatManager_toast_textCopied": {
     "message": "文本已复制到剪贴板",
     "description": "Toast message when text is copied."
@@ -799,10 +683,6 @@
     "message": "发生意外错误。请重试。",
     "description": "Generic unexpected error message."
   },
-  "sidebar_errorHandler_error_llmService": {
-    "message": "LLM 服务出错",
-    "description": "Error message for an LLM service error."
-  },
   "sidebar_errorHandler_error_failedToGetResponse": {
     "message": "从 AI 服务获取响应失败。请重试。",
     "description": "Error message when failing to get a response from the AI service."
@@ -843,10 +723,6 @@
     "message": "内容处理服务不可用。请重试。",
     "description": "Error message for an unavailable offscreen service."
   },
-  "sidebar_errorHandler_error_parseRawResponse": {
-    "message": "解析原始响应失败。",
-    "description": "Error message when parsing the raw response fails."
-  },
   "sidebar_errorHandler_error_extractFailed": {
     "message": "从页面提取内容失败。请重试或重新加载页面。",
     "description": "Error message when content extraction fails."
@@ -883,10 +759,6 @@
     "message": "正在重试消息...",
     "description": "Text displayed when retrying a message."
   },
-  "sidebar_tabManager_text_processing": {
-    "message": "正在处理：{content}",
-    "description": "Text displayed while processing content. {content} is a placeholder."
-  },
   "conversations_page_title": {
     "message": "洞察助手 - 对话",
     "description": "The title of the conversations page."
@@ -907,10 +779,6 @@
     "message": "从左侧选择一个页面以查看其内容并继续聊天。",
     "description": "Subtitle for the welcome screen in conversations."
   },
-  "conversations_confirm_delete_message": {
-    "message": "您确定要删除此对话吗？",
-    "description": "Confirmation message before deleting a conversation."
-  },
   "conversations_js_cannot_extract": {
     "message": "无法从此页面类型提取内容。请导航到常规网页。",
     "description": "Error message when content extraction is not possible."
@@ -922,10 +790,6 @@
   "conversations_js_failed_to_load": {
     "message": "加载页面对话失败",
     "description": "Error message when a page conversation fails to load."
-  },
-  "conversations_js_failed_to_delete": {
-    "message": "删除页面失败：{error}",
-    "description": "Error message when deleting a page fails. {error} is a placeholder."
   },
   "conversations_js_response_stopped": {
     "message": "用户已停止生成响应。",
@@ -963,10 +827,6 @@
     "message": "加载对话失败",
     "description": "Error message when loading conversations in the page list manager fails."
   },
-  "page_list_manager_tooltip_extracted": {
-    "message": "提取于: {time}",
-    "description": "Tooltip text showing when content was extracted. {time} is a placeholder."
-  },
   "page_list_manager_tooltip_no_extraction_time": {
     "message": "无提取时间",
     "description": "Tooltip text for when there is no extraction time."
@@ -983,10 +843,6 @@
     "message": "您确定要删除此页面的所有对话和提取的内容吗？",
     "description": "Confirmation message before deleting a page conversation."
   },
-  "page_list_manager_confirm_delete_details": {
-    "message": "<strong>标题:</strong> {title}<br>这将永久删除所有相关数据，包括聊天记录和提取的内容。",
-    "description": "Details for the delete confirmation. {title} is a placeholder."
-  },
   "page_list_manager_empty_list_title": {
     "message": "未找到对话",
     "description": "Title for the empty page list in the page list manager."
@@ -998,18 +854,6 @@
   "global_time_just_now": {
     "message": "刚刚",
     "description": "Text for a very recent timestamp."
-  },
-  "global_time_minutes_ago": {
-    "message": "{minutes}分钟前",
-    "description": "Text for a timestamp in minutes. {minutes} is a placeholder."
-  },
-  "global_time_hours_ago": {
-    "message": "{hours}小时前",
-    "description": "Text for a timestamp in hours. {hours} is a placeholder."
-  },
-  "global_time_days_ago": {
-    "message": "{days}天前",
-    "description": "Text for a timestamp in days. {days} is a placeholder."
   },
   "global_loading_content": {
     "message": "正在加载内容...",
@@ -1039,10 +883,6 @@
     "message": "导出对话",
     "description": "Title for the export conversation button."
   },
-  "global_confirm_deletion_title": {
-    "message": "确认删除",
-    "description": "Title for the delete confirmation dialog."
-  },
   "global_delete_button": {
     "message": "删除",
     "description": "Text for the delete button."
@@ -1055,18 +895,6 @@
     "message": "确认配置导入",
     "description": "Title for the configuration import confirmation dialog."
   },
-  "options_ui_config_import_confirm_export_date": {
-    "message": "导出日期：$1",
-    "description": "Shows the export date of the configuration file."
-  },
-  "options_ui_config_import_confirm_version": {
-    "message": "版本：$1",
-    "description": "Shows the version of the configuration file."
-  },
-  "options_ui_config_import_confirm_exported_by": {
-    "message": "导出来源：$1",
-    "description": "Shows who exported the configuration file."
-  },
   "options_ui_config_import_confirm_footer": {
     "message": "是否继续导入此配置？这将覆盖您当前的设置。",
     "description": "Footer text for the configuration import confirmation dialog."
@@ -1075,17 +903,9 @@
     "message": "配置导入成功！",
     "description": "Main success message after configuration import."
   },
-  "options_ui_config_import_success_sync": {
-    "message": "同步配置已导入",
-    "description": "Success message indicating sync configuration was imported."
-  },
   "options_ui_config_import_success_footer": {
     "message": "页面将重新加载以应用新的设置。",
     "description": "Footer text for the configuration import success message."
-  },
-  "options_ui_config_import_cancelled": {
-    "message": "配置导入已取消。",
-    "description": "Message shown when the user cancels the configuration import."
   },
   "options_blacklist_update_failed": {
     "message": "更新黑名单模式失败",
@@ -1151,14 +971,6 @@
     "message": "测试错误",
     "description": "Header for test error results."
   },
-  "options_blacklist_test_match": {
-    "message": "模式匹配",
-    "description": "Message when pattern matches test URL."
-  },
-  "options_blacklist_test_no_match": {
-    "message": "模式不匹配",
-    "description": "Message when pattern does not match test URL."
-  },
   "options_blacklist_test_pattern_label": {
     "message": "模式：",
     "description": "Label for pattern in test results."
@@ -1211,16 +1023,8 @@
     "message": "无效的配置格式。请选择有效的配置文件。",
     "description": "Error message when configuration format is invalid."
   },
-  "options_ui_config_import_missing_field": {
-    "message": "缺少必需字段：$1",
-    "description": "Error message when a required field is missing. $1 is the name of the missing field."
-  },
   "options_ui_config_import_save_error": {
     "message": "保存导入的配置失败。请重试。",
     "description": "Error message when saving imported configuration fails."
-  },
-  "options_ui_config_import_generic_error": {
-    "message": "导入失败：$1",
-    "description": "Generic error message for import failures. $1 is the error details."
   }
 }
