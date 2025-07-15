@@ -282,8 +282,7 @@ var geminiProvider = (function() {
                 const { done, value } = await reader.read();
 
                 if (done) {
-                    const stats = StreamUtils.getStreamStats(monitor, fullResponse);
-                    geminiLogger.info('[Stream] Stream completed normally', { ...stats, finishReason });
+                    geminiLogger.info('[Stream] Stream completed normally', { finishReason });
                     break;
                 }
 
@@ -291,12 +290,14 @@ var geminiProvider = (function() {
                     StreamUtils.updateMonitor(monitor, 0);
                     geminiLogger.warn('[Stream] Empty read from stream', {
                         consecutiveEmptyReads: monitor.consecutiveEmptyReads,
-                        timeSinceLastChunk: Date.now() - monitor.lastChunkTime
+                        timeSinceLastChunk: Date.now() - monitor.startTime
                     });
 
                     if (StreamUtils.shouldAbortStream(monitor)) {
-                        geminiLogger.error('[Stream] Too many consecutive empty reads, aborting stream',
-                            StreamUtils.getStreamStats(monitor, fullResponse));
+                        geminiLogger.error('[Stream] Too many consecutive empty reads, aborting stream', {
+                            consecutiveEmptyReads: monitor.consecutiveEmptyReads,
+                            duration: Date.now() - monitor.startTime
+                        });
                         throw new Error(`Stream interrupted: ${monitor.consecutiveEmptyReads} consecutive empty reads`);
                     }
                     continue;
@@ -313,8 +314,7 @@ var geminiProvider = (function() {
                     if (line.startsWith('data: ')) {
                         const data = line.slice(6).trim();
                         if (data === '[DONE]') {
-                            const stats = StreamUtils.getStreamStats(monitor, fullResponse);
-                            geminiLogger.info('[Stream] Received [DONE] signal', { ...stats, finishReason });
+                            geminiLogger.info('[Stream] Received [DONE] signal', { finishReason });
                             doneCallback(fullResponse, finishReason);
                             return;
                         }
@@ -349,13 +349,18 @@ var geminiProvider = (function() {
             }
             
         } catch (error) {
-            const stats = StreamUtils.getStreamStats(monitor, fullResponse);
+            const streamInfo = {
+                error: error.message,
+                duration: Date.now() - monitor.startTime,
+                finalResponseLength: fullResponse.length,
+                consecutiveEmptyReads: monitor.consecutiveEmptyReads
+            };
 
             // Check if this is a user cancellation - log as info instead of error
             if (error.message === 'Request was cancelled by user') {
-                geminiLogger.info('[Stream] Request cancelled by user:', { error: error.message, ...stats });
+                geminiLogger.info('[Stream] Request cancelled by user:', streamInfo);
             } else {
-                geminiLogger.error('[Stream] Error in Gemini stream processing:', { error: error.message, ...stats });
+                geminiLogger.error('[Stream] Error in Gemini stream processing:', streamInfo);
             }
 
             errorCallback(error);

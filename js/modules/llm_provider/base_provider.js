@@ -66,24 +66,18 @@ var BaseProvider = (function() {
     
     // Common stream processing utilities
     const StreamUtils = {
-        // Create a stream monitor with common metrics
+        // Create a simplified stream monitor for safety checks only
         createStreamMonitor() {
             return {
                 startTime: Date.now(),
-                totalChunks: 0,
-                totalBytes: 0,
-                lastChunkTime: Date.now(),
                 consecutiveEmptyReads: 0,
                 MAX_EMPTY_READS: 50
             };
         },
         
-        // Update stream monitor with new chunk data
+        // Update empty read counter
         updateMonitor(monitor, chunkSize = 0) {
             if (chunkSize > 0) {
-                monitor.totalChunks++;
-                monitor.totalBytes += chunkSize;
-                monitor.lastChunkTime = Date.now();
                 monitor.consecutiveEmptyReads = 0;
             } else {
                 monitor.consecutiveEmptyReads++;
@@ -94,18 +88,6 @@ var BaseProvider = (function() {
         // Check if stream should be aborted due to empty reads
         shouldAbortStream(monitor) {
             return monitor.consecutiveEmptyReads >= monitor.MAX_EMPTY_READS;
-        },
-        
-        // Get stream statistics
-        getStreamStats(monitor, fullResponse = '') {
-            return {
-                totalChunks: monitor.totalChunks,
-                totalBytes: monitor.totalBytes,
-                duration: Date.now() - monitor.startTime,
-                finalResponseLength: fullResponse.length,
-                timeSinceLastChunk: Date.now() - monitor.lastChunkTime,
-                consecutiveEmptyReads: monitor.consecutiveEmptyReads
-            };
         }
     };
     
@@ -440,8 +422,7 @@ var BaseProvider = (function() {
                     const { done, value } = await reader.read();
 
                     if (done) {
-                        const stats = StreamUtils.getStreamStats(monitor, fullResponse);
-                        logger.info('[Stream] Stream completed normally', { ...stats, finishReason });
+                        logger.info('[Stream] Stream completed normally', { finishReason });
                         break;
                     }
 
@@ -449,12 +430,14 @@ var BaseProvider = (function() {
                         StreamUtils.updateMonitor(monitor, 0);
                         logger.warn('[Stream] Empty read from stream', {
                             consecutiveEmptyReads: monitor.consecutiveEmptyReads,
-                            timeSinceLastChunk: Date.now() - monitor.lastChunkTime
+                            timeSinceLastChunk: Date.now() - monitor.startTime
                         });
 
                         if (StreamUtils.shouldAbortStream(monitor)) {
-                            logger.error('[Stream] Too many consecutive empty reads, aborting stream',
-                                StreamUtils.getStreamStats(monitor, fullResponse));
+                            logger.error('[Stream] Too many consecutive empty reads, aborting stream', {
+                                consecutiveEmptyReads: monitor.consecutiveEmptyReads,
+                                duration: Date.now() - monitor.startTime
+                            });
                             throw new Error(`Stream interrupted: ${monitor.consecutiveEmptyReads} consecutive empty reads`);
                         }
                         continue;
@@ -471,8 +454,7 @@ var BaseProvider = (function() {
                         if (line.startsWith('data: ')) {
                             const data = line.slice(6).trim();
                             if (data === '[DONE]') {
-                                const stats = StreamUtils.getStreamStats(monitor, fullResponse);
-                                logger.info('[Stream] Received [DONE] signal', { ...stats, finishReason });
+                                logger.info('[Stream] Received [DONE] signal', { finishReason });
                                 doneCallback(fullResponse, finishReason);
                                 return;
                             }
@@ -487,7 +469,6 @@ var BaseProvider = (function() {
                                     finishReason = parsedData.choices[0].finish_reason;
                                     logger.info('[Stream] Stream finished with reason', {
                                         finishReason,
-                                        totalChunks: monitor.totalChunks,
                                         finalResponseLength: fullResponse.length
                                     });
                                 }
@@ -508,13 +489,18 @@ var BaseProvider = (function() {
                 }
                 
             } catch (error) {
-                const stats = StreamUtils.getStreamStats(monitor, fullResponse);
+                const streamInfo = {
+                    error: error.message,
+                    duration: Date.now() - monitor.startTime,
+                    finalResponseLength: fullResponse.length,
+                    consecutiveEmptyReads: monitor.consecutiveEmptyReads
+                };
 
                 // Check if this is a user cancellation - log as info instead of error
                 if (error.message === 'Request was cancelled by user') {
-                    logger.info('[Stream] Request cancelled by user:', { error: error.message, ...stats });
+                    logger.info('[Stream] Request cancelled by user:', streamInfo);
                 } else {
-                    logger.error(`[Stream] Error in ${providerName} stream processing:`, { error: error.message, ...stats });
+                    logger.error(`[Stream] Error in ${providerName} stream processing:`, streamInfo);
                 }
 
                 errorCallback(error);
