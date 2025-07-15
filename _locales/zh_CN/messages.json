@@ -2,485 +2,95 @@
   "appName": {
     "message": "洞察助手"
   },
-  "options_header_title_text": {
-    "message": "洞察助手设置"
+  "common_add": {
+    "message": "添加"
   },
-  "options_language_label": {
-    "message": "语言"
+  "common_ask_placeholder": {
+    "message": "提问..."
   },
-  "options_page_title": {
-    "message": "设置"
+  "common_cancel": {
+    "message": "取消"
   },
-  "options_export_config_button": {
-    "message": "导出配置"
+  "common_chat": {
+    "message": "聊天"
   },
-  "options_import_config_button": {
-    "message": "导入配置"
+  "common_clear": {
+    "message": "清除"
   },
-  "options_reset_defaults_button": {
-    "message": "重置为默认值"
+  "common_confirm": {
+    "message": "确认"
   },
-  "options_confirm_clear_all_cache": {
-    "message": "您确定要清除所有缓存吗？此操作无法撤销，并将删除所有本地存储的对话和提取的内容。"
+  "common_confirm_are_you_sure": {
+    "message": "您确定吗？"
   },
-  "options_basic_settings_title": {
-    "message": "基础设置"
+  "common_confirm_clear_message": {
+    "message": "您确定要清除所有数据吗？"
   },
-  "options_default_model_label": {
-    "message": "默认模型"
+  "common_confirm_delete_message": {
+    "message": "您确定要删除此项吗？"
   },
-  "options_content_extraction_title": {
-    "message": "网页内容提取"
+  "common_confirm_reset_message": {
+    "message": "您确定要重置为默认设置吗？"
   },
-  "options_extracted_content_height_label": {
-    "message": "内容区域高度"
+  "common_confirmation_title": {
+    "message": "确认"
   },
-  "options_default_extraction_method_label": {
-    "message": "默认提取方法"
+  "common_copy_markdown": {
+    "message": "复制 Markdown"
   },
-  "options_extraction_method_readability": {
-    "message": "Readability.js (默认)"
+  "common_delete": {
+    "message": "删除"
   },
-  "options_extraction_method_jina": {
-    "message": "Jina AI"
+  "common_export_conversation": {
+    "message": "导出对话"
   },
-  "options_jina_api_key_label": {
-    "message": "Jina AI API 密钥 (可选)"
+  "common_include_page_content": {
+    "message": "将页面内容插入到system prompt中"
   },
-  "options_jina_response_template_label": {
-    "message": "Jina AI 响应模板"
+  "common_options_js_save": {
+    "message": "保存"
   },
-  "options_jina_response_template_description": {
-    "message": "用于格式化 Jina AI JSON 响应的模板。可用占位符：{title}、{url}、{description}、{content}。"
+  "common_remove": {
+    "message": "移除"
   },
-  "options_theme_label": {
-    "message": "主题"
-  },
-  "options_theme_light": {
-    "message": "浅色"
-  },
-  "options_theme_dark": {
-    "message": "深色"
-  },
-  "options_theme_system": {
-    "message": "系统"
-  },
-  "options_language_english": {
-    "message": "English"
-  },
-    "options_language_chinese": {
-    "message": "简体中文"
-  },
-  "options_system_prompt_label": {
-    "message": "系统提示词"
-  },
-  "options_quick_input_button_text_label": {
-    "message": "标签名称"
-  },
-  "options_quick_input_message_label": {
-    "message": "消息内容"
-  },
-  "options_cloud_sync_title": {
-    "message": "云同步"
-  },
-  "options_cloud_sync_description": {
-    "message": "同步您的配置 (！包括模型密钥！) 和页面、聊天数据"
-  },
-  "options_github_token_label": {
-    "message": "GitHub 令牌"
-  },
-  "options_github_token_create_link": {
-    "message": "创建令牌"
-  },
-  "options_github_token_permission_note": {
-    "message": "(需要 Gist 权限)"
-  },
-  "options_gist_id_label": {
-    "message": "Secret Gist ID"
-  },
-  "options_gist_id_create_link_prefix": {
-    "message": "创建一个 "
-  },
-  "options_gist_id_create_link": {
-    "message": "secret Gist"
-  },
-  "options_gist_id_create_link_suffix": {
-    "message": "(不要创建公开的 gist)"
-  },
-  "options_sync_on_save_label": {
-    "message": "保存时同步"
-  },
-  "options_sync_status_not_configured": {
-    "message": "未配置"
-  },
-  "options_js_sync_last_sync": {
-    "message": "上次同步: {0}"
-  },
-  "options_blacklist_settings_title": {
-    "message": "黑名单设置"
-  },
-  "options_blacklist_description": {
-    "message": "黑名单网址，标签页自动发送前确认"
-  },
-  "options_blacklist_edit_pattern_title": {
-    "message": "编辑模式"
-  },
-  "options_blacklist_delete_pattern_title": {
-    "message": "删除模式"
-  },
-  "options_blacklist_add_dialog_title": {
-    "message": "添加黑名单模式"
-  },
-  "options_blacklist_add_pattern_button": {
-    "message": "添加模式"
-  },
-  "options_blacklist_pattern_disabled_success": {
-    "message": "模式已成功禁用。"
-  },
-  "options_blacklist_pattern_enabled_success": {
-    "message": "模式已成功启用。"
-  },
-  "options_blacklist_pattern_added_success": {
-    "message": "模式已成功添加。"
-  },
-  "options_blacklist_delete_success": {
-    "message": "模式已成功删除。"
-  },
-  "options_quick_input_tabs_title": {
-    "message": "标签页"
-  },
-  "options_language_models_title": {
-    "message": "语言模型"
-  },
-  "options_add_new_model_button": {
-    "message": "添加新模型"
-  },
-  "options_model_display_name_label": {
-    "message": "模型显示名称"
-  },
-  "options_model_provider_label": {
-    "message": "服务提供商"
-  },
-  "options_model_provider_openai": {
-    "message": "OpenAI 兼容"
-  },
-  "options_model_provider_gemini": {
-    "message": "Google Gemini"
-  },
-  "optionsAzureOpenAIProvider": {
-    "message": "Azure OpenAI"
-  },
-  "options_model_azure_endpoint_label": {
-    "message": "Endpoint"
-  },
-  "options_model_azure_deployment_name_label": {
-    "message": "Deployment 名称"
-  },
-  "options_model_azure_api_version_label": {
-    "message": "API 版本"
-  },
-  "options_model_tools_label": {
-    "message": "工具"
-  },
-  "options_model_tools_url_context": {
-    "message": "URL 上下文"
-  },
-  "options_model_tools_google_search": {
-    "message": "谷歌搜索"
-  },
-
-  "options_model_base_url_label": {
-    "message": "服务 URL"
-  },
-  "options_model_api_key_label": {
-    "message": "API 密钥"
-  },
-  "options_model_model_label": {
-    "message": "模型"
-  },
-  "options_model_max_tokens_label": {
-    "message": "最大 token 数"
-  },
-  "options_model_temperature_label": {
-    "message": "温度"
-  },
-  "options_model_unnamed": {
-    "message": "未命名模型"
-  },
-  "options_model_no_models_configured": {
-    "message": "未配置模型"
-  },
-
-  "options_quick_input_auto_trigger_title": {
-    "message": "侧边栏打开时自动发送"
-  },
-  "options_quick_input_default_name": {
-    "message": "新标签页"
-  },
-
-  "options_js_saving": {
-    "message": "保存中..."
-  },
-  "options_js_saved": {
-    "message": "已保存！"
-  },
-  "options_js_error": {
-    "message": "错误"
-  },
-  "options_js_cache_stats_error": {
-    "message": "加载缓存统计信息时出错"
-  },
-  "options_js_clear_cache_error": {
-    "message": "清除缓存时出错。请查看控制台了解详情。"
-  },
-  "options_js_export_error": {
-    "message": "导出配置失败。请查看控制台了解详情。"
-  },
-  "options_js_import_error": {
-    "message": "导入配置失败。请查看控制台了解详情。"
-  },
-  "options_js_sync_github_token": {
-    "message": "GitHub 令牌"
-  },
-  "options_js_sync_gist_id": {
-    "message": "Gist ID"
-  },
-  "options_js_sync_testing_connection": {
-    "message": "正在测试连接..."
-  },
-  "options_js_sync_save_config_error": {
-    "message": "保存同步配置失败"
-  },
-  "options_js_sync_config_not_saved_properly": {
-    "message": "配置未正确保存"
-  },
-  "options_js_sync_config_not_saved_properly_details": {
-    "message": "配置未正确保存。请重试。"
-  },
-  "options_js_sync_completed_successfully": {
-    "message": "同步完成"
-  },
-  "options_js_sync_failed_after_test": {
-    "message": "连接测试后同步失败"
-  },
-  "options_js_sync_operation_failed": {
-    "message": "同步操作失败"
-  },
-  "options_js_sync_initial_sync_failed": {
-    "message": "初始同步失败"
-  },
-  "options_js_sync_connection_failed_disabled": {
-    "message": "连接失败 - 自动同步已禁用"
-  },
-  "options_js_sync_connection_test_failed": {
-    "message": "连接测试失败"
-  },
-  "options_js_sync_enable_auto_sync_failed": {
-    "message": "启用自动同步失败"
-  },
-  "options_js_sync_synced": {
-    "message": "已同步！"
-  },
-  "options_js_sync_error": {
-    "message": "同步错误"
-  },
-  "options_js_sync_load_status_error": {
-    "message": "加载同步状态失败"
-  },
-  "options_js_sync_token_gist_required": {
-    "message": "需要令牌和 Gist ID"
-  },
-  "options_js_sync_connection_successful": {
-    "message": "连接成功"
-  },
-  "options_js_sync_connection_failed": {
-    "message": "连接失败"
-  },
-  "options_js_sync_bg_script_error": {
-    "message": "后台脚本错误"
-  },
-  "options_js_sync_unexpected_response": {
-    "message": "来自后台脚本的意外响应"
-  },
-  "options_js_sync_test_failed": {
-    "message": "测试失败"
-  },
-  "options_js_sync_github_token_required": {
-    "message": "需要 GitHub 令牌"
-  },
-  "options_js_sync_gist_id_required": {
-    "message": "需要 Gist ID"
-  },
-  "options_js_sync_status_ready": {
-    "message": "就绪"
-  },
-  "options_js_sync_status_uploading": {
-    "message": "正在上传..."
-  },
-  "options_js_sync_status_downloading": {
-    "message": "正在下载..."
-  },
-  "options_js_sync_status_config_error": {
-    "message": "配置错误"
-  },
-  "options_js_sync_status_unknown": {
-    "message": "未知状态"
-  },
-  "sidebar_title_extractWithJina": {
-    "message": "使用 Jina AI 提取"
-  },
-  "sidebar_title_extractWithReadability": {
-    "message": "使用 Readability.js 提取"
-  },
-  "sidebar_title_copyExtractedContent": {
-    "message": "复制提取的内容"
-  },
-  "sidebar_title_retryExtraction": {
-    "message": "重试提取"
-  },
-  "sidebar_title_clearAllPageData": {
-    "message": "清除所有页面数据"
-  },
-  "sidebar_title_openChatPage": {
-    "message": "打开对话页面"
-  },
-  "sidebar_title_openConfigPage": {
-    "message": "打开配置页面"
-  },
-  "sidebar_text_extractingContent": {
-    "message": "正在提取内容..."
-  },
-  "sidebar_text_failedToExtractContent": {
-    "message": "提取内容失败。"
-  },
-  "sidebar_text_imageAttached": {
-    "message": "已附上图片"
-  },
-  "sidebar_js_blacklistConfirm": {
-    "message": "此页面在您的黑名单中。是否继续？"
+  "common_reset": {
+    "message": "重置"
   },
   "common_response_stopped_by_user": {
     "message": "用户已停止生成响应。"
   },
-  "sidebar_chatMessage_placeholder_edit": {
-    "message": "编辑您的消息..."
+  "common_retry": {
+    "message": "重试"
   },
-  "sidebar_chatMessage_title_edit": {
-    "message": "按 Ctrl+Enter 保存或 Escape 取消"
+  "common_save": {
+    "message": "保存"
   },
-  "sidebar_chatManager_title_stopGenerating": {
-    "message": "停止生成响应"
+  "common_send_message": {
+    "message": "发送消息"
   },
-  "sidebar_chatManager_title_editMessage": {
-    "message": "编辑消息"
+  "common_stop_and_clear": {
+    "message": "停止生成并清除对话"
   },
-  "sidebar_chatManager_title_copyText": {
-    "message": "复制文本"
+  "common_syncing": {
+    "message": "同步中..."
   },
-  "sidebar_chatManager_title_scrollToTop": {
-    "message": "滚动到顶部"
+  "common_update": {
+    "message": "更新"
   },
-  "sidebar_chatManager_title_scrollToBottom": {
-    "message": "滚动到底部"
+  "conversations_empty_list_subtitle": {
+    "message": "浏览页面并开始聊天，即可在此处看到对话记录"
   },
-  "sidebar_chatManager_finishReason_maxTokens": {
-    "message": "由于达到最大token限制，响应被截断。响应可能不完整。"
+  "conversations_empty_list_title": {
+    "message": "暂无对话"
   },
-  "sidebar_chatManager_finishReason_safety": {
-    "message": "由于内容策略限制，响应已停止。"
+  "conversations_js_cannot_extract": {
+    "message": "无法从此页面类型提取内容。请导航到常规网页。"
   },
-  "sidebar_chatManager_finishReason_recitation": {
-    "message": "由于潜在的版权内容，响应已停止。"
+  "conversations_js_failed_to_load": {
+    "message": "加载页面对话失败"
   },
-  "sidebar_chatManager_finishReason_other": {
-    "message": "响应因未知原因结束。"
-  },
-  "sidebar_chatManager_toast_textCopied": {
-    "message": "文本已复制到剪贴板"
-  },
-  "sidebar_chatManager_log_failedToCopyText": {
-    "message": "复制文本失败："
-  },
-  "sidebar_chatManager_toast_markdownCopied": {
-    "message": "Markdown 已复制到剪贴板"
-  },
-  "sidebar_chatManager_toast_errorCopyingMarkdown": {
-    "message": "复制 Markdown 出错"
-  },
-  "sidebar_chatManager_error_failedToSend": {
-    "message": "向 AI 发送消息失败。请检查服务工作线程日志。"
-  },
-  "sidebar_chatManager_error_failedToSendLlm": {
-    "message": "向 LLM 发送消息失败"
-  },
-  "sidebar_contentExtractor_error_accessContent": {
-    "message": "访问当前内容时出错"
-  },
-  "sidebar_contentExtractor_error_backgroundScript": {
-    "message": "与后台脚本通信失败"
-  },
-  "sidebar_contentExtractor_warn_noContentToCopy": {
-    "message": "没有可复制的内容"
-  },
-  "sidebar_contentExtractor_error_failedToCopy": {
-    "message": "复制内容失败："
-  },
-  "sidebar_errorHandler_error_unexpected": {
-    "message": "发生意外错误。请重试。"
-  },
-  "sidebar_errorHandler_error_failedToGetResponse": {
-    "message": "从 AI 服务获取响应失败。请重试。"
-  },
-  "sidebar_errorHandler_error_requestCancelled": {
-    "message": "请求已被用户取消。"
-  },
-  "sidebar_errorHandler_error_contentScript": {
-    "message": "内容脚本未连接。请重新加载页面再试。"
-  },
-  "sidebar_errorHandler_error_pageNotReady": {
-    "message": "页面内容未准备好或内容脚本有问题。请等待页面完全加载后再试。"
-  },
-  "sidebar_errorHandler_error_pageLoading": {
-    "message": "页面内容未准备好，请等待页面完全加载后重试。"
-  },
-  "sidebar_errorHandler_error_readabilityLoad": {
-    "message": "Readability 库加载失败。请重试或联系支持人员。"
-  },
-  "sidebar_errorHandler_error_readabilityExtract": {
-    "message": "Readability 提取失败。页面内容可能不适合提取。请尝试刷新页面。"
-  },
-  "sidebar_errorHandler_error_noHtml": {
-    "message": "无法获取页面内容。请重新加载页面再试。"
-  },
-  "sidebar_errorHandler_error_processing": {
-    "message": "内容处理错误。请重试或重新加载页面。"
-  },
-  "sidebar_errorHandler_error_offscreen": {
-    "message": "内容处理服务不可用。请重试。"
-  },
-  "sidebar_errorHandler_error_extractFailed": {
-    "message": "从页面提取内容失败。请重试或重新加载页面。"
-  },
-  "sidebar_errorHandler_error_network": {
-    "message": "网络连接错误。请检查您的网络连接并重试。"
-  },
-  "sidebar_errorHandler_error_timeout": {
-    "message": "请求超时。请重试。"
-  },
-  "sidebar_uiManager_text_restrictedPage": {
-    "message": "受限页面"
-  },
-  "sidebar_uiManager_text_restrictedPageMessage": {
-    "message": "无法在 Chrome 内部页面（chrome://, chrome-extension:// 等）上工作。"
-  },
-  "sidebar_uiManager_text_restrictedPageGuidance": {
-    "message": "只能在常规网页使用该扩展程序。"
-  },
-  "sidebar_uiManager_error_noContentExtracted": {
-    "message": "未提取任何内容"
-  },
-  "sidebar_tabManager_retryingMessage": {
-    "message": "正在重试消息..."
+  "conversations_js_no_cached_content": {
+    "message": "此页面没有缓存内容。请先访问该页面以提取内容。"
   },
   "conversations_page_title": {
     "message": "洞察助手 - 对话"
@@ -488,35 +98,17 @@
   "conversations_search_placeholder": {
     "message": "搜索页面..."
   },
-  "conversations_empty_list_title": {
-    "message": "暂无对话"
-  },
-  "conversations_empty_list_subtitle": {
-    "message": "浏览页面并开始聊天，即可在此处看到对话记录"
-  },
   "conversations_welcome_subtitle": {
     "message": "从左侧选择一个页面以查看其内容并继续聊天。"
-  },
-  "conversations_js_cannot_extract": {
-    "message": "无法从此页面类型提取内容。请导航到常规网页。"
-  },
-  "conversations_js_no_cached_content": {
-    "message": "此页面没有缓存内容。请先访问该页面以提取内容。"
-  },
-  "conversations_js_failed_to_load": {
-    "message": "加载页面对话失败"
   },
   "export_default_title": {
     "message": "对话"
   },
-  "export_untitled_page": {
-    "message": "无标题"
-  },
   "export_unknown_role": {
     "message": "未知"
   },
-  "global_error_no_url": {
-    "message": "未提供 URL"
+  "export_untitled_page": {
+    "message": "无标题"
   },
   "global_error_failed_to_clear_storage": {
     "message": "从存储中清除数据失败"
@@ -524,86 +116,92 @@
   "global_error_failed_to_soft_delete": {
     "message": "从存储中软删除数据失败"
   },
-  "page_list_manager_failed_to_load": {
-    "message": "加载对话失败"
-  },
-  "page_list_manager_tooltip_no_extraction_time": {
-    "message": "无提取时间"
-  },
-  "page_list_manager_open_in_new_tab_title": {
-    "message": "在新标签页中打开"
-  },
-  "page_list_manager_delete_conversation_title": {
-    "message": "删除此对话"
-  },
-  "page_list_manager_confirm_delete_message": {
-    "message": "您确定要删除此页面的所有对话和提取的内容吗？"
-  },
-  "page_list_manager_empty_list_title": {
-    "message": "未找到对话"
-  },
-  "page_list_manager_empty_list_subtitle": {
-    "message": "浏览页面并开始聊天，即可在此处看到对话记录"
-  },
-  "global_time_just_now": {
-    "message": "刚刚"
-  },
-  "global_loading_content": {
-    "message": "正在加载内容..."
+  "global_error_no_url": {
+    "message": "未提供 URL"
   },
   "global_failed_to_load_content": {
     "message": "加载内容失败。"
   },
-  "options_ui_config_import_confirm_title": {
-    "message": "确认配置导入"
+  "global_loading_content": {
+    "message": "正在加载内容..."
   },
-  "options_ui_config_import_confirm_footer": {
-    "message": "是否继续导入此配置？这将覆盖您当前的设置。"
+  "global_time_just_now": {
+    "message": "刚刚"
   },
-  "options_ui_config_import_success": {
-    "message": "配置导入成功！"
+  "options_add_new_model_button": {
+    "message": "添加新模型"
   },
-  "options_ui_config_import_success_footer": {
-    "message": "页面将重新加载以应用新的设置。"
+  "options_add_quick_input_button": {
+    "message": "添加标签页"
   },
-  "options_blacklist_update_failed": {
-    "message": "更新黑名单模式失败"
+  "options_basic_settings_title": {
+    "message": "基础设置"
   },
-  "options_blacklist_pattern_not_found": {
-    "message": "未找到模式"
+  "options_blacklist_add_button": {
+    "message": "添加"
+  },
+  "options_blacklist_add_dialog_title": {
+    "message": "添加黑名单模式"
+  },
+  "options_blacklist_add_pattern_button": {
+    "message": "添加模式"
   },
   "options_blacklist_delete_failed": {
     "message": "删除黑名单模式失败"
   },
-  "options_blacklist_save_failed": {
-    "message": "保存黑名单模式失败"
+  "options_blacklist_delete_pattern_title": {
+    "message": "删除模式"
   },
-  "options_blacklist_enter_pattern_error": {
-    "message": "请输入有效的模式"
+  "options_blacklist_delete_success": {
+    "message": "模式已成功删除。"
   },
-  "options_blacklist_pattern_updated_success": {
-    "message": "模式更新成功"
+  "options_blacklist_description": {
+    "message": "黑名单网址，标签页自动发送前确认"
   },
   "options_blacklist_edit_dialog_title": {
     "message": "编辑黑名单模式"
   },
+  "options_blacklist_edit_pattern_title": {
+    "message": "编辑模式"
+  },
+  "options_blacklist_enter_pattern_error": {
+    "message": "请输入有效的模式"
+  },
   "options_blacklist_no_patterns": {
     "message": "未配置黑名单模式。点击\"添加模式\"创建一个。"
   },
-  "options_blacklist_url_pattern_label": {
-    "message": "URL 模式（正则表达式）"
+  "options_blacklist_pattern_added_success": {
+    "message": "模式已成功添加。"
   },
-  "options_blacklist_url_pattern_placeholder": {
-    "message": "例如：google\\.com/search"
+  "options_blacklist_pattern_disabled_success": {
+    "message": "模式已成功禁用。"
   },
-  "options_blacklist_url_pattern_description": {
-    "message": "使用正则表达式模式匹配URL（不包括协议）"
+  "options_blacklist_pattern_enabled_success": {
+    "message": "模式已成功启用。"
   },
-  "options_blacklist_test_url_label": {
-    "message": "测试URL（可选）"
+  "options_blacklist_pattern_not_found": {
+    "message": "未找到模式"
   },
-  "options_blacklist_test_url_placeholder": {
-    "message": "例如：https://www.google.com/search?q=test"
+  "options_blacklist_pattern_updated_success": {
+    "message": "模式更新成功"
+  },
+  "options_blacklist_reset_button": {
+    "message": "重置"
+  },
+  "options_blacklist_reset_confirm_message": {
+    "message": "默认模式将被恢复。\n\n此操作无法撤消。\n\n您是否要继续？"
+  },
+  "options_blacklist_reset_failed": {
+    "message": "重置黑名单为默认失败"
+  },
+  "options_blacklist_reset_success": {
+    "message": "黑名单重置为默认成功"
+  },
+  "options_blacklist_save_failed": {
+    "message": "保存黑名单模式失败"
+  },
+  "options_blacklist_settings_title": {
+    "message": "黑名单设置"
   },
   "options_blacklist_test_error": {
     "message": "测试错误"
@@ -614,20 +212,320 @@
   "options_blacklist_test_tested_url_label": {
     "message": "测试的URL："
   },
-  "options_blacklist_reset_confirm_message": {
-    "message": "默认模式将被恢复。\n\n此操作无法撤消。\n\n您是否要继续？"
+  "options_blacklist_test_url_label": {
+    "message": "测试URL（可选）"
   },
-  "options_blacklist_reset_success": {
-    "message": "黑名单重置为默认成功"
+  "options_blacklist_test_url_placeholder": {
+    "message": "例如：https://www.google.com/search?q=test"
   },
-  "options_blacklist_reset_failed": {
-    "message": "重置黑名单为默认失败"
+  "options_blacklist_update_failed": {
+    "message": "更新黑名单模式失败"
   },
-  "options_ui_config_reset_confirm": {
-    "message": "您确定要将所有设置重置为默认值吗？此操作无法撤消。"
+  "options_blacklist_url_pattern_description": {
+    "message": "使用正则表达式模式匹配URL（不包括协议）"
+  },
+  "options_blacklist_url_pattern_label": {
+    "message": "URL 模式（正则表达式）"
+  },
+  "options_blacklist_url_pattern_placeholder": {
+    "message": "例如：google\\.com/search"
+  },
+  "options_cache_label": {
+    "message": "本地数据："
+  },
+  "options_clear_cache_button": {
+    "message": "清除"
+  },
+  "options_cloud_sync_description": {
+    "message": "同步您的配置 (！包括模型密钥！) 和页面、聊天数据"
+  },
+  "options_cloud_sync_title": {
+    "message": "云同步"
+  },
+  "options_confirm_clear_all_cache": {
+    "message": "您确定要清除所有缓存吗？此操作无法撤销，并将删除所有本地存储的对话和提取的内容。"
+  },
+  "options_content_extraction_title": {
+    "message": "网页内容提取"
+  },
+  "options_default_extraction_method_label": {
+    "message": "默认提取方法"
+  },
+  "options_default_model_label": {
+    "message": "默认模型"
+  },
+  "options_export_config_button": {
+    "message": "导出配置"
+  },
+  "options_extracted_content_height_label": {
+    "message": "内容区域高度"
+  },
+  "options_extraction_method_jina": {
+    "message": "Jina AI"
+  },
+  "options_extraction_method_readability": {
+    "message": "Readability.js (默认)"
+  },
+  "options_gist_id_create_link": {
+    "message": "secret Gist"
+  },
+  "options_gist_id_create_link_prefix": {
+    "message": "创建一个 "
+  },
+  "options_gist_id_create_link_suffix": {
+    "message": "(不要创建公开的 gist)"
+  },
+  "options_gist_id_label": {
+    "message": "Secret Gist ID"
+  },
+  "options_github_token_create_link": {
+    "message": "创建令牌"
+  },
+  "options_github_token_label": {
+    "message": "GitHub 令牌"
+  },
+  "options_github_token_permission_note": {
+    "message": "(需要 Gist 权限)"
+  },
+  "options_header_title_text": {
+    "message": "洞察助手设置"
+  },
+  "options_import_config_button": {
+    "message": "导入配置"
+  },
+  "options_jina_api_key_label": {
+    "message": "Jina AI API 密钥 (可选)"
+  },
+  "options_jina_response_template_description": {
+    "message": "用于格式化 Jina AI JSON 响应的模板。可用占位符：{title}、{url}、{description}、{content}。"
+  },
+  "options_jina_response_template_label": {
+    "message": "Jina AI 响应模板"
+  },
+  "options_js_cache_stats_error": {
+    "message": "加载缓存统计信息时出错"
+  },
+  "options_js_clear_cache_error": {
+    "message": "清除缓存时出错。请查看控制台了解详情。"
+  },
+  "options_js_error": {
+    "message": "错误"
+  },
+  "options_js_export_error": {
+    "message": "导出配置失败。请查看控制台了解详情。"
+  },
+  "options_js_import_error": {
+    "message": "导入配置失败。请查看控制台了解详情。"
+  },
+  "options_js_saved": {
+    "message": "已保存！"
+  },
+  "options_js_saving": {
+    "message": "保存中..."
+  },
+  "options_js_sync_bg_script_error": {
+    "message": "后台脚本错误"
+  },
+  "options_js_sync_completed_successfully": {
+    "message": "同步完成"
+  },
+  "options_js_sync_config_not_saved_properly": {
+    "message": "配置未正确保存"
+  },
+  "options_js_sync_config_not_saved_properly_details": {
+    "message": "配置未正确保存。请重试。"
+  },
+  "options_js_sync_connection_failed": {
+    "message": "连接失败"
+  },
+  "options_js_sync_connection_failed_disabled": {
+    "message": "连接失败 - 自动同步已禁用"
+  },
+  "options_js_sync_connection_successful": {
+    "message": "连接成功"
+  },
+  "options_js_sync_connection_test_failed": {
+    "message": "连接测试失败"
+  },
+  "options_js_sync_enable_auto_sync_failed": {
+    "message": "启用自动同步失败"
+  },
+  "options_js_sync_error": {
+    "message": "同步错误"
+  },
+  "options_js_sync_failed_after_test": {
+    "message": "连接测试后同步失败"
+  },
+  "options_js_sync_gist_id": {
+    "message": "Gist ID"
+  },
+  "options_js_sync_gist_id_required": {
+    "message": "需要 Gist ID"
+  },
+  "options_js_sync_github_token": {
+    "message": "GitHub 令牌"
+  },
+  "options_js_sync_github_token_required": {
+    "message": "需要 GitHub 令牌"
+  },
+  "options_js_sync_initial_sync_failed": {
+    "message": "初始同步失败"
+  },
+  "options_js_sync_last_sync": {
+    "message": "上次同步: {0}"
+  },
+  "options_js_sync_load_status_error": {
+    "message": "加载同步状态失败"
+  },
+  "options_js_sync_operation_failed": {
+    "message": "同步操作失败"
+  },
+  "options_js_sync_save_config_error": {
+    "message": "保存同步配置失败"
+  },
+  "options_js_sync_status_config_error": {
+    "message": "配置错误"
+  },
+  "options_js_sync_status_downloading": {
+    "message": "正在下载..."
+  },
+  "options_js_sync_status_ready": {
+    "message": "就绪"
+  },
+  "options_js_sync_status_unknown": {
+    "message": "未知状态"
+  },
+  "options_js_sync_status_uploading": {
+    "message": "正在上传..."
+  },
+  "options_js_sync_synced": {
+    "message": "已同步！"
+  },
+  "options_js_sync_test_failed": {
+    "message": "测试失败"
+  },
+  "options_js_sync_testing_connection": {
+    "message": "正在测试连接..."
+  },
+  "options_js_sync_token_gist_required": {
+    "message": "需要令牌和 Gist ID"
+  },
+  "options_js_sync_unexpected_response": {
+    "message": "来自后台脚本的意外响应"
+  },
+  "options_language_chinese": {
+    "message": "简体中文"
+  },
+  "options_language_english": {
+    "message": "English"
+  },
+  "options_language_label": {
+    "message": "语言"
+  },
+  "options_language_models_title": {
+    "message": "语言模型"
+  },
+  "options_model_api_key_label": {
+    "message": "API 密钥"
+  },
+  "options_model_azure_api_version_label": {
+    "message": "API 版本"
+  },
+  "options_model_azure_deployment_name_label": {
+    "message": "Deployment 名称"
+  },
+  "options_model_azure_endpoint_label": {
+    "message": "Endpoint"
+  },
+  "options_model_base_url_label": {
+    "message": "服务 URL"
+  },
+  "options_model_display_name_label": {
+    "message": "显示名称"
+  },
+  "options_model_max_tokens_label": {
+    "message": "最大 token 数"
+  },
+  "options_model_model_label": {
+    "message": "模型"
+  },
+  "options_model_no_models_configured": {
+    "message": "未配置模型"
+  },
+  "options_model_provider_gemini": {
+    "message": "Google Gemini"
+  },
+  "options_model_provider_label": {
+    "message": "服务提供商"
+  },
+  "options_model_provider_openai": {
+    "message": "OpenAI 兼容"
+  },
+  "options_model_temperature_label": {
+    "message": "温度"
+  },
+  "options_model_tools_google_search": {
+    "message": "Google Search"
+  },
+  "options_model_tools_label": {
+    "message": "Tools"
+  },
+  "options_model_tools_url_context": {
+    "message": "URL Context"
+  },
+  "options_model_unnamed": {
+    "message": "未命名模型"
+  },
+  "options_page_title": {
+    "message": "设置"
+  },
+  "options_quick_input_auto_trigger_title": {
+    "message": "侧边栏打开时自动发送"
+  },
+  "options_quick_input_button_text_label": {
+    "message": "名称"
+  },
+  "options_quick_input_default_name": {
+    "message": "新标签页"
+  },
+  "options_quick_input_message_label": {
+    "message": "消息内容"
+  },
+  "options_quick_input_tabs_title": {
+    "message": "标签页"
+  },
+  "options_reset_defaults_button": {
+    "message": "重置为默认值"
+  },
+  "options_sync_on_save_label": {
+    "message": "保存时同步"
+  },
+  "options_sync_status_not_configured": {
+    "message": "未配置"
+  },
+  "options_system_prompt_label": {
+    "message": "系统提示词"
+  },
+  "options_theme_dark": {
+    "message": "深色"
+  },
+  "options_theme_label": {
+    "message": "主题"
+  },
+  "options_theme_light": {
+    "message": "浅色"
+  },
+  "options_theme_system": {
+    "message": "系统"
   },
   "options_ui_config_export_error": {
     "message": "导出配置失败。请重试。"
+  },
+  "options_ui_config_import_confirm_footer": {
+    "message": "是否继续导入此配置？这将覆盖您当前的设置。"
+  },
+  "options_ui_config_import_confirm_title": {
+    "message": "确认配置导入"
   },
   "options_ui_config_import_invalid_file": {
     "message": "无效的文件类型。请选择 JSON 文件。"
@@ -638,101 +536,193 @@
   "options_ui_config_import_save_error": {
     "message": "保存导入的配置失败。请重试。"
   },
-  "common_save": {
-    "message": "保存"
+  "options_ui_config_import_success": {
+    "message": "配置导入成功！"
   },
-  "common_delete": {
-    "message": "删除"
+  "options_ui_config_import_success_footer": {
+    "message": "页面将重新加载以应用新的设置。"
   },
-  "common_cancel": {
-    "message": "取消"
+  "options_ui_config_reset_confirm": {
+    "message": "您确定要将所有设置重置为默认值吗？此操作无法撤消。"
   },
-  "common_confirm": {
-    "message": "确认"
+  "optionsAzureOpenAIProvider": {
+    "message": "Azure OpenAI"
   },
-  "common_clear": {
-    "message": "清除"
+  "page_list_manager_confirm_delete_message": {
+    "message": "您确定要删除此页面的所有对话和提取的内容吗？"
   },
-  "common_reset": {
-    "message": "重置"
+  "page_list_manager_delete_conversation_title": {
+    "message": "删除此对话"
   },
-  "common_add": {
-    "message": "添加"
+  "page_list_manager_empty_list_subtitle": {
+    "message": "浏览页面并开始聊天，即可在此处看到对话记录"
   },
-  "common_update": {
-    "message": "更新"
+  "page_list_manager_empty_list_title": {
+    "message": "未找到对话"
   },
-  "common_retry": {
-    "message": "重试"
+  "page_list_manager_failed_to_load": {
+    "message": "加载对话失败"
   },
-  "common_remove": {
-    "message": "移除"
+  "page_list_manager_open_in_new_tab_title": {
+    "message": "在新标签页中打开"
   },
-  "common_ask_placeholder": {
-    "message": "提问..."
+  "sidebar_chatManager_error_failedToSend": {
+    "message": "向 AI 发送消息失败。请检查服务工作线程日志。"
   },
-  "common_send_message": {
-    "message": "发送消息"
+  "sidebar_chatManager_error_failedToSendLlm": {
+    "message": "向 LLM 发送消息失败"
   },
-  "common_include_page_content": {
-    "message": "将页面内容插入到system prompt中"
+  "sidebar_chatManager_finishReason_maxTokens": {
+    "message": "由于达到最大token限制，响应被截断。响应可能不完整。"
   },
-  "common_stop_and_clear": {
-    "message": "停止生成并清除对话"
+  "sidebar_chatManager_finishReason_other": {
+    "message": "响应因未知原因结束。"
   },
-  "common_export_conversation": {
-    "message": "导出对话"
+  "sidebar_chatManager_finishReason_recitation": {
+    "message": "由于潜在的版权内容，响应已停止。"
   },
-  "common_copy_markdown": {
-    "message": "复制 Markdown"
+  "sidebar_chatManager_finishReason_safety": {
+    "message": "由于内容策略限制，响应已停止。"
   },
-  "common_chat": {
-    "message": "聊天"
+  "sidebar_chatManager_log_failedToCopyText": {
+    "message": "复制文本失败："
   },
-  "common_syncing": {
-    "message": "同步中..."
+  "sidebar_chatManager_title_copyAsMarkdown": {
+    "message": "复制为 Markdown"
   },
-  "common_confirm_are_you_sure": {
-    "message": "您确定吗？"
+  "sidebar_chatManager_title_copyText": {
+    "message": "复制文本"
   },
-  "common_confirm_delete_message": {
-    "message": "您确定要删除此项吗？"
+  "sidebar_chatManager_title_editMessage": {
+    "message": "编辑消息"
   },
-  "common_confirm_reset_message": {
-    "message": "您确定要重置为默认设置吗？"
+  "sidebar_chatManager_title_scrollToBottom": {
+    "message": "滚动到底部"
   },
-  "common_confirm_clear_message": {
-    "message": "您确定要清除所有数据吗？"
+  "sidebar_chatManager_title_scrollToTop": {
+    "message": "滚动到顶部"
   },
-  "common_confirmation_title": {
-    "message": "确认"
+  "sidebar_chatManager_title_stopGenerating": {
+    "message": "停止生成响应"
   },
-  "common_cache_label": {
-    "message": "本地数据："
+  "sidebar_chatManager_toast_errorCopyingMarkdown": {
+    "message": "复制 Markdown 出错"
   },
-  "common_options_js_save": {
-    "message": "保存"
+  "sidebar_chatManager_toast_markdownCopied": {
+    "message": "Markdown 已复制到剪贴板"
   },
-  "options_cache_label": {
-    "message": "本地数据："
+  "sidebar_chatManager_toast_textCopied": {
+    "message": "文本已复制到剪贴板"
   },
-  "options_clear_cache_button": {
-    "message": "清除"
+  "sidebar_chatMessage_placeholder_edit": {
+    "message": "编辑您的消息..."
   },
-  "options_blacklist_add_button": {
-    "message": "添加"
+  "sidebar_chatMessage_title_edit": {
+    "message": "按 Ctrl+Enter 保存或 Escape 取消"
   },
-  "options_blacklist_reset_button": {
-    "message": "重置"
+  "sidebar_contentExtractor_error_accessContent": {
+    "message": "访问当前内容时出错"
   },
-  "options_add_quick_input_button": {
-    "message": "添加快速输入"
+  "sidebar_contentExtractor_error_backgroundScript": {
+    "message": "与后台脚本通信失败"
+  },
+  "sidebar_contentExtractor_error_failedToCopy": {
+    "message": "复制内容失败："
+  },
+  "sidebar_contentExtractor_warn_noContentToCopy": {
+    "message": "没有可复制的内容"
+  },
+  "sidebar_errorHandler_error_contentScript": {
+    "message": "内容脚本未连接。请重新加载页面再试。"
+  },
+  "sidebar_errorHandler_error_extractFailed": {
+    "message": "从页面提取内容失败。请重试或重新加载页面。"
+  },
+  "sidebar_errorHandler_error_failedToGetResponse": {
+    "message": "从 AI 服务获取响应失败。请重试。"
+  },
+  "sidebar_errorHandler_error_network": {
+    "message": "网络连接错误。请检查您的网络连接并重试。"
+  },
+  "sidebar_errorHandler_error_noHtml": {
+    "message": "无法获取页面内容。请重新加载页面再试。"
+  },
+  "sidebar_errorHandler_error_offscreen": {
+    "message": "内容处理服务不可用。请重试。"
+  },
+  "sidebar_errorHandler_error_pageLoading": {
+    "message": "页面内容未准备好，请等待页面完全加载后重试。"
+  },
+  "sidebar_errorHandler_error_pageNotReady": {
+    "message": "页面内容未准备好或内容脚本有问题。请等待页面完全加载后再试。"
+  },
+  "sidebar_errorHandler_error_processing": {
+    "message": "内容处理错误。请重试或重新加载页面。"
+  },
+  "sidebar_errorHandler_error_readabilityExtract": {
+    "message": "Readability 提取失败。页面内容可能不适合提取。请尝试刷新页面。"
+  },
+  "sidebar_errorHandler_error_readabilityLoad": {
+    "message": "Readability 库加载失败。请重试或联系支持人员。"
+  },
+  "sidebar_errorHandler_error_requestCancelled": {
+    "message": "请求已被用户取消。"
+  },
+  "sidebar_errorHandler_error_timeout": {
+    "message": "请求超时。请重试。"
+  },
+  "sidebar_errorHandler_error_unexpected": {
+    "message": "发生意外错误。请重试。"
+  },
+  "sidebar_js_blacklistConfirm": {
+    "message": "此页面在您的黑名单中。是否继续？"
+  },
+  "sidebar_tabManager_retryingMessage": {
+    "message": "正在重试消息..."
+  },
+  "sidebar_text_extractingContent": {
+    "message": "正在提取内容..."
+  },
+  "sidebar_text_failedToExtractContent": {
+    "message": "提取内容失败。"
+  },
+  "sidebar_text_imageAttached": {
+    "message": "已附上图片"
+  },
+  "sidebar_title_clearAllPageData": {
+    "message": "清除所有页面数据"
+  },
+  "sidebar_title_copyExtractedContent": {
+    "message": "复制提取的内容"
+  },
+  "sidebar_title_extractWithJina": {
+    "message": "使用 Jina AI 提取"
+  },
+  "sidebar_title_extractWithReadability": {
+    "message": "使用 Readability.js 提取"
+  },
+  "sidebar_title_openChatPage": {
+    "message": "打开对话页面"
+  },
+  "sidebar_title_openConfigPage": {
+    "message": "打开配置页面"
+  },
+  "sidebar_title_retryExtraction": {
+    "message": "重试提取"
   },
   "sidebar_title_stopAndClear": {
     "message": "停止生成并清除对话"
   },
-
-  "sidebar_chatManager_title_copyAsMarkdown": {
-    "message": "复制为 Markdown"
+  "sidebar_uiManager_error_noContentExtracted": {
+    "message": "未提取任何内容"
+  },
+  "sidebar_uiManager_text_restrictedPage": {
+    "message": "受限页面"
+  },
+  "sidebar_uiManager_text_restrictedPageGuidance": {
+    "message": "只能在常规网页使用该扩展程序。"
+  },
+  "sidebar_uiManager_text_restrictedPageMessage": {
+    "message": "无法在 Chrome 内部页面（chrome://, chrome-extension:// 等）上工作。"
   }
 }

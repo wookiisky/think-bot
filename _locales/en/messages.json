@@ -8,9 +8,6 @@
   "common_ask_placeholder": {
     "message": "Ask..."
   },
-  "common_cache_label": {
-    "message": "Local Data:"
-  },
   "common_cancel": {
     "message": "Cancel"
   },
@@ -80,7 +77,6 @@
   "common_update": {
     "message": "Update"
   },
-
   "conversations_empty_list_subtitle": {
     "message": "Browse pages and chat to see conversations here"
   },
@@ -435,16 +431,6 @@
   "options_model_azure_api_version_label": {
     "message": "API Version"
   },
-  "options_model_tools_label": {
-    "message": "Tools"
-  },
-  "options_model_tools_url_context": {
-    "message": "URL Context"
-  },
-  "options_model_tools_google_search": {
-    "message": "Google Search"
-  },
-
   "options_model_azure_deployment_name_label": {
     "message": "Deployment Name"
   },
@@ -478,6 +464,15 @@
   "options_model_temperature_label": {
     "message": "Temperature"
   },
+  "options_model_tools_google_search": {
+    "message": "Google Search"
+  },
+  "options_model_tools_label": {
+    "message": "Tools"
+  },
+  "options_model_tools_url_context": {
+    "message": "URL Context"
+  },
   "options_model_unnamed": {
     "message": "Unnamed Model"
   },
@@ -487,11 +482,15 @@
   "options_quick_input_auto_trigger_title": {
     "message": "Auto-trigger when sidebar opens"
   },
+  "options_quick_input_button_text_label": {
+    "message": "Button Text"
+  },
   "options_quick_input_default_name": {
     "message": "quick input"
   },
-
-
+  "options_quick_input_message_label": {
+    "message": "Message"
+  },
   "options_quick_input_tabs_title": {
     "message": "Quick Input Tabs"
   },
@@ -501,17 +500,11 @@
   "options_sync_on_save_label": {
     "message": "Sync when Save settings"
   },
-    "options_sync_status_not_configured": {
+  "options_sync_status_not_configured": {
     "message": "Not configured"
   },
   "options_system_prompt_label": {
     "message": "System Prompt"
-  },
-  "options_quick_input_button_text_label": {
-    "message": "Button Text"
-  },
-  "options_quick_input_message_label": {
-    "message": "Message"
   },
   "options_theme_dark": {
     "message": "Dark"
@@ -572,9 +565,6 @@
   },
   "page_list_manager_open_in_new_tab_title": {
     "message": "Open in new tab"
-  },
-  "page_list_manager_tooltip_no_extraction_time": {
-    "message": "No extraction time"
   },
   "sidebar_chatManager_error_failedToSend": {
     "message": "Failed to send message to the AI. Check service worker logs."

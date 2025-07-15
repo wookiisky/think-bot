@@ -141,8 +141,8 @@ export class PageListManager {
     
     // Create tooltip with title, URL and timestamp (three lines)
     const timestampText = page.timestamp
-      ? i18n.getMessage('page_list_manager_tooltip_extracted', { time: new Date(page.timestamp).toLocaleString() })
-      : i18n.getMessage('page_list_manager_tooltip_no_extraction_time');
+      ? this.formatTimestampTooltip(page.timestamp)
+      : '';
     const tooltipText = `${page.title || this.getUrlDisplay(page.url)}\n${page.url}\n${timestampText}`;
     item.title = tooltipText;
     
@@ -258,6 +258,23 @@ export class PageListManager {
     } else {
       return date.toLocaleDateString();
     }
+  }
+
+  /**
+   * Format timestamp for tooltip display in yyyy-mm-dd HH:MM:SS format
+   * @param {number} timestamp - Timestamp in milliseconds
+   * @returns {string} Formatted timestamp
+   */
+  formatTimestampTooltip(timestamp) {
+    const date = new Date(timestamp);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   }
 
   /**
