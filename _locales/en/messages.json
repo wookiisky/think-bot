@@ -473,6 +473,9 @@
   "options_model_tools_url_context": {
     "message": "URL Context"
   },
+  "options_model_thinking_budget_label": {
+    "message": "Thinking Budget"
+  },
   "options_model_unnamed": {
     "message": "Unnamed Model"
   },

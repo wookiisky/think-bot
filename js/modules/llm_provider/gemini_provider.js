@@ -460,6 +460,16 @@ var geminiProvider = (function() {
                 requestBody.tools = tools;
                 geminiLogger.info('[Request] Using tools:', tools);
             }
+            
+            // Add thinking configuration if available
+            if (llmConfig.thinkingBudget !== undefined && llmConfig.thinkingBudget !== null) {
+                requestBody.thinkingConfig = {
+                    thinkingBudget: llmConfig.thinkingBudget
+                };
+                geminiLogger.info('[Request] Using thinking config:', {
+                    thinkingBudget: llmConfig.thinkingBudget
+                });
+            }
 
             if (isStreaming) {
                 await handleGeminiStream(apiUrl, requestBody, streamCallback, doneCallback, errorCallback, abortController, url, tabId);

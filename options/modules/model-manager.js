@@ -195,6 +195,11 @@ export class ModelManager {
           </div>
           <label for="model-tools-${index}" class="floating-label" data-i18n="options_model_tools_label">Tools</label>
         </div>
+        <div class="floating-label-field">
+          <input type="number" class="model-thinking-budget" id="model-thinking-budget-${index}" value="${model.thinkingBudget !== undefined ? model.thinkingBudget : -1}"
+                 data-model-index="${index}" data-field="thinkingBudget" placeholder=" " min="-1" max="10000" step="1">
+          <label for="model-thinking-budget-${index}" class="floating-label" data-i18n="options_model_thinking_budget_label">Thinking Budget</label>
+        </div>
       `;
     } else if (model.provider === 'azure_openai') {
       return `
@@ -361,6 +366,7 @@ export class ModelManager {
       temperature: 0.7,
       enabled: true,
       tools: [], // Initialize tools array for all providers
+      thinkingBudget: -1, // Initialize thinking budget for all providers (default -1 for dynamic thinking)
       lastModified: Date.now() // Add timestamp for sync merging
     };
 
@@ -593,6 +599,7 @@ export class ModelManager {
         this.models[index].baseUrl = this.models[index].baseUrl || 'https://generativelanguage.googleapis.com';
         this.models[index].model = this.models[index].model || 'gemini-pro';
         this.models[index].tools = this.models[index].tools || [];
+        this.models[index].thinkingBudget = this.models[index].thinkingBudget !== undefined ? this.models[index].thinkingBudget : -1;
       } else if (provider === 'azure_openai') {
         // For Azure, baseUrl and model are not used in the same way.
         // We use endpoint and deploymentName instead.
