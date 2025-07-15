@@ -11,6 +11,7 @@
         "maxTokens": 20480,
         "temperature": 1.0,
         "enabled": true,
+        "tools": [],
         "lastModified": 1735372800000
       },
       {
@@ -23,6 +24,7 @@
         "maxTokens": 20480,
         "temperature": 1.0,
         "enabled": true,
+        "tools": [],
         "lastModified": 1735372800000
       }
     ]

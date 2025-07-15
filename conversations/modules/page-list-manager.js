@@ -323,8 +323,8 @@ export class PageListManager {
       this.confirmationDialog.show({
         target: deleteBtn,
         message: i18n.getMessage('page_list_manager_confirm_delete_message'),
-        confirmText: i18n.getMessage('global_delete_button'),
-        cancelText: i18n.getMessage('global_cancel_button'),
+        confirmText: i18n.getMessage('common_delete'),
+        cancelText: i18n.getMessage('common_cancel'),
         type: 'danger',
         onConfirm: () => resolve(true),
         onCancel: () => resolve(false)

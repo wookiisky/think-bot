@@ -435,6 +435,21 @@
   "options_model_azure_api_version_label": {
     "message": "API Version"
   },
+  "options_model_tools_label": {
+    "message": "Tools"
+  },
+  "options_model_tools_url_context": {
+    "message": "URL Context"
+  },
+  "options_model_tools_google_search": {
+    "message": "Google Search"
+  },
+  "options_model_tools_placeholder": {
+    "message": "Select tools..."
+  },
+  "options_model_tools_no_tools_selected": {
+    "message": "No tools selected"
+  },
   "options_model_azure_deployment_name_label": {
     "message": "Deployment Name"
   },

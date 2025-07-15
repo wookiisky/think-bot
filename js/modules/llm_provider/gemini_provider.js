@@ -107,6 +107,44 @@ var geminiProvider = (function() {
         return isStreaming ? `${fullUrl}&alt=sse` : fullUrl;
     }
 
+    // Helper function to build tools configuration
+    function buildToolsConfig(llmConfig) {
+        const tools = [];
+        
+        // Check if tools are configured and enabled
+        if (llmConfig.tools && Array.isArray(llmConfig.tools)) {
+            llmConfig.tools.forEach(tool => {
+                if (tool === 'urlContext') {
+                    tools.push({ urlContext: {} });
+                } else if (tool === 'googleSearch') {
+                    tools.push({ googleSearch: {} });
+                }
+            });
+        }
+        
+        return tools.length > 0 ? tools : null;
+    }
+
+    // Helper function to validate tools configuration
+    function validateToolsConfig(llmConfig) {
+        if (!llmConfig.tools) return null;
+        
+        const validTools = ['urlContext', 'googleSearch'];
+        const errors = [];
+        
+        if (!Array.isArray(llmConfig.tools)) {
+            errors.push('Tools configuration must be an array');
+        } else {
+            llmConfig.tools.forEach(tool => {
+                if (!validTools.includes(tool)) {
+                    errors.push(`Invalid tool: ${tool}. Valid tools are: ${validTools.join(', ')}`);
+                }
+            });
+        }
+        
+        return errors.length > 0 ? errors : null;
+    }
+
     // Helper function to build request contents with enhanced image handling
     function buildContents(messages, systemPrompt, imageBase64, model) {
         const contents = [];
@@ -379,6 +417,13 @@ var geminiProvider = (function() {
             return;
         }
         
+        // Validate tools configuration
+        const toolsErrors = validateToolsConfig(llmConfig);
+        if (toolsErrors) {
+            errorCallback(new Error(`Tools configuration error: ${toolsErrors.join(', ')}`));
+            return;
+        }
+        
         // Normalize and validate parameters
         const normalizedConfig = normalizeParameters(llmConfig);
         const parameterErrors = validateParameters(normalizedConfig);
@@ -395,6 +440,7 @@ var geminiProvider = (function() {
             const baseUrl = llmConfig.baseUrl || 'https://generativelanguage.googleapis.com';
             const apiUrl = buildApiUrl(model, apiKey, isStreaming, baseUrl);
             const contents = buildContents(messages, systemPrompt, imageBase64, model);
+            const tools = buildToolsConfig(llmConfig);
             
             const requestBody = {
                 contents,
@@ -403,6 +449,12 @@ var geminiProvider = (function() {
                     maxOutputTokens: normalizedConfig.maxTokens || maxTokens
                 }
             };
+            
+            // Add tools configuration if available
+            if (tools) {
+                requestBody.tools = tools;
+                geminiLogger.info('[Request] Using tools:', tools);
+            }
 
             if (isStreaming) {
                 await handleGeminiStream(apiUrl, requestBody, streamCallback, doneCallback, errorCallback, abortController, url, tabId);

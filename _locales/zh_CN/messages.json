@@ -173,6 +173,21 @@
   "options_model_azure_api_version_label": {
     "message": "API 版本"
   },
+  "options_model_tools_label": {
+    "message": "工具"
+  },
+  "options_model_tools_url_context": {
+    "message": "URL 上下文"
+  },
+  "options_model_tools_google_search": {
+    "message": "谷歌搜索"
+  },
+  "options_model_tools_placeholder": {
+    "message": "选择工具..."
+  },
+  "options_model_tools_no_tools_selected": {
+    "message": "未选择工具"
+  },
   "options_model_base_url_label": {
     "message": "服务 URL"
   },

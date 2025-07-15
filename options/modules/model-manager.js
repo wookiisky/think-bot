@@ -13,6 +13,7 @@ export class ModelManager {
     this.domElements = domElements;
     this.models = [];
     this.changeCallback = changeCallback;
+    this.globalEventListenersAdded = false;
   }
 
   // Initialize model configurations
@@ -166,6 +167,35 @@ export class ModelManager {
                  data-model-index="${index}" data-field="model" placeholder=" ">
           <label for="model-model-${index}" class="floating-label" data-i18n="options_model_model_label">Model</label>
         </div>
+        <div class="floating-label-field">
+          <div class="custom-multi-select" id="model-tools-${index}" data-model-index="${index}" data-field="tools">
+            <div class="multi-select-container">
+              <div class="selected-items" id="selected-items-${index}">
+                ${this.renderSelectedTools(model.tools || [], index)}
+              </div>
+              <div class="multi-select-dropdown">
+                <button type="button" class="dropdown-toggle" data-index="${index}">
+                  <i class="material-icons">arrow_drop_down</i>
+                </button>
+                <div class="dropdown-options" id="dropdown-options-${index}">
+                  <div class="option-item" data-value="urlContext" data-index="${index}">
+                    <span class="option-text" data-i18n="options_model_tools_url_context">URL Context</span>
+                    <span class="option-check-icon" style="display: ${(model.tools || []).includes('urlContext') ? 'inline' : 'none'};">
+                      <i class="material-icons">check</i>
+                    </span>
+                  </div>
+                  <div class="option-item" data-value="googleSearch" data-index="${index}">
+                    <span class="option-text" data-i18n="options_model_tools_google_search">Google Search</span>
+                    <span class="option-check-icon" style="display: ${(model.tools || []).includes('googleSearch') ? 'inline' : 'none'};">
+                      <i class="material-icons">check</i>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <label for="model-tools-${index}" class="floating-label" data-i18n="options_model_tools_label">Tools</label>
+        </div>
       `;
     } else if (model.provider === 'azure_openai') {
       return `
@@ -192,6 +222,104 @@ export class ModelManager {
       `;
     }
     return '';
+  }
+
+  // Render selected tools for custom multi-select
+  renderSelectedTools(selectedTools, index) {
+    if (!selectedTools || selectedTools.length === 0) {
+      const noToolsMessage = i18n.getMessage('options_model_tools_no_tools_selected') || 'No tools selected';
+      return `<span class="no-tools-selected">${noToolsMessage}</span>`;
+    }
+    return selectedTools.map(tool => {
+      let toolName = tool;
+      if (tool === 'urlContext') {
+        toolName = i18n.getMessage('options_model_tools_url_context') || 'URL Context';
+      } else if (tool === 'googleSearch') {
+        toolName = i18n.getMessage('options_model_tools_google_search') || 'Google Search';
+      }
+      return `<span class="selected-tool-item">
+        <span class="tool-name">${toolName}</span>
+        <span class="tool-remove-icon" data-tool="${tool}" data-index="${index}">
+          <i class="material-icons">close</i>
+        </span>
+      </span>`;
+    }).join('');
+  }
+
+  // Update tool selection for a specific model
+  updateToolSelection(index, toolValue, checked) {
+    if (index < 0 || index >= this.models.length) {
+      logger.warn(`Invalid model index: ${index}`);
+      return;
+    }
+
+    const model = this.models[index];
+    if (!model.tools) {
+      model.tools = [];
+    }
+
+    if (checked) {
+      // Add tool if not already present
+      if (!model.tools.includes(toolValue)) {
+        model.tools.push(toolValue);
+      }
+    } else {
+      // Remove tool if present
+      const toolIndex = model.tools.indexOf(toolValue);
+      if (toolIndex > -1) {
+        model.tools.splice(toolIndex, 1);
+      }
+    }
+
+    // Update timestamp for sync merging
+    model.lastModified = Date.now();
+
+    // Update the selected items display
+    const selectedItemsContainer = document.getElementById(`selected-items-${index}`);
+    if (selectedItemsContainer) {
+      selectedItemsContainer.innerHTML = this.renderSelectedTools(model.tools, index);
+    }
+
+    logger.info(`Updated model ${index} tools: ${model.tools.join(', ')}`);
+    if (this.changeCallback) {
+      this.changeCallback();
+    }
+  }
+
+  // Toggle dropdown visibility
+  toggleDropdown(dropdown) {
+    if (!dropdown) return;
+    
+    // Close all other dropdowns first
+    const allDropdowns = document.querySelectorAll('.dropdown-options');
+    const allToggleButtons = document.querySelectorAll('.dropdown-toggle');
+    const allMultiSelects = document.querySelectorAll('.custom-multi-select');
+    allDropdowns.forEach(d => {
+      if (d !== dropdown) {
+        d.classList.remove('open');
+      }
+    });
+    allToggleButtons.forEach(btn => {
+      btn.classList.remove('open');
+    });
+    allMultiSelects.forEach(ms => {
+      ms.classList.remove('dropdown-open');
+    });
+
+    // Toggle current dropdown
+    dropdown.classList.toggle('open');
+    
+    // Toggle button state
+    const button = dropdown.parentNode.querySelector('.dropdown-toggle');
+    if (button) {
+      button.classList.toggle('open', dropdown.classList.contains('open'));
+    }
+    
+    // Toggle multi-select state
+    const multiSelect = dropdown.closest('.custom-multi-select');
+    if (multiSelect) {
+      multiSelect.classList.toggle('dropdown-open', dropdown.classList.contains('open'));
+    }
   }
 
   // Setup inline add button event listener
@@ -225,6 +353,7 @@ export class ModelManager {
       maxTokens: 2048,
       temperature: 0.7,
       enabled: true,
+      tools: [], // Initialize tools array for all providers
       lastModified: Date.now() // Add timestamp for sync merging
     };
 
@@ -456,6 +585,7 @@ export class ModelManager {
       } else if (provider === 'gemini') {
         this.models[index].baseUrl = this.models[index].baseUrl || 'https://generativelanguage.googleapis.com';
         this.models[index].model = this.models[index].model || 'gemini-pro';
+        this.models[index].tools = this.models[index].tools || [];
       } else if (provider === 'azure_openai') {
         // For Azure, baseUrl and model are not used in the same way.
         // We use endpoint and deploymentName instead.
@@ -593,6 +723,74 @@ export class ModelManager {
         }
       }
     });
+
+    // Add click event for dropdown toggle and tool management
+    container.addEventListener('click', (e) => {
+      if (e.target.classList.contains('dropdown-toggle') || e.target.closest('.dropdown-toggle')) {
+        e.preventDefault();
+        const button = e.target.closest('.dropdown-toggle');
+        const index = button.dataset.index;
+        const dropdown = document.getElementById(`dropdown-options-${index}`);
+        this.toggleDropdown(dropdown);
+      } else if (e.target.closest('.selected-items') && !e.target.closest('.tool-remove-icon')) {
+        // Click on selected items area (but not on remove icon) - toggle dropdown
+        const multiSelect = e.target.closest('.custom-multi-select');
+        if (multiSelect) {
+          const index = multiSelect.dataset.modelIndex;
+          const dropdown = document.getElementById(`dropdown-options-${index}`);
+          this.toggleDropdown(dropdown);
+        }
+      } else if (e.target.closest('.tool-remove-icon')) {
+        // Click on remove icon - remove the tool
+        e.preventDefault();
+        const removeIcon = e.target.closest('.tool-remove-icon');
+        const index = parseInt(removeIcon.dataset.index, 10);
+        const tool = removeIcon.dataset.tool;
+        this.updateToolSelection(index, tool, false);
+      } else if (e.target.closest('.option-item')) {
+        // Click on dropdown option - toggle selection
+        e.preventDefault();
+        const optionItem = e.target.closest('.option-item');
+        const index = parseInt(optionItem.dataset.index, 10);
+        const toolValue = optionItem.dataset.value;
+        
+        // Get current tool state
+        const model = this.models[index];
+        const currentTools = model.tools || [];
+        const isSelected = currentTools.includes(toolValue);
+        
+        // Toggle selection
+        this.updateToolSelection(index, toolValue, !isSelected);
+        
+        // Update the check icon visibility
+        const checkIcon = optionItem.querySelector('.option-check-icon');
+        if (checkIcon) {
+          checkIcon.style.display = isSelected ? 'none' : 'inline';
+        }
+      }
+    });
+
+    // Add global event listeners only once
+    if (!this.globalEventListenersAdded) {
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.custom-multi-select')) {
+          const openDropdowns = document.querySelectorAll('.dropdown-options.open');
+          const openButtons = document.querySelectorAll('.dropdown-toggle.open');
+          const openMultiSelects = document.querySelectorAll('.custom-multi-select.dropdown-open');
+          openDropdowns.forEach(dropdown => {
+            dropdown.classList.remove('open');
+          });
+          openButtons.forEach(button => {
+            button.classList.remove('open');
+          });
+          openMultiSelects.forEach(multiSelect => {
+            multiSelect.classList.remove('dropdown-open');
+          });
+        }
+      });
+      this.globalEventListenersAdded = true;
+    }
   }
 
   // Initialize SortableJS for drag and drop
