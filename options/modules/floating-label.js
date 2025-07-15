@@ -32,15 +32,22 @@ class FloatingLabelManager {
      */
     processFloatingLabelField(field) {
         const input = field.querySelector('input, textarea, select');
+        const customMultiSelect = field.querySelector('.custom-multi-select');
         const label = field.querySelector('.floating-label');
         
-        if (!input || !label) return;
-
-        // Check if input has value and apply appropriate class
-        this.updateFloatingLabelState(field, input);
-
-        // Add event listeners for this specific field
-        this.addFieldEventListeners(field, input);
+        if (!label) return;
+        
+        // Handle standard inputs and custom multi-select
+        if (input) {
+            // Check if input has value and apply appropriate class
+            this.updateFloatingLabelState(field, input);
+            // Add event listeners for this specific field
+            this.addFieldEventListeners(field, input);
+        } else if (customMultiSelect) {
+            // Handle custom multi-select component
+            this.updateCustomMultiSelectState(field, customMultiSelect);
+            this.addCustomMultiSelectEventListeners(field, customMultiSelect);
+        }
     }
 
     /**
@@ -55,6 +62,25 @@ class FloatingLabelManager {
             field.classList.add('has-value');
         } else {
             field.classList.remove('has-value');
+        }
+    }
+
+    /**
+     * Update floating label state for custom multi-select component
+     * @param {HTMLElement} field - The floating label field container
+     * @param {HTMLElement} customMultiSelect - The custom multi-select element
+     */
+    updateCustomMultiSelectState(field, customMultiSelect) {
+        const selectedItems = customMultiSelect.querySelector('.selected-items');
+        const noToolsSelected = selectedItems && selectedItems.querySelector('.no-tools-selected');
+        const hasSelectedTools = selectedItems && !noToolsSelected && selectedItems.children.length > 0;
+        
+        if (hasSelectedTools) {
+            field.classList.add('has-value');
+            console.log('FloatingLabel: Added has-value to custom multi-select field');
+        } else {
+            field.classList.remove('has-value');
+            console.log('FloatingLabel: Removed has-value from custom multi-select field');
         }
     }
 
@@ -105,6 +131,51 @@ class FloatingLabelManager {
             setTimeout(checkAutofill, 100);
             setTimeout(checkAutofill, 500);
         }
+    }
+
+    /**
+     * Add event listeners for custom multi-select component
+     * @param {HTMLElement} field - The floating label field container
+     * @param {HTMLElement} customMultiSelect - The custom multi-select element
+     */
+    addCustomMultiSelectEventListeners(field, customMultiSelect) {
+        // Monitor changes to the selected items container
+        const selectedItems = customMultiSelect.querySelector('.selected-items');
+        if (selectedItems) {
+            // Use MutationObserver to watch for changes in selected items
+            const observer = new MutationObserver(() => {
+                this.updateCustomMultiSelectState(field, customMultiSelect);
+            });
+
+            observer.observe(selectedItems, {
+                childList: true,
+                subtree: true,
+                characterData: true
+            });
+
+            // Store the observer so we can disconnect it later if needed
+            if (!customMultiSelect._floatingLabelObserver) {
+                customMultiSelect._floatingLabelObserver = observer;
+            }
+        }
+
+        // Handle focus/blur events for better visual feedback
+        customMultiSelect.addEventListener('focusin', () => {
+            field.classList.add('focused');
+        });
+
+        customMultiSelect.addEventListener('focusout', () => {
+            field.classList.remove('focused');
+            this.updateCustomMultiSelectState(field, customMultiSelect);
+        });
+
+        // Handle click events that might change selection state
+        customMultiSelect.addEventListener('click', () => {
+            // Delay the state update to ensure DOM changes have been applied
+            setTimeout(() => {
+                this.updateCustomMultiSelectState(field, customMultiSelect);
+            }, 10);
+        });
     }
 
     /**
@@ -160,15 +231,16 @@ class FloatingLabelManager {
      */
     validateFieldStructure(field) {
         const input = field.querySelector('input, textarea, select');
+        const customMultiSelect = field.querySelector('.custom-multi-select');
         const label = field.querySelector('.floating-label');
         
-        if (!input || !label) {
-            console.warn('Floating label field is missing input or label:', field);
+        if ((!input && !customMultiSelect) || !label) {
+            console.warn('Floating label field is missing input/custom-multi-select or label:', field);
             return false;
         }
 
         // Check if input has proper placeholder (not applicable for select elements)
-        if (input.tagName !== 'SELECT' && !input.hasAttribute('placeholder')) {
+        if (input && input.tagName !== 'SELECT' && !input.hasAttribute('placeholder')) {
             input.setAttribute('placeholder', ' ');
         }
 

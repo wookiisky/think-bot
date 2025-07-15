@@ -60,6 +60,11 @@ export class ModelManager {
     if (typeof i18n !== 'undefined' && i18n.applyToDOM) {
       i18n.applyToDOM();
     }
+
+    // Refresh floating labels to handle custom multi-select components
+    if (window.floatingLabelManager) {
+      window.floatingLabelManager.refresh();
+    }
   }
 
   // Create a single model configuration element
@@ -278,6 +283,15 @@ export class ModelManager {
     const selectedItemsContainer = document.getElementById(`selected-items-${index}`);
     if (selectedItemsContainer) {
       selectedItemsContainer.innerHTML = this.renderSelectedTools(model.tools, index);
+      
+      // Update floating label state for the custom multi-select
+      const multiSelectField = selectedItemsContainer.closest('.floating-label-field');
+      if (multiSelectField && window.floatingLabelManager) {
+        const customMultiSelect = multiSelectField.querySelector('.custom-multi-select');
+        if (customMultiSelect) {
+          window.floatingLabelManager.updateCustomMultiSelectState(multiSelectField, customMultiSelect);
+        }
+      }
     }
 
     logger.info(`Updated model ${index} tools: ${model.tools.join(', ')}`);
