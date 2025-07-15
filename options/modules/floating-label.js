@@ -239,10 +239,7 @@ class FloatingLabelManager {
             return false;
         }
 
-        // Check if input has proper placeholder (not applicable for select elements)
-        if (input && input.tagName !== 'SELECT' && !input.hasAttribute('placeholder')) {
-            input.setAttribute('placeholder', ' ');
-        }
+        // Floating labels work without placeholder attributes
 
         return true;
     }
@@ -265,10 +262,7 @@ class FloatingLabelManager {
         // Update label
         label.classList.add('floating-label');
 
-        // Update input (not applicable for select elements)
-        if (input.tagName !== 'SELECT') {
-            input.setAttribute('placeholder', ' ');
-        }
+        // Floating labels work without placeholder attributes
 
         // Move label after input (required for CSS sibling selectors)
         if (input.nextSibling !== label) {

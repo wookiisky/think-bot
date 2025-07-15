@@ -444,12 +444,7 @@
   "options_model_tools_google_search": {
     "message": "Google Search"
   },
-  "options_model_tools_placeholder": {
-    "message": "Select tools..."
-  },
-  "options_model_tools_no_tools_selected": {
-    "message": "No tools selected"
-  },
+
   "options_model_azure_deployment_name_label": {
     "message": "Deployment Name"
   },
@@ -495,12 +490,8 @@
   "options_quick_input_default_name": {
     "message": "quick input"
   },
-  "options_quick_input_placeholder_button_text": {
-    "message": "Tab name"
-  },
-  "options_quick_input_placeholder_message": {
-    "message": "Message to send when clicked"
-  },
+
+
   "options_quick_input_tabs_title": {
     "message": "Quick Input Tabs"
   },
@@ -510,11 +501,17 @@
   "options_sync_on_save_label": {
     "message": "Sync when Save settings"
   },
-  "options_sync_status_not_configured": {
+    "options_sync_status_not_configured": {
     "message": "Not configured"
   },
-  "options_system_prompt_placeholder": {
-    "message": "System prompt"
+  "options_system_prompt_label": {
+    "message": "System Prompt"
+  },
+  "options_quick_input_button_text_label": {
+    "message": "Button Text"
+  },
+  "options_quick_input_message_label": {
+    "message": "Message"
   },
   "options_theme_dark": {
     "message": "Dark"

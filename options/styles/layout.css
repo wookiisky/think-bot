@@ -122,7 +122,7 @@
   border: 1px solid var(--border-color);
   padding: 1rem;
   box-shadow: var(--shadow-sm);
-  overflow: hidden;
+  overflow: visible;
   transition: box-shadow var(--transition-slow) ease, border-color var(--transition-slow) ease;
 }
 

@@ -68,11 +68,17 @@
   "options_language_english": {
     "message": "English"
   },
-  "options_language_chinese": {
+    "options_language_chinese": {
     "message": "简体中文"
   },
-  "options_system_prompt_placeholder": {
+  "options_system_prompt_label": {
     "message": "系统提示词"
+  },
+  "options_quick_input_button_text_label": {
+    "message": "标签名称"
+  },
+  "options_quick_input_message_label": {
+    "message": "消息内容"
   },
   "options_cloud_sync_title": {
     "message": "云同步"
@@ -182,12 +188,7 @@
   "options_model_tools_google_search": {
     "message": "谷歌搜索"
   },
-  "options_model_tools_placeholder": {
-    "message": "选择工具..."
-  },
-  "options_model_tools_no_tools_selected": {
-    "message": "未选择工具"
-  },
+
   "options_model_base_url_label": {
     "message": "服务 URL"
   },
@@ -209,18 +210,14 @@
   "options_model_no_models_configured": {
     "message": "未配置模型"
   },
-  "options_quick_input_placeholder_button_text": {
-    "message": "标签页名称"
-  },
+
   "options_quick_input_auto_trigger_title": {
     "message": "侧边栏打开时自动发送"
   },
   "options_quick_input_default_name": {
     "message": "新标签页"
   },
-  "options_quick_input_placeholder_message": {
-    "message": "点击时发送"
-  },
+
   "options_js_saving": {
     "message": "保存中..."
   },

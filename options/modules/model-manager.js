@@ -185,15 +185,9 @@ export class ModelManager {
                 <div class="dropdown-options" id="dropdown-options-${index}">
                   <div class="option-item" data-value="urlContext" data-index="${index}">
                     <span class="option-text" data-i18n="options_model_tools_url_context">URL Context</span>
-                    <span class="option-check-icon" style="display: ${(model.tools || []).includes('urlContext') ? 'inline' : 'none'};">
-                      <i class="material-icons">check</i>
-                    </span>
                   </div>
                   <div class="option-item" data-value="googleSearch" data-index="${index}">
                     <span class="option-text" data-i18n="options_model_tools_google_search">Google Search</span>
-                    <span class="option-check-icon" style="display: ${(model.tools || []).includes('googleSearch') ? 'inline' : 'none'};">
-                      <i class="material-icons">check</i>
-                    </span>
                   </div>
                 </div>
               </div>
@@ -232,8 +226,7 @@ export class ModelManager {
   // Render selected tools for custom multi-select
   renderSelectedTools(selectedTools, index) {
     if (!selectedTools || selectedTools.length === 0) {
-      const noToolsMessage = i18n.getMessage('options_model_tools_no_tools_selected') || 'No tools selected';
-      return `<span class="no-tools-selected">${noToolsMessage}</span>`;
+      return `<span class="no-tools-selected"></span>`;
     }
     return selectedTools.map(tool => {
       let toolName = tool;
@@ -775,12 +768,6 @@ export class ModelManager {
         
         // Toggle selection
         this.updateToolSelection(index, toolValue, !isSelected);
-        
-        // Update the check icon visibility
-        const checkIcon = optionItem.querySelector('.option-check-icon');
-        if (checkIcon) {
-          checkIcon.style.display = isSelected ? 'none' : 'inline';
-        }
       }
     });
 
