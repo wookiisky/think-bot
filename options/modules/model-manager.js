@@ -435,8 +435,12 @@ export class ModelManager {
           this.updateMultipleAzureFields(index, parsedUrl);
           return; // Exit early as we've handled all updates
         } else {
-          // If not a complete URL, just extract domain
-          value = this.extractDomainFromUrl(value);
+          // Check if domain matches xxx.openai.azure.com pattern
+          if (this.isAzureOpenAIDomain(value)) {
+            // If matches Azure OpenAI domain pattern, extract domain
+            value = this.extractDomainFromUrl(value);
+          }
+          // Otherwise, keep URL as is
         }
       }
       
@@ -544,6 +548,31 @@ export class ModelManager {
       if (this.changeCallback) {
         this.changeCallback();
       }
+    }
+  }
+
+  // Check if domain matches Azure OpenAI pattern (xxx.openai.azure.com)
+  isAzureOpenAIDomain(url) {
+    try {
+      // Remove any leading/trailing whitespace
+      url = url.trim();
+      
+      // Extract hostname from URL or treat as hostname if no protocol
+      let hostname;
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        hostname = new URL(url).hostname;
+      } else {
+        // If no protocol, treat as hostname directly
+        hostname = url.split('/')[0];
+      }
+      
+      // Check if hostname matches pattern: xxx.openai.azure.com
+      const azurePattern = /^[^.]+\.openai\.azure\.com$/;
+      return azurePattern.test(hostname);
+    } catch (error) {
+      // If parsing fails, assume it doesn't match the pattern
+      logger.warn(`Failed to parse URL for Azure domain check: ${url}`, error);
+      return false;
     }
   }
 
