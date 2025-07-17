@@ -138,15 +138,70 @@ var BaseProvider = (function() {
         
         // Parse JSON response with error handling
         async parseJsonResponse(response, providerName) {
+            const contentType = response.headers.get('content-type') || '';
+            
+            // Check if response is likely to be JSON
+            if (!contentType.includes('application/json')) {
+                baseProviderLogger.warn(`[${providerName}] Response content-type is not JSON`, {
+                    status: response.status,
+                    contentType: contentType,
+                    statusText: response.statusText
+                });
+                
+                // For non-JSON responses, try to get the text content for better error messages
+                try {
+                    const textContent = await response.text();
+                    const truncatedContent = textContent.length > 200 ? 
+                        textContent.substring(0, 200) + '...' : textContent;
+                    
+                    baseProviderLogger.error(`[${providerName}] Received non-JSON response`, {
+                        status: response.status,
+                        contentType: contentType,
+                        responsePreview: truncatedContent
+                    });
+                    
+                    throw new EnhancedError(
+                        `${providerName} API returned non-JSON response (${response.status}): ${response.statusText}`,
+                        textContent,
+                        { message: textContent, contentType },
+                        response.status
+                    );
+                } catch (textError) {
+                    throw new EnhancedError(
+                        `${providerName} API returned invalid response (${response.status}): ${response.statusText}`,
+                        null,
+                        { message: 'Failed to read response', contentType },
+                        response.status
+                    );
+                }
+            }
+            
             try {
                 return await response.json();
             } catch (error) {
                 baseProviderLogger.error(`[${providerName}] Failed to parse JSON response`, {
                     error: error.message,
                     status: response.status,
-                    contentType: response.headers.get('content-type')
+                    contentType: contentType
                 });
-                throw new Error(`Failed to parse ${providerName} API response as JSON: ${error.message}`);
+                
+                // Try to get the raw text for debugging
+                try {
+                    const responseText = await response.text();
+                    throw new EnhancedError(
+                        `Failed to parse ${providerName} API response as JSON: ${error.message}`,
+                        responseText,
+                        { message: error.message, rawResponse: responseText },
+                        response.status
+                    );
+                } catch (textError) {
+                    throw new EnhancedError(
+                        `Failed to parse ${providerName} API response as JSON: ${error.message}`,
+                        null,
+                        { message: error.message },
+                        response.status
+                    );
+                }
             }
         },
         
@@ -473,8 +528,55 @@ var BaseProvider = (function() {
                                     });
                                 }
                             } catch (parseError) {
-                                logger.error('[Stream] Error parsing stream data:', parseError.message);
+                                // Handle concatenated JSON chunks (known OpenAI API issue)
+                                // Multiple JSON objects sometimes get concatenated without proper delimiters
+                                if (data.includes('}{')) {
+                                    logger.warn('[Stream] Detected concatenated JSON chunks, attempting to parse separately');
+                                    try {
+                                        // Split concatenated JSON objects by inserting commas and wrapping in array
+                                        const fixedData = '[' + data.replace(/}{/g, '},{') + ']';
+                                        const parsedArray = JSON.parse(fixedData);
+                                        
+                                        // Process each JSON object in the array
+                                        for (const parsedData of parsedArray) {
+                                            if (parsedData.choices?.[0]?.delta?.content) {
+                                                const textChunk = parsedData.choices[0].delta.content;
+                                                fullResponse += textChunk;
+                                                streamCallback(textChunk);
+                                            } else if (parsedData.choices?.[0]?.finish_reason) {
+                                                finishReason = parsedData.choices[0].finish_reason;
+                                                logger.info('[Stream] Stream finished with reason (from concatenated chunk)', {
+                                                    finishReason,
+                                                    finalResponseLength: fullResponse.length
+                                                });
+                                            }
+                                        }
+                                        
+                                        logger.info('[Stream] Successfully parsed concatenated JSON chunks', {
+                                            chunkCount: parsedArray.length,
+                                            totalLength: data.length
+                                        });
+                                    } catch (arrayParseError) {
+                                        logger.error('[Stream] Failed to parse concatenated JSON chunks:', {
+                                            error: arrayParseError.message,
+                                            dataLength: data.length,
+                                            dataPreview: data.substring(0, 200) + '...'
+                                        });
+                                    }
+                                } else {
+                                    logger.error('[Stream] Error parsing stream data:', {
+                                        error: parseError.message,
+                                        dataLength: data.length,
+                                        dataPreview: data.substring(0, 100) + '...'
+                                    });
+                                }
                             }
+                        } else if (line.trim() && !line.startsWith(':')) {
+                            // Handle unexpected line format (not SSE comment or data)
+                            logger.warn('[Stream] Unexpected line format in stream:', {
+                                line: line.substring(0, 100) + (line.length > 100 ? '...' : ''),
+                                lineLength: line.length
+                            });
                         }
                     }
                 }
@@ -517,6 +619,40 @@ var BaseProvider = (function() {
         ValidationUtils,
         OpenAIUtils,
         Provider,
-        logger: baseProviderLogger
+        logger: baseProviderLogger,
+        
+        // Test utility for concatenated JSON parsing (for development/debugging)
+        testConcatenatedJsonParsing(testData) {
+            baseProviderLogger.info('[Test] Testing concatenated JSON parsing with data:', {
+                dataLength: testData.length,
+                dataPreview: testData.substring(0, 100) + '...'
+            });
+            
+            try {
+                // First try normal parsing
+                const normalParse = JSON.parse(testData);
+                baseProviderLogger.info('[Test] Normal JSON parsing succeeded');
+                return [normalParse];
+            } catch (parseError) {
+                // Try concatenated JSON parsing
+                if (testData.includes('}{')) {
+                    baseProviderLogger.info('[Test] Attempting concatenated JSON parsing');
+                    try {
+                        const fixedData = '[' + testData.replace(/}{/g, '},{') + ']';
+                        const parsedArray = JSON.parse(fixedData);
+                        baseProviderLogger.info('[Test] Concatenated JSON parsing succeeded', {
+                            chunkCount: parsedArray.length
+                        });
+                        return parsedArray;
+                    } catch (arrayParseError) {
+                        baseProviderLogger.error('[Test] Concatenated JSON parsing failed:', arrayParseError.message);
+                        throw arrayParseError;
+                    }
+                } else {
+                    baseProviderLogger.error('[Test] JSON parsing failed and no concatenation detected:', parseError.message);
+                    throw parseError;
+                }
+            }
+        }
     };
 })(); 

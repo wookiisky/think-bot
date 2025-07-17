@@ -75,21 +75,8 @@ storage.saveChatHistory = async function(url, chatHistory) {
     if (storageCacheCompressionAvailable && cacheCompression.compressChatHistory) {
       chatHistoryToStore = cacheCompression.compressChatHistory(historyWithTimestamps);
       
-
     }
-    
-    // Log detailed info for debugging
-    storageLogger.info('Saving chat history', { 
-      url, 
-      normalizedUrl: normalizeUrl(url),
-      key, 
-      messageCount: historyWithTimestamps?.length,
-      compressed: typeof chatHistoryToStore === 'object' && chatHistoryToStore.__compressed__,
-      firstMessage: historyWithTimestamps?.length > 0 ? 
-        `${historyWithTimestamps[0].role}: ${historyWithTimestamps[0].content.substring(0, 50)}...` : 'none',
-      lastMessage: historyWithTimestamps?.length > 0 ? 
-        `${historyWithTimestamps[historyWithTimestamps.length-1].role}: ${historyWithTimestamps[historyWithTimestamps.length-1].content.substring(0, 50)}...` : 'none'
-    });
+        
     
     // Save the chat history (compressed or original)
     await chrome.storage.local.set({ [key]: chatHistoryToStore });

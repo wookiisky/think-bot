@@ -82,13 +82,6 @@ var azureOpenaiProvider = (function() {
         // Normalize parameters
         const normalizedConfig = normalizeParameters(llmConfig);
 
-        azureOpenaiLogger.info('[Request] Starting Azure OpenAI API call', { 
-            model, 
-            deploymentName, 
-            apiVersion,
-            isStreaming: !!streamCallback 
-        });
-
         try {
             const apiUrl = buildApiUrl(endpoint, deploymentName, apiVersion);
             const openaiMessages = OpenAIUtils.buildMessages(messages, systemPrompt, imageBase64, model, azureOpenaiLogger);
@@ -101,16 +94,17 @@ var azureOpenaiProvider = (function() {
                 stream: !!streamCallback
             };
 
-            azureOpenaiLogger.info('[Request] Sending request to Azure OpenAI', {
-                apiUrl,
-                model,
+            // Log HTTP request details - URL and parameters
+            azureOpenaiLogger.info('[HTTP Request] Azure OpenAI API call', {
+                url: apiUrl,
+                method: 'POST',
+                model: requestBody.model,
                 deploymentName,
                 apiVersion,
                 maxTokens: requestBody.max_completion_tokens,
                 temperature: requestBody.temperature,
                 messageCount: openaiMessages.length,
-                requestBodySize: JSON.stringify(requestBody).length,
-                isStreaming: !!streamCallback
+                isStreaming: requestBody.stream
             });
 
             const { response } = await ApiUtils.safeFetch(apiUrl, {
@@ -123,28 +117,60 @@ var azureOpenaiProvider = (function() {
             }, 'AzureOpenAI', abortController);
 
             if (!response.ok) {
-                // Custom error handler for Azure OpenAI
-                const errorData = await ApiUtils.parseJsonResponse(response, 'AzureOpenAI');
-                const errorMessage = `Azure OpenAI API error: ${response.status} - ${JSON.stringify(errorData)}`;
-                const errorText = JSON.stringify(errorData);
-                azureOpenaiLogger.error('[Request] Azure OpenAI API returned error', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    errorData
-                });
-                throw new EnhancedError(errorMessage, errorText, errorData, response.status);
+                // Handle error responses with improved error parsing
+                try {
+                    const errorData = await ApiUtils.parseJsonResponse(response, 'AzureOpenAI');
+                    const errorMessage = `Azure OpenAI API error: ${response.status} - ${JSON.stringify(errorData)}`;
+                    const errorText = JSON.stringify(errorData);
+                    azureOpenaiLogger.error('[Request] Azure OpenAI API returned error', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        errorData
+                    });
+                    throw new EnhancedError(errorMessage, errorText, errorData, response.status);
+                } catch (parseError) {
+                    // If parsing fails, this is likely a non-JSON error response (like HTML error page)
+                    azureOpenaiLogger.error('[Request] Azure OpenAI API returned non-JSON error response', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        parseError: parseError.message,
+                        apiUrl
+                    });
+                    
+                    // Provide specific guidance for common HTTP errors
+                    let errorMessage = `Azure OpenAI API error: ${response.status} - ${response.statusText}`;
+                    let errorDetails = { status: response.status, statusText: response.statusText };
+                    
+                    if (response.status === 405) {
+                        errorMessage = `Azure OpenAI API error: Method not allowed (405). This usually indicates an incorrect endpoint URL. Current URL: ${apiUrl}`;
+                        errorDetails.troubleshooting = [
+                            'Verify your Azure OpenAI endpoint URL',
+                            'Ensure the URL format is correct: https://{resource}.openai.azure.com/',
+                            'Check your API version parameter',
+                            'Verify the deployment name is correct'
+                        ];
+                    } else if (response.status >= 500) {
+                        errorMessage = `Azure OpenAI API server error: ${response.status} - ${response.statusText}`;
+                        errorDetails.troubleshooting = ['Azure OpenAI service is experiencing issues', 'Try again later'];
+                    }
+                    
+                    // Re-throw the enhanced error from parseJsonResponse if available
+                    if (parseError instanceof EnhancedError) {
+                        parseError.message = errorMessage;
+                        parseError.errorData = { ...parseError.errorData, ...errorDetails };
+                        throw parseError;
+                    }
+                    
+                    // Fallback for unexpected errors
+                    throw new EnhancedError(errorMessage, null, errorDetails, response.status);
+                }
             }
 
             if (streamCallback) {
-                azureOpenaiLogger.info('[Request] Processing streaming response');
                 await OpenAIUtils.handleStream(response, streamCallback, doneCallback, errorCallback, azureOpenaiLogger, 'Azure OpenAI', abortController, url, tabId);
             } else {
-                azureOpenaiLogger.info('[Request] Processing non-streaming response');
                 const data = await ApiUtils.parseJsonResponse(response, 'AzureOpenAI');
                 const responseText = data.choices[0].message.content;
-                azureOpenaiLogger.info('[Request] Non-streaming response received', {
-                    responseLength: responseText?.length || 0
-                });
                 doneCallback(responseText);
             }
         } catch (error) {

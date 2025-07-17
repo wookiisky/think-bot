@@ -37,7 +37,11 @@ var openaiProvider = (function() {
 
     // Helper function to build API URL
     function buildApiUrl(baseUrl) {
-        return `${baseUrl}/v1/chat/completions`;
+        // Remove trailing slash to prevent double slashes
+        const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        const apiUrl = `${cleanBaseUrl}/v1/chat/completions`;
+        
+        return apiUrl;
     }
 
 
@@ -68,10 +72,21 @@ var openaiProvider = (function() {
             return;
         }
 
+        // Validate base URL format
+        try {
+            new URL(baseUrl);
+        } catch (urlError) {
+            const errorMessage = `Invalid OpenAI base URL: ${baseUrl}`;
+            openaiLogger.error('[Config] Invalid base URL format', {
+                baseUrl,
+                error: urlError.message
+            });
+            errorCallback(new Error(errorMessage));
+            return;
+        }
+
         // Normalize parameters
         const normalizedConfig = normalizeParameters(llmConfig);
-
-        openaiLogger.info('[Request] Starting OpenAI API call', { model, isStreaming: !!streamCallback });
 
         try {
             const apiUrl = buildApiUrl(baseUrl);
@@ -85,14 +100,15 @@ var openaiProvider = (function() {
                 stream: !!streamCallback
             };
 
-            openaiLogger.info('[Request] Sending request to OpenAI', {
-                apiUrl,
-                model,
+            // Log HTTP request details - URL and parameters
+            openaiLogger.info('[HTTP Request] OpenAI API call', {
+                url: apiUrl,
+                method: 'POST',
+                model: requestBody.model,
                 maxTokens: requestBody.max_tokens,
                 temperature: requestBody.temperature,
                 messageCount: openaiMessages.length,
-                requestBodySize: JSON.stringify(requestBody).length,
-                isStreaming: !!streamCallback
+                isStreaming: requestBody.stream
             });
 
             const { response } = await ApiUtils.safeFetch(apiUrl, {
@@ -105,28 +121,62 @@ var openaiProvider = (function() {
             }, 'OpenAI', abortController);
 
             if (!response.ok) {
-                // Custom error handler for OpenAI
-                const errorData = await ApiUtils.parseJsonResponse(response, 'OpenAI');
-                const errorMessage = `OpenAI API error: ${response.status} - ${JSON.stringify(errorData)}`;
-                const errorText = JSON.stringify(errorData);
-                openaiLogger.error('[Request] OpenAI API returned error', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    errorData
-                });
-                throw new EnhancedError(errorMessage, errorText, errorData, response.status);
+                // Handle error responses with improved error parsing
+                try {
+                    const errorData = await ApiUtils.parseJsonResponse(response, 'OpenAI');
+                    const errorMessage = `OpenAI API error: ${response.status} - ${JSON.stringify(errorData)}`;
+                    const errorText = JSON.stringify(errorData);
+                    openaiLogger.error('[Request] OpenAI API returned error', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        errorData
+                    });
+                    throw new EnhancedError(errorMessage, errorText, errorData, response.status);
+                } catch (parseError) {
+                    // If parsing fails, this is likely a non-JSON error response (like HTML error page)
+                    // The parseJsonResponse method will have already logged details and thrown an EnhancedError
+                    openaiLogger.error('[Request] OpenAI API returned non-JSON error response', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        parseError: parseError.message,
+                        apiUrl
+                    });
+                    
+                    // Provide specific guidance for common HTTP errors
+                    let errorMessage = `OpenAI API error: ${response.status} - ${response.statusText}`;
+                    let errorDetails = { status: response.status, statusText: response.statusText };
+                    
+                    if (response.status === 405) {
+                        errorMessage = `OpenAI API error: Method not allowed (405). This usually indicates an incorrect base URL. Current URL: ${apiUrl}`;
+                        errorDetails.troubleshooting = [
+                            'Verify your base URL configuration',
+                            'Ensure the base URL points to a valid OpenAI-compatible API',
+                            'Common valid base URLs: https://api.openai.com or your custom proxy URL',
+                            'Remove any trailing slashes or extra path segments from the base URL'
+                        ];
+                    } else if (response.status >= 500) {
+                        errorMessage = `OpenAI API server error: ${response.status} - ${response.statusText}`;
+                        errorDetails.troubleshooting = ['API server is experiencing issues', 'Try again later'];
+                    }
+                    
+                    // Re-throw the enhanced error from parseJsonResponse if available
+                    if (parseError instanceof EnhancedError) {
+                        // Update the message with our improved guidance
+                        parseError.message = errorMessage;
+                        parseError.errorData = { ...parseError.errorData, ...errorDetails };
+                        throw parseError;
+                    }
+                    
+                    // Fallback for unexpected errors
+                    throw new EnhancedError(errorMessage, null, errorDetails, response.status);
+                }
             }
 
             if (streamCallback) {
-                openaiLogger.info('[Request] Processing streaming response');
                 await OpenAIUtils.handleStream(response, streamCallback, doneCallback, errorCallback, openaiLogger, 'OpenAI', abortController, url, tabId);
             } else {
-                openaiLogger.info('[Request] Processing non-streaming response');
                 const data = await ApiUtils.parseJsonResponse(response, 'OpenAI');
                 const responseText = data.choices[0].message.content;
-                openaiLogger.info('[Request] Non-streaming response received', {
-                    responseLength: responseText?.length || 0
-                });
                 doneCallback(responseText);
             }
         } catch (error) {

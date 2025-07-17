@@ -357,7 +357,7 @@ export class ModelManager {
 
     const newModel = {
       id: `model_${timestamp}_${uuid}`,
-      name: i18n.getMessage('options_model_new_name', [this.models.length + 1]),
+      name: i18n.getMessage('options_model_model_label', [this.models.length + 1]),
       provider: 'openai',
       apiKey: '',
       baseUrl: 'https://api.openai.com',

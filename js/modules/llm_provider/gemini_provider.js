@@ -438,8 +438,6 @@ var geminiProvider = (function() {
             return;
         }
 
-        geminiLogger.info('[Request] Starting Gemini API call', { model, isStreaming: !!(streamCallback && doneCallback) });
-
         try {
             const isStreaming = !!(streamCallback && doneCallback);
             const baseUrl = llmConfig.baseUrl || 'https://generativelanguage.googleapis.com';
@@ -470,6 +468,19 @@ var geminiProvider = (function() {
                     thinkingBudget: llmConfig.thinkingBudget
                 });
             }
+
+            // Log HTTP request details - URL and parameters
+            geminiLogger.info('[HTTP Request] Gemini API call', {
+                url: apiUrl,
+                method: 'POST',
+                model,
+                temperature: requestBody.generationConfig.temperature,
+                maxOutputTokens: requestBody.generationConfig.maxOutputTokens,
+                contentsCount: contents.length,
+                hasTools: !!tools,
+                hasThinking: !!requestBody.thinkingConfig,
+                isStreaming
+            });
 
             if (isStreaming) {
                 await handleGeminiStream(apiUrl, requestBody, streamCallback, doneCallback, errorCallback, abortController, url, tabId);
