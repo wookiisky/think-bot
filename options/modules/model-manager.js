@@ -444,6 +444,11 @@ export class ModelManager {
         }
       }
       
+      // Special handling for OpenAI compatible baseUrl: remove /v1 suffix from openrouter.ai URLs
+      if (field === 'baseUrl' && this.models[index].provider === 'openai' && value) {
+        value = this.normalizeOpenAIBaseUrl(value);
+      }
+      
       // Only update timestamp if the value actually changed
       const oldValue = this.models[index][field];
       if (oldValue !== value) {
@@ -609,6 +614,27 @@ export class ModelManager {
       
       // If all else fails, return the original value
       logger.warn('Could not extract domain from URL, returning original value:', url);
+      return url;
+    }
+  }
+
+  // Normalize OpenAI compatible base URL: remove /v1 suffix from openrouter.ai URLs
+  normalizeOpenAIBaseUrl(url) {
+    try {
+      // Remove any leading/trailing whitespace and @ symbol
+      url = url.trim().replace(/^@/, '');
+      
+      // Check if URL contains openrouter.ai and ends with /v1
+      if (url.includes('openrouter.ai') && url.endsWith('/v1')) {
+        const normalizedUrl = url.replace(/\/v1$/, '');
+        logger.info(`OpenRouter URL normalized: ${url} -> ${normalizedUrl}`);
+        return normalizedUrl;
+      }
+      
+      // For other URLs, return as is
+      return url;
+    } catch (error) {
+      logger.warn('Failed to normalize OpenAI base URL:', error);
       return url;
     }
   }
