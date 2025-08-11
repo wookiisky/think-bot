@@ -287,6 +287,24 @@
   "options_github_token_permission_note": {
     "message": "(Requires Gist permission)"
   },
+  "options_storage_type_label": {
+    "message": "Storage Type"
+  },
+  "options_storage_type_gist": {
+    "message": "GitHub Gist"
+  },
+  "options_storage_type_webdav": {
+    "message": "WebDAV"
+  },
+  "options_webdav_url_label": {
+    "message": "WebDAV URL"
+  }, 
+  "options_webdav_username_label": {
+    "message": "Username"
+  },
+  "options_webdav_password_label": {
+    "message": "Password"
+  },
   "options_header_title_text": {
     "message": "Think Bot Settings"
   },

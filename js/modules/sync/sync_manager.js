@@ -45,6 +45,47 @@ if (!syncManagerCompressionAvailable) {
 }
 
 /**
+ * Get appropriate storage client based on configuration
+ */
+syncManager.getStorageClient = async function() {
+  const config = await syncConfig.getSyncConfig();
+  const storageType = config.storageType || 'gist';
+  
+  if (storageType === 'gist') {
+    if (typeof gistClient === 'undefined') {
+      throw new Error('Gist client not available');
+    }
+    return {
+      type: 'gist',
+      client: gistClient,
+      // 为gist客户端创建统一接口
+      getFile: async (filePath) => await gistClient.getGistFile(config.gistId, filePath),
+      updateFile: async (filePath, content) => await gistClient.updateGistFile(config.gistId, filePath, content),
+      testConnection: async () => await gistClient.testConnection(config.gistToken, config.gistId),
+      checkNetworkConnectivity: async () => await gistClient.checkNetworkConnectivity()
+    };
+  } else if (storageType === 'webdav') {
+    if (typeof webdavClient === 'undefined') {
+      throw new Error('WebDAV client not available');
+    }
+    return {
+      type: 'webdav',
+      client: webdavClient,
+      // 为webdav客户端创建统一接口
+      getFile: async (filePath) => await webdavClient.getFile(filePath),
+      updateFile: async (filePath, content) => await webdavClient.updateFile(filePath, content),
+      testConnection: async () => await webdavClient.testConnection(config.webdavUrl, config.webdavUsername, config.webdavPassword),
+      checkNetworkConnectivity: async () => {
+        // WebDAV没有专门的网络检查方法，返回true（会在实际操作时检查）
+        return true;
+      }
+    };
+  } else {
+    throw new Error(`Unsupported storage type: ${storageType}`);
+  }
+};
+
+/**
  * Initialize sync manager
  */
 syncManager.init = async function() {
@@ -59,26 +100,36 @@ syncManager.init = async function() {
 /**
  * Test sync connection with network check
  */
-syncManager.testConnection = async function(token = null, gistId = null) {
+syncManager.testConnection = async function(credentials = null) {
   try {
     await syncConfig.updateSyncStatus(SYNC_STATES.TESTING);
 
+    const config = await syncConfig.getSyncConfig();
+    const storageType = config.storageType || 'gist';
+    
+    // Get storage client
+    const storageClient = await this.getStorageClient();
+    
     // First check network connectivity
-    const isOnline = await gistClient.checkNetworkConnectivity();
+    const isOnline = await storageClient.checkNetworkConnectivity();
     if (!isOnline) {
       throw new Error('No network connection available');
     }
 
-    const config = await syncConfig.getSyncConfig();
-    const testToken = token || config.gistToken;
-    const testGistId = gistId || config.gistId;
-
-    if (!testToken || !testGistId) {
-      throw new Error('Token and Gist ID are required for connection test');
+    syncLogger.info(`Testing ${storageType} connection...`);
+    
+    let result;
+    if (credentials) {
+      // Use provided credentials for testing
+      if (storageType === 'gist') {
+        result = await gistClient.testConnection(credentials.token, credentials.gistId);
+      } else if (storageType === 'webdav') {
+        result = await webdavClient.testConnection(credentials.webdavUrl, credentials.webdavUsername, credentials.webdavPassword);
+      }
+    } else {
+      // Use configured credentials
+      result = await storageClient.testConnection();
     }
-
-    syncLogger.info('Testing sync connection...');
-    const result = await gistClient.testConnection(testToken, testGistId);
 
     if (result.success) {
       await syncConfig.updateSyncStatus(SYNC_STATES.SUCCESS);
@@ -101,7 +152,7 @@ syncManager.testConnection = async function(token = null, gistId = null) {
 };
 
 /**
- * Upload local data to Gist
+ * Upload local data to configured storage
  */
 syncManager.uploadData = async function(options = {}) {
   // options: { skipConfigCheck?: boolean, applyLocally?: boolean }
@@ -113,15 +164,12 @@ syncManager.uploadData = async function(options = {}) {
       if (!options.skipConfigCheck) {
         const isConfigured = await this.isConfigured({ silent: true });
         if (!isConfigured) {
-          const config = await syncConfig.getSyncConfig();
-          const missingFields = [];
-          if (!config.gistToken) missingFields.push('GitHub Token');
-          if (!config.gistId) missingFields.push('Gist ID');
-          throw new Error(`Sync configuration incomplete: Missing ${missingFields.join(' and ')}. Please configure sync settings in the options page.`);
+          throw new Error('Sync configuration incomplete. Please configure sync settings in the options page.');
         }
       }
 
       const config = await syncConfig.getSyncConfig();
+      const storageClient = await this.getStorageClient();
 
       await syncConfig.updateSyncStatus(SYNC_STATES.UPLOADING);
       syncLogger.info('Starting data upload...');
@@ -140,7 +188,7 @@ syncManager.uploadData = async function(options = {}) {
       let finalData = localData;
       try {
         const sDownloadRemote = this.performanceMonitor.startStage(operation, 'downloadRemoteForMerge', { filename });
-        const remoteContent = await gistClient.getGistFile(config.gistId, filename);
+        const remoteContent = await storageClient.getFile(filename);
         const remoteBytes = typeof remoteContent === 'string' ? new Blob([remoteContent]).size : 0;
         this.performanceMonitor.endStage(operation, sDownloadRemote, { bytesIn: remoteBytes });
         const remoteData = dataSerializer.deserializeFromDownload(remoteContent);
@@ -167,21 +215,16 @@ syncManager.uploadData = async function(options = {}) {
       const serializedData = dataSerializer.serializeForUpload(finalData);
       this.performanceMonitor.endStage(operation, sSerialize, { bytesIn: serializedData.metadata.originalSize, bytesOut: serializedData.metadata.finalSize });
 
-      // Upload to Gist
-      const sUpload = this.performanceMonitor.startStage(operation, 'uploadToGist', { filename });
-      const result = await gistClient.updateGistFile(
-        config.gistId,
-        filename,
-        serializedData.content,
-        `ThinkBot sync data updated at ${new Date().toISOString()}`
-      );
+      // Upload to storage
+      const sUpload = this.performanceMonitor.startStage(operation, 'uploadToStorage', { filename });
+      const result = await storageClient.updateFile(filename, serializedData.content);
       this.performanceMonitor.endStage(operation, sUpload, { bytesOut: serializedData.metadata.finalSize });
 
       await syncConfig.updateSyncStatus(SYNC_STATES.SUCCESS);
 
       syncLogger.info('Data upload completed successfully:', {
         filename,
-        gistId: config.gistId,
+        storageType: config.storageType || 'gist',
         dataSize: serializedData.metadata.finalSize,
         merged: finalData !== localData
       });
@@ -206,7 +249,7 @@ syncManager.uploadData = async function(options = {}) {
         message: 'Data uploaded successfully',
         filename,
         size: serializedData.metadata.finalSize,
-        gistUrl: result.html_url,
+        storageUrl: result.html_url || null, // Only available for gist
         merged: finalData !== localData,
         appliedLocally,
         finalData // 保留以便上层按需使用（例如跳过下载）
@@ -231,7 +274,7 @@ syncManager.uploadData = async function(options = {}) {
 };
 
 /**
- * Download data from Gist
+ * Download data from configured storage
  */
 syncManager.downloadData = async function(options = {}) {
   // options: { skipConfigCheck?: boolean }
@@ -243,15 +286,12 @@ syncManager.downloadData = async function(options = {}) {
       if (!options.skipConfigCheck) {
         const isConfigured = await this.isConfigured({ silent: true });
         if (!isConfigured) {
-          const config = await syncConfig.getSyncConfig();
-          const missingFields = [];
-          if (!config.gistToken) missingFields.push('GitHub Token');
-          if (!config.gistId) missingFields.push('Gist ID');
-          throw new Error(`Sync configuration incomplete: Missing ${missingFields.join(' and ')}. Please configure sync settings in the options page.`);
+          throw new Error('Sync configuration incomplete. Please configure sync settings in the options page.');
         }
       }
 
       const config = await syncConfig.getSyncConfig();
+      const storageClient = await this.getStorageClient();
 
       await syncConfig.updateSyncStatus(SYNC_STATES.DOWNLOADING);
       syncLogger.info('Starting data download...');
@@ -260,8 +300,8 @@ syncManager.downloadData = async function(options = {}) {
       const syncFilename = dataSerializer.generateSyncFilename();
 
       // Download file content
-      const sDownload = this.performanceMonitor.startStage(operation, 'downloadFromGist', { filename: syncFilename });
-      const content = await gistClient.getGistFile(config.gistId, syncFilename);
+      const sDownload = this.performanceMonitor.startStage(operation, 'downloadFromStorage', { filename: syncFilename });
+      const content = await storageClient.getFile(syncFilename);
       const downloadedBytes = typeof content === 'string' ? new Blob([content]).size : 0;
       this.performanceMonitor.endStage(operation, sDownload, { bytesIn: downloadedBytes });
 
@@ -527,16 +567,36 @@ syncManager.fullSync = async function() {
 syncManager.isConfigured = async function(options = {}) {
   try {
     const config = await syncConfig.getSyncConfig();
-    const isConfigured = !!(config.gistToken && config.gistId);
-
-    if (!options.silent) {
-      syncLogger.info('Checking sync configuration:', {
+    const storageType = config.storageType || 'gist';
+    
+    let isConfigured = false;
+    let configInfo = { storageType };
+    
+    if (storageType === 'gist') {
+      isConfigured = !!(config.gistToken && config.gistId);
+      configInfo = {
+        ...configInfo,
         hasToken: !!config.gistToken,
         hasGistId: !!config.gistId,
-        isConfigured: isConfigured,
         tokenLength: config.gistToken ? config.gistToken.length : 0,
         gistIdLength: config.gistId ? config.gistId.length : 0
-      });
+      };
+    } else if (storageType === 'webdav') {
+      isConfigured = !!(config.webdavUrl && config.webdavUsername && config.webdavPassword);
+      configInfo = {
+        ...configInfo,
+        hasUrl: !!config.webdavUrl,
+        hasUsername: !!config.webdavUsername,
+        hasPassword: !!config.webdavPassword,
+        urlLength: config.webdavUrl ? config.webdavUrl.length : 0,
+        usernameLength: config.webdavUsername ? config.webdavUsername.length : 0
+      };
+    }
+    
+    configInfo.isConfigured = isConfigured;
+
+    if (!options.silent) {
+      syncLogger.info('Checking sync configuration:', configInfo);
     }
 
     return isConfigured;

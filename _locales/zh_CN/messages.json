@@ -237,7 +237,7 @@
     "message": "清除"
   },
   "options_cloud_sync_description": {
-    "message": "同步您的配置 (！包括模型密钥！) 和页面、聊天数据"
+    "message": "同步配置 (包括模型密钥！) 和页面、聊天数据"
   },
   "options_cloud_sync_title": {
     "message": "云同步"
@@ -286,6 +286,24 @@
   },
   "options_github_token_permission_note": {
     "message": "(需要 Gist 权限)"
+  },
+  "options_storage_type_label": {
+    "message": "存储类型"
+  },
+  "options_storage_type_gist": {
+    "message": "GitHub Gist"
+  },
+  "options_storage_type_webdav": {
+    "message": "WebDAV"
+  },
+  "options_webdav_url_label": {
+    "message": "WebDAV URL"
+  },
+  "options_webdav_username_label": {
+    "message": "用户名"
+  },
+  "options_webdav_password_label": {
+    "message": "密码"
   },
   "options_header_title_text": {
     "message": "洞察助手设置"

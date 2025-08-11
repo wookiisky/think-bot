@@ -28,8 +28,12 @@ export const domElements = {
 
   // Sync settings elements
   syncEnabled: document.getElementById('syncEnabled'),
+  storageType: document.getElementById('storageType'),
   gistToken: document.getElementById('gistToken'),
   gistId: document.getElementById('gistId'),
+  webdavUrl: document.getElementById('webdavUrl'),
+  webdavUsername: document.getElementById('webdavUsername'),
+  webdavPassword: document.getElementById('webdavPassword'),
   syncStatus: document.getElementById('syncStatus'),
   syncStatusDetails: document.getElementById('syncStatusDetails'),
   syncStatusText: document.getElementById('syncStatusText'),
@@ -48,5 +52,7 @@ export const domElements = {
 export const domGroups = {
   jinaApiKeyGroup: document.getElementById('jinaApiKeyGroup'),
   jinaResponseTemplateGroup: document.getElementById('jinaResponseTemplateGroup'),
-  syncConfigGroup: document.getElementById('syncConfigGroup')
+  syncConfigGroup: document.getElementById('syncConfigGroup'),
+  gistConfigGroup: document.getElementById('gistConfigGroup'),
+  webdavConfigGroup: document.getElementById('webdavConfigGroup')
 };

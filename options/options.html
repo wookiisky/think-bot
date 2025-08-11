@@ -120,11 +120,22 @@
             <!-- Cloud Sync Settings -->
             <section class="settings-section sidebar-section">
               <h2 data-i18n="options_cloud_sync_title">Cloud Sync</h2>
-              <p data-i18n="options_cloud_sync_description" data-i18n-html>
+              <p><small data-i18n="options_cloud_sync_description" data-i18n-html>
                 Sync your config (<strong>INCLUDE api-key</strong>) and data
-              </p>
+              </small>
+            </p>
 
-              <div id="syncConfigGroup" class="sync-config-group">
+              <!-- Storage Type Selection -->
+              <div class="floating-label-field">
+                <select id="storageType" name="storageType">
+                  <option value="gist" data-i18n="options_storage_type_gist">GitHub Gist</option>
+                  <option value="webdav" data-i18n="options_storage_type_webdav">WebDAV</option>
+                </select>
+                <label for="storageType" class="floating-label" data-i18n="options_storage_type_label">Storage Type</label>
+              </div>
+
+              <!-- Gist Configuration -->
+              <div id="gistConfigGroup" class="sync-config-group" style="display: block;">
                 <div class="floating-label-field">
                   <input type="password" id="gistToken" name="gistToken">
                   <label for="gistToken" class="floating-label" data-i18n="options_github_token_label">GitHub Token</label>
@@ -136,6 +147,27 @@
                   <label for="gistId" class="floating-label" data-i18n="options_gist_id_label">Secret Gist ID</label>
                   <small><span data-i18n="options_gist_id_create_link_prefix">Create a </span><a href="https://gist.github.com/" target="_blank" data-i18n="options_gist_id_create_link">secret Gist</a><span data-i18n="options_gist_id_create_link_suffix">(DO NOT create public gist)</span></small>
                 </div>
+              </div>
+
+              <!-- WebDAV Configuration -->
+              <div id="webdavConfigGroup" class="sync-config-group" style="display: none;">
+                <div class="floating-label-field">
+                  <input type="url" id="webdavUrl" name="webdavUrl" placeholder=" ">
+                  <label for="webdavUrl" class="floating-label" data-i18n="options_webdav_url_label">WebDAV URL</label>                  
+                </div>
+
+                <div class="floating-label-field">
+                  <input type="text" id="webdavUsername" name="webdavUsername" placeholder=" ">
+                  <label for="webdavUsername" class="floating-label" data-i18n="options_webdav_username_label">Username</label>
+                </div>
+
+                <div class="floating-label-field">
+                  <input type="password" id="webdavPassword" name="webdavPassword" placeholder=" ">
+                  <label for="webdavPassword" class="floating-label" data-i18n="options_webdav_password_label">Password</label>
+                </div>
+              </div>
+
+              <div id="syncConfigGroup" class="sync-config-group">
 
                 <div class="form-group sync-controls">
                   <div class="sync-toggle-container">
@@ -273,6 +305,7 @@
   <script src="../js/modules/blacklist-manager.js"></script>
   <script src="../js/modules/sync/sync_config.js"></script>
   <script src="../js/modules/sync/gist_client.js"></script>
+  <script src="../js/modules/sync/webdav_client.js"></script>
   <script src="../js/modules/sync/data_serializer.js"></script>
   <script src="../js/modules/sync/sync_manager.js"></script>
   <script src="../js/lib/Sortable.min.js"></script>

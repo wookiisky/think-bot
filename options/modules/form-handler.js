@@ -44,8 +44,7 @@ export class FormHandler {
     domElements.theme.value = basicConfig.theme || 'system';
     domElements.languageSelector.value = basicConfig.language || 'en';
 
-    // Sync settings - Load from sync config
-    this.populateSyncSettings(domElements);
+    // Sync settings - Load from sync config (will be called separately in loadSettings)
   }
 
   // Populate sync settings from sync configuration
@@ -54,13 +53,43 @@ export class FormHandler {
       if (typeof syncConfig !== 'undefined') {
         const syncSettings = await syncConfig.getSyncConfig();
 
-        domElements.syncEnabled.checked = syncSettings.enabled || false;
+        // 基本同步设置
+        const syncEnabledValue = syncSettings.enabled || false;
+        domElements.syncEnabled.checked = syncEnabledValue;
+        domElements.storageType.value = syncSettings.storageType || 'gist';
+        
+        logger.info('设置syncEnabled状态:', {
+          从配置读取的enabled值: syncSettings.enabled,
+          实际设置的值: syncEnabledValue,
+          DOM元素当前checked状态: domElements.syncEnabled.checked
+        });
+        
+        // Gist配置
         domElements.gistToken.value = syncSettings.gistToken || '';
         domElements.gistId.value = syncSettings.gistId || '';
+        
+        // WebDAV配置
+        domElements.webdavUrl.value = syncSettings.webdavUrl || '';
+        domElements.webdavUsername.value = syncSettings.webdavUsername || '';
+        domElements.webdavPassword.value = syncSettings.webdavPassword || '';
+        
+        logger.info('同步设置已加载:', {
+          storageType: syncSettings.storageType,
+          enabled: syncSettings.enabled,
+          hasGistToken: !!syncSettings.gistToken,
+          hasGistId: !!syncSettings.gistId,
+          hasWebdavUrl: !!syncSettings.webdavUrl,
+          hasWebdavUsername: !!syncSettings.webdavUsername,
+          hasWebdavPassword: !!syncSettings.webdavPassword
+        });
+
+        // 返回storageType以便调用者更新UI状态
+        return syncSettings.storageType || 'gist';
       }
     } catch (error) {
       logger.error('Error loading sync settings:', error.message);
     }
+    return 'gist';
   }
   
   // Toggle visibility of extraction method specific settings

@@ -22,6 +22,7 @@ class OptionsPage {
     this.domGroups = domGroups;
     this.hasUnsavedChanges = false;
     this.isAutoSyncing = false;
+    this.isInitializing = true; // 添加初始化标志，防止在页面加载时意外重置syncEnabled
     // Initialize ModelManager with change notification callback
     this.modelManager = new ModelManager(domElements, () => this.markAsChanged());
   }
@@ -84,7 +85,10 @@ class OptionsPage {
 
       // Toggle appropriate settings based on current values
       FormHandler.toggleExtractionMethodSettings(this.domElements, this.domGroups);
-
+      
+      // Load sync settings and update storage type UI
+      const loadedStorageType = await FormHandler.populateSyncSettings(this.domElements);
+      this.toggleStorageTypeSettings();
 
       // Load sync status after form is populated
       await this.loadSyncStatus();
@@ -94,6 +98,17 @@ class OptionsPage {
     if (window.floatingLabelManager) {
       window.floatingLabelManager.refresh();
     }
+    
+    logger.info('Options page loaded, current storage type:', this.domElements.storageType.value);
+    logger.info('Options page loaded, syncEnabled state:', {
+      checked: this.domElements.syncEnabled.checked,
+      value: this.domElements.syncEnabled.value,
+      disabled: this.domElements.syncEnabled.disabled
+    });
+    
+    // 标记初始化完成，允许事件监听器正常工作
+    this.isInitializing = false;
+    logger.info('Initialization complete; event listeners are now active');
   }
 
   
@@ -210,6 +225,12 @@ class OptionsPage {
       this.markAsChanged();
     });
     
+    // Storage type toggle
+    this.domElements.storageType.addEventListener('change', () => {
+      this.toggleStorageTypeSettings();
+      this.markAsChanged();
+    });
+    
     // Set up change listeners for form inputs
     this.setupChangeListeners();
     
@@ -277,8 +298,12 @@ class OptionsPage {
       this.domElements.theme,
       this.domElements.languageSelector,
       this.domElements.syncEnabled,
+      this.domElements.storageType,
       this.domElements.gistToken,
-      this.domElements.gistId
+      this.domElements.gistId,
+      this.domElements.webdavUrl,
+      this.domElements.webdavUsername,
+      this.domElements.webdavPassword
     ];
 
     inputs.forEach(input => {
@@ -295,6 +320,31 @@ class OptionsPage {
         });
       }
     });
+  }
+
+  // Toggle storage type settings visibility
+  toggleStorageTypeSettings() {
+    const storageType = this.domElements.storageType.value;
+    const gistGroup = this.domGroups.gistConfigGroup;
+    const webdavGroup = this.domGroups.webdavConfigGroup;
+
+    if (storageType === 'gist') {
+      gistGroup.style.display = 'block';
+      webdavGroup.style.display = 'none';
+    } else if (storageType === 'webdav') {
+      gistGroup.style.display = 'none';
+      webdavGroup.style.display = 'block';
+    }
+
+    // Clear sync status when storage type changes
+    this.updateSyncStatus('idle', i18n.getMessage('options_sync_status_not_configured'));
+    this.domElements.syncErrorMessage.style.display = 'none';
+    
+    // 仅当用户实际更改存储类型（非初始化阶段）时，才自动关闭自动同步
+    if (!this.isInitializing && this.domElements.syncEnabled.checked) {
+      this.domElements.syncEnabled.checked = false;
+      this.disableAutoSync();
+    }
   }
   
   // Load cache statistics and update the UI
@@ -429,15 +479,22 @@ class OptionsPage {
       }
     });
 
-    // Sync configuration inputs
-    [this.domElements.gistToken, this.domElements.gistId].forEach(input => {
+    // Sync configuration inputs - 包括gist和webdav所有相关字段
+    [
+      this.domElements.gistToken, 
+      this.domElements.gistId,
+      this.domElements.webdavUrl,
+      this.domElements.webdavUsername,
+      this.domElements.webdavPassword
+    ].forEach(input => {
       input.addEventListener('input', () => {
         this.markAsChanged();
         // Clear previous error messages when user starts typing
         this.updateSyncStatus('idle', 'Not configured');
 
-        // If auto sync is enabled, disable it when credentials change
-        if (this.domElements.syncEnabled.checked) {
+        // 只有在页面初始化完成后，且用户手动更改凭据时，才自动禁用同步
+        if (!this.isInitializing && this.domElements.syncEnabled.checked) {
+          logger.info('用户更改了同步凭据，自动禁用同步功能');
           this.domElements.syncEnabled.checked = false;
           this.disableAutoSync();
         }
@@ -783,37 +840,66 @@ class OptionsPage {
   async testSyncConnection() {
     logger.info('testSyncConnection called');
     try {
-      const token = this.domElements.gistToken.value.trim();
-      const gistId = this.domElements.gistId.value.trim();
+      const storageType = this.domElements.storageType.value;
+      
+      let credentials = {};
+      let validationErrors = [];
+      
+      if (storageType === 'gist') {
+        const token = this.domElements.gistToken.value.trim();
+        const gistId = this.domElements.gistId.value.trim();
+        
+        if (!token) validationErrors.push('GitHub Token');
+        if (!gistId) validationErrors.push('Gist ID');
+        
+        credentials = { token, gistId };
+      } else if (storageType === 'webdav') {
+        const webdavUrl = this.domElements.webdavUrl.value.trim();
+        const webdavUsername = this.domElements.webdavUsername.value.trim();
+        const webdavPassword = this.domElements.webdavPassword.value.trim();
+        
+        if (!webdavUrl) validationErrors.push('WebDAV URL');
+        if (!webdavUsername) validationErrors.push('Username');
+        if (!webdavPassword) validationErrors.push('Password');
+        
+        credentials = { webdavUrl, webdavUsername, webdavPassword };
+      }
 
-      if (!token || !gistId) {
-        const result = { success: false, error: i18n.getMessage('options_js_sync_token_gist_required') };
+      if (validationErrors.length > 0) {
+        const result = { 
+          success: false, 
+          error: `Missing required fields: ${validationErrors.join(', ')}` 
+        };
         this.updateSyncStatus('error', result.error);
         return result;
       }
 
-      logger.info('Testing connection via background script...');
+      logger.info(`Testing ${storageType} connection via background script...`);
 
       // Use background script to handle network requests to avoid CORS issues
       const response = await chrome.runtime.sendMessage({
         type: 'TEST_SYNC_CONNECTION',
-        token: token,
-        gistId: gistId
+        storageType: storageType,
+        ...credentials
       });
 
       logger.info('Background script response:', response);
 
       if (response.type === 'TEST_SYNC_CONNECTION_RESULT') {
         if (response.success) {
-          // Log gist info if available
+          // Log connection info if available
           if (response.gistInfo) {
             logger.info('Gist info:', response.gistInfo);
+          }
+          if (response.serverInfo) {
+            logger.info('WebDAV server info:', response.serverInfo);
           }
 
           return {
             success: true,
             message: response.message || i18n.getMessage('options_js_sync_connection_successful'),
-            gistInfo: response.gistInfo
+            gistInfo: response.gistInfo,
+            serverInfo: response.serverInfo
           };
         } else {
           return {
@@ -844,32 +930,84 @@ class OptionsPage {
 
   // Validate sync configuration
   validateSyncConfig() {
-    const token = this.domElements.gistToken.value.trim();
-    const gistId = this.domElements.gistId.value.trim();
-
+    const storageType = this.domElements.storageType.value;
     const errors = [];
-    if (!token) errors.push(i18n.getMessage('options_js_sync_github_token_required'));
-    if (!gistId) errors.push(i18n.getMessage('options_js_sync_gist_id_required'));
-
-    return {
-      isValid: errors.length === 0,
-      errors: errors,
-      token: token,
-      gistId: gistId
-    };
+    
+    if (storageType === 'gist') {
+      const token = this.domElements.gistToken.value.trim();
+      const gistId = this.domElements.gistId.value.trim();
+      
+      if (!token) errors.push(i18n.getMessage('options_js_sync_github_token_required'));
+      if (!gistId) errors.push(i18n.getMessage('options_js_sync_gist_id_required'));
+      
+      return {
+        isValid: errors.length === 0,
+        errors: errors,
+        storageType: storageType,
+        token: token,
+        gistId: gistId
+      };
+    } else if (storageType === 'webdav') {
+      const webdavUrl = this.domElements.webdavUrl.value.trim();
+      const webdavUsername = this.domElements.webdavUsername.value.trim();
+      const webdavPassword = this.domElements.webdavPassword.value.trim();
+      
+      if (!webdavUrl) errors.push('WebDAV URL is required');
+      if (!webdavUsername) errors.push('WebDAV Username is required');
+      if (!webdavPassword) errors.push('WebDAV Password is required');
+      
+      return {
+        isValid: errors.length === 0,
+        errors: errors,
+        storageType: storageType,
+        webdavUrl: webdavUrl,
+        webdavUsername: webdavUsername,
+        webdavPassword: webdavPassword
+      };
+    } else {
+      errors.push('Invalid storage type');
+      return {
+        isValid: false,
+        errors: errors,
+        storageType: storageType
+      };
+    }
   }
 
   // Build sync configuration from form
   buildSyncConfigFromForm() {
-    return {
+    const config = {
       enabled: this.domElements.syncEnabled.checked, // Auto sync enabled/disabled
+      storageType: this.domElements.storageType.value, // Storage type: 'gist' or 'webdav'
+      // Gist configuration
       gistToken: this.domElements.gistToken.value.trim(),
       gistId: this.domElements.gistId.value.trim(),
+      // WebDAV configuration
+      webdavUrl: this.domElements.webdavUrl.value.trim(),
+      webdavUsername: this.domElements.webdavUsername.value.trim(),
+      webdavPassword: this.domElements.webdavPassword.value.trim(),
       lastSyncTime: null, // Will be updated by sync operations
       syncStatus: 'idle',
       lastError: null,
       autoSync: this.domElements.syncEnabled.checked // Legacy field, same as enabled
     };
+    
+    // 添加调试日志以验证配置读取
+    logger.info('从表单构建同步配置:', {
+      enabled: config.enabled,
+      storageType: config.storageType,
+      hasGistToken: !!config.gistToken,
+      hasGistId: !!config.gistId,
+      hasWebdavUrl: !!config.webdavUrl,
+      hasWebdavUsername: !!config.webdavUsername,
+      hasWebdavPassword: !!config.webdavPassword,
+      gistTokenLength: config.gistToken.length,
+      gistIdLength: config.gistId.length,
+      webdavUrlLength: config.webdavUrl.length,
+      webdavUsernameLength: config.webdavUsername.length
+    });
+    
+    return config;
   }
 
   /**

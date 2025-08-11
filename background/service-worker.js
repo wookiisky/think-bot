@@ -317,6 +317,34 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
  */
 async function handleTestSyncConnection(data, logger) {
   try {
+    const { storageType = 'gist' } = data;
+    
+    if (storageType === 'gist') {
+      return await handleTestGistConnection(data, logger);
+    } else if (storageType === 'webdav') {
+      return await handleTestWebdavConnection(data, logger);
+    } else {
+      return {
+        type: 'TEST_SYNC_CONNECTION_RESULT',
+        success: false,
+        error: `Unsupported storage type: ${storageType}`
+      };
+    }
+  } catch (error) {
+    logger.error('Sync connection test failed:', error);
+    return {
+      type: 'TEST_SYNC_CONNECTION_RESULT',
+      success: false,
+      error: `Test failed: ${error.message}`
+    };
+  }
+}
+
+/**
+ * Test GitHub Gist connection
+ */
+async function handleTestGistConnection(data, logger) {
+  try {
     const { token, gistId } = data;
 
     if (!token || !gistId) {
@@ -405,11 +433,221 @@ async function handleTestSyncConnection(data, logger) {
     }
 
   } catch (error) {
-    logger.error('Sync connection test failed:', error);
+    logger.error('Gist connection test failed:', error);
     return {
       type: 'TEST_SYNC_CONNECTION_RESULT',
       success: false,
-      error: `Test failed: ${error.message}`
+      error: `Gist test failed: ${error.message}`
+    };
+  }
+}
+
+/**
+ * Test WebDAV connection
+ */
+async function handleTestWebdavConnection(data, logger) {
+  try {
+    const { webdavUrl, webdavUsername, webdavPassword } = data;
+
+    if (!webdavUrl || !webdavUsername || !webdavPassword) {
+      return {
+        type: 'TEST_SYNC_CONNECTION_RESULT',
+        success: false,
+        error: 'WebDAV URL, Username, and Password are required'
+      };
+    }
+
+    logger.info('Testing sync connection to WebDAV server', {
+      url: webdavUrl.replace(/\/\/[^@]+@/, '//***@'), // Hide credentials in URL if any
+      username: webdavUsername
+    });
+
+    // Normalize base URL
+    const baseUrl = webdavUrl.endsWith('/') ? webdavUrl : webdavUrl + '/';
+    const thinkbotUrl = baseUrl + 'thinkbot/';
+
+    // Prepare authentication
+    const credentials = btoa(`${webdavUsername}:${webdavPassword}`);
+
+    try {
+      // Step 1: Test basic WebDAV connectivity with base URL
+      logger.info('Step 1: Testing base WebDAV URL', { url: baseUrl.replace(/\/\/[^@]+@/, '//***@') });
+      
+      const baseResponse = await fetch(baseUrl, {
+        method: 'PROPFIND',
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'Depth': '0',
+          'Content-Type': 'application/xml'
+        },
+        body: '<?xml version="1.0" encoding="utf-8" ?><propfind xmlns="DAV:"><prop><getlastmodified/></prop></propfind>',
+        signal: AbortSignal.timeout(10000)
+      });
+
+      logger.info('Base URL test response:', {
+        status: baseResponse.status,
+        statusText: baseResponse.statusText,
+        headers: Object.fromEntries(baseResponse.headers.entries())
+      });
+
+      const baseIsSuccess = baseResponse.ok || baseResponse.status === 207; // 207 Multi-Status is also OK for WebDAV
+      
+      if (!baseIsSuccess) {
+        let responseText = '';
+        try {
+          responseText = await baseResponse.text();
+        } catch (e) {
+          logger.warn('Could not read response text:', e.message);
+        }
+
+        logger.error('Base WebDAV URL test failed:', {
+          status: baseResponse.status,
+          statusText: baseResponse.statusText,
+          responseText: responseText.substring(0, 500), // Log first 500 chars
+          url: baseUrl.replace(/\/\/[^@]+@/, '//***@')
+        });
+
+        return {
+          type: 'TEST_SYNC_CONNECTION_RESULT',
+          success: false,
+          error: `WebDAV base URL access failed: HTTP ${baseResponse.status} ${baseResponse.statusText}. Please check your WebDAV URL and credentials.`
+        };
+      }
+
+      logger.info('Base WebDAV URL test successful, proceeding to test thinkbot directory');
+
+      // Step 2: Test thinkbot directory
+      logger.info('Step 2: Testing thinkbot directory', { url: thinkbotUrl.replace(/\/\/[^@]+@/, '//***@') });
+      
+      const thinkbotResponse = await fetch(thinkbotUrl, {
+        method: 'PROPFIND',
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'Depth': '0',
+          'Content-Type': 'application/xml'
+        },
+        body: '<?xml version="1.0" encoding="utf-8" ?><propfind xmlns="DAV:"><prop><getlastmodified/></prop></propfind>',
+        signal: AbortSignal.timeout(10000)
+      });
+
+      logger.info('Thinkbot directory test response:', {
+        status: thinkbotResponse.status,
+        statusText: thinkbotResponse.statusText
+      });
+
+      const thinkbotIsSuccess = thinkbotResponse.ok || thinkbotResponse.status === 207;
+      
+      if (thinkbotIsSuccess) {
+        logger.info('Thinkbot directory exists and is accessible');
+        
+        return {
+          type: 'TEST_SYNC_CONNECTION_RESULT',
+          success: true,
+          message: 'WebDAV connection successful, thinkbot directory is ready',
+          serverInfo: {
+            status: thinkbotResponse.status,
+            server: thinkbotResponse.headers.get('Server') || 'Unknown',
+            baseUrl: baseUrl.replace(/\/\/[^@]+@/, '//***@'),
+            thinkbotDirectory: 'exists'
+          }
+        };
+      } else if (thinkbotResponse.status === 404) {
+        // Step 3: Try to create thinkbot directory
+        logger.info('Step 3: Thinkbot directory not found, attempting to create it');
+        
+        const createResponse = await fetch(thinkbotUrl, {
+          method: 'MKCOL',
+          headers: {
+            'Authorization': `Basic ${credentials}`
+          },
+          signal: AbortSignal.timeout(10000)
+        });
+
+        logger.info('Directory creation response:', {
+          status: createResponse.status,
+          statusText: createResponse.statusText
+        });
+
+        if (createResponse.ok || createResponse.status === 201) {
+          logger.info('Thinkbot directory created successfully');
+          
+          return {
+            type: 'TEST_SYNC_CONNECTION_RESULT',
+            success: true,
+            message: 'WebDAV connection successful, thinkbot directory created',
+            serverInfo: {
+              status: createResponse.status,
+              server: createResponse.headers.get('Server') || 'Unknown',
+              baseUrl: baseUrl.replace(/\/\/[^@]+@/, '//***@'),
+              thinkbotDirectory: 'created'
+            }
+          };
+        } else {
+          let createResponseText = '';
+          try {
+            createResponseText = await createResponse.text();
+          } catch (e) {
+            logger.warn('Could not read create response text:', e.message);
+          }
+
+          logger.error('Failed to create thinkbot directory:', {
+            status: createResponse.status,
+            statusText: createResponse.statusText,
+            responseText: createResponseText.substring(0, 500)
+          });
+
+          return {
+            type: 'TEST_SYNC_CONNECTION_RESULT',
+            success: false,
+            error: `Failed to create thinkbot directory: HTTP ${createResponse.status} ${createResponse.statusText}. Please ensure you have write permissions on the WebDAV server.`
+          };
+        }
+      } else {
+        let thinkbotResponseText = '';
+        try {
+          thinkbotResponseText = await thinkbotResponse.text();
+        } catch (e) {
+          logger.warn('Could not read thinkbot response text:', e.message);
+        }
+
+        logger.error('Thinkbot directory test failed with unexpected status:', {
+          status: thinkbotResponse.status,
+          statusText: thinkbotResponse.statusText,
+          responseText: thinkbotResponseText.substring(0, 500)
+        });
+
+        return {
+          type: 'TEST_SYNC_CONNECTION_RESULT',
+          success: false,
+          error: `Thinkbot directory access failed: HTTP ${thinkbotResponse.status} ${thinkbotResponse.statusText}`
+        };
+      }
+
+    } catch (webdavError) {
+      logger.error('WebDAV access error:', {
+        message: webdavError.message,
+        name: webdavError.name,
+        stack: webdavError.stack
+      });
+      
+      return {
+        type: 'TEST_SYNC_CONNECTION_RESULT',
+        success: false,
+        error: `WebDAV access error: ${webdavError.message}`
+      };
+    }
+
+  } catch (error) {
+    logger.error('WebDAV connection test failed:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack
+    });
+    
+    return {
+      type: 'TEST_SYNC_CONNECTION_RESULT',
+      success: false,
+      error: `WebDAV test failed: ${error.message}`
     };
   }
 }
