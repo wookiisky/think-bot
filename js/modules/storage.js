@@ -530,6 +530,12 @@ storage.getAllPageMetadata = async function() {
     for (const key of unifiedPageKeys) {
       const pageData = result[key];
       if (pageData && pageData.metadata && pageData.url) {
+        // Skip soft deleted pages
+        if (this.isDataSoftDeleted(pageData)) {
+          storageLogger.debug('Skipping soft deleted page metadata:', pageData.url);
+          continue;
+        }
+        
         const normalized = normalizeUrl(pageData.url);
         if (!seenUrls.has(normalized)) {
           seenUrls.add(normalized);
@@ -606,15 +612,34 @@ storage.savePageData = async function(url, content, method = 'default', metadata
   try {
     const key = getPageKeyFromUrl(url);
 
-    // Get existing page data or create new
-    let pageData = await this.getPageData(url) || {
-      url: url,
-      metadata: {},
-      content: {},
-      pageState: {},
-      lastUpdated: Date.now(),
-      created: Date.now()
-    };
+    // Get existing page data (including soft deleted) or create new
+    const result = await chrome.storage.local.get(key);
+    let pageData = result[key];
+    
+    // If page was soft deleted, restore it by removing the deletion flag
+    if (pageData && this.isDataSoftDeleted(pageData)) {
+      storageLogger.info('Restoring soft deleted page data for URL:', url);
+      // Keep the URL but remove deletion flag and restore structure
+      pageData = {
+        url: pageData.url || url,
+        metadata: {},
+        content: {},
+        pageState: {},
+        lastUpdated: Date.now(),
+        created: pageData.created || Date.now()
+        // Remove 'del' flag and 'lastModified' from soft delete
+      };
+    } else if (!pageData) {
+      // Create new page data if none exists
+      pageData = {
+        url: url,
+        metadata: {},
+        content: {},
+        pageState: {},
+        lastUpdated: Date.now(),
+        created: Date.now()
+      };
+    }
 
     // Update metadata if provided
     if (metadata && Object.keys(metadata).length > 0) {
@@ -685,6 +710,12 @@ storage.getPageData = async function(url) {
 
     if (result[key]) {
       const pageData = result[key];
+
+      // Check if the page data is soft deleted
+      if (this.isDataSoftDeleted(pageData)) {
+        storageLogger.info('Page data is soft deleted, returning null:', url);
+        return null;
+      }
 
       // Decompress content if needed
       if (pageData.content) {
