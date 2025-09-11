@@ -329,31 +329,8 @@ const setupStreamReconnection = (currentUrl, tabId) => {
   // and will send stream chunks/completion messages when available
   
   // Optional: Set up a periodic check to verify the loading state hasn't timed out
-  const checkInterval = setInterval(async () => {
-    try {
-      const response = await chrome.runtime.sendMessage({
-        type: 'GET_LOADING_STATE',
-        url: currentUrl,
-        tabId: tabId
-      });
-      
-      if (response && response.loadingState) {
-        const status = response.loadingState.status;
-        if (status !== 'loading') {
-          // Loading is no longer active, stop checking
-          clearInterval(checkInterval);
-          logger.info(`Stream reconnection check stopped, status: ${status}`);
-        }
-      } else {
-        // No loading state found, stop checking
-        clearInterval(checkInterval);
-
-      }
-    } catch (error) {
-      logger.error('Error during stream reconnection check:', error);
-      clearInterval(checkInterval);
-    }
-  }, 5000); // Check every 5 seconds
+  // Event-driven flow now updates UI via messages; disable periodic GET_LOADING_STATE polling
+  // const checkInterval = setInterval(...)
   
   // Auto-cleanup after 15 minutes
   setTimeout(() => {
