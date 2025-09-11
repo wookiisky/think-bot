@@ -154,6 +154,13 @@ const handleTabAction = async (displayText, sendTextTemplate, tabId, isAutoSend,
         // Save chat history for current tab
         const chatHistory = ChatHistory.getChatHistoryFromDOM(elements.chatContainer);
         await TabManager.saveCurrentTabChatHistory(chatHistory);
+        
+        // 不在此处设置 has-content，交由读取/分支完成后统一计算
+        // 但确保 loading 状态在 UI 上被正确设置
+        if (isAutoSend && tabId) {
+          await TabManager.updateTabLoadingState(tabId, true);
+          logger.info(`Set loading state for tab ${tabId} after auto-send initiated`);
+        }
       }
     );
   } finally {
@@ -448,6 +455,46 @@ function handleLoadingStateUpdate(message) {
       }
     } else {
       logger.debug(`Loading state content processing ignored - URL mismatch (${url} vs ${currentUrl}) or tab mismatch (${tabId} vs ${activeTabId}), but tab loading state updated`);
+
+      // For non-active tabs on current page, recalc hasContent after completion/error to refresh tab badge
+      if (url === currentUrl && tabId !== activeTabId && (status === 'completed' || status === 'error')) {
+        (async () => {
+          try {
+            const cacheKey = `${currentUrl}#${tabId}`;
+            const resp = await chrome.runtime.sendMessage({ type: 'GET_CHAT_HISTORY', url: cacheKey });
+            const history = (resp && Array.isArray(resp.chatHistory)) ? resp.chatHistory : [];
+
+            let hasLoadingBranch = false;
+            let hasContent = false;
+
+            for (const msg of history) {
+              if (!msg || msg.role !== 'assistant') continue;
+              if (Array.isArray(msg.responses) && msg.responses.length > 0) {
+                for (const r of msg.responses) {
+                  if (r && r.status === 'loading') { hasLoadingBranch = true; break; }
+                }
+                if (!hasLoadingBranch) {
+                  hasContent = hasContent || msg.responses.some(r => r && (r.status === 'done' || r.status === 'error') && (r.content || r.errorMessage));
+                }
+              } else if (typeof msg.content === 'string' && msg.content.trim().length > 0) {
+                hasContent = true;
+              }
+              if (hasLoadingBranch) break;
+            }
+
+            const nextHasContent = !hasLoadingBranch && hasContent;
+            if (window.TabManager && window.TabManager.updateTabContentState) {
+              await window.TabManager.updateTabContentState(tabId, nextHasContent);
+            }
+            // Force a final UI sync to avoid missed re-render during concurrent updates
+            if (window.TabManager && window.TabManager.renderCurrentTabsState) {
+              await window.TabManager.renderCurrentTabsState();
+            }
+          } catch (calcErr) {
+            logger.warn('Failed to recalc hasContent for non-active tab:', calcErr);
+          }
+        })();
+      }
     }
   } catch (error) {
     logger.error('Error handling loading state update:', error);
@@ -585,6 +632,10 @@ async function triggerAutoInputs() {
           const forceIncludePageContent = true;
           await handleTabAction(input.displayText, input.sendText, tabId, true, forceIncludePageContent);
           lastTriggeredTabId = tabId;
+          
+          // 标记 tab 为已初始化，只有在实际发送消息后才设置
+          await TabManager.markTabAsInitialized(tabId);
+          logger.info(`Marked tab ${tabId} as initialized after auto-send`);
         }
       } catch (error) {
         logger.error(`Error auto-triggering quick input ${input.displayText}:`, error);
@@ -597,6 +648,12 @@ async function triggerAutoInputs() {
 
     // After all silent updates, render the final UI state once
     await TabManager.renderCurrentTabsState();
+    
+    // 确保 loading 状态正确更新
+    if (lastTriggeredTabId) {
+      await TabManager.updateTabsLoadingStates();
+      logger.info(`Updated loading states for all tabs after auto-trigger, last triggered: ${lastTriggeredTabId}`);
+    }
 
     logger.info('Auto-trigger sequence completed');
   } catch (error) {

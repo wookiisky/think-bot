@@ -149,20 +149,90 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                 serviceLogger.error('SEND_LLM: Error sending stream end to sidebar:', error.message);
             }
 
+            // Persist branch result into chat history for the specific tab BEFORE broadcasting, so UI can read updated data
+            if (branchId && currentUrl && tabId) {
+                try {
+                    const tabSpecificUrl = `${currentUrl}#${tabId}`;
+                    let history = await storage.getChatHistory(tabSpecificUrl);
+                    if (!Array.isArray(history)) history = [];
+
+                    const nowTs = Date.now();
+                    let updated = false;
+
+                    // Find the last assistant message containing the branch and update it
+                    for (let i = history.length - 1; i >= 0 && !updated; i--) {
+                        const msg = history[i];
+                        if (msg && msg.role === 'assistant' && Array.isArray(msg.responses)) {
+                            for (let j = msg.responses.length - 1; j >= 0; j--) {
+                                const r = msg.responses[j];
+                                if (r && r.branchId === branchId) {
+                                    r.status = 'done';
+                                    r.content = fullResponse || '';
+                                    r.errorMessage = null;
+                                    r.model = r.model || (defaultModel ? (defaultModel.model || defaultModel.name) : 'unknown');
+                                    r.updatedAt = nowTs;
+                                    updated = true;
+                                    break;
+                                }
+                            }
+                            if (updated) {
+                                msg.timestamp = msg.timestamp || nowTs;
+                            }
+                        }
+                    }
+
+                    // If not found, append a new assistant message with this branch
+                    if (!updated) {
+                        history.push({
+                            role: 'assistant',
+                            timestamp: nowTs,
+                            responses: [
+                                {
+                                    branchId: branchId,
+                                    model: (defaultModel && (defaultModel.model || defaultModel.name)) || 'unknown',
+                                    content: fullResponse || '',
+                                    status: 'done',
+                                    errorMessage: null,
+                                    updatedAt: nowTs
+                                }
+                            ]
+                        });
+                    }
+
+                    await storage.saveChatHistory(tabSpecificUrl, history);
+                    serviceLogger.info(`SEND_LLM: Persisted branch ${branchId} result to chat history for tab ${tabId}`);
+                } catch (persistErr) {
+                    serviceLogger.warn('SEND_LLM: Failed to persist branch result to chat history:', persistErr.message);
+                }
+            }
+
             // Unregister request from tracker
             if (typeof RequestTracker !== 'undefined') {
                 RequestTracker.unregisterRequest(tabId, branchId);
             }
 
             try {
-                // Update loading state to completed
+                // Update loading state to completed, then broadcast to content scripts and sidebar
                 if (currentUrl && tabId) {
                     const cacheKey = branchId ? `${tabId}:${branchId}` : tabId;
                     await loadingStateCache.completeLoadingState(currentUrl, cacheKey, fullResponse);
+                    // notify content scripts on the page
                     broadcastLoadingStateUpdate(currentUrl, tabId, 'completed', fullResponse, null, finishReason, branchId);
+                    // notify extension pages (sidebar) directly
+                    safeSendMessage({
+                        type: 'LOADING_STATE_UPDATE',
+                        url: currentUrl,
+                        tabId: tabId,
+                        status: 'completed',
+                        result: fullResponse,
+                        error: null,
+                        finishReason: finishReason,
+                        branchId: branchId || null,
+                        timestamp: Date.now()
+                    });
                 }
             } catch (error) {
-                serviceLogger.error('SEND_LLM: Error updating loading state:', error.message);
+                serviceLogger.error('SEND_LLM: Error updating/loading state broadcast:', error.message);
             }
 
             // For branch requests, don't auto-save chat history - let the frontend handle it
@@ -300,20 +370,87 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                 serviceLogger.error('SEND_LLM: Error sending error message to sidebar:', sendError.message);
             }
 
+            // Persist error into chat history for branch BEFORE broadcasting
+            if (branchId && currentUrl && tabId) {
+                try {
+                    const tabSpecificUrl = `${currentUrl}#${tabId}`;
+                    let history = await storage.getChatHistory(tabSpecificUrl);
+                    if (!Array.isArray(history)) history = [];
+
+                    const nowTs = Date.now();
+                    let updated = false;
+
+                    for (let i = history.length - 1; i >= 0 && !updated; i--) {
+                        const msg = history[i];
+                        if (msg && msg.role === 'assistant' && Array.isArray(msg.responses)) {
+                            for (let j = msg.responses.length - 1; j >= 0; j--) {
+                                const r = msg.responses[j];
+                                if (r && r.branchId === branchId) {
+                                    r.status = 'error';
+                                    r.content = errorMessage || '';
+                                    r.errorMessage = errorMessage || '';
+                                    r.updatedAt = nowTs;
+                                    updated = true;
+                                    break;
+                                }
+                            }
+                            if (updated) {
+                                msg.timestamp = msg.timestamp || nowTs;
+                            }
+                        }
+                    }
+
+                    if (!updated) {
+                        history.push({
+                            role: 'assistant',
+                            timestamp: nowTs,
+                            responses: [
+                                {
+                                    branchId: branchId,
+                                    model: (defaultModel && (defaultModel.model || defaultModel.name)) || 'unknown',
+                                    content: errorMessage || '',
+                                    status: 'error',
+                                    errorMessage: errorMessage || '',
+                                    updatedAt: nowTs
+                                }
+                            ]
+                        });
+                    }
+
+                    await storage.saveChatHistory(tabSpecificUrl, history);
+                    serviceLogger.info(`SEND_LLM: Persisted branch ${branchId} error to chat history for tab ${tabId}`);
+                } catch (persistErr) {
+                    serviceLogger.warn('SEND_LLM: Failed to persist branch error to chat history:', persistErr.message);
+                }
+            }
+
             // Unregister request from tracker
             if (typeof RequestTracker !== 'undefined') {
                 RequestTracker.unregisterRequest(tabId, branchId);
             }
 
             try {
-                // Update loading state to error
+                // Update loading state to error, then broadcast to content scripts and sidebar
                 if (currentUrl && tabId) {
                     const cacheKey = branchId ? `${tabId}:${branchId}` : tabId;
                     await loadingStateCache.errorLoadingState(currentUrl, cacheKey, errorMessage);
+                    // notify content scripts on the page
                     broadcastLoadingStateUpdate(currentUrl, tabId, 'error', null, errorMessage, null, errorDetails, branchId);
+                    // notify extension pages (sidebar) directly
+                    safeSendMessage({
+                        type: 'LOADING_STATE_UPDATE',
+                        url: currentUrl,
+                        tabId: tabId,
+                        status: 'error',
+                        result: null,
+                        error: errorMessage,
+                        finishReason: null,
+                        branchId: branchId || null,
+                        timestamp: Date.now()
+                    });
                 }
             } catch (error) {
-                serviceLogger.error('SEND_LLM: Error updating loading state to error:', error.message);
+                serviceLogger.error('SEND_LLM: Error updating/loading state broadcast (error):', error.message);
             }
         };
 

@@ -269,22 +269,76 @@ const retryMessage = (messageElement, retryCallback) => {
       if (includePageContent) {
         systemPromptWithContent += '\n\nPage Content:\n' + extractedContent;
       }
-      
-      // Update tab loading state to loading before sending request
-      if (window.TabManager && window.TabManager.updateTabLoadingState) {
-        await window.TabManager.updateTabLoadingState(currentTabId, true);
-        logger.info(`Updated tab ${currentTabId} loading state to loading before retry`);
-      }
-      
-      // Send LLM message with proper tab ID
+      // 分支样式重试：创建新的分支 loading，并传入 branchId
+      const chatEl = chatContainer;
+      let retryBranchId = null;
       try {
+        retryBranchId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+          ? `br-${crypto.randomUUID()}`
+          : `br-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+        const selectedModelForLabel = (window.modelSelector && typeof window.modelSelector.getSelectedModel === 'function')
+          ? window.modelSelector.getSelectedModel()
+          : null;
+
+        const assistantTimestamp = Date.now();
+        const branchContainer = document.createElement('div');
+        branchContainer.className = 'chat-message assistant-message branch-container';
+        branchContainer.id = `message-${assistantTimestamp}`;
+        const roleDiv = document.createElement('div');
+        roleDiv.className = 'message-role';
+        branchContainer.appendChild(roleDiv);
+        const branchesDiv = document.createElement('div');
+        branchesDiv.className = 'message-branches';
+        const branchDiv = document.createElement('div');
+        branchDiv.className = 'message-branch';
+        branchDiv.setAttribute('data-branch-id', retryBranchId);
+        branchDiv.setAttribute('data-streaming', 'true');
+        branchDiv.setAttribute('data-model', (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown');
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.setAttribute('data-raw-content', '');
+        const loadingContainer = document.createElement('div');
+        loadingContainer.className = 'loading-container';
+        loadingContainer.innerHTML = '<div class="spinner"></div>';
+        contentDiv.appendChild(loadingContainer);
+        branchDiv.appendChild(contentDiv);
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'branch-actions';
+        const stopDeleteButton = document.createElement('button');
+        stopDeleteButton.className = 'branch-action-btn delete-btn';
+        stopDeleteButton.innerHTML = '<i class="material-icons">stop</i>';
+        stopDeleteButton.title = i18n.getMessage('branch_stopAndDelete');
+        stopDeleteButton.setAttribute('data-action', 'stop-delete');
+        stopDeleteButton.setAttribute('data-branch-id', retryBranchId);
+        actionsDiv.appendChild(stopDeleteButton);
+        branchDiv.appendChild(actionsDiv);
+        const modelLabel = document.createElement('div');
+        modelLabel.className = 'branch-model-label';
+        modelLabel.textContent = (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown';
+        branchDiv.appendChild(modelLabel);
+        branchesDiv.appendChild(branchDiv);
+        branchContainer.appendChild(branchesDiv);
+        chatEl.appendChild(branchContainer);
+        chatEl.scrollTop = chatEl.scrollHeight;
+      } catch (retryUiError) {
+        logger.warn('Retry branch UI creation failed, proceeding without branch UI:', retryUiError);
+      }
+
+      // 发送带 branchId 的请求
+      try {
+        const selectedModel = (window.modelSelector && typeof window.modelSelector.getSelectedModel === 'function')
+          ? window.modelSelector.getSelectedModel()
+          : null;
         await window.MessageHandler.sendLlmMessage({
           messages: chatHistory,
           systemPromptTemplate: systemPromptWithContent,
           extractedPageContent: extractedContent,
           currentUrl: currentUrl,
           extractionMethod: extractionMethod,
-          tabId: currentTabId // Include tab ID for proper state tracking
+          tabId: currentTabId,
+          branchId: retryBranchId || undefined,
+          model: selectedModel || undefined
         });
         
         logger.info(`Retry message sent successfully for tab ${currentTabId}`);

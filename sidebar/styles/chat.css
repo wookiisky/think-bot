@@ -644,7 +644,7 @@
   width: 26px;
   height: 26px;
   border-radius: 0;
-  border: 1px solid var(--border-color);
+  border: 1px solid #9c9c9c;
   background-color: transparent;
   color: var(--text-color);
   box-shadow: none;
@@ -659,7 +659,7 @@
 
 .branch-action-btn[data-action="stop-delete"]:hover {
   background-color: transparent;
-  border-color: var(--primary-color);
+  border-color: #555555;
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(66, 133, 244, 0.15);
 }
@@ -678,7 +678,7 @@
   width: 26px;
   height: 26px;
   border-radius: 0;
-  border: 1px solid var(--border-color);
+  border: 1px solid #747474;
   background-color: transparent;
   color: var(--text-color);
   box-shadow: none;
@@ -693,7 +693,7 @@
 
 .branch-action-btn[data-action="stop-delete-tab"]:hover {
   background-color: transparent;
-  border-color: var(--primary-color);
+  border-color: #555555;
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(66, 133, 244, 0.15);
 }
@@ -717,7 +717,7 @@
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   z-index: 9999;
-  width: 200px;
+  width: 120px;
   max-width: calc(100vw - 16px);
   max-height: 300px;
   overflow-y: auto;
@@ -826,6 +826,12 @@
   order: 1;
   align-self: center;
   margin: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  line-height: 22px;
+  padding: 0 6px;
+  border-radius: 0;
 }
 
 .message-branch[data-streaming="true"] .message-content {
@@ -841,6 +847,8 @@
   justify-content: flex-start;
   min-height: 0;
   gap: 6px;
+  height: 22px;
+  min-width: 22px;
 }
 
 .message-branch[data-streaming="true"] .spinner {
@@ -868,6 +876,6 @@
 
 /* 保证分支消息加载时停止并删除按钮始终显示边框 */
 .message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="stop-delete"] {
-  border: 1px solid var(--border-color);
+  border: 1px solid #9f9f9f;
   background-color: transparent;
 }

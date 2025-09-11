@@ -277,17 +277,42 @@ const updateTabsContentStates = async () => {
         type: 'GET_CHAT_HISTORY',
         url: cacheKey
       });
-      
-      // Update tab content state based on chat history
-      const hasContent = response && 
-                        response.chatHistory && 
-                        Array.isArray(response.chatHistory) && 
-                        response.chatHistory.length > 0;
-      
-      tab.hasContent = hasContent;
-      
-      logger.debug(`Tab ${tab.id} content state: ${hasContent} (${response?.chatHistory?.length || 0} messages)`);
-                     
+
+      let hasContent = false;
+      let hasLoadingBranch = false;
+
+      const history = response && Array.isArray(response.chatHistory) ? response.chatHistory : [];
+
+      for (const msg of history) {
+        if (!msg) continue;
+        if (msg.role === 'assistant') {
+          if (Array.isArray(msg.responses) && msg.responses.length > 0) {
+            for (const r of msg.responses) {
+              if (r && r.status === 'loading') {
+                hasLoadingBranch = true;
+                break;
+              }
+            }
+            if (!hasLoadingBranch) {
+              // No loading branches in this assistant message, consider content present if any response has content or error
+              hasContent = hasContent || msg.responses.some(r => r && (r.status === 'done' || r.status === 'error') && (r.content || r.errorMessage));
+            }
+          } else if (typeof msg.content === 'string' && msg.content.trim().length > 0) {
+            // Legacy single assistant content
+            hasContent = true;
+          }
+        } else if (msg.role === 'user') {
+          // User messages alone don't determine has-content
+          continue;
+        }
+        if (hasLoadingBranch) break;
+      }
+
+      // Per spec: if any branch is loading, treat tab as loading (handled elsewhere), and do not mark has-content
+      tab.hasContent = !hasLoadingBranch && hasContent;
+
+      logger.debug(`Tab ${tab.id} content state -> hasContent: ${tab.hasContent}, hasLoadingBranch: ${hasLoadingBranch}, totalMessages: ${history.length}`);
+
     } catch (error) {
       // If we can't check content state, assume no content
       tab.hasContent = false;
@@ -389,11 +414,13 @@ const switchToTabAndCheckAction = async (tabId, options = {}) => {
       const currentState = window.StateManager ? window.StateManager.getState() : {};
       const hasExtractedContent = currentState.extractedContent && currentState.extractedContent.trim().length > 0;
 
-      tab.hasInitialized = true; // Mark as initialized
+      // 不要在这里设置 hasInitialized，应该在实际发送消息后设置
 
       if (!hasExtractedContent) {
         logger.info(`Skipping auto-send for tab ${tabId}: content extraction result is empty`);
         shouldSend = false;
+        // 只有在确定不发送消息时才标记为已初始化
+        tab.hasInitialized = true;
       } else {
         shouldSend = true;
         logger.info(`Tab ${tabId} is ready for auto-send.`);
@@ -540,7 +567,7 @@ const handleTabClick = async (tabId) => {
           }
         } else {
           // Only auto-send if no existing history and not yet initialized and content is available
-          tab.hasInitialized = true;
+          // 不要在这里设置 hasInitialized，应该在消息发送完成后设置
 
           // For Quick Input auto-send, always force include page content (but don't change UI state)
           const forceIncludePageContent = true;
@@ -549,6 +576,8 @@ const handleTabClick = async (tabId) => {
           if (onTabClickHandler) {
             logger.info(`Auto-sending Quick Input for tab ${tabId} (no existing history) with forced page content inclusion`);
             onTabClickHandler(tab.displayText, tab.sendText, tabId, true, forceIncludePageContent);
+            // 在发送消息后立即标记为已初始化
+            tab.hasInitialized = true;
           }
         }
       } else {
@@ -998,6 +1027,22 @@ const resetTabInitializationState = (tabId) => {
 };
 
 /**
+ * Mark a tab as initialized after sending a message
+ * @param {string} tabId - Tab ID to mark as initialized
+ */
+const markTabAsInitialized = (tabId) => {
+  const tab = tabs.find(t => t.id === tabId);
+  if (tab && !tab.isDefault) {
+    tab.hasInitialized = true;
+    logger.info(`Marked tab ${tabId} as initialized`);
+  } else if (tab && tab.isDefault) {
+    logger.debug(`Tab ${tabId} is default chat tab, no initialization state to set`);
+  } else {
+    logger.warn(`Tab ${tabId} not found for marking as initialized`);
+  }
+};
+
+/**
  * Reset initialization states for all quick input tabs
  * This allows quick input tabs to trigger auto-send again after clearing conversation
  */
@@ -1153,6 +1198,7 @@ export {
   clearAllTabsData,
   resetTabInitializationState,
   resetTabInitializationStates,
+  markTabAsInitialized,
   resetTabsLoadingStates,
   removeQuickInputTab,
   updateTabLoadingState,

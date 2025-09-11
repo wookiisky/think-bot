@@ -302,23 +302,7 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
         }
       }
       
-      // Add new assistant placeholder message
-      // Add initial assistant message for streaming
-      const currentUrl = window.StateManager ? window.StateManager.getStateItem('currentUrl') : window.location.href;
-      const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
-      const streamId = `${currentUrl}#${currentTabId}`;
-      
-      appendMessageToUI(
-        chatContainer,
-        'assistant',
-        '<div class="spinner"></div>',
-        null,
-        true,
-        Date.now(),
-        streamId
-      );
-      
-      // Scroll to bottom
+      // 统一交由 retryMessage 内部构建分支样式 UI，这里仅清理后续消息并滚动
       chatContainer.scrollTop = chatContainer.scrollHeight;
     });
     
@@ -463,9 +447,6 @@ const handleStreamChunk = (chatContainer, chunk, tabId, url, branchId = null) =>
     // Fallback to plain text display
     streamingMessageContentDiv.innerHTML = currentBuffer.replace(/\n/g, '<br>');
   }
-  
-  // Auto-scroll to bottom
-  chatContainer.scrollTop = chatContainer.scrollHeight;
 };
 
 /**
@@ -652,14 +633,14 @@ const handleStreamEnd = (chatContainer, fullResponse, onComplete, finishReason =
 
       // Create branch and delete buttons using delegated handlers
       const branchButton = document.createElement('button');
-      branchButton.className = 'btn-base message-action-btn branch-action-btn branch-btn';
+      branchButton.className = 'btn-base message-action-btn branch-btn';
       branchButton.innerHTML = '<i class="material-icons">call_split</i>';
       branchButton.title = i18n.getMessage('branch_add');
       branchButton.setAttribute('data-action', 'branch');
       branchButton.setAttribute('data-branch-id', streamingMessageContainer.getAttribute('data-branch-id'));
 
       const deleteButton = document.createElement('button');
-      deleteButton.className = 'btn-base message-action-btn branch-action-btn delete-btn';
+      deleteButton.className = 'btn-base message-action-btn delete-btn';
       deleteButton.innerHTML = '<i class="material-icons">delete</i>';
       deleteButton.title = i18n.getMessage('branch_delete');
       deleteButton.setAttribute('data-action', 'delete');
@@ -1120,15 +1101,90 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
     systemPromptTemplateForPayload = systemPromptTemplateForPayload + '\n\nPage Content:\n' + pageContentForPayload; 
   }
   
-  // Show loading indicator in chat
-  // Ensure this method is called before sending message to ensure UI is updated in time
-  // Generate streamId if not provided
-  if (!streamId) {
+  // 统一使用分支消息样式：创建分支容器并显示 loading
+  // 本地生成分支ID（与 generateBranchId 一致的策略，避免提升函数声明顺序）
+  const localBranchId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+    ? `br-${crypto.randomUUID()}`
+    : `br-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  let assistantBranchElement = null;
+  try {
+    // 选取当前模型用于标签展示
+    const selectedModelForLabel = modelSelector ? modelSelector.getSelectedModel() : null;
+
+    const assistantTimestamp = Date.now();
+    const branchContainer = document.createElement('div');
+    branchContainer.className = 'chat-message assistant-message branch-container';
+    branchContainer.id = `message-${assistantTimestamp}`;
+
+    const roleDiv = document.createElement('div');
+    roleDiv.className = 'message-role';
+    branchContainer.appendChild(roleDiv);
+
+    const branchesDiv = document.createElement('div');
+    branchesDiv.className = 'message-branches';
+
+    const branchDiv = document.createElement('div');
+    branchDiv.className = 'message-branch';
+    branchDiv.setAttribute('data-branch-id', localBranchId);
+    branchDiv.setAttribute('data-streaming', 'true');
+    if (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) {
+      branchDiv.setAttribute('data-model', selectedModelForLabel.name || selectedModelForLabel.model);
+    } else {
+      branchDiv.setAttribute('data-model', 'unknown');
+    }
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+    contentDiv.setAttribute('data-raw-content', '');
+
+    const loadingContainer = document.createElement('div');
+    loadingContainer.className = 'loading-container';
+    loadingContainer.innerHTML = '<div class="spinner"></div>';
+    contentDiv.appendChild(loadingContainer);
+
+    branchDiv.appendChild(contentDiv);
+
+    // 顶部右侧仅保留“停止并删除”按钮
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'branch-actions';
+    const stopDeleteButton = document.createElement('button');
+    stopDeleteButton.className = 'btn-base message-action-btn delete-btn';
+    stopDeleteButton.innerHTML = '<i class="material-icons">stop</i>';
+    stopDeleteButton.title = i18n.getMessage('branch_stopAndDelete');
+    stopDeleteButton.setAttribute('data-action', 'stop-delete');
+    stopDeleteButton.setAttribute('data-branch-id', localBranchId);
+    actionsDiv.appendChild(stopDeleteButton);
+    branchDiv.appendChild(actionsDiv);
+
+    // 模型标签（仅显示模型名）
+    const modelLabel = document.createElement('div');
+    modelLabel.className = 'branch-model-label';
+    modelLabel.textContent = (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown';
+    branchDiv.appendChild(modelLabel);
+
+    branchesDiv.appendChild(branchDiv);
+    branchContainer.appendChild(branchesDiv);
+    chatContainer.appendChild(branchContainer);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    assistantBranchElement = branchDiv;
+  } catch (uiError) {
+    logger.error('Error creating branch-style loading UI for user message, falling back:', uiError);
+    // 最小回退：仍然渲染一个流式消息，避免无 UI
     const currentUrl = window.StateManager ? window.StateManager.getStateItem('currentUrl') : window.location.href;
     const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
-    streamId = `${currentUrl}#${currentTabId}`;
+    const fallbackStreamId = `${currentUrl}#${currentTabId}`;
+    assistantBranchElement = appendMessageToUI(
+      chatContainer,
+      'assistant',
+      '<div class="spinner"></div>',
+      null,
+      true,
+      undefined,
+      fallbackStreamId
+    );
   }
-  const loadingMsgId = appendMessageToUI(chatContainer, 'assistant', '<div class="spinner"></div>', null, true, undefined, streamId);
   
   // If image was attached, send and remove
   if (imageBase64) {
@@ -1180,7 +1236,9 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
       currentUrl: window.StateManager.getStateItem('currentUrl'),
       extractionMethod: window.StateManager.getStateItem('currentExtractionMethod'),
       selectedModel: selectedModel,
-      tabId: currentTabId
+      tabId: currentTabId,
+      branchId: localBranchId,
+      model: selectedModel || undefined
     });
     
   } catch (error) {
@@ -1197,7 +1255,7 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
     handleLlmError(
       chatContainer,
       i18n.getMessage('sidebar_chatManager_error_failedToSend'),
-      loadingMsgId,
+      assistantBranchElement,
       () => {
         // If error occurs, re-enable send button
         sendBtn.disabled = false;
@@ -1256,8 +1314,9 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     streamId = `${currentUrl}#${currentTabId}`;
   }
 
-  // Build branch-style assistant container immediately to unify UI with branch behavior
+  // Build branch-style assistant container immediately以统一分支行为
   let assistantLoadingMessage;
+  let quickBranchId = null;
   try {
     // Determine selected model for label (safe to call early)
     const selectedModelForLabel = modelSelector ? modelSelector.getSelectedModel() : null;
@@ -1278,7 +1337,11 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     const branchDiv = document.createElement('div');
     branchDiv.className = 'message-branch';
     branchDiv.setAttribute('data-streaming', 'true');
-    branchDiv.setAttribute('data-stream-id', streamId);
+    // 生成分支ID
+    quickBranchId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? `br-${crypto.randomUUID()}`
+      : `br-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    branchDiv.setAttribute('data-branch-id', quickBranchId);
     if (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) {
       branchDiv.setAttribute('data-model', selectedModelForLabel.name || selectedModelForLabel.model);
     }
@@ -1298,11 +1361,11 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'branch-actions';
     const stopDeleteButton = document.createElement('button');
-    stopDeleteButton.className = 'branch-action-btn delete-btn';
+    stopDeleteButton.className = 'btn-base message-action-btn delete-btn';
     stopDeleteButton.innerHTML = '<i class="material-icons">stop</i>';
     stopDeleteButton.title = i18n.getMessage('branch_stopAndDelete');
-    // Use a distinct data-action to avoid delegated branch handler (which expects branchId)
-    stopDeleteButton.setAttribute('data-action', 'stop-delete-tab');
+    stopDeleteButton.setAttribute('data-action', 'stop-delete');
+    stopDeleteButton.setAttribute('data-branch-id', quickBranchId);
     stopDeleteButton.addEventListener('click', async (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -1333,10 +1396,10 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     actionsDiv.appendChild(stopDeleteButton);
     branchDiv.appendChild(actionsDiv);
 
-    // Model label under content
+    // Model label under content (name only)
     const modelLabel = document.createElement('div');
     modelLabel.className = 'branch-model-label';
-    modelLabel.textContent = (selectedModelForLabel && (selectedModelForLabel.label || selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown';
+    modelLabel.textContent = (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown';
     branchDiv.appendChild(modelLabel);
 
     branchesDiv.appendChild(branchDiv);
@@ -1345,6 +1408,15 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
     assistantLoadingMessage = branchDiv; // Streaming element reference
+
+    // Ensure tab enters loading state immediately for quick input branch
+    try {
+      const currentTabIdForLoading = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
+      await updateTabLoadingState(currentTabIdForLoading, true);
+      logger.info(`Tab ${currentTabIdForLoading} set to loading after quick input UI creation`);
+    } catch (e) {
+      logger.warn('Failed to set loading state after quick input UI creation:', e);
+    }
   } catch (uiError) {
     logger.error('Error creating branch-style loading UI for quick input, falling back:', uiError);
     assistantLoadingMessage = appendMessageToUI(
@@ -1415,7 +1487,9 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
       currentUrl: state.currentUrl,
       extractionMethod: state.currentExtractionMethod,
       selectedModel: selectedModel,
-      tabId: currentTabId
+      tabId: currentTabId,
+      branchId: quickBranchId || undefined,
+      model: selectedModel || undefined
     });
   } catch (error) {
     logger.error('Error sending quick message:', error);
@@ -1846,14 +1920,14 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
   actionsDiv.className = 'branch-actions';
   
   const branchButton = document.createElement('button');
-  branchButton.className = 'branch-action-btn branch-btn';
+  branchButton.className = 'btn-base message-action-btn branch-btn';
   branchButton.innerHTML = '<i class="material-icons">call_split</i>';
   branchButton.title = i18n.getMessage('branch_add');
   branchButton.setAttribute('data-action', 'branch');
   branchButton.setAttribute('data-branch-id', branchId);
   
   const deleteButton = document.createElement('button');
-  deleteButton.className = 'branch-action-btn delete-btn';
+  deleteButton.className = 'btn-base message-action-btn delete-btn';
   if (status === 'loading') {
     deleteButton.innerHTML = '<i class="material-icons">stop</i>';
     deleteButton.title = i18n.getMessage('branch_stopAndDelete');
@@ -1874,10 +1948,10 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
   }
   branchDiv.appendChild(actionsDiv);
   
-  // 添加模型标签
+  // 添加模型标签（仅显示模型名）
   const modelLabel = document.createElement('div');
   modelLabel.className = 'branch-model-label';
-  modelLabel.textContent = model.label || model.name || 'unknown';
+  modelLabel.textContent = model.name || 'unknown';
   branchDiv.appendChild(modelLabel);
   
   return branchDiv;

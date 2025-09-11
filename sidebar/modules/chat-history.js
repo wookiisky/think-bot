@@ -727,30 +727,14 @@ const getAvailableModels = async () => {
         return [];
       }
       
-      // 过滤启用的模型并转换格式
+      // 过滤启用的模型并转换格式（仅显示模型名，不包含 provider）
       const models = llmConfig.models
         .filter(model => model.enabled)
         .map(model => {
-          // 根据provider创建显示标签
-          let providerLabel = model.provider;
-          switch (model.provider) {
-            case 'gemini':
-              providerLabel = 'Gemini';
-              break;
-            case 'openai':
-              providerLabel = 'OpenAI';
-              break;
-            case 'azure':
-              providerLabel = 'Azure';
-              break;
-            default:
-              providerLabel = model.provider.charAt(0).toUpperCase() + model.provider.slice(1);
-          }
-          
           return {
             id: model.id,                         // 直接使用配置中的模型ID
             name: model.model || model.name,      // 实际模型名称，用于data-model属性
-            label: `${providerLabel} - ${model.name}`,  // 显示名称，用于UI显示
+            label: model.name,                    // 下拉显示仅展示模型名
             provider: model.provider,
             displayName: model.name,              // 保存原始显示名称
             modelConfig: model // 保存完整的模型配置用于后续使用
