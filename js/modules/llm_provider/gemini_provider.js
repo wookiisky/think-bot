@@ -149,10 +149,12 @@ var geminiProvider = (function() {
     function buildContents(messages, systemPrompt, imageBase64, model) {
         const contents = [];
         
-        if (systemPrompt) {
+        // Normalize system prompt
+        const systemPromptText = (systemPrompt ?? '').toString();
+        if (systemPromptText.trim().length > 0) {
             contents.push({
                 role: 'user',
-                parts: [{ text: systemPrompt }]
+                parts: [{ text: systemPromptText }]
             });
             contents.push({
                 role: 'model',
@@ -160,33 +162,36 @@ var geminiProvider = (function() {
             });
         }
 
-        for (const message of messages) {
+        const isLastIndex = (idx, arr) => idx === arr.length - 1;
+
+        for (let i = 0; i < messages.length; i++) {
+            const message = messages[i] || {};
             const role = message.role === 'assistant' ? 'model' : 'user';
-            
-            if (role === 'user' && imageBase64 && message === messages[messages.length - 1]) {
+
+            // Prefer safe string for text content
+            const messageText = (message.content ?? '').toString();
+
+            // If this is the last user message and we have an image, include inlineData
+            if (role === 'user' && imageBase64 && isLastIndex(i, messages)) {
                 // Validate image data format
-                if (!imageBase64.startsWith('data:image/')) {
+                if (typeof imageBase64 !== 'string' || !imageBase64.startsWith('data:image/')) {
                     geminiLogger.error('Invalid image format - must be data URL');
                     throw new Error('Invalid image format');
                 }
 
                 try {
                     const parts = [];
-                    
-                    // Add text content or default message
-                    if (message.content) {
-                        parts.push({ text: message.content });
-                    } else {
-                        parts.push({ text: 'Please analyze this image.' });
-                    }
-                    
+
+                    // Add text content or default message (ensure non-empty)
+                    parts.push({ text: messageText.trim().length > 0 ? messageText : 'Please analyze this image.' });
+
                     // Extract image data
                     const [header, imageData] = imageBase64.split(',');
-                    if (!imageData) {
+                    if (!imageData || imageData.trim().length === 0) {
                         throw new Error('Invalid image data format');
                     }
-                    
-                    const mimeType = header.split(';')[0].split(':')[1];
+
+                    const mimeType = (header || '').split(';')[0].split(':')[1];
                     if (!mimeType || !mimeType.startsWith('image/')) {
                         throw new Error('Invalid image MIME type');
                     }
@@ -196,7 +201,7 @@ var geminiProvider = (function() {
                         model,
                         mimeType,
                         imageDataSize: imageData.length,
-                        hasText: !!message.content
+                        hasText: messageText.trim().length > 0
                     });
 
                     parts.push({
@@ -205,17 +210,20 @@ var geminiProvider = (function() {
                             data: imageData
                         }
                     });
-                    
+
                     contents.push({ role, parts });
                 } catch (error) {
                     geminiLogger.error('Error processing image data:', error);
                     throw new Error(`Failed to process image: ${error.message}`);
                 }
             } else {
-                // Handle text-only messages
+                // Skip empty text-only messages to avoid invalid parts
+                if (messageText.trim().length === 0) {
+                    continue;
+                }
                 contents.push({
                     role,
-                    parts: [{ text: message.content }]
+                    parts: [{ text: messageText }]
                 });
             }
         }

@@ -1248,37 +1248,130 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     contentElement.setAttribute('data-display-text', displayText);
   }
   
-  // Show assistant response loading indicator
+  // Show assistant response loading indicator as BRANCH-STYLE container
   // Generate streamId if not provided
   if (!streamId) {
     const currentUrl = window.StateManager ? window.StateManager.getStateItem('currentUrl') : window.location.href;
     const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
     streamId = `${currentUrl}#${currentTabId}`;
   }
-  const assistantLoadingMessage = appendMessageToUI(
-    chatContainer,
-    'assistant',
-    '<div class="spinner"></div>',
-    null,
-    true,
-    undefined,
-    streamId
-  );
+
+  // Build branch-style assistant container immediately to unify UI with branch behavior
+  let assistantLoadingMessage;
+  try {
+    // Determine selected model for label (safe to call early)
+    const selectedModelForLabel = modelSelector ? modelSelector.getSelectedModel() : null;
+
+    // Create branch container message
+    const assistantTimestamp = Date.now();
+    const branchContainer = document.createElement('div');
+    branchContainer.className = 'chat-message assistant-message branch-container';
+    branchContainer.id = `message-${assistantTimestamp}`;
+
+    const roleDiv = document.createElement('div');
+    roleDiv.className = 'message-role';
+    branchContainer.appendChild(roleDiv);
+
+    const branchesDiv = document.createElement('div');
+    branchesDiv.className = 'message-branches';
+
+    const branchDiv = document.createElement('div');
+    branchDiv.className = 'message-branch';
+    branchDiv.setAttribute('data-streaming', 'true');
+    branchDiv.setAttribute('data-stream-id', streamId);
+    if (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) {
+      branchDiv.setAttribute('data-model', selectedModelForLabel.name || selectedModelForLabel.model);
+    }
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+    contentDiv.setAttribute('data-raw-content', '');
+
+    const loadingContainer = document.createElement('div');
+    loadingContainer.className = 'loading-container';
+    loadingContainer.innerHTML = '<div class="spinner"></div>';
+    contentDiv.appendChild(loadingContainer);
+
+    branchDiv.appendChild(contentDiv);
+
+    // Top-right actions: only stop-and-delete for loading
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'branch-actions';
+    const stopDeleteButton = document.createElement('button');
+    stopDeleteButton.className = 'branch-action-btn delete-btn';
+    stopDeleteButton.innerHTML = '<i class="material-icons">stop</i>';
+    stopDeleteButton.title = i18n.getMessage('branch_stopAndDelete');
+    // Use a distinct data-action to avoid delegated branch handler (which expects branchId)
+    stopDeleteButton.setAttribute('data-action', 'stop-delete-tab');
+    stopDeleteButton.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      try {
+        const currentTabIdLocal = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
+        const cancelled = await cancelLlmRequest(currentTabIdLocal);
+        if (!cancelled) {
+          logger.warn('Stop request for quick input stream did not confirm cancellation');
+        }
+      } catch (err) {
+        logger.warn('Error while cancelling quick input stream:', err);
+      }
+      // Remove this assistant branch and its preceding user message (to mirror branch removal UX)
+      const container = branchDiv.closest('.branch-container');
+      if (container) {
+        const prev = container.previousElementSibling;
+        if (prev && prev.classList.contains('user-message')) {
+          prev.remove();
+        }
+        container.remove();
+      }
+      // Update loading/UI states
+      const currentTabIdForState = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
+      updateTabLoadingState(currentTabIdForState, false).catch(err => logger.warn('Error updating tab state after stop-delete:', err));
+      // Re-enable send button
+      if (sendBtn) sendBtn.disabled = false;
+    });
+    actionsDiv.appendChild(stopDeleteButton);
+    branchDiv.appendChild(actionsDiv);
+
+    // Model label under content
+    const modelLabel = document.createElement('div');
+    modelLabel.className = 'branch-model-label';
+    modelLabel.textContent = (selectedModelForLabel && (selectedModelForLabel.label || selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown';
+    branchDiv.appendChild(modelLabel);
+
+    branchesDiv.appendChild(branchDiv);
+    branchContainer.appendChild(branchesDiv);
+    chatContainer.appendChild(branchContainer);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    assistantLoadingMessage = branchDiv; // Streaming element reference
+  } catch (uiError) {
+    logger.error('Error creating branch-style loading UI for quick input, falling back:', uiError);
+    assistantLoadingMessage = appendMessageToUI(
+      chatContainer,
+      'assistant',
+      '<div class="spinner"></div>',
+      null,
+      true,
+      undefined,
+      streamId
+    );
+  }
   
-  // Get dialog history from DOM
-  const chatHistory = window.ChatHistory.getChatHistoryFromDOM(chatContainer);
+  // Get dialog history from DOM (raw with branches)
+  const rawChatHistory = window.ChatHistory.getChatHistoryFromDOM(chatContainer);
   
   // Immediately save current dialog history to storage for current tab
   try {
     if (window.TabManager && window.TabManager.saveCurrentTabChatHistory) {
-      await window.TabManager.saveCurrentTabChatHistory(chatHistory);
+      await window.TabManager.saveCurrentTabChatHistory(rawChatHistory);
       logger.info('Tab chat history saved after adding quick input message');
     } else {
       // Fallback to original method
       await chrome.runtime.sendMessage({
         type: 'SAVE_CHAT_HISTORY',
         url: window.StateManager.getStateItem('currentUrl'),
-        chatHistory: chatHistory
+        chatHistory: rawChatHistory
       });
       logger.info('Chat history saved after adding quick input message');
     }
@@ -1289,6 +1382,8 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
   
   // Prepare data
   const state = currentState;
+  // Convert to standard format for LLM (exclude streaming/loading branches)
+  const messagesForPayload = convertBranchHistoryToStandard(rawChatHistory);
   let systemPromptTemplateForPayload = '';
   let pageContentForPayload = state.extractedContent;
   const config = await window.StateManager.getConfig();
@@ -1314,7 +1409,7 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     
     // Send message to background script for LLM processing
     await window.MessageHandler.sendLlmMessage({
-      messages: chatHistory,
+      messages: messagesForPayload,
       systemPromptTemplate: systemPromptTemplateForPayload,
       extractedPageContent: pageContentForPayload,
       currentUrl: state.currentUrl,
@@ -1770,8 +1865,13 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
   }
   deleteButton.setAttribute('data-branch-id', branchId);
   
-  actionsDiv.appendChild(branchButton);
-  actionsDiv.appendChild(deleteButton);
+  // loading 状态下仅保留“停止并删除”按钮
+  if (status === 'loading') {
+    actionsDiv.appendChild(deleteButton);
+  } else {
+    actionsDiv.appendChild(branchButton);
+    actionsDiv.appendChild(deleteButton);
+  }
   branchDiv.appendChild(actionsDiv);
   
   // 添加模型标签

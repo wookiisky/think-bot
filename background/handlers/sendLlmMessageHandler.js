@@ -170,9 +170,11 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                 try {
                     if (currentUrl && messages) {
                         const tabSpecificUrl = tabId ? `${currentUrl}#${tabId}` : currentUrl;
+                        // 保留模型信息，避免刷新后显示为 unknown
+                        const assistantModel = (defaultModel && (defaultModel.model || defaultModel.name)) || 'unknown';
                         const updatedMessages = [
                             ...messages,
-                            { role: 'assistant', content: fullResponse }
+                            { role: 'assistant', content: fullResponse, model: assistantModel }
                         ];
                         await storage.saveChatHistory(tabSpecificUrl, updatedMessages);
                         serviceLogger.info(`SEND_LLM: Chat history saved with ${updatedMessages.length} messages`);

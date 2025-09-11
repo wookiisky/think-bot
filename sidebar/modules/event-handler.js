@@ -366,6 +366,9 @@ const setupMessageButtonsScroll = (chatContainer) => {
       currentFloatingButtons.style.top = '';
       currentFloatingButtons.style.right = '';
       currentFloatingButtons.style.transform = '';
+      // Force hide buttons to override CSS hover states
+      currentFloatingButtons.style.visibility = 'hidden';
+      currentFloatingButtons.style.opacity = '0';
       currentFloatingButtons = null;
     }
     // Safety cleanup: ensure no other floating button groups remain
@@ -376,6 +379,17 @@ const setupMessageButtonsScroll = (chatContainer) => {
       btns.style.top = '';
       btns.style.right = '';
       btns.style.transform = '';
+      // Force hide buttons to override CSS hover states
+      btns.style.visibility = 'hidden';
+      btns.style.opacity = '0';
+    });
+    // Also clear any lingering visible buttons that might not have floating class
+    const allButtons = chatContainer.querySelectorAll('.message-buttons');
+    allButtons.forEach(btns => {
+      if (!btns.closest('.chat-message:hover, .message-branch:hover')) {
+        btns.style.visibility = 'hidden';
+        btns.style.opacity = '0';
+      }
     });
     currentHoveredMessage = null;
   }
@@ -437,21 +451,27 @@ const setupMessageButtonsScroll = (chatContainer) => {
     currentHoveredMessage = message;
     currentFloatingButtons = buttons;
     
+    // Clear any forced hide styles
+    buttons.style.visibility = '';
+    buttons.style.opacity = '';
+    
     // Immediately update button position
     updateButtonPosition(message, buttons);
   });
   
   // Use event delegation to handle mouse leaving message or branch
   chatContainer.addEventListener('mouseout', function(event) {
-    const branch = event.target.closest('.message-branch');
-    const rawMessage = branch || event.target.closest('.chat-message');
-    const message = (rawMessage && rawMessage.classList.contains('branch-container')) ? null : rawMessage;
-    if (!message || message !== currentHoveredMessage) return;
-    
-    // Check if mouse really left message area (not moved to sub-element)
+    // If there is no active hovered message, nothing to clear
+    if (!currentHoveredMessage) return;
+
     const relatedTarget = event.relatedTarget;
-    if (relatedTarget && message.contains(relatedTarget)) return;
-    
+
+    // If mouse moves within the same message (including its descendants like buttons), ignore
+    if (relatedTarget && currentHoveredMessage.contains(relatedTarget)) return;
+
+    // Only clear when the mouseout originated from the current hovered message area
+    if (!currentHoveredMessage.contains(event.target)) return;
+
     clearFloatingButtons();
   });
 
@@ -470,6 +490,11 @@ const setupMessageButtonsScroll = (chatContainer) => {
     if (!buttons) return;
     currentHoveredMessage = message;
     currentFloatingButtons = buttons;
+    
+    // Clear any forced hide styles
+    buttons.style.visibility = '';
+    buttons.style.opacity = '';
+    
     updateButtonPosition(message, buttons);
   });
   
