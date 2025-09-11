@@ -5,41 +5,61 @@
  * Allows cancellation of ongoing LLM requests by tabId
  */
 
-// Map to store active requests: tabId -> { abortController, url, timestamp }
+// Map to store active requests: requestKey -> { abortController, url, timestamp, tabId, branchId }
+// requestKey format: "tabId" for main requests, "tabId:branchId" for branch requests
 const activeRequests = new Map();
 
 // Logger for request tracker
 const requestTrackerLogger = logger ? logger.createModuleLogger('RequestTracker') : console;
 
 /**
+ * Generate request key from tabId and optional branchId
+ * @param {string} tabId - Tab ID
+ * @param {string} branchId - Optional branch ID
+ * @returns {string} Request key
+ */
+function generateRequestKey(tabId, branchId) {
+    return branchId ? `${tabId}:${branchId}` : tabId;
+}
+
+/**
  * Register a new request with its AbortController
  * @param {string} tabId - Tab ID
  * @param {string} url - Page URL
  * @param {AbortController} abortController - Abort controller for the request
+ * @param {string} branchId - Optional branch ID for branch requests
  */
-function registerRequest(tabId, url, abortController) {
+function registerRequest(tabId, url, abortController, branchId = null) {
     if (!tabId || !url || !abortController) {
         requestTrackerLogger.error('Cannot register request: missing required parameters', {
-            tabId, url, hasAbortController: !!abortController
+            tabId, url, branchId, hasAbortController: !!abortController
         });
         return false;
     }
 
-    // Cancel any existing request for this tab
-    if (activeRequests.has(tabId)) {
-        requestTrackerLogger.info('Cancelling existing request for tab before registering new one', { tabId });
-        cancelRequest(tabId);
+    const requestKey = generateRequestKey(tabId, branchId);
+
+    // Cancel any existing request for this key
+    if (activeRequests.has(requestKey)) {
+        requestTrackerLogger.info('Cancelling existing request before registering new one', { 
+            tabId, branchId, requestKey 
+        });
+        cancelRequestByKey(requestKey);
     }
 
     const requestInfo = {
         abortController,
         url,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        tabId,
+        branchId
     };
 
-    activeRequests.set(tabId, requestInfo);
+    activeRequests.set(requestKey, requestInfo);
     requestTrackerLogger.info('Request registered successfully', {
         tabId,
+        branchId,
+        requestKey,
         url,
         activeRequestsCount: activeRequests.size
     });
@@ -48,19 +68,19 @@ function registerRequest(tabId, url, abortController) {
 }
 
 /**
- * Cancel a request by tabId
- * @param {string} tabId - Tab ID
+ * Cancel a request by key (internal function)
+ * @param {string} requestKey - Request key
  * @returns {boolean} Success status
  */
-function cancelRequest(tabId) {
-    if (!tabId) {
-        requestTrackerLogger.error('Cannot cancel request: tabId is required');
+function cancelRequestByKey(requestKey) {
+    if (!requestKey) {
+        requestTrackerLogger.error('Cannot cancel request: requestKey is required');
         return false;
     }
 
-    const requestInfo = activeRequests.get(tabId);
+    const requestInfo = activeRequests.get(requestKey);
     if (!requestInfo) {
-        requestTrackerLogger.warn('No active request found to cancel', { tabId });
+        requestTrackerLogger.warn('No active request found to cancel', { requestKey });
         return false;
     }
 
@@ -69,10 +89,12 @@ function cancelRequest(tabId) {
         requestInfo.abortController.abort();
         
         // Remove from active requests
-        activeRequests.delete(tabId);
+        activeRequests.delete(requestKey);
         
         requestTrackerLogger.info('Request cancelled successfully', {
-            tabId,
+            requestKey,
+            tabId: requestInfo.tabId,
+            branchId: requestInfo.branchId,
             url: requestInfo.url,
             requestDuration: Date.now() - requestInfo.timestamp,
             activeRequestsCount: activeRequests.size
@@ -81,7 +103,7 @@ function cancelRequest(tabId) {
         return true;
     } catch (error) {
         requestTrackerLogger.error('Error cancelling request', {
-            tabId,
+            requestKey,
             error: error.message
         });
         return false;
@@ -89,20 +111,100 @@ function cancelRequest(tabId) {
 }
 
 /**
+ * Cancel a request by tabId (for main requests or all requests in a tab)
+ * @param {string} tabId - Tab ID
+ * @param {boolean} cancelAll - If true, cancel all requests for this tab including branches
+ * @returns {boolean} Success status
+ */
+function cancelRequest(tabId, cancelAll = false) {
+    if (!tabId) {
+        requestTrackerLogger.error('Cannot cancel request: tabId is required');
+        return false;
+    }
+
+    if (cancelAll) {
+        // Cancel all requests for this tab (including branches)
+        return cancelAllRequestsForTab(tabId) > 0;
+    } else {
+        // Cancel only the main request for this tab
+        const requestKey = generateRequestKey(tabId);
+        return cancelRequestByKey(requestKey);
+    }
+}
+
+/**
+ * Cancel a specific branch request
+ * @param {string} tabId - Tab ID
+ * @param {string} branchId - Branch ID
+ * @returns {boolean} Success status
+ */
+function cancelBranchRequest(tabId, branchId) {
+    if (!tabId || !branchId) {
+        requestTrackerLogger.error('Cannot cancel branch request: tabId and branchId are required', {
+            tabId, branchId
+        });
+        return false;
+    }
+
+    const requestKey = generateRequestKey(tabId, branchId);
+    return cancelRequestByKey(requestKey);
+}
+
+/**
+ * Cancel all requests for a specific tab (including branches)
+ * @param {string} tabId - Tab ID
+ * @returns {number} Number of requests cancelled
+ */
+function cancelAllRequestsForTab(tabId) {
+    if (!tabId) {
+        requestTrackerLogger.error('Cannot cancel requests: tabId is required');
+        return 0;
+    }
+
+    const keysToCancel = [];
+    
+    // Find all requests for this tab
+    for (const [requestKey, requestInfo] of activeRequests) {
+        if (requestInfo.tabId === tabId) {
+            keysToCancel.push(requestKey);
+        }
+    }
+
+    let cancelledCount = 0;
+    for (const requestKey of keysToCancel) {
+        if (cancelRequestByKey(requestKey)) {
+            cancelledCount++;
+        }
+    }
+
+    if (cancelledCount > 0) {
+        requestTrackerLogger.info(`Cancelled ${cancelledCount} requests for tab`, { 
+            tabId, cancelledCount 
+        });
+    }
+
+    return cancelledCount;
+}
+
+/**
  * Unregister a completed request
  * @param {string} tabId - Tab ID
+ * @param {string} branchId - Optional branch ID
  */
-function unregisterRequest(tabId) {
+function unregisterRequest(tabId, branchId = null) {
     if (!tabId) {
         requestTrackerLogger.error('Cannot unregister request: tabId is required');
         return;
     }
 
-    const requestInfo = activeRequests.get(tabId);
+    const requestKey = generateRequestKey(tabId, branchId);
+    const requestInfo = activeRequests.get(requestKey);
     if (requestInfo) {
-        activeRequests.delete(tabId);
+        activeRequests.delete(requestKey);
         requestTrackerLogger.info('Request unregistered successfully', {
             tabId,
+            branchId,
+            requestKey,
             url: requestInfo.url,
             requestDuration: Date.now() - requestInfo.timestamp,
             activeRequestsCount: activeRequests.size
@@ -113,10 +215,23 @@ function unregisterRequest(tabId) {
 /**
  * Get active request info for a tab
  * @param {string} tabId - Tab ID
+ * @param {string} branchId - Optional branch ID
  * @returns {Object|null} Request info or null if not found
  */
-function getRequestInfo(tabId) {
-    return activeRequests.get(tabId) || null;
+function getRequestInfo(tabId, branchId = null) {
+    const requestKey = generateRequestKey(tabId, branchId);
+    return activeRequests.get(requestKey) || null;
+}
+
+/**
+ * Check if there's an active request for tab/branch
+ * @param {string} tabId - Tab ID
+ * @param {string} branchId - Optional branch ID
+ * @returns {boolean} True if request is active
+ */
+function hasActiveRequest(tabId, branchId = null) {
+    const requestKey = generateRequestKey(tabId, branchId);
+    return activeRequests.has(requestKey);
 }
 
 /**
@@ -125,9 +240,11 @@ function getRequestInfo(tabId) {
  */
 function getAllActiveRequests() {
     const requests = [];
-    for (const [tabId, requestInfo] of activeRequests) {
+    for (const [requestKey, requestInfo] of activeRequests) {
         requests.push({
-            tabId,
+            requestKey,
+            tabId: requestInfo.tabId,
+            branchId: requestInfo.branchId,
             url: requestInfo.url,
             timestamp: requestInfo.timestamp,
             duration: Date.now() - requestInfo.timestamp
@@ -170,25 +287,30 @@ function cancelAllRequests() {
 function cleanupStaleRequests() {
     const STALE_THRESHOLD = 30 * 60 * 1000; // 30 minutes
     const now = Date.now();
-    const staleTabIds = [];
+    const staleRequestKeys = [];
 
-    for (const [tabId, requestInfo] of activeRequests) {
+    for (const [requestKey, requestInfo] of activeRequests) {
         if (now - requestInfo.timestamp > STALE_THRESHOLD) {
-            staleTabIds.push(tabId);
+            staleRequestKeys.push(requestKey);
         }
     }
 
-    for (const tabId of staleTabIds) {
-        requestTrackerLogger.warn('Cleaning up stale request', {
-            tabId,
-            age: now - activeRequests.get(tabId).timestamp
-        });
-        cancelRequest(tabId);
+    for (const requestKey of staleRequestKeys) {
+        const requestInfo = activeRequests.get(requestKey);
+        if (requestInfo) {
+            requestTrackerLogger.warn('Cleaning up stale request', {
+                requestKey,
+                tabId: requestInfo.tabId,
+                branchId: requestInfo.branchId,
+                age: now - requestInfo.timestamp
+            });
+            cancelRequestByKey(requestKey);
+        }
     }
 
-    if (staleTabIds.length > 0) {
+    if (staleRequestKeys.length > 0) {
         requestTrackerLogger.info('Stale requests cleanup completed', {
-            cleanedCount: staleTabIds.length,
+            cleanedCount: staleRequestKeys.length,
             remainingCount: activeRequests.size
         });
     }
@@ -202,21 +324,31 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         registerRequest,
         cancelRequest,
+        cancelBranchRequest,
+        cancelAllRequestsForTab,
         unregisterRequest,
         getRequestInfo,
+        hasActiveRequest,
         getAllActiveRequests,
         cancelAllRequests,
-        cleanupStaleRequests
+        cleanupStaleRequests,
+        generateRequestKey,
+        cancelRequestByKey
     };
 } else {
     // Make functions available globally in service worker context
     self.RequestTracker = {
         registerRequest,
         cancelRequest,
+        cancelBranchRequest,
+        cancelAllRequestsForTab,
         unregisterRequest,
         getRequestInfo,
+        hasActiveRequest,
         getAllActiveRequests,
         cancelAllRequests,
-        cleanupStaleRequests
+        cleanupStaleRequests,
+        generateRequestKey,
+        cancelRequestByKey
     };
 }

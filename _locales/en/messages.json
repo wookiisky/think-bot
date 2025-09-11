@@ -638,6 +638,30 @@
   "sidebar_chatMessage_placeholder_edit": {
     "message": "Edit your message..."
   },
+  "branch_add": {
+    "message": "Branch"
+  },
+  "branch_delete": {
+    "message": "Delete Branch"
+  },
+  "branch_stopAndDelete": {
+    "message": "Stop and Delete Branch"
+  },
+  "branch_model": {
+    "message": "Model"
+  },
+  "branch_selectModel": {
+    "message": "Select Model"
+  },
+  "branch_noModels": {
+    "message": "No models available"
+  },
+  "branch_confirmDelete": {
+    "message": "Are you sure you want to delete this branch?"
+  },
+  "branch_createFailed": {
+    "message": "Failed to create branch"
+  },
   "sidebar_chatMessage_title_edit": {
     "message": "Press Ctrl+Enter to save or Escape to cancel"
   },

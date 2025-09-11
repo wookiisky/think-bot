@@ -476,6 +476,20 @@ const handleTabClick = async (tabId) => {
     // Log tab switch for debugging stream routing
     const previousActiveTabId = activeTabId;
     logger.info(`Switching from tab ${previousActiveTabId} to tab ${tabId}`);
+
+    // 在切换前保存当前活动 Tab 的聊天历史，避免未保存内容丢失（包含分支）
+    try {
+      const chatContainer = document.getElementById('chatContainer');
+      if (chatContainer && window.ChatHistory && window.ChatHistory.getChatHistoryFromDOM && window.TabManager && window.TabManager.saveCurrentTabChatHistory) {
+        const currentHistory = window.ChatHistory.getChatHistoryFromDOM(chatContainer);
+        if (Array.isArray(currentHistory)) {
+          await window.TabManager.saveCurrentTabChatHistory(currentHistory);
+          logger.info(`Pre-saved chat history for tab ${previousActiveTabId} before switching`);
+        }
+      }
+    } catch (presaveError) {
+      logger.warn('Failed to pre-save chat history before tab switch:', presaveError);
+    }
     
     // Check if there's any ongoing streaming in the current tab
     const chatContainer = document.getElementById('chatContainer');

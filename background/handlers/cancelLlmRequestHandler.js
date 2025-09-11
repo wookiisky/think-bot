@@ -1,12 +1,12 @@
 /**
  * Handle canceling LLM request
- * @param {Object} data - Request data containing url and tabId
+ * @param {Object} data - Request data containing url, tabId, and optional branchId
  * @param {Object} serviceLogger - Service logger instance
  * @param {Object} loadingStateCache - Loading state cache instance
  * @returns {Promise<Object>} Operation result
  */
 async function handleCancelLlmRequest(data, serviceLogger, loadingStateCache) {
-    const { url, tabId } = data;
+    const { url, tabId, branchId } = data;
     
     if (!url || !tabId) {
         const error = 'Missing required fields: url and tabId are required';
@@ -15,10 +15,12 @@ async function handleCancelLlmRequest(data, serviceLogger, loadingStateCache) {
     }
     
     try {
-        serviceLogger.info(`CANCEL_LLM_REQUEST: Canceling request for tab ${tabId}`);
+        const branchInfo = branchId ? ` and branch ${branchId}` : '';
+        serviceLogger.info(`CANCEL_LLM_REQUEST: Canceling request for tab ${tabId}${branchInfo}`);
         
         // Get current loading state
-        const loadingState = await loadingStateCache.getLoadingState(url, tabId);
+        const cacheKey = branchId ? `${tabId}:${branchId}` : tabId;
+        const loadingState = await loadingStateCache.getLoadingState(url, cacheKey);
         
         if (!loadingState) {
 
@@ -39,35 +41,49 @@ async function handleCancelLlmRequest(data, serviceLogger, loadingStateCache) {
         // First try to cancel the actual HTTP request using RequestTracker
         let httpRequestCancelled = false;
         if (typeof RequestTracker !== 'undefined') {
-            httpRequestCancelled = RequestTracker.cancelRequest(tabId);
-            if (httpRequestCancelled) {
-                serviceLogger.info(`CANCEL_LLM_REQUEST: HTTP request cancelled for tab ${tabId}`);
+            if (branchId) {
+                // Cancel specific branch request
+                httpRequestCancelled = RequestTracker.cancelBranchRequest(tabId, branchId);
+                if (httpRequestCancelled) {
+                    serviceLogger.info(`CANCEL_LLM_REQUEST: HTTP request cancelled for tab ${tabId} branch ${branchId}`);
+                } else {
+                    serviceLogger.warn(`CANCEL_LLM_REQUEST: No active HTTP request found for tab ${tabId} branch ${branchId}`);
+                }
             } else {
-                serviceLogger.warn(`CANCEL_LLM_REQUEST: No active HTTP request found for tab ${tabId}`);
+                // Cancel main request
+                httpRequestCancelled = RequestTracker.cancelRequest(tabId);
+                if (httpRequestCancelled) {
+                    serviceLogger.info(`CANCEL_LLM_REQUEST: HTTP request cancelled for tab ${tabId}`);
+                } else {
+                    serviceLogger.warn(`CANCEL_LLM_REQUEST: No active HTTP request found for tab ${tabId}`);
+                }
             }
         }
 
         // Update loading state to cancelled
-        const success = await loadingStateCache.cancelLoadingState(url, tabId);
+        const success = await loadingStateCache.cancelLoadingState(url, cacheKey);
 
         if (success || httpRequestCancelled) {
-            serviceLogger.info(`CANCEL_LLM_REQUEST: Successfully cancelled for tab ${tabId}`, {
+            serviceLogger.info(`CANCEL_LLM_REQUEST: Successfully cancelled for tab ${tabId}${branchInfo}`, {
                 httpRequestCancelled,
-                loadingStateCancelled: success
+                loadingStateCancelled: success,
+                branchId: branchId || null
             });
 
             // Broadcast cancellation to all sidebar instances for this URL
-            broadcastLoadingStateUpdate(url, tabId, 'cancelled');
+            broadcastLoadingStateUpdate(url, tabId, 'cancelled', null, null, null, null, branchId);
 
             return {
                 type: 'LLM_REQUEST_CANCELLED',
-                success: true
+                success: true,
+                branchId: branchId || null
             };
         } else {
-            serviceLogger.warn(`CANCEL_LLM_REQUEST: Failed to cancel for tab ${tabId}`);
+            serviceLogger.warn(`CANCEL_LLM_REQUEST: Failed to cancel for tab ${tabId}${branchInfo}`);
             return {
                 type: 'CANCEL_LLM_REQUEST_ERROR',
-                error: 'Failed to cancel request'
+                error: 'Failed to cancel request',
+                branchId: branchId || null
             };
         }
     } catch (error) {
@@ -86,8 +102,11 @@ async function handleCancelLlmRequest(data, serviceLogger, loadingStateCache) {
  * @param {string} status - Loading status
  * @param {string} result - Optional result for completed status
  * @param {string} error - Optional error for error status
+ * @param {string} finishReason - Optional finish reason
+ * @param {string} errorDetails - Optional error details
+ * @param {string} branchId - Optional branch ID
  */
-function broadcastLoadingStateUpdate(url, tabId, status, result = null, error = null) {
+function broadcastLoadingStateUpdate(url, tabId, status, result = null, error = null, finishReason = null, errorDetails = null, branchId = null) {
     try {
         chrome.tabs.query({}, (tabs) => {
             if (tabs && tabs.length > 0) {
@@ -100,6 +119,9 @@ function broadcastLoadingStateUpdate(url, tabId, status, result = null, error = 
                             status: status,
                             result: result,
                             error: error,
+                            finishReason: finishReason,
+                            errorDetails: errorDetails,
+                            branchId: branchId,
                             timestamp: Date.now()
                         }).catch(() => {
                             // Silent fail for broadcast errors

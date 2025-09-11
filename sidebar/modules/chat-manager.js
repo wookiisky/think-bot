@@ -5,7 +5,7 @@
 import { i18n } from '../../js/modules/i18n.js';
 import { createLogger, hasMarkdownElements, showCopyToast } from './utils.js';
 import { editMessage, retryMessage } from '../components/chat-message.js';
-import { displayChatHistory as displayChatHistoryFromModule } from './chat-history.js';
+import { displayChatHistory as displayChatHistoryFromModule, getChatHistoryFromDOM } from './chat-history.js';
 
 const logger = createLogger('ChatManager');
 
@@ -402,14 +402,25 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
  * @param {string} chunk - Received text chunk
  * @param {string} tabId - The tab ID for the stream
  * @param {string} url - The URL for the stream
+ * @param {string} branchId - Optional branch ID for branch streaming
  */
-const handleStreamChunk = (chatContainer, chunk, tabId, url) => {
-  const streamId = `${url}#${tabId}`;
-  // Find currently streaming message by its stream ID
-  const streamingMessageContainer = chatContainer.querySelector(`[data-stream-id="${streamId}"][data-streaming="true"]`);
+const handleStreamChunk = (chatContainer, chunk, tabId, url, branchId = null) => {
+  let streamId;
+  let streamingMessageContainer;
+  
+  if (branchId) {
+    // For branch streaming, look for the specific branch element
+    streamingMessageContainer = chatContainer.querySelector(`[data-branch-id="${branchId}"][data-streaming="true"]`);
+    logger.debug(`Looking for branch streaming container with branchId: ${branchId}`);
+  } else {
+    // For regular streaming, use the existing logic
+    streamId = `${url}#${tabId}`;
+    streamingMessageContainer = chatContainer.querySelector(`[data-stream-id="${streamId}"][data-streaming="true"]`);
+    logger.debug(`Looking for regular streaming container with streamId: ${streamId}`);
+  }
   
   if (!streamingMessageContainer) {
-    logger.debug(`No streaming message container found for stream ${streamId}`);
+    logger.debug(`No streaming message container found for ${branchId ? `branch ${branchId}` : `stream ${streamId}`}`);
     return;
   }
 
@@ -464,18 +475,29 @@ const handleStreamChunk = (chatContainer, chunk, tabId, url) => {
  * @param {Function} onComplete - Callback function after completion
  * @param {string} finishReason - Optional finish reason from LLM provider
  * @param {boolean} isAbnormalFinish - Whether the finish was abnormal
+ * @param {string} tabId - Optional tab ID
+ * @param {string} url - Optional URL
+ * @param {string} branchId - Optional branch ID for branch streaming
  */
-const handleStreamEnd = (chatContainer, fullResponse, onComplete, finishReason = null, isAbnormalFinish = false, tabId = null, url = null) => {
+const handleStreamEnd = (chatContainer, fullResponse, onComplete, finishReason = null, isAbnormalFinish = false, tabId = null, url = null, branchId = null) => {
   // Find the streaming message container
   let streamingMessageContainer;
-  if (tabId && url) {
+  
+  if (branchId) {
+    // For branch streaming, look for the specific branch element
+    streamingMessageContainer = chatContainer.querySelector(`[data-branch-id="${branchId}"][data-streaming="true"]`);
+    logger.debug(`Looking for branch streaming container to end with branchId: ${branchId}`);
+  } else if (tabId && url) {
+    // For regular streaming, use the existing logic
     const streamId = `${url}#${tabId}`;
     streamingMessageContainer = chatContainer.querySelector(`[data-stream-id="${streamId}"][data-streaming="true"]`);
+    logger.debug(`Looking for regular streaming container to end with streamId: ${streamId}`);
   }
   
   // Fallback for cases where streamId is not available or the element is not found by streamId
   if (!streamingMessageContainer) {
     streamingMessageContainer = chatContainer.querySelector('[data-streaming="true"]');
+    logger.debug('Using fallback to find any streaming container');
   }
   
   if (!streamingMessageContainer) {
@@ -587,17 +609,27 @@ const handleStreamEnd = (chatContainer, fullResponse, onComplete, finishReason =
     logger.warn('Error updating tab loading state:', error)
   );
   
-  // Add operation buttons for assistant messages
+  // Add operation buttons
   try {
     const buttonContainer = document.createElement('div');
     buttonContainer.className = 'message-buttons';
-    
+
+    // Determine if this is a branch element
+    const isBranch = streamingMessageContainer.classList.contains('message-branch');
+
     // Scroll to top button
     const scrollTopButton = document.createElement('button');
     scrollTopButton.className = 'btn-base message-action-btn';
     scrollTopButton.innerHTML = '<i class="material-icons">arrow_upward</i>';
     scrollTopButton.title = i18n.getMessage('sidebar_chatManager_title_scrollToTop');
     scrollTopButton.onclick = () => streamingMessageContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Scroll to bottom button
+    const scrollBottomButton = document.createElement('button');
+    scrollBottomButton.className = 'btn-base message-action-btn';
+    scrollBottomButton.innerHTML = '<i class="material-icons">arrow_downward</i>';
+    scrollBottomButton.title = i18n.getMessage('sidebar_chatManager_title_scrollToBottom');
+    scrollBottomButton.onclick = () => streamingMessageContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
     // Copy text button
     const copyTextButton = document.createElement('button');
@@ -613,29 +645,46 @@ const handleStreamEnd = (chatContainer, fullResponse, onComplete, finishReason =
     copyMarkdownButton.title = i18n.getMessage('sidebar_chatManager_title_copyAsMarkdown');
     copyMarkdownButton.onclick = () => copyMessageMarkdown(streamingMessageContainer);
 
-    // Scroll to bottom button
+    if (isBranch) {
+      // Remove any top-right actions from loading phase
+      const existingActions = streamingMessageContainer.querySelector('.branch-actions');
+      if (existingActions) existingActions.remove();
 
-    // Scroll to bottom button
-    const scrollBottomButton = document.createElement('button');
-    scrollBottomButton.className = 'btn-base message-action-btn';
-    scrollBottomButton.innerHTML = '<i class="material-icons">arrow_downward</i>';
-    scrollBottomButton.title = i18n.getMessage('sidebar_chatManager_title_scrollToBottom');
-    scrollBottomButton.onclick = () => streamingMessageContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      // Create branch and delete buttons using delegated handlers
+      const branchButton = document.createElement('button');
+      branchButton.className = 'btn-base message-action-btn branch-action-btn branch-btn';
+      branchButton.innerHTML = '<i class="material-icons">call_split</i>';
+      branchButton.title = i18n.getMessage('branch_add');
+      branchButton.setAttribute('data-action', 'branch');
+      branchButton.setAttribute('data-branch-id', streamingMessageContainer.getAttribute('data-branch-id'));
 
-    const buttons = [scrollTopButton, copyTextButton, copyMarkdownButton, scrollBottomButton];
-    const buttonGroups = [
-      [scrollTopButton],
-      [copyTextButton, copyMarkdownButton],
-      [scrollBottomButton]
-    ];
-    // Dynamic button layout
-    layoutMessageButtons(buttonContainer, buttons, streamingMessageContainer, buttonGroups);
-    streamingMessageContainer.appendChild(buttonContainer);
+      const deleteButton = document.createElement('button');
+      deleteButton.className = 'btn-base message-action-btn branch-action-btn delete-btn';
+      deleteButton.innerHTML = '<i class="material-icons">delete</i>';
+      deleteButton.title = i18n.getMessage('branch_delete');
+      deleteButton.setAttribute('data-action', 'delete');
+      deleteButton.setAttribute('data-branch-id', streamingMessageContainer.getAttribute('data-branch-id'));
+
+      // Order: top, bottom, copy text, copy MD, create branch, delete branch
+      const buttons = [scrollTopButton, scrollBottomButton, copyTextButton, copyMarkdownButton, branchButton, deleteButton];
+      layoutMessageButtons(buttonContainer, buttons, streamingMessageContainer);
+      streamingMessageContainer.appendChild(buttonContainer);
+    } else {
+      // Assistant message (non-branch) default set
+      const buttons = [scrollTopButton, copyTextButton, copyMarkdownButton, scrollBottomButton];
+      const buttonGroups = [
+        [scrollTopButton],
+        [copyTextButton, copyMarkdownButton],
+        [scrollBottomButton]
+      ];
+      layoutMessageButtons(buttonContainer, buttons, streamingMessageContainer, buttonGroups);
+      streamingMessageContainer.appendChild(buttonContainer);
+    }
 
     // Apply dynamic layout
     fixExistingMessageLayouts(chatContainer);
   } catch (buttonError) {
-    logger.error('Error adding copy buttons:', buttonError);
+    logger.error('Error adding copy/branch buttons:', buttonError);
   }
 
   // Call completion callback
@@ -965,6 +1014,49 @@ const fixExistingMessageLayouts = (chatContainer) => {
 };
 
 /**
+ * Convert branch history format to standard format for LLM processing
+ * @param {Array} branchHistory - History with branch format
+ * @returns {Array} Standard history format
+ */
+const convertBranchHistoryToStandard = (branchHistory) => {
+  const standardHistory = [];
+  
+  branchHistory.forEach(message => {
+    if (message.role === 'user') {
+      // User messages remain unchanged
+      standardHistory.push(message);
+    } else if (message.role === 'assistant') {
+      // For assistant messages, use the first branch as the main conversation flow
+      if (message.responses && Array.isArray(message.responses) && message.responses.length > 0) {
+        // Find the first completed branch
+        const completedBranch = message.responses.find(branch => 
+          branch.status === 'done' && branch.content
+        );
+        
+        if (completedBranch) {
+          // Convert to standard assistant message format
+          const standardMessage = {
+            role: 'assistant',
+            content: completedBranch.content,
+            timestamp: message.timestamp || completedBranch.updatedAt,
+            model: completedBranch.model
+          };
+          
+          standardHistory.push(standardMessage);
+        }
+        // If no completed branch found, skip this assistant message
+      } else {
+        // Legacy format - already in standard format
+        standardHistory.push(message);
+      }
+    }
+  });
+  
+  logger.info(`Converted ${branchHistory.length} messages to ${standardHistory.length} standard messages for LLM`);
+  return standardHistory;
+};
+
+/**
  * Send user message to LLM
  * @param {string} userText - User input text
  * @param {string} imageBase64 - Optional image data
@@ -991,18 +1083,22 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
   appendMessageToUI(chatContainer, 'user', userText, imageBase64, false, messageTimestamp);
   
   // Get dialog history from DOM
-  const chatHistory = window.ChatHistory.getChatHistoryFromDOM(chatContainer);
+  const rawChatHistory = window.ChatHistory.getChatHistoryFromDOM(chatContainer);
+  
+  // Convert branch format to standard format for LLM processing
+  const chatHistory = convertBranchHistoryToStandard(rawChatHistory);
   
   // Immediately save current dialog history to storage for current tab
+  // Save the raw branch format to preserve all branch data
   try {
     if (window.TabManager && window.TabManager.saveCurrentTabChatHistory) {
-      await window.TabManager.saveCurrentTabChatHistory(chatHistory);
+      await window.TabManager.saveCurrentTabChatHistory(rawChatHistory);
     } else {
       // Fallback to original method
       await chrome.runtime.sendMessage({
         type: 'SAVE_CHAT_HISTORY',
         url: window.StateManager.getStateItem('currentUrl'),
-        chatHistory: chatHistory
+        chatHistory: rawChatHistory
       });
     }
     if (onMessageSaved) onMessageSaved();
@@ -1457,6 +1553,393 @@ const clearAllErrorMessages = (chatContainer) => {
   });
 };
 
+// =============================
+// 分支功能 (Branching Features)
+// =============================
+
+/**
+ * Generate unique branch ID
+ * @returns {string} Unique branch ID
+ */
+const generateBranchId = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return `br-${crypto.randomUUID()}`;
+  }
+  return `br-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
+/**
+ * Create new branch from existing branch
+ * @param {string} originalBranchId - Original branch ID to create from
+ * @param {Object} model - Selected model for new branch
+ */
+const createBranch = async (originalBranchId, model) => {
+  logger.info(`Creating new branch from ${originalBranchId} using model ${model.label}`);
+  
+  // 在try块外声明newBranchId，避免在catch块中访问未定义变量
+  let newBranchId = null;
+  
+  try {
+    // 获取当前聊天容器
+    const chatContainer = document.getElementById('chatContainer');
+    if (!chatContainer) {
+      throw new Error('Chat container not found');
+    }
+    
+    // 查找原始分支所在的助手消息
+    const originalBranch = chatContainer.querySelector(`[data-branch-id="${originalBranchId}"]`);
+    if (!originalBranch) {
+      throw new Error(`Original branch ${originalBranchId} not found`);
+    }
+    
+    const branchContainer = originalBranch.closest('.branch-container');
+    const branchesContainer = originalBranch.closest('.message-branches');
+    
+    // 构建上下文：从对话开始到当前助手消息之前
+    const context = buildBranchContext(branchContainer);
+    
+    // 生成新的分支ID
+    newBranchId = generateBranchId();
+    
+    // 在UI中创建新的分支列
+    const newBranchDiv = createBranchElement(newBranchId, model, 'loading');
+    branchesContainer.appendChild(newBranchDiv);
+    
+    // 滚动到新分支
+    newBranchDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    // 更新聊天历史
+    const chatHistory = getChatHistoryFromDOM(chatContainer);
+    saveChatHistory(chatHistory);
+    
+    // 发送LLM请求
+    await sendBranchLlmRequest(context, model, newBranchId);
+    
+    logger.info(`Branch ${newBranchId} created successfully`);
+    
+  } catch (error) {
+    logger.error('Error creating branch:', error);
+    
+    // 如果创建失败，移除可能已创建的UI元素（只有当newBranchId被定义时）
+    if (newBranchId) {
+      const failedBranch = document.querySelector(`[data-branch-id="${newBranchId}"]`);
+      if (failedBranch) {
+        failedBranch.remove();
+      }
+    }
+    
+    // 显示错误提示
+    alert(`${i18n.getMessage('branch_createFailed')}: ${error.message}`);
+  }
+};
+
+/**
+ * Build context for branch creation
+ * @param {HTMLElement} branchContainer - Branch container element
+ * @returns {Array} Context messages
+ */
+const buildBranchContext = (branchContainer) => {
+  const chatContainer = branchContainer.closest('.chat-container');
+  const allMessages = Array.from(chatContainer.children);
+  const branchIndex = allMessages.indexOf(branchContainer);
+  
+  // 获取从开始到当前分支容器之前的所有消息
+  const contextElements = allMessages.slice(0, branchIndex + 1);
+  const context = [];
+  
+  contextElements.forEach(element => {
+    if (element.classList.contains('user-message')) {
+      // 用户消息
+      const contentEl = element.querySelector('.message-content');
+      const content = contentEl ? contentEl.getAttribute('data-raw-content') || contentEl.textContent : '';
+      const imageBase64 = element.getAttribute('data-image');
+      
+      const messageObj = {
+        role: 'user',
+        content: content,
+        ...(imageBase64 ? { imageBase64 } : {})
+      };
+      
+      context.push(messageObj);
+      
+    } else if (element.classList.contains('branch-container')) {
+      // 分支容器 - 取第一个分支作为上下文
+      const firstBranch = element.querySelector('.message-branch[data-branch-id]');
+      if (firstBranch) {
+        const contentEl = firstBranch.querySelector('.message-content');
+        const content = contentEl ? contentEl.getAttribute('data-raw-content') || contentEl.textContent : '';
+        const model = firstBranch.getAttribute('data-model') || 'unknown';
+        
+        // 只有状态为done的分支才作为上下文
+        if (!firstBranch.hasAttribute('data-streaming') && !firstBranch.classList.contains('error-message')) {
+          context.push({
+            role: 'assistant',
+            content: content,
+            model: model
+          });
+        }
+      }
+    }
+  });
+  
+  return context;
+};
+
+/**
+ * Create branch element in DOM
+ * @param {string} branchId - Branch ID
+ * @param {Object} model - Model information
+ * @param {string} status - Branch status ('loading', 'done', 'error')
+ * @param {string} content - Branch content
+ * @returns {HTMLElement} Branch element
+ */
+const createBranchElement = (branchId, model, status = 'done', content = '') => {
+  const branchDiv = document.createElement('div');
+  branchDiv.className = 'message-branch';
+  branchDiv.setAttribute('data-branch-id', branchId);
+  branchDiv.setAttribute('data-model', model.name || 'unknown');
+  
+  // 分支内容
+  const contentDiv = document.createElement('div');
+  contentDiv.className = 'message-content';
+  contentDiv.setAttribute('data-raw-content', content);
+  
+  if (status === 'loading') {
+    branchDiv.setAttribute('data-streaming', 'true');
+    const loadingContainer = document.createElement('div');
+    loadingContainer.className = 'loading-container';
+    loadingContainer.innerHTML = '<div class="spinner"></div>';
+    contentDiv.appendChild(loadingContainer);
+  } else if (status === 'error') {
+    branchDiv.classList.add('error-message');
+    const errorContainer = document.createElement('div');
+    errorContainer.className = 'error-display';
+    const errorContent = document.createElement('pre');
+    errorContent.style.cssText = `
+      color: var(--error-color);
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 0.9em;
+      margin: 0;
+      padding: 8px;
+      background-color: var(--error-bg, #fff5f5);
+      border-left: 4px solid var(--error-color);
+      border-radius: 4px;
+    `;
+    errorContent.textContent = content;
+    errorContainer.appendChild(errorContent);
+    contentDiv.appendChild(errorContainer);
+  } else {
+    // done状态
+    if (hasMarkdownElements(content)) {
+      try {
+        contentDiv.innerHTML = window.marked.parse(content);
+      } catch (error) {
+        contentDiv.textContent = content;
+        contentDiv.classList.add('no-markdown');
+      }
+    } else {
+      contentDiv.textContent = content;
+      contentDiv.classList.add('no-markdown');
+    }
+  }
+  
+  branchDiv.appendChild(contentDiv);
+  
+  // 添加操作按钮
+  const actionsDiv = document.createElement('div');
+  actionsDiv.className = 'branch-actions';
+  
+  const branchButton = document.createElement('button');
+  branchButton.className = 'branch-action-btn branch-btn';
+  branchButton.innerHTML = '<i class="material-icons">call_split</i>';
+  branchButton.title = i18n.getMessage('branch_add');
+  branchButton.setAttribute('data-action', 'branch');
+  branchButton.setAttribute('data-branch-id', branchId);
+  
+  const deleteButton = document.createElement('button');
+  deleteButton.className = 'branch-action-btn delete-btn';
+  if (status === 'loading') {
+    deleteButton.innerHTML = '<i class="material-icons">stop</i>';
+    deleteButton.title = i18n.getMessage('branch_stopAndDelete');
+    deleteButton.setAttribute('data-action', 'stop-delete');
+  } else {
+    deleteButton.innerHTML = '<i class="material-icons">delete</i>';
+    deleteButton.title = i18n.getMessage('branch_delete');
+    deleteButton.setAttribute('data-action', 'delete');
+  }
+  deleteButton.setAttribute('data-branch-id', branchId);
+  
+  actionsDiv.appendChild(branchButton);
+  actionsDiv.appendChild(deleteButton);
+  branchDiv.appendChild(actionsDiv);
+  
+  // 添加模型标签
+  const modelLabel = document.createElement('div');
+  modelLabel.className = 'branch-model-label';
+  modelLabel.textContent = model.label || model.name || 'unknown';
+  branchDiv.appendChild(modelLabel);
+  
+  return branchDiv;
+};
+
+/**
+ * Send LLM request for branch
+ * @param {Array} context - Context messages
+ * @param {Object} model - Selected model
+ * @param {string} branchId - Branch ID
+ */
+const sendBranchLlmRequest = async (context, model, branchId) => {
+  try {
+    // 获取当前配置
+    const config = await window.StateManager.getConfig();
+    const basicConfig = config.basic || config;
+    const systemPrompt = basicConfig.systemPrompt || '';
+    const extractedContent = window.StateManager.getStateItem('extractedContent') || '';
+    const currentUrl = window.StateManager.getStateItem('currentUrl') || '';
+    const extractionMethod = window.StateManager.getStateItem('currentExtractionMethod') || 'readability';
+    const includePageContent = window.StateManager.getStateItem('includePageContent');
+    const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
+    
+    // 构建系统提示
+    let systemPromptWithContent = systemPrompt;
+    if (includePageContent) {
+      systemPromptWithContent += '\n\nPage Content:\n' + extractedContent;
+    }
+    
+    // 使用MessageHandler发送消息，确保正确的payload格式
+    await window.MessageHandler.sendLlmMessage({
+      messages: context,
+      systemPromptTemplate: systemPromptWithContent,
+      extractedPageContent: extractedContent,
+      currentUrl: currentUrl,
+      extractionMethod: extractionMethod,
+      tabId: currentTabId,
+      branchId: branchId, // 添加branchId
+      model: model // 指定模型
+    });
+    
+    logger.info(`Branch LLM request sent successfully for ${branchId}`);
+    
+  } catch (error) {
+    logger.error(`Error sending branch LLM request for ${branchId}:`, error);
+    
+    // 更新分支为错误状态
+    const branchElement = document.querySelector(`[data-branch-id="${branchId}"]`);
+    if (branchElement) {
+      updateBranchToError(branchElement, error.message || '请求失败');
+    }
+    
+    throw error;
+  }
+};
+
+/**
+ * Update branch to error state
+ * @param {HTMLElement} branchElement - Branch element
+ * @param {string} errorMessage - Error message
+ */
+const updateBranchToError = (branchElement, errorMessage) => {
+  branchElement.removeAttribute('data-streaming');
+  branchElement.classList.add('error-message');
+  
+  const contentDiv = branchElement.querySelector('.message-content');
+  if (contentDiv) {
+    contentDiv.innerHTML = '';
+    contentDiv.setAttribute('data-raw-content', errorMessage);
+    
+    const errorContainer = document.createElement('div');
+    errorContainer.className = 'error-display';
+    const errorContent = document.createElement('pre');
+    errorContent.style.cssText = `
+      color: var(--error-color);
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 0.9em;
+      margin: 0;
+      padding: 8px;
+      background-color: var(--error-bg, #fff5f5);
+      border-left: 4px solid var(--error-color);
+      border-radius: 4px;
+    `;
+    errorContent.textContent = errorMessage;
+    
+    errorContainer.appendChild(errorContent);
+    contentDiv.appendChild(errorContainer);
+  }
+  
+  // 更新删除按钮
+  const deleteButton = branchElement.querySelector('.delete-btn');
+  if (deleteButton) {
+    deleteButton.innerHTML = '<i class="material-icons">delete</i>';
+    deleteButton.title = i18n.getMessage('branch_delete');
+    deleteButton.setAttribute('data-action', 'delete');
+  }
+};
+
+/**
+ * Cancel branch request
+ * @param {string} branchId - Branch ID to cancel
+ * @returns {Promise<boolean>} Success status
+ */
+const cancelBranchRequest = async (branchId) => {
+  try {
+    logger.info(`Cancelling branch request for ${branchId}`);
+    
+    const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
+    
+    // 发送取消请求
+    const response = await chrome.runtime.sendMessage({
+      type: 'CANCEL_LLM_REQUEST',
+      tabId: currentTabId,
+      branchId: branchId
+    });
+    
+    if (response && response.success) {
+      logger.info(`Branch request ${branchId} cancelled successfully`);
+      return true;
+    } else {
+      logger.warn(`Failed to cancel branch request ${branchId}:`, response?.error);
+      return false;
+    }
+    
+  } catch (error) {
+    logger.error(`Error cancelling branch request ${branchId}:`, error);
+    return false;
+  }
+};
+
+/**
+ * Save chat history
+ * @param {Array} chatHistory - Chat history to save
+ */
+const saveChatHistory = async (chatHistory) => {
+  try {
+    const currentUrl = window.StateManager.getStateItem('currentUrl');
+    if (!currentUrl) {
+      logger.warn('No current URL available for saving chat history');
+      return;
+    }
+    
+    // 使用TabManager保存（如果可用）
+    if (window.TabManager && window.TabManager.saveCurrentTabChatHistory) {
+      await window.TabManager.saveCurrentTabChatHistory(chatHistory);
+      logger.info('Chat history saved via TabManager');
+    } else {
+      // 回退到原始方法
+      await chrome.runtime.sendMessage({
+        type: 'SAVE_CHAT_HISTORY',
+        url: currentUrl,
+        chatHistory: chatHistory
+      });
+      logger.info('Chat history saved via direct message');
+    }
+  } catch (error) {
+    logger.error('Error saving chat history:', error);
+    throw error;
+  }
+};
+
 export {
   appendMessageToUI,
   handleStreamChunk,
@@ -1475,5 +1958,15 @@ export {
   cancelLlmRequest,
   clearAllErrorMessages,
   hasActiveStream,
-  updateInputAreaState
+  updateInputAreaState,
+  // 分支功能
+  generateBranchId,
+  createBranch,
+  buildBranchContext,
+  createBranchElement,
+  sendBranchLlmRequest,
+  updateBranchToError,
+  cancelBranchRequest,
+  saveChatHistory,
+  convertBranchHistoryToStandard
 };

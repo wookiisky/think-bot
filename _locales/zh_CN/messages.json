@@ -638,6 +638,30 @@
   "sidebar_chatMessage_placeholder_edit": {
     "message": "编辑您的消息..."
   },
+  "branch_add": {
+    "message": "分支"
+  },
+  "branch_delete": {
+    "message": "删除此分支"
+  },
+  "branch_stopAndDelete": {
+    "message": "停止并删除此分支"
+  },
+  "branch_model": {
+    "message": "模型"
+  },
+  "branch_selectModel": {
+    "message": "选择模型"
+  },
+  "branch_noModels": {
+    "message": "暂无可用模型"
+  },
+  "branch_confirmDelete": {
+    "message": "确定要删除此分支吗？"
+  },
+  "branch_createFailed": {
+    "message": "创建分支失败"
+  },
   "sidebar_chatMessage_title_edit": {
     "message": "按 Ctrl+Enter 保存或 Escape 取消"
   },

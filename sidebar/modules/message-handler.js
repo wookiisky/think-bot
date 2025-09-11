@@ -173,7 +173,7 @@ const setupMessageListeners = (handlers) => {
       switch (message.type) {
         case 'LLM_STREAM_CHUNK':
           if (handlers.onStreamChunk) {
-            handlers.onStreamChunk(message.chunk, message.tabId, message.url);
+            handlers.onStreamChunk(message.chunk, message.tabId, message.url, message.branchId);
           }
           break;
           
@@ -184,7 +184,8 @@ const setupMessageListeners = (handlers) => {
               message.finishReason, 
               message.isAbnormalFinish,
               message.tabId,
-              message.url
+              message.url,
+              message.branchId
             );
           }
           break;

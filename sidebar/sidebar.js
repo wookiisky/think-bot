@@ -169,7 +169,7 @@ const handleTabAction = async (displayText, sendTextTemplate, tabId, isAutoSend,
  */
 function setupMessageListeners() {
   MessageHandler.setupMessageListeners({
-    onStreamChunk: (chunk, tabId, url) => {
+    onStreamChunk: (chunk, tabId, url, branchId) => {
       // Only process stream chunks for the current active tab and URL
       const currentUrl = StateManager.getStateItem('currentUrl');
       const activeTabId = TabManager.getActiveTabId();
@@ -180,14 +180,14 @@ function setupMessageListeners() {
           streamMonitor.updateStream(currentStreamId, chunk);
         }
         
-        ChatManager.handleStreamChunk(UIManager.getElement('chatContainer'), chunk, tabId, url);
-        logger.debug(`Stream chunk processed for tab ${tabId}`);
+        ChatManager.handleStreamChunk(UIManager.getElement('chatContainer'), chunk, tabId, url, branchId);
+        logger.debug(`Stream chunk processed for tab ${tabId}${branchId ? ` branch ${branchId}` : ''}`);
       } else {
         logger.debug(`Stream chunk ignored - URL mismatch (${url} vs ${currentUrl}) or tab mismatch (${tabId} vs ${activeTabId})`);
       }
     },
     
-    onStreamEnd: (fullResponse, finishReason, isAbnormalFinish, tabId, url) => {
+    onStreamEnd: (fullResponse, finishReason, isAbnormalFinish, tabId, url, branchId) => {
       const currentUrl = StateManager.getStateItem('currentUrl');
       const activeTabId = TabManager.getActiveTabId();
       
@@ -225,7 +225,8 @@ function setupMessageListeners() {
           finishReason,
           isAbnormalFinish,
           tabId,
-          url
+          url,
+          branchId
         );
         
         logger.info(`Stream ended for tab ${tabId}`);

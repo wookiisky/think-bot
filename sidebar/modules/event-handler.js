@@ -368,6 +368,15 @@ const setupMessageButtonsScroll = (chatContainer) => {
       currentFloatingButtons.style.transform = '';
       currentFloatingButtons = null;
     }
+    // Safety cleanup: ensure no other floating button groups remain
+    const allFloating = chatContainer.querySelectorAll('.message-buttons.floating');
+    allFloating.forEach(btns => {
+      btns.classList.remove('floating');
+      btns.style.position = '';
+      btns.style.top = '';
+      btns.style.right = '';
+      btns.style.transform = '';
+    });
     currentHoveredMessage = null;
   }
   
@@ -401,15 +410,23 @@ const setupMessageButtonsScroll = (chatContainer) => {
       // Set floating position
       buttons.style.position = 'fixed';
       buttons.style.top = `${visibleCenter}px`;
-      buttons.style.right = `${window.innerWidth - containerRect.right + 12}px`;
+      // Align to the right edge of the specific message/branch, not the container/page
+      buttons.style.right = `${Math.max(8, window.innerWidth - messageRect.right + 8)}px`;
       buttons.style.transform = 'translateY(-50%)';
     }
   }
   
-  // Use event delegation to handle mouse entering message
+  // Use event delegation to handle mouse entering message or branch
   chatContainer.addEventListener('mouseover', function(event) {
-    const message = event.target.closest('.chat-message');
-    if (!message || message === currentHoveredMessage) return;
+    const branch = event.target.closest('.message-branch');
+    const rawMessage = branch || event.target.closest('.chat-message');
+    const message = (rawMessage && rawMessage.classList.contains('branch-container')) ? null : rawMessage;
+    if (!message) {
+      // Hovered on gaps (e.g., inside branch-container but not on a branch)
+      clearFloatingButtons();
+      return;
+    }
+    if (message === currentHoveredMessage) return;
     
     // Clear previous state
     clearFloatingButtons();
@@ -424,9 +441,11 @@ const setupMessageButtonsScroll = (chatContainer) => {
     updateButtonPosition(message, buttons);
   });
   
-  // Use event delegation to handle mouse leaving message
+  // Use event delegation to handle mouse leaving message or branch
   chatContainer.addEventListener('mouseout', function(event) {
-    const message = event.target.closest('.chat-message');
+    const branch = event.target.closest('.message-branch');
+    const rawMessage = branch || event.target.closest('.chat-message');
+    const message = (rawMessage && rawMessage.classList.contains('branch-container')) ? null : rawMessage;
     if (!message || message !== currentHoveredMessage) return;
     
     // Check if mouse really left message area (not moved to sub-element)
@@ -434,6 +453,24 @@ const setupMessageButtonsScroll = (chatContainer) => {
     if (relatedTarget && message.contains(relatedTarget)) return;
     
     clearFloatingButtons();
+  });
+
+  // When pointer enters a different message/branch, immediately switch the floating group
+  chatContainer.addEventListener('pointerover', function(event) {
+    const rawMessage = event.target.closest('.message-branch, .chat-message');
+    const message = (rawMessage && rawMessage.classList.contains('branch-container')) ? null : rawMessage;
+    if (!message) {
+      // Gaps: do not show any floating buttons
+      clearFloatingButtons();
+      return;
+    }
+    if (message === currentHoveredMessage) return;
+    clearFloatingButtons();
+    const buttons = message.querySelector('.message-buttons');
+    if (!buttons) return;
+    currentHoveredMessage = message;
+    currentFloatingButtons = buttons;
+    updateButtonPosition(message, buttons);
   });
   
   // Update button position on scroll

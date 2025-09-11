@@ -39,10 +39,42 @@ async function handleExportConversation(request, sender, sendResponse) {
 
     // 5. Generate markdown content
     let markdownContent = `# ${pageTitle}\n\nURL: ${baseUrl}\n\n`;
+    
     chatHistory.forEach(message => {
-      const role = message.role || chrome.i18n.getMessage('export_unknown_role');
-      const content = message.content || '';
-      markdownContent += `## --------${role}--------\n${content}\n\n`;
+      if (message.role === 'user') {
+        // Handle user messages (unchanged)
+        const content = message.content || '';
+        markdownContent += `## --------user--------\n${content}\n\n`;
+      } else if (message.role === 'assistant') {
+        // Handle assistant messages with potential branches
+        if (message.responses && Array.isArray(message.responses) && message.responses.length > 0) {
+          // Multiple branches format
+          message.responses.forEach((response, index) => {
+            const modelInfo = response.model ? ` (${response.model})` : '';
+            const branchLabel = message.responses.length > 1 ? ` - Branch ${index + 1}` : '';
+            
+            markdownContent += `## --------assistant${branchLabel}${modelInfo}--------\n`;
+            
+            if (response.status === 'error') {
+              markdownContent += `*Error: ${response.errorMessage || response.content}*\n\n`;
+            } else if (response.status === 'loading') {
+              markdownContent += `*Loading...*\n\n`;
+            } else {
+              markdownContent += `${response.content || ''}\n\n`;
+            }
+          });
+        } else {
+          // Legacy format - single assistant message
+          const content = message.content || '';
+          const modelInfo = message.model ? ` (${message.model})` : '';
+          markdownContent += `## --------assistant${modelInfo}--------\n${content}\n\n`;
+        }
+      } else {
+        // Handle other message types
+        const role = message.role || chrome.i18n.getMessage('export_unknown_role');
+        const content = message.content || '';
+        markdownContent += `## --------${role}--------\n${content}\n\n`;
+      }
     });
 
     // 6. Send response with data to be downloaded

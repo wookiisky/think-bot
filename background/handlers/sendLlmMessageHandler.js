@@ -1,21 +1,59 @@
 // background/handlers/sendLlmMessageHandler.js
 
 async function handleSendLlmMessage(data, serviceLogger, configManager, storage, llmService, loadingStateCache, safeSendMessage) {
-    const { messages, systemPromptTemplate, extractedPageContent, imageBase64, currentUrl, selectedModel, tabId } = data.payload;
+    const { messages, systemPromptTemplate, extractedPageContent, imageBase64, currentUrl, selectedModel, tabId, branchId, model } = data.payload;
 
     const config = await configManager.getConfig();
     
     // Use selected model or fall back to default (support both old and new config formats)
     let llmConfig;
     const llmModelsConfig = config.llm_models || config.llm;
+    let defaultModel = null;
 
     if (llmModelsConfig?.models && llmModelsConfig.models.length > 0) {
-        // Get defaultModelId from basic config (new location) or fallback to llm config (old location)
-        const basicConfig = config.basic || config;
-        const defaultModelId = basicConfig.defaultModelId || llmModelsConfig.defaultModelId;
-        const modelId = selectedModel?.id || defaultModelId;
-        const defaultModel = llmModelsConfig.models.find(m => m.id === modelId && m.enabled) ||
-                            llmModelsConfig.models.find(m => m.enabled);
+        let targetModel = null;
+        
+        // For branch requests, use the specified model
+        if (branchId && model) {
+            serviceLogger.debug(`SEND_LLM: Looking for branch model with ID: ${model.id || model.name}`);
+            
+            // First try to match by model ID directly
+            targetModel = llmModelsConfig.models.find(m => 
+                m.enabled && m.id === model.id
+            );
+            
+            // If not found, try legacy format matching (provider:modelName)
+            if (!targetModel && model.id && model.id.includes(':')) {
+                const [provider, modelName] = model.id.split(':');
+                serviceLogger.debug(`SEND_LLM: Trying legacy format matching - provider: ${provider}, model: ${modelName}`);
+                
+                targetModel = llmModelsConfig.models.find(m => 
+                    m.enabled && 
+                    m.provider === provider && 
+                    (m.model === modelName || m.name === modelName)
+                );
+            }
+            
+            if (!targetModel) {
+                serviceLogger.warn(`SEND_LLM: Branch model ${model.id || model.name} not found in config, using default`);
+                serviceLogger.debug(`SEND_LLM: Available models: ${llmModelsConfig.models.filter(m => m.enabled).map(m => m.id).join(', ')}`);
+            } else {
+                serviceLogger.debug(`SEND_LLM: Found matching model: ${targetModel.id} (${targetModel.name})`);
+            }
+        }
+        
+        // Fall back to normal model selection if branch model not found
+        if (!targetModel) {
+            // Get defaultModelId from basic config (new location) or fallback to llm config (old location)
+            const basicConfig = config.basic || config;
+            const defaultModelId = basicConfig.defaultModelId || llmModelsConfig.defaultModelId;
+            const modelId = selectedModel?.id || defaultModelId;
+            targetModel = llmModelsConfig.models.find(m => m.id === modelId && m.enabled) ||
+                         llmModelsConfig.models.find(m => m.enabled);
+        }
+        
+        defaultModel = targetModel;
+        serviceLogger.debug(`SEND_LLM: defaultModel assigned, value: ${defaultModel ? 'defined' : 'undefined'}`);
 
         if (defaultModel) {
             llmConfig = {
@@ -34,9 +72,13 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                 llmConfig.baseUrl = defaultModel.baseUrl;
                 llmConfig.model = defaultModel.model;
             }
+            
+            const branchInfo = branchId ? ` for branch ${branchId}` : '';
+            serviceLogger.info(`SEND_LLM: Using model ${defaultModel.name} (${defaultModel.provider})${branchInfo}`);
+        } else {
+            serviceLogger.error('SEND_LLM: No suitable model found in configuration');
+            throw new Error('No suitable model found in configuration');
         }
-
-        serviceLogger.info(`SEND_LLM: Using model ${defaultModel.name} (${defaultModel.provider})`);
     } else {
         throw new Error('No LLM models configured');
     }
@@ -49,15 +91,20 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
             const loadingInfo = {
                 messageCount: messages ? messages.length : 0,
                 hasImage: !!imageBase64,
-                selectedModel: selectedModel?.name || 'default',
+                selectedModel: selectedModel?.name || (defaultModel ? defaultModel.name : 'default'),
                 provider: llmConfig.provider,
                 timestamp: Date.now(),
                 lastMessageContent: messages && messages.length > 0 ? messages[messages.length - 1]?.content?.substring(0, 100) : null,
-                isRetry: messages && messages.length > 0 && messages[messages.length - 1]?.isRetry === true
+                isRetry: messages && messages.length > 0 && messages[messages.length - 1]?.isRetry === true,
+                branchId: branchId || null
             };
             
-            await loadingStateCache.saveLoadingState(currentUrl, tabId, loadingInfo);
-            serviceLogger.info(`SEND_LLM: Loading state saved for tab ${tabId} with enhanced details`);
+            // For branch requests, use branchId in the cache key
+            const cacheKey = branchId ? `${tabId}:${branchId}` : tabId;
+            await loadingStateCache.saveLoadingState(currentUrl, cacheKey, loadingInfo);
+            
+            const branchInfo = branchId ? ` and branch ${branchId}` : '';
+            serviceLogger.info(`SEND_LLM: Loading state saved for tab ${tabId}${branchInfo} with enhanced details`);
         }
         
         serviceLogger.info(`SEND_LLM: Calling LLM with ${messages.length} messages`);
@@ -69,7 +116,8 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                         type: 'LLM_STREAM_CHUNK', 
                         chunk: chunk,
                         tabId: tabId,
-                        url: currentUrl
+                        url: currentUrl,
+                        branchId: branchId || null
                     });
                 } catch (error) {
                     serviceLogger.error('SEND_LLM: Error sending chunk to sidebar:', error.message);
@@ -79,7 +127,8 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
 
         const doneCallback = async (fullResponse, finishReason = null) => {
             const responseLength = fullResponse?.length || 0;
-            serviceLogger.info(`SEND_LLM: Stream finished - response length: ${responseLength}`);
+            const branchInfo = branchId ? ` for branch ${branchId}` : '';
+            serviceLogger.info(`SEND_LLM: Stream finished - response length: ${responseLength}${branchInfo}`);
             
             const isAbnormalFinish = finishReason && 
                 finishReason !== 'stop' && 
@@ -93,7 +142,8 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                     finishReason,
                     isAbnormalFinish,
                     tabId: tabId,
-                    url: currentUrl
+                    url: currentUrl,
+                    branchId: branchId || null
                 });
             } catch (error) {
                 serviceLogger.error('SEND_LLM: Error sending stream end to sidebar:', error.message);
@@ -101,33 +151,39 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
 
             // Unregister request from tracker
             if (typeof RequestTracker !== 'undefined') {
-                RequestTracker.unregisterRequest(tabId);
+                RequestTracker.unregisterRequest(tabId, branchId);
             }
 
             try {
                 // Update loading state to completed
                 if (currentUrl && tabId) {
-                    await loadingStateCache.completeLoadingState(currentUrl, tabId, fullResponse);
-                    broadcastLoadingStateUpdate(currentUrl, tabId, 'completed', fullResponse, null, finishReason);
+                    const cacheKey = branchId ? `${tabId}:${branchId}` : tabId;
+                    await loadingStateCache.completeLoadingState(currentUrl, cacheKey, fullResponse);
+                    broadcastLoadingStateUpdate(currentUrl, tabId, 'completed', fullResponse, null, finishReason, branchId);
                 }
             } catch (error) {
                 serviceLogger.error('SEND_LLM: Error updating loading state:', error.message);
             }
 
-            try {
-                if (currentUrl && messages) {
-                    const tabSpecificUrl = tabId ? `${currentUrl}#${tabId}` : currentUrl;
-                    const updatedMessages = [
-                        ...messages,
-                        { role: 'assistant', content: fullResponse }
-                    ];
-                    await storage.saveChatHistory(tabSpecificUrl, updatedMessages);
-                    serviceLogger.info(`SEND_LLM: Chat history saved with ${updatedMessages.length} messages`);
-                } else {
-                    serviceLogger.warn('SEND_LLM: Cannot save chat history - missing currentUrl or messages');
+            // For branch requests, don't auto-save chat history - let the frontend handle it
+            if (!branchId) {
+                try {
+                    if (currentUrl && messages) {
+                        const tabSpecificUrl = tabId ? `${currentUrl}#${tabId}` : currentUrl;
+                        const updatedMessages = [
+                            ...messages,
+                            { role: 'assistant', content: fullResponse }
+                        ];
+                        await storage.saveChatHistory(tabSpecificUrl, updatedMessages);
+                        serviceLogger.info(`SEND_LLM: Chat history saved with ${updatedMessages.length} messages`);
+                    } else {
+                        serviceLogger.warn('SEND_LLM: Cannot save chat history - missing currentUrl or messages');
+                    }
+                } catch (error) {
+                    serviceLogger.error('SEND_LLM: Error saving chat history:', error.message);
                 }
-            } catch (error) {
-                serviceLogger.error('SEND_LLM: Error saving chat history:', error.message);
+            } else {
+                serviceLogger.info(`SEND_LLM: Branch request completed, skipping auto-save of chat history`);
             }
         };
 
@@ -244,14 +300,15 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
 
             // Unregister request from tracker
             if (typeof RequestTracker !== 'undefined') {
-                RequestTracker.unregisterRequest(tabId);
+                RequestTracker.unregisterRequest(tabId, branchId);
             }
 
             try {
                 // Update loading state to error
                 if (currentUrl && tabId) {
-                    await loadingStateCache.errorLoadingState(currentUrl, tabId, errorMessage);
-                    broadcastLoadingStateUpdate(currentUrl, tabId, 'error', null, errorMessage, null, errorDetails);
+                    const cacheKey = branchId ? `${tabId}:${branchId}` : tabId;
+                    await loadingStateCache.errorLoadingState(currentUrl, cacheKey, errorMessage);
+                    broadcastLoadingStateUpdate(currentUrl, tabId, 'error', null, errorMessage, null, errorDetails, branchId);
                 }
             } catch (error) {
                 serviceLogger.error('SEND_LLM: Error updating loading state to error:', error.message);
@@ -263,7 +320,7 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
 
         // Register request with tracker
         if (typeof RequestTracker !== 'undefined') {
-            RequestTracker.registerRequest(tabId, currentUrl, abortController);
+            RequestTracker.registerRequest(tabId, currentUrl, abortController, branchId);
         }
 
         // Call the LLM service
