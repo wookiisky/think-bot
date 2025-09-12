@@ -17,6 +17,64 @@ let activeTabId = 'chat'; // Default chat tab
 let onTabClickHandler = null;
 let isRendering = false; // Flag to prevent concurrent rendering
 let isHandlingTabClick = false; // Flag to prevent concurrent tab click handling
+// Runtime state per tab to avoid repeated GETs
+// { [tabId: string]: { activeBranches: Set<string>, hasAnyContent: boolean } }
+const tabRuntimeState = {};
+
+function ensureTabRuntime(tabId) {
+  if (!tabRuntimeState[tabId]) {
+    tabRuntimeState[tabId] = { activeBranches: new Set(), hasAnyContent: false };
+  }
+  return tabRuntimeState[tabId];
+}
+
+async function registerBranchStart(tabId, branchId) {
+  try {
+    const state = ensureTabRuntime(tabId);
+    if (branchId) state.activeBranches.add(branchId);
+    await updateTabLoadingState(tabId, true);
+    logger.info(`Branch started for tab ${tabId}${branchId ? `, branch ${branchId}` : ''}`);
+  } catch (e) {
+    logger.warn('registerBranchStart failed:', e);
+  }
+}
+
+async function registerBranchDone(tabId, branchId) {
+  try {
+    const state = ensureTabRuntime(tabId);
+    if (branchId) state.activeBranches.delete(branchId);
+    state.hasAnyContent = true;
+    const isLoading = state.activeBranches.size > 0;
+    const hasContent = !isLoading && state.hasAnyContent;
+    await updateTabLoadingState(tabId, isLoading);
+    await updateTabContentState(tabId, hasContent);
+    logger.info(`Branch completed for tab ${tabId}${branchId ? `, branch ${branchId}` : ''}`);
+  } catch (e) {
+    logger.warn('registerBranchDone failed:', e);
+  }
+}
+
+async function registerBranchError(tabId, branchId) {
+  try {
+    const state = ensureTabRuntime(tabId);
+    if (branchId) state.activeBranches.delete(branchId);
+    state.hasAnyContent = true; // error counts as content for badge
+    const isLoading = state.activeBranches.size > 0;
+    const hasContent = !isLoading && state.hasAnyContent;
+    await updateTabLoadingState(tabId, isLoading);
+    await updateTabContentState(tabId, hasContent);
+    logger.info(`Branch errored for tab ${tabId}${branchId ? `, branch ${branchId}` : ''}`);
+  } catch (e) {
+    logger.warn('registerBranchError failed:', e);
+  }
+}
+
+function resetTabRuntime(tabId) {
+  if (tabRuntimeState[tabId]) {
+    tabRuntimeState[tabId].activeBranches.clear();
+    tabRuntimeState[tabId].hasAnyContent = false;
+  }
+}
 
 /**
  * Check if all required dependencies are available
@@ -145,15 +203,15 @@ const renderTabs = async (container, skipLoadingStateUpdate = false, forceFullRe
     // Add updating class to prevent flicker
     container.classList.add('updating');
 
-    // Standard loading state check (if not skipped)
-    if (!skipLoadingStateUpdate) {
-      await updateTabsLoadingStates();
-    }
+    // Event-driven: avoid background polling for loading states during render
+    // if (!skipLoadingStateUpdate) {
+    //   await updateTabsLoadingStates();
+    // }
 
-    // If forced, also update content states
-    if (forceFullRender) {
-      await updateTabsContentStates();
-    }
+    // Event-driven: avoid background polling for content states during render
+    // if (forceFullRender) {
+    //   await updateTabsContentStates();
+    // }
 
     // Check if we can do incremental update instead of full re-render
     const existingTabs = container.querySelectorAll('.tab');
@@ -1205,5 +1263,10 @@ export {
   updateTabsLoadingStates,
   updateTabContentState,
   updateTabsContentStates,
-  renderCurrentTabsState
+  renderCurrentTabsState,
+  // Event-driven helpers
+  registerBranchStart,
+  registerBranchDone,
+  registerBranchError,
+  resetTabRuntime
 };

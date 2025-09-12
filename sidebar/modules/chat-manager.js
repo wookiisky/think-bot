@@ -1227,6 +1227,15 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
       currentRequestTabId = currentTabId;
     }
     
+    // Register branch start (event-driven) to avoid polling
+    try {
+      if (window.TabManager && window.TabManager.registerBranchStart) {
+        await window.TabManager.registerBranchStart(currentTabId, localBranchId);
+      }
+    } catch (e) {
+      logger.debug('registerBranchStart failed (non-blocking):', e.message);
+    }
+
     // Send message to background script for LLM processing
     await window.MessageHandler.sendLlmMessage({
       messages: chatHistory,
@@ -1479,6 +1488,15 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     // Get current tab ID for loading state tracking
     const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
     
+    // Register branch start (event-driven) to avoid polling
+    try {
+      if (window.TabManager && window.TabManager.registerBranchStart) {
+        await window.TabManager.registerBranchStart(currentTabId, quickBranchId);
+      }
+    } catch (e) {
+      logger.debug('registerBranchStart failed (non-blocking):', e.message);
+    }
+
     // Send message to background script for LLM processing
     await window.MessageHandler.sendLlmMessage({
       messages: messagesForPayload,

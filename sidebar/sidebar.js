@@ -201,11 +201,17 @@ function setupMessageListeners() {
       // Always update tab loading state regardless of which tab is currently active
       if (url === currentUrl) {
         // Update tab loading state to not loading
-        if (window.TabManager && window.TabManager.updateTabLoadingState) {
-          window.TabManager.updateTabLoadingState(tabId, false).catch(error => 
-            logger.warn('Error updating tab loading state after stream end:', error)
-          );
-        }
+        (async () => {
+          try {
+            if (window.TabManager && window.TabManager.registerBranchDone) {
+              await window.TabManager.registerBranchDone(tabId, branchId || null);
+            } else if (window.TabManager && window.TabManager.updateTabLoadingState) {
+              await window.TabManager.updateTabLoadingState(tabId, false);
+            }
+          } catch (e) {
+            logger.warn('Error updating tab state after stream end:', e);
+          }
+        })();
       }
       
       // Only process stream content for the current active tab and URL
@@ -235,6 +241,16 @@ function setupMessageListeners() {
           url,
           branchId
         );
+        // After stream ends and UI/DOM updated, re-read current tab data from storage to ensure consistency
+        (async () => {
+          try {
+            if (window.TabManager && window.TabManager.loadTabChatHistory) {
+              await window.TabManager.loadTabChatHistory(tabId);
+            }
+          } catch (e) {
+            logger.warn('Failed to refresh tab chat history after stream end:', e);
+          }
+        })();
         
         logger.info(`Stream ended for tab ${tabId}`);
       } else {
@@ -278,11 +294,17 @@ function setupMessageListeners() {
       // Always update tab loading state regardless of which tab is currently active
       if (url === currentUrl) {
         // Update tab loading state to not loading
-        if (window.TabManager && window.TabManager.updateTabLoadingState) {
-          window.TabManager.updateTabLoadingState(tabId, false).catch(error => 
-            logger.warn('Error updating tab loading state after error:', error)
-          );
-        }
+        (async () => {
+          try {
+            if (window.TabManager && window.TabManager.registerBranchError) {
+              await window.TabManager.registerBranchError(tabId, message.branchId || null);
+            } else if (window.TabManager && window.TabManager.updateTabLoadingState) {
+              await window.TabManager.updateTabLoadingState(tabId, false);
+            }
+          } catch (e) {
+            logger.warn('Error updating tab state after error:', e);
+          }
+        })();
       }
       
       // Only process error content for the current active tab and URL  
@@ -456,42 +478,19 @@ function handleLoadingStateUpdate(message) {
     } else {
       logger.debug(`Loading state content processing ignored - URL mismatch (${url} vs ${currentUrl}) or tab mismatch (${tabId} vs ${activeTabId}), but tab loading state updated`);
 
-      // For non-active tabs on current page, recalc hasContent after completion/error to refresh tab badge
+      // For non-active tabs on current page, mark branch completion/error without GETs
       if (url === currentUrl && tabId !== activeTabId && (status === 'completed' || status === 'error')) {
         (async () => {
           try {
-            const cacheKey = `${currentUrl}#${tabId}`;
-            const resp = await chrome.runtime.sendMessage({ type: 'GET_CHAT_HISTORY', url: cacheKey });
-            const history = (resp && Array.isArray(resp.chatHistory)) ? resp.chatHistory : [];
-
-            let hasLoadingBranch = false;
-            let hasContent = false;
-
-            for (const msg of history) {
-              if (!msg || msg.role !== 'assistant') continue;
-              if (Array.isArray(msg.responses) && msg.responses.length > 0) {
-                for (const r of msg.responses) {
-                  if (r && r.status === 'loading') { hasLoadingBranch = true; break; }
-                }
-                if (!hasLoadingBranch) {
-                  hasContent = hasContent || msg.responses.some(r => r && (r.status === 'done' || r.status === 'error') && (r.content || r.errorMessage));
-                }
-              } else if (typeof msg.content === 'string' && msg.content.trim().length > 0) {
-                hasContent = true;
+            if (window.TabManager) {
+              if (status === 'completed' && window.TabManager.registerBranchDone) {
+                await window.TabManager.registerBranchDone(tabId, message.branchId || null);
+              } else if (status === 'error' && window.TabManager.registerBranchError) {
+                await window.TabManager.registerBranchError(tabId, message.branchId || null);
               }
-              if (hasLoadingBranch) break;
-            }
-
-            const nextHasContent = !hasLoadingBranch && hasContent;
-            if (window.TabManager && window.TabManager.updateTabContentState) {
-              await window.TabManager.updateTabContentState(tabId, nextHasContent);
-            }
-            // Force a final UI sync to avoid missed re-render during concurrent updates
-            if (window.TabManager && window.TabManager.renderCurrentTabsState) {
-              await window.TabManager.renderCurrentTabsState();
             }
           } catch (calcErr) {
-            logger.warn('Failed to recalc hasContent for non-active tab:', calcErr);
+            logger.warn('Failed to update non-active tab state:', calcErr);
           }
         })();
       }

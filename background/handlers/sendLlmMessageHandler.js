@@ -364,7 +364,8 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                     error: errorMessage,
                     errorDetails: errorDetails,
                     tabId: tabId,
-                    url: currentUrl
+                    url: currentUrl,
+                    branchId: branchId || null
                 });
             } catch (sendError) {
                 serviceLogger.error('SEND_LLM: Error sending error message to sidebar:', sendError.message);
