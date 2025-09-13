@@ -386,6 +386,18 @@ const handlePageDataLoaded = async (pageInfo) => {
     await window.TabManager.loadTabChatHistory(activeTabId, pageInfo.chatHistory);
     logger.info(`Loaded chat history for active tab: ${activeTabId}`);
 
+    // After loading chat history, compute has-content for all tabs and refresh UI
+    try {
+      if (window.TabManager.updateTabsContentStates) {
+        await window.TabManager.updateTabsContentStates();
+      }
+      if (window.TabManager.renderCurrentTabsState) {
+        await window.TabManager.renderCurrentTabsState();
+      }
+    } catch (stateError) {
+      logger.warn('Failed to update tabs content states after initial load:', stateError);
+    }
+
     // Fix existing message layouts
     setTimeout(() => {
       ChatManager.fixExistingMessageLayouts(elements.chatContainer);
