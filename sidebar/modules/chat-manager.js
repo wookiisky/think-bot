@@ -1448,14 +1448,15 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
       model: selectedModel || undefined
     });
 
+    // Get tab-specific branch models and merge with general branch models
+    const tabSpecificBranchModelIds = await getTabSpecificBranchModels(currentTabId, config);
+    
     // Auto-create branch models for quick input (reuse branch functionality)
     const branchModelIds = basicConfig.branchModelIds || [];
-    if (branchModelIds.length > 0) {
-      logger.info(`Creating auto-branches for quick input with models: ${branchModelIds.join(', ')}`);
-      
-      // Get all available models configuration
-      const llmConfig = config.llm_models || config.llm;
-      const availableModels = llmConfig?.models || [];
+    const allBranchModelIds = [...new Set([...branchModelIds, ...tabSpecificBranchModelIds])]; // Merge and deduplicate
+    
+    if (allBranchModelIds.length > 0) {
+      logger.info(`Creating auto-branches for quick input with models: ${allBranchModelIds.join(', ')} (general: ${branchModelIds.join(', ')}, tab-specific: ${tabSpecificBranchModelIds.join(', ')})`);
       
       // Find the current assistant message container (branch container)
       const branchContainer = assistantLoadingMessage.closest('.branch-container');
@@ -1464,8 +1465,12 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
       // Build context for branch creation (same as buildBranchContext but inline)
       const context = buildBranchContext(branchContainer);
       
+      // Get all available models configuration
+      const llmConfig = config.llm_models || config.llm;
+      const availableModels = llmConfig?.models || [];
+      
       // Create branches for each configured branch model
-      for (const modelId of branchModelIds) {
+      for (const modelId of allBranchModelIds) {
         try {
           // Find model configuration
           const branchModel = availableModels.find(m => m.id === modelId && m.enabled);
@@ -2146,6 +2151,48 @@ const sendBranchLlmRequest = async (context, model, branchId) => {
     }
     
     throw error;
+  }
+};
+
+/**
+ * Get tab-specific branch models, excluding general config models
+ * @param {string} currentTabId - Current tab ID
+ * @param {Object} config - Configuration object
+ * @returns {Promise<string[]>} Array of tab-specific branch model IDs
+ */
+const getTabSpecificBranchModels = async (currentTabId, config) => {
+  try {
+    // If it's the default chat tab, return empty array
+    if (currentTabId === 'chat') {
+      return [];
+    }
+    
+    // Get the quick input configuration for this tab
+    const quickInputs = config.quickInputs || [];
+    const currentQuickInput = quickInputs.find(qi => qi.id === currentTabId);
+    
+    if (!currentQuickInput || !currentQuickInput.branchModelIds) {
+      logger.debug(`No branch models found for tab ${currentTabId}`);
+      return [];
+    }
+    
+    // Get general configuration models to exclude
+    const basicConfig = config.basic || config;
+    const generalDefaultModel = basicConfig.defaultModelId;
+    const generalBranchModels = basicConfig.branchModelIds || [];
+    const modelsToExclude = [...new Set([generalDefaultModel, ...generalBranchModels].filter(Boolean))];
+    
+    // Filter out models that are already in general configuration
+    const tabSpecificModels = currentQuickInput.branchModelIds.filter(modelId => 
+      !modelsToExclude.includes(modelId)
+    );
+    
+    logger.info(`Tab ${currentTabId} branch models: ${currentQuickInput.branchModelIds.join(', ')}, excluding general models: ${modelsToExclude.join(', ')}, resulting in: ${tabSpecificModels.join(', ')}`);
+    
+    return tabSpecificModels;
+  } catch (error) {
+    logger.error(`Error getting tab-specific branch models for tab ${currentTabId}:`, error);
+    return [];
   }
 };
 
