@@ -238,6 +238,37 @@ const editMessageInDOM = (messageId, newContent) => {
 };
 
 /**
+ * Helper function to get model display name from model ID
+ * @param {string} modelId - Model ID or name
+ * @returns {Promise<string>} Display name
+ */
+const getModelDisplayName = async (modelId) => {
+  try {
+    // Get current configuration
+    if (window.StateManager && window.StateManager.getConfig) {
+      const config = await window.StateManager.getConfig();
+      const llmConfig = config.llm_models || config.llm;
+      
+      if (llmConfig && llmConfig.models && Array.isArray(llmConfig.models)) {
+        // Find matching model by ID, name, or model field
+        const model = llmConfig.models.find(m => 
+          m.enabled && (m.id === modelId || m.name === modelId || m.model === modelId)
+        );
+        
+        if (model && model.name) {
+          return model.name; // Return user-friendly display name
+        }
+      }
+    }
+  } catch (error) {
+    logger.debug('Error getting model display name:', error);
+  }
+  
+  // Fallback to original model ID if not found
+  return modelId || 'unknown';
+};
+
+/**
  * Display chat history
  * @param {HTMLElement} chatContainer - Chat container element
  * @param {Array} history - Chat history array
@@ -345,7 +376,12 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
           const branchDiv = document.createElement('div');
           branchDiv.className = 'message-branch';
           branchDiv.setAttribute('data-branch-id', response.branchId);
-          branchDiv.setAttribute('data-model', response.model || 'unknown');
+          // Set data-model attribute with display name for consistency
+          getModelDisplayName(response.model).then(displayName => {
+            branchDiv.setAttribute('data-model', displayName);
+          }).catch(() => {
+            branchDiv.setAttribute('data-model', response.model || 'unknown');
+          });
           
           // 分支内容
           const contentDiv = document.createElement('div');
@@ -400,7 +436,14 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
           // 添加模型标签到分支顶部
           const modelLabel = document.createElement('div');
           modelLabel.className = 'branch-model-label';
-          modelLabel.textContent = response.model || 'unknown';
+          
+          // Use display name instead of raw model ID
+          getModelDisplayName(response.model).then(displayName => {
+            modelLabel.textContent = displayName;
+          }).catch(() => {
+            modelLabel.textContent = response.model || 'unknown';
+          });
+          
           branchDiv.appendChild(modelLabel);
 
           branchDiv.appendChild(contentDiv);
@@ -787,7 +830,7 @@ const getAvailableModels = async () => {
         .map(model => {
           return {
             id: model.id,                         // 直接使用配置中的模型ID
-            name: model.model || model.name,      // 实际模型名称，用于data-model属性
+            name: model.name,                     // 使用显示名称作为name属性
             label: model.name,                    // 下拉显示仅展示模型名
             provider: model.provider,
             displayName: model.name,              // 保存原始显示名称

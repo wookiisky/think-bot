@@ -1051,8 +1051,8 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
     branchDiv.className = 'message-branch';
     branchDiv.setAttribute('data-branch-id', localBranchId);
     branchDiv.setAttribute('data-streaming', 'true');
-    if (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) {
-      branchDiv.setAttribute('data-model', selectedModelForLabel.name || selectedModelForLabel.model);
+    if (selectedModelForLabel && selectedModelForLabel.name) {
+      branchDiv.setAttribute('data-model', selectedModelForLabel.name);
     } else {
       branchDiv.setAttribute('data-model', 'unknown');
     }
@@ -1069,7 +1069,7 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
     // 模型标签添加到分支顶部（仅显示模型名）
     const modelLabel = document.createElement('div');
     modelLabel.className = 'branch-model-label';
-    modelLabel.textContent = (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown';
+    modelLabel.textContent = (selectedModelForLabel && selectedModelForLabel.name) || 'unknown';
     branchDiv.appendChild(modelLabel);
 
     branchDiv.appendChild(contentDiv);
@@ -1274,8 +1274,10 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
       ? `br-${crypto.randomUUID()}`
       : `br-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     branchDiv.setAttribute('data-branch-id', quickBranchId);
-    if (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) {
-      branchDiv.setAttribute('data-model', selectedModelForLabel.name || selectedModelForLabel.model);
+    if (selectedModelForLabel && selectedModelForLabel.name) {
+      branchDiv.setAttribute('data-model', selectedModelForLabel.name);
+    } else {
+      branchDiv.setAttribute('data-model', 'unknown');
     }
 
     const contentDiv = document.createElement('div');
@@ -1290,7 +1292,7 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     // Model label at the top of branch (name only)
     const modelLabel = document.createElement('div');
     modelLabel.className = 'branch-model-label';
-    modelLabel.textContent = (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown';
+    modelLabel.textContent = (selectedModelForLabel && selectedModelForLabel.name) || 'unknown';
     branchDiv.appendChild(modelLabel);
 
     branchDiv.appendChild(contentDiv);

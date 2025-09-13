@@ -22,6 +22,7 @@
   },
   "permissions": [
     "storage",
+    "unlimitedStorage",
     "activeTab",
     "tabs",
     "scripting",
@@ -37,7 +38,7 @@
     "service_worker": "background/service-worker.js"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' https: data:; media-src 'self' https:; font-src 'self'; frame-src 'self' https://www.youtube.com/ https://www.youtube-nocookie.com/ https://player.vimeo.com/ https://v.qq.com/ https://*.bilibili.com/ https://player.twitch.tv/;"
+    "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' https: data:; media-src 'self' https:; font-src 'self'; frame-src 'self' https://www.youtube-nocookie.com/ https://player.vimeo.com/ https://v.qq.com/ https://*.bilibili.com/ https://player.twitch.tv/;"
   },
   "web_accessible_resources": [
     {

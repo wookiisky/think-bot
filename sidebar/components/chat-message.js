@@ -294,7 +294,7 @@ const retryMessage = (messageElement, retryCallback) => {
         branchDiv.className = 'message-branch';
         branchDiv.setAttribute('data-branch-id', retryBranchId);
         branchDiv.setAttribute('data-streaming', 'true');
-        branchDiv.setAttribute('data-model', (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown');
+        branchDiv.setAttribute('data-model', (selectedModelForLabel && selectedModelForLabel.name) || 'unknown');
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
         contentDiv.setAttribute('data-raw-content', '');
@@ -306,7 +306,7 @@ const retryMessage = (messageElement, retryCallback) => {
         // 添加模型标签到分支顶部
         const modelLabel = document.createElement('div');
         modelLabel.className = 'branch-model-label';
-        modelLabel.textContent = (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown';
+        modelLabel.textContent = (selectedModelForLabel && selectedModelForLabel.name) || 'unknown';
         branchDiv.appendChild(modelLabel);
         
         branchDiv.appendChild(contentDiv);
