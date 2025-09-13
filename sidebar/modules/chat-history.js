@@ -448,7 +448,7 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
 
             // 创建分支（加入事件委托识别 + 布局样式）
             const branchButton = document.createElement('button');
-            branchButton.className = 'btn-base message-action-btn branch-action-btn branch-btn';
+            branchButton.className = 'btn-base message-action-btn branch-btn';
             branchButton.innerHTML = '<i class="material-icons">call_split</i>';
             branchButton.title = i18n.getMessage('branch_add');
             branchButton.setAttribute('data-action', 'branch');
@@ -456,7 +456,7 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
 
             // 删除当前分支（加入事件委托识别 + 布局样式）
             const deleteButton = document.createElement('button');
-            deleteButton.className = 'btn-base message-action-btn branch-action-btn delete-btn';
+            deleteButton.className = 'btn-base message-action-btn delete-btn';
             deleteButton.innerHTML = '<i class="material-icons">delete</i>';
             deleteButton.title = i18n.getMessage('branch_delete');
             deleteButton.setAttribute('data-action', 'delete');
@@ -515,7 +515,7 @@ const addBranchEventListeners = (chatContainer) => {
   // 使用事件委托处理分支按钮点击
   chatContainer.addEventListener('click', (event) => {
     const target = event.target;
-    const button = target.closest('.branch-action-btn, .message-action-btn.delete-btn');
+    const button = target.closest('.branch-action-btn, .message-action-btn.delete-btn, .message-action-btn.branch-btn');
     
     if (!button) return;
     
