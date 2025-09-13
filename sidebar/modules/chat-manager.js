@@ -682,7 +682,22 @@ const handleLlmError = (chatContainer, error, streamingMessageElement = null, on
     specificStreamingElement = chatContainer.querySelector(`[data-stream-id="${streamId}"][data-streaming="true"]`);
   }
 
-  // Import error handler and process error
+  // Check if this is a branch-level error that should be handled locally
+  if (specificStreamingElement && specificStreamingElement.classList.contains('message-branch')) {
+    const branchId = specificStreamingElement.getAttribute('data-branch-id');
+    logger.info(`Handling error for branch ${branchId} at branch level`);
+    
+    // Handle branch error locally using updateBranchToError
+    const errorMessage = errorDetails?.message || (typeof error === 'string' ? error : error.message || 'Request failed');
+    updateBranchToError(specificStreamingElement, errorMessage);
+    
+    if (typeof onComplete === 'function') {
+      onComplete(error);
+    }
+    return;
+  }
+
+  // Import error handler and process error for non-branch contexts
   import('./error-handler.js').then(({ default: errorHandler, ERROR_TYPES }) => {
     // Create enhanced error object with rawResponse from errorDetails
     let enhancedError = error;
@@ -1607,6 +1622,20 @@ const fallbackErrorDisplay = (chatContainer, error, streamingMessageElement = nu
     errorPreview: typeof error === 'string' ? error.substring(0, 100) : (error?.message || 'No message').substring(0, 100)
   });
   
+  // Check if this is a branch-level error that should be handled locally
+  if (streamingMessageElement && streamingMessageElement.classList.contains('message-branch')) {
+    const branchId = streamingMessageElement.getAttribute('data-branch-id');
+    logger.info(`Fallback: Handling error for branch ${branchId} at branch level`);
+    
+    const errorMessage = typeof error === 'string' ? error : (error?.message || 'Request failed');
+    updateBranchToError(streamingMessageElement, errorMessage);
+    
+    if (typeof onComplete === 'function') {
+      onComplete(error);
+    }
+    return;
+  }
+  
   // For fallback, try to show detailed error if it's JSON
   let errorMessage = 'An error occurred. Please try again.';
   
@@ -1824,16 +1853,17 @@ const createBranch = async (originalBranchId, model) => {
   } catch (error) {
     logger.error('Error creating branch:', error);
     
-    // 如果创建失败，移除可能已创建的UI元素（只有当newBranchId被定义时）
-    if (newBranchId) {
-      const failedBranch = document.querySelector(`[data-branch-id="${newBranchId}"]`);
-      if (failedBranch) {
-        failedBranch.remove();
-      }
+    // Check if this is a critical setup error (before LLM request)
+    // If the branch UI element doesn't exist, it means setup failed
+    const branchElement = document.querySelector(`[data-branch-id="${newBranchId}"]`);
+    if (!branchElement && newBranchId) {
+      // This is a setup error, show user alert
+      alert(`${i18n.getMessage('branch_createFailed')}: ${error.message}`);
+    } else {
+      // Branch UI exists, error was likely from LLM request
+      // The error has already been handled at the branch level by sendBranchLlmRequest
+      logger.info(`Branch creation completed with LLM error handled at branch level for ${newBranchId}`);
     }
-    
-    // 显示错误提示
-    alert(`${i18n.getMessage('branch_createFailed')}: ${error.message}`);
   }
 };
 
@@ -2159,7 +2189,9 @@ const sendBranchLlmRequest = async (context, model, branchId) => {
       updateBranchToError(branchElement, error.message || '请求失败');
     }
     
-    throw error;
+    // Do not throw error to prevent it from being handled by parent context
+    // The error has already been properly handled at the branch level
+    logger.info(`Branch error handled locally for ${branchId}, not propagating to parent context`);
   }
 };
 
