@@ -447,7 +447,7 @@ loadingStateCache.getActiveLoadingStates = async function() {
       }
     }
     
-    loadingLogger.info('Retrieved active loading states', { count: loadingStates.length });
+    // loadingLogger.info('Retrieved active loading states', { count: loadingStates.length });
     return loadingStates;
   } catch (error) {
     loadingLogger.error('Error getting active loading states:', error.message);

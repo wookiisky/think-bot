@@ -36,6 +36,8 @@ importScripts('handlers/clearUrlDataHandler.js');
 importScripts('handlers/configHandler.js');
 importScripts('handlers/saveChatHistoryHandler.js');
 importScripts('handlers/getChatHistoryHandler.js');
+importScripts('handlers/getBatchChatHistoryHandler.js');
+importScripts('handlers/getBatchLoadingStateHandler.js');
 importScripts('handlers/getLoadingStateHandler.js');
 importScripts('handlers/clearLoadingStateHandler.js');
 importScripts('handlers/clearAllLoadingStatesForUrlHandler.js');
@@ -252,6 +254,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return await handleSaveChatHistory(data, serviceLogger, storage);
         case 'GET_CHAT_HISTORY':
           return await handleGetChatHistory(data, serviceLogger, storage);
+        case 'GET_BATCH_CHAT_HISTORY':
+          return await handleGetBatchChatHistory(data, serviceLogger, storage);
+        case 'GET_BATCH_LOADING_STATE':
+          return await handleGetBatchLoadingState(data, serviceLogger, loadingStateCache);
         case 'GET_LOADING_STATE':
           return await handleGetLoadingState(data, serviceLogger, loadingStateCache);
         case 'CLEAR_LOADING_STATE':

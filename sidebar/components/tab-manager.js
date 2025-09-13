@@ -290,56 +290,164 @@ const renderTabs = async (container, skipLoadingStateUpdate = false, forceFullRe
 };
 
 /**
- * Update loading states for all tabs
+ * Update loading states for all tabs - OPTIMIZED batch version
  * @returns {Promise<void>}
  */
 const updateTabsLoadingStates = async () => {
   const currentUrl = window.StateManager.getStateItem('currentUrl');
   if (!currentUrl) return;
   
-  // Check loading state for each tab
-  for (const tab of tabs) {
-    try {
-      const loadingStateResponse = await chrome.runtime.sendMessage({
-        type: 'GET_LOADING_STATE',
-        url: currentUrl,
-        tabId: tab.id
-      });
+  if (tabs.length === 0) return;
+  
+  const startTime = Date.now();
+  logger.info(`Starting OPTIMIZED loading state update for URL: ${currentUrl} with ${tabs.length} tabs`);
+  
+  try {
+    // Use batch API to get all loading states in a single request
+    const tabIds = tabs.map(tab => tab.id);
+    const batchResponse = await chrome.runtime.sendMessage({
+      type: 'GET_BATCH_LOADING_STATE',
+      url: currentUrl,
+      tabIds: tabIds
+    });
+    
+    if (batchResponse && batchResponse.type === 'BATCH_LOADING_STATE_LOADED') {
+      const requestTime = Date.now() - startTime;
+      logger.info(`Batch loading state request for ${tabs.length} tabs completed in ${requestTime}ms`);
       
-      // Update tab loading state
-      tab.isLoading = loadingStateResponse && 
-                     loadingStateResponse.loadingState && 
-                     loadingStateResponse.loadingState.status === 'loading';
-                     
-    } catch (error) {
-      // If we can't check loading state, assume not loading
-      tab.isLoading = false;
-      logger.warn(`Error checking loading state for tab ${tab.id}:`, error);
+      // Update tab loading states based on batch results
+      for (const result of batchResponse.results) {
+        const tab = tabs.find(t => t.id === result.tabId);
+        if (tab) {
+          tab.isLoading = result.loadingState && 
+                         result.loadingState.status === 'loading';
+        }
+      }
+    } else {
+      logger.warn('Batch loading state API failed, falling back to individual requests');
+      throw new Error('Batch API failed');
     }
+  } catch (error) {
+    logger.warn('Batch loading state request failed, falling back to individual requests:', error.message);
+    
+    // Fallback to individual requests
+    const fallbackStartTime = Date.now();
+    for (const tab of tabs) {
+      try {
+        const loadingStateResponse = await chrome.runtime.sendMessage({
+          type: 'GET_LOADING_STATE',
+          url: currentUrl,
+          tabId: tab.id
+        });
+        
+        // Update tab loading state
+        tab.isLoading = loadingStateResponse && 
+                       loadingStateResponse.loadingState && 
+                       loadingStateResponse.loadingState.status === 'loading';
+                       
+      } catch (error) {
+        // If we can't check loading state, assume not loading
+        tab.isLoading = false;
+        logger.warn(`Error checking loading state for tab ${tab.id}:`, error);
+      }
+    }
+    
+    const fallbackTime = Date.now() - fallbackStartTime;
+    logger.info(`Fallback: Completed ${tabs.length} individual loading state requests in ${fallbackTime}ms`);
   }
+  
+  const totalTime = Date.now() - startTime;
+  logger.info(`Total updateTabsLoadingStates completed in ${totalTime}ms`);
 };
 
 /**
- * Update content states for all tabs
+ * Update content states for all tabs - OPTIMIZED version
  * @returns {Promise<void>}
  */
 const updateTabsContentStates = async () => {
   const currentUrl = window.StateManager.getStateItem('currentUrl');
-  if (!currentUrl) return;
+  if (!currentUrl) {
+    logger.warn('No currentUrl available for content state update');
+    return;
+  }
   
-  // Check content state for each tab
-  for (const tab of tabs) {
-    try {
-      const cacheKey = `${currentUrl}#${tab.id}`;
-      const response = await chrome.runtime.sendMessage({
-        type: 'GET_CHAT_HISTORY',
-        url: cacheKey
+  logger.info(`Starting OPTIMIZED content state update for URL: ${currentUrl} with ${tabs.length} tabs`);
+  let hasStateChanges = false;
+  
+  // OPTIMIZATION: Create all cache keys upfront and batch them
+  const tabCacheKeys = tabs.map(tab => ({
+    tab,
+    cacheKey: `${currentUrl}#${tab.id}`
+  }));
+  
+  // SUPER OPTIMIZATION: Use batch API to get all chat histories in a single request
+  const startTime = Date.now();
+  const allUrls = tabCacheKeys.map(({ cacheKey }) => cacheKey);
+  
+  let allHistories = [];
+  try {
+    const batchResponse = await chrome.runtime.sendMessage({
+      type: 'GET_BATCH_CHAT_HISTORY',
+      urls: allUrls
+    });
+    
+    if (batchResponse && batchResponse.type === 'BATCH_CHAT_HISTORY_LOADED') {
+      const requestTime = Date.now() - startTime;
+      logger.info(`Batch request for ${tabs.length} chat histories completed in ${requestTime}ms (vs ${Math.round(requestTime * tabs.length)}ms for individual requests)`);
+      
+      // Map batch results back to tab structure
+      allHistories = tabCacheKeys.map(({ tab, cacheKey }) => {
+        const result = batchResponse.results.find(r => r.url === cacheKey);
+        return {
+          tab,
+          cacheKey,
+          response: result ? { type: 'CHAT_HISTORY_LOADED', chatHistory: result.chatHistory } : null,
+          history: result ? result.chatHistory : []
+        };
       });
-
+      
+    } else {
+      logger.warn('Batch API failed, falling back to individual requests');
+      throw new Error('Batch API failed');
+    }
+  } catch (error) {
+    logger.warn('Batch request failed, falling back to individual parallel requests:', error.message);
+    
+    // Fallback to individual parallel requests
+    const historyPromises = tabCacheKeys.map(async ({ tab, cacheKey }) => {
+      try {
+        const response = await chrome.runtime.sendMessage({
+          type: 'GET_CHAT_HISTORY',
+          url: cacheKey
+        });
+        return {
+          tab,
+          cacheKey,
+          response,
+          history: response && Array.isArray(response.chatHistory) ? response.chatHistory : []
+        };
+      } catch (error) {
+        logger.error(`Error getting chat history for tab ${tab.id}:`, error);
+        return {
+          tab,
+          cacheKey,
+          response: null,
+          history: []
+        };
+      }
+    });
+    
+    allHistories = await Promise.all(historyPromises);
+    const requestTime = Date.now() - startTime;
+    logger.info(`Fallback: Completed ${tabs.length} individual requests in ${requestTime}ms`);
+  }
+  
+  // OPTIMIZATION: Process all results in a single loop
+  const processStartTime = Date.now();
+  for (const { tab, cacheKey, history } of allHistories) {
+    try {
       let hasContent = false;
       let hasLoadingBranch = false;
-
-      const history = response && Array.isArray(response.chatHistory) ? response.chatHistory : [];
 
       for (const msg of history) {
         if (!msg) continue;
@@ -367,16 +475,51 @@ const updateTabsContentStates = async () => {
       }
 
       // Per spec: if any branch is loading, treat tab as loading (handled elsewhere), and do not mark has-content
-      tab.hasContent = !hasLoadingBranch && hasContent;
+      const newHasContent = !hasLoadingBranch && hasContent;
+      
+      // Track if any tab state changed
+      if (tab.hasContent !== newHasContent) {
+        hasStateChanges = true;
+      }
+      
+      tab.hasContent = newHasContent;
 
-      logger.debug(`Tab ${tab.id} content state -> hasContent: ${tab.hasContent}, hasLoadingBranch: ${hasLoadingBranch}, totalMessages: ${history.length}`);
+      // Only log tabs with content for cleaner output
+      if (tab.hasContent) {
+        logger.debug(`Tab ${tab.id}: hasContent=true, messages=${history.length}`);
+      }
 
     } catch (error) {
       // If we can't check content state, assume no content
+      if (tab.hasContent !== false) {
+        hasStateChanges = true;
+      }
       tab.hasContent = false;
-      logger.warn(`Error checking content state for tab ${tab.id}:`, error);
+      logger.error(`Error processing content state for tab ${tab.id}:`, error);
     }
   }
+  
+  const processTime = Date.now() - processStartTime;
+  logger.info(`Processed ${tabs.length} tab content states in ${processTime}ms`);
+  
+  // Re-render tabs if any state changed
+  if (hasStateChanges) {
+    const container = document.querySelector('.tab-container');
+    if (container && !isRendering) {
+      const renderStartTime = Date.now();
+      logger.info('Content states changed, re-rendering tabs. States:', tabs.map(t => `${t.id}:${t.hasContent}`));
+      await renderTabs(container, true); // Skip loading state update to prevent recursion
+      const renderTime = Date.now() - renderStartTime;
+      logger.info(`Tabs re-rendered after content state changes in ${renderTime}ms`);
+    } else {
+      logger.warn('Cannot re-render tabs:', { container: !!container, isRendering });
+    }
+  } else {
+    logger.debug('No content state changes detected for tabs');
+  }
+  
+  const totalTime = Date.now() - startTime;
+  logger.info(`Total updateTabsContentStates completed in ${totalTime}ms`);
 };
 
 /**

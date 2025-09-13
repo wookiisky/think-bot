@@ -37,6 +37,8 @@ import { createConversationsExportHandler } from '../sidebar/modules/export-util
 // Import MiniConfirmation component from sidebar
 import { confirmationDialog } from '../js/modules/ui/confirmation-dialog.js';
 
+// TabManager imported successfully
+
 // Create logger
 const logger = createLogger('Conversations');
 
@@ -744,53 +746,8 @@ async function loadPageConversation(url) {
       logger.warn('Error resetting TabManager:', resetError);
     }
 
-    // Load and display chat history - ALWAYS use chat tab for conversations page
-    try {
-      // Always load chat tab history for conversations page
-      const chatTabId = 'chat';
-      logger.info('Loading chat history for chat tab:', chatTabId);
-
-      // First try to get chat history from TabManager
-      let chatHistory = [];
-      if (TabManager && TabManager.loadTabChatHistory) {
-        chatHistory = await TabManager.loadTabChatHistory(chatTabId);
-        logger.info('Chat tab history loaded from TabManager:', chatHistory?.length || 0, 'messages');
-      }
-
-      // If no chat history from TabManager, try page info
-      if ((!chatHistory || chatHistory.length === 0) && pageInfo && pageInfo.chatHistory) {
-        chatHistory = pageInfo.chatHistory;
-        logger.info('Using fallback chat history from page data:', chatHistory.length, 'messages');
-        // Display the fallback chat history
-        ChatHistory.displayChatHistory(elements.chatContainer, chatHistory, ChatManager.appendMessageToUI);
-      }
-
-      // If still no chat history, try direct loading with tab-specific URL
-      if (!chatHistory || chatHistory.length === 0) {
-        logger.info('No chat history found, trying direct load with tab-specific URL');
-        const tabSpecificUrl = `${url}#${chatTabId}`;
-        chatHistory = await getChatHistory(tabSpecificUrl);
-        logger.info('Direct load chat history:', chatHistory?.length || 0, 'messages');
-
-        // Display the directly loaded chat history
-        if (chatHistory && chatHistory.length > 0) {
-          ChatHistory.displayChatHistory(elements.chatContainer, chatHistory, ChatManager.appendMessageToUI);
-        }
-      }
-
-      // Final check and display
-      if (chatHistory && chatHistory.length > 0) {
-        logger.info('Displayed', chatHistory.length, 'chat messages for conversations page');
-      } else {
-        // Clear chat container
-        elements.chatContainer.innerHTML = '';
-        logger.info('No chat history to display for conversations page');
-      }
-    } catch (error) {
-      logger.error('Error loading chat history:', error);
-      // Clear chat container on error
-      elements.chatContainer.innerHTML = '';
-    }
+    // Skip individual chat history loading here - it will be handled by batch optimization below
+    logger.info('Deferring chat history loading to batch processing for better performance');
     
     // Ensure tab system is properly configured for the new page (optimized approach)
     try {
@@ -850,23 +807,44 @@ async function loadPageConversation(url) {
       logger.warn('Error synchronizing TabManager state:', syncError);
     }
 
-    // Restore loading states for the current page after everything is set up
+    // OPTIMIZED: Batch load all tab states and content in parallel
     try {
-      logger.info('Checking for ongoing loading states for current page:', url);
+      logger.info('Starting optimized batch loading for all tab states and content:', url);
 
-      // Force TabManager to check and restore loading states for the current page
+      // Combine both loading state and content state updates in parallel
+      const promises = [];
+      
       if (TabManager && TabManager.updateTabsLoadingStates) {
-        await TabManager.updateTabsLoadingStates();
-        logger.info('Loading states restored for current page');
+        promises.push(TabManager.updateTabsLoadingStates().then(() => 
+          logger.info('Batch loading states updated')));
+      }
+      
+      if (TabManager && TabManager.updateTabsContentStates) {
+        promises.push(TabManager.updateTabsContentStates().then(() => 
+          logger.info('Batch content states updated')));
       }
 
-      // Also force re-render to ensure UI reflects the correct states
-      if (TabManager && TabManager.renderCurrentTabsState) {
-        await TabManager.renderCurrentTabsState();
-        logger.info('Tab states re-rendered for current page');
+      // Execute both batch operations in parallel
+      if (promises.length > 0) {
+        await Promise.all(promises);
+        logger.info('All batch tab state updates completed');
+        
+        // After batch updates, ensure chat tab content is displayed if available
+        try {
+          const chatTabId = 'chat';
+          const chatHistory = await TabManager.loadTabChatHistory(chatTabId);
+          
+          if (chatHistory && chatHistory.length > 0) {
+            logger.info(`Displayed ${chatHistory.length} chat messages for conversations page`);
+          } else {
+            logger.info('No chat history to display for conversations page');
+          }
+        } catch (displayError) {
+          logger.warn('Error displaying chat history after batch update:', displayError);
+        }
       }
     } catch (restoreError) {
-      logger.warn('Error restoring loading states:', restoreError);
+      logger.warn('Error in optimized batch loading:', restoreError);
     }
 
     logger.info('Page conversation loaded successfully');
