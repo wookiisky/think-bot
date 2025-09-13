@@ -532,11 +532,110 @@
   padding: 4px 0;
 }
 
+/* 分支滚动容器包装器 */
+.branches-scroll-wrapper {
+  position: relative;
+}
+
+/* 上方自定义滚动条容器 */
+.top-scrollbar-container {
+  height: 12px;
+  margin-bottom: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) var(--bg-secondary);
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light, rgba(0,0,0,0.1));
+}
+
+/* 上方滚动条的内容占位 */
+.top-scrollbar-content {
+  height: 1px;
+  background: transparent;
+}
+
+/* 上方滚动条样式 - Webkit */
+.top-scrollbar-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.top-scrollbar-container::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.top-scrollbar-container::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+.top-scrollbar-container::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color-hover, #0056b3);
+}
+
+/* 超过3个分支时的横向滚动样式 */
+.message-branches.many-branches {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) var(--bg-secondary);
+  gap: 6px;
+  padding: 4px 0;
+}
+
+/* 当分支数量大于3个时，固定分支宽度确保横向滚动 */
+.message-branches.many-branches .message-branch {
+  min-width: 320px;
+  max-width: 320px;
+  flex-shrink: 0;
+}
+
+/* Webkit浏览器的滚动条样式 */
+.message-branches.many-branches::-webkit-scrollbar {
+  height: 8px;
+}
+
+.message-branches.many-branches::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.message-branches.many-branches::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+.message-branches.many-branches::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color-hover, #0056b3);
+}
+
 /* 移动端单列布局 */
 @media (max-width: 768px) {
   .message-branches {
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+  
+  /* 在移动端，隐藏上方滚动条 */
+  .top-scrollbar-container {
+    display: none;
+  }
+  
+  /* 在移动端，多分支仍使用单列布局，但保持滚动功能 */
+  .message-branches.many-branches {
+    display: grid;
+    grid-template-columns: 1fr;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  
+  .message-branches.many-branches .message-branch {
+    min-width: auto;
+    max-width: none;
   }
 }
 

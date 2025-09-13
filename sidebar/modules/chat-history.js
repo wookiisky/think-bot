@@ -526,6 +526,19 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
           branchesDiv.appendChild(branchDiv);
         });
         
+        // Check if there are more than 3 branches and add appropriate CSS class
+        if (message.responses && message.responses.length > 3) {
+          branchesDiv.classList.add('many-branches');
+          
+          // Create dual scrollbar if ChatManager is available
+          if (window.ChatManager && window.ChatManager.updateBranchContainerStyle) {
+            // Use a setTimeout to ensure DOM is ready
+            setTimeout(() => {
+              window.ChatManager.updateBranchContainerStyle(branchesDiv);
+            }, 0);
+          }
+        }
+        
         branchContainer.appendChild(branchesDiv);
         chatContainer.appendChild(branchContainer);
       }
@@ -886,6 +899,11 @@ const removeBranchFromDOM = (branchElement, branchId) => {
       prevElement.remove();
     }
     branchContainer.remove();
+  } else {
+    // Update branch container style after deletion
+    if (window.ChatManager && window.ChatManager.updateBranchContainerStyle) {
+      window.ChatManager.updateBranchContainerStyle(branchesContainer);
+    }
   }
   
   // 保存更新后的聊天历史

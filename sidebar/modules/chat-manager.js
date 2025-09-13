@@ -1757,6 +1757,9 @@ const createBranch = async (originalBranchId, model) => {
     const newBranchDiv = createBranchElement(newBranchId, model, 'loading');
     branchesContainer.appendChild(newBranchDiv);
     
+    // Check if there are more than 3 branches and update CSS class
+    updateBranchContainerStyle(branchesContainer);
+    
     // 滚动到新分支
     newBranchDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
     
@@ -1941,6 +1944,125 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
 };
 
 /**
+ * Update branch container style based on number of branches
+ * @param {HTMLElement} branchesContainer - The branches container element
+ */
+const updateBranchContainerStyle = (branchesContainer) => {
+  if (!branchesContainer) return;
+  
+  const branchCount = branchesContainer.querySelectorAll('.message-branch').length;
+  
+  if (branchCount > 3) {
+    branchesContainer.classList.add('many-branches');
+    // Create or update dual scrollbar
+    createDualScrollbar(branchesContainer);
+  } else {
+    branchesContainer.classList.remove('many-branches');
+    // Remove dual scrollbar wrapper if exists
+    removeDualScrollbar(branchesContainer);
+  }
+};
+
+/**
+ * Create dual scrollbar for branch container
+ * @param {HTMLElement} branchesContainer - The branches container element
+ */
+const createDualScrollbar = (branchesContainer) => {
+  // Check if wrapper already exists
+  let wrapper = branchesContainer.closest('.branches-scroll-wrapper');
+  if (wrapper) {
+    // Update existing scrollbar content width
+    updateScrollbarContent(branchesContainer);
+    return;
+  }
+  
+  // Create wrapper
+  wrapper = document.createElement('div');
+  wrapper.className = 'branches-scroll-wrapper';
+  
+  // Insert wrapper before branches container
+  branchesContainer.parentNode.insertBefore(wrapper, branchesContainer);
+  
+  // Create top scrollbar container
+  const topScrollContainer = document.createElement('div');
+  topScrollContainer.className = 'top-scrollbar-container';
+  
+  // Create top scrollbar content
+  const topScrollContent = document.createElement('div');
+  topScrollContent.className = 'top-scrollbar-content';
+  topScrollContainer.appendChild(topScrollContent);
+  
+  // Move branches container into wrapper
+  wrapper.appendChild(topScrollContainer);
+  wrapper.appendChild(branchesContainer);
+  
+  // Setup scrollbar synchronization
+  setupScrollbarSync(topScrollContainer, branchesContainer);
+  
+  // Update scrollbar content width
+  updateScrollbarContent(branchesContainer);
+};
+
+/**
+ * Remove dual scrollbar wrapper
+ * @param {HTMLElement} branchesContainer - The branches container element
+ */
+const removeDualScrollbar = (branchesContainer) => {
+  const wrapper = branchesContainer.closest('.branches-scroll-wrapper');
+  if (wrapper) {
+    // Move branches container back to its parent
+    wrapper.parentNode.insertBefore(branchesContainer, wrapper);
+    wrapper.remove();
+  }
+};
+
+/**
+ * Update scrollbar content width
+ * @param {HTMLElement} branchesContainer - The branches container element
+ */
+const updateScrollbarContent = (branchesContainer) => {
+  const wrapper = branchesContainer.closest('.branches-scroll-wrapper');
+  if (!wrapper) return;
+  
+  const topScrollContent = wrapper.querySelector('.top-scrollbar-content');
+  if (!topScrollContent) return;
+  
+  // Calculate total content width
+  const branchCount = branchesContainer.querySelectorAll('.message-branch').length;
+  const branchWidth = 320; // Fixed width per branch
+  const gap = 6; // Gap between branches
+  const totalWidth = branchCount * branchWidth + (branchCount - 1) * gap;
+  
+  topScrollContent.style.width = `${totalWidth}px`;
+};
+
+/**
+ * Setup scrollbar synchronization
+ * @param {HTMLElement} topScrollContainer - Top scrollbar container
+ * @param {HTMLElement} branchesContainer - Branches container
+ */
+const setupScrollbarSync = (topScrollContainer, branchesContainer) => {
+  let isTopScrolling = false;
+  let isBottomScrolling = false;
+  
+  // Sync top scrollbar to bottom
+  topScrollContainer.addEventListener('scroll', () => {
+    if (isBottomScrolling) return;
+    isTopScrolling = true;
+    branchesContainer.scrollLeft = topScrollContainer.scrollLeft;
+    setTimeout(() => { isTopScrolling = false; }, 10);
+  });
+  
+  // Sync bottom scrollbar to top
+  branchesContainer.addEventListener('scroll', () => {
+    if (isTopScrolling) return;
+    isBottomScrolling = true;
+    topScrollContainer.scrollLeft = branchesContainer.scrollLeft;
+    setTimeout(() => { isBottomScrolling = false; }, 10);
+  });
+};
+
+/**
  * Send LLM request for branch
  * @param {Array} context - Context messages
  * @param {Object} model - Selected model
@@ -2118,11 +2240,16 @@ export {
   clearAllErrorMessages,
   hasActiveStream,
   updateInputAreaState,
+  updateBranchContainerStyle,
   // 分支功能
   generateBranchId,
   createBranch,
   buildBranchContext,
   createBranchElement,
+  // 双滚动条功能
+  createDualScrollbar,
+  removeDualScrollbar,
+  updateScrollbarContent,
   sendBranchLlmRequest,
   updateBranchToError,
   cancelBranchRequest,
