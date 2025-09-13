@@ -549,7 +549,6 @@
   min-height: 100px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
   transition: all 0.2s ease;
 }
 
@@ -573,11 +572,17 @@
   font-size: 0.75em;
   color: var(--text-muted);
   background-color: var(--bg-secondary);
-  padding: 2px 6px;
+  padding: 0;
   border-radius: 4px;
-  align-self: flex-start;
   font-weight: 500;
   border: 1px solid var(--border-light);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  text-align: center;
+  align-self: center;
+  width: fit-content;
+  margin: 0;
 }
 
 /* 分支状态样式 */
@@ -812,66 +817,66 @@
   }
 } 
 
-/* 分支 loading 单行布局（左对齐：模型标签、loading、停止并删除） */
+/* 分支 loading 状态样式调整 */
 .message-branch[data-streaming="true"] {
   min-height: auto;
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  flex-wrap: nowrap;
+  flex-direction: column;
   gap: 8px;
 }
 
 .message-branch[data-streaming="true"] .branch-model-label {
-  order: 1;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  text-align: center;
   align-self: center;
-  margin: 0;
-  display: inline-flex;
+  width: fit-content;
+  margin: 0 auto 8px auto;
+  display: flex;
   align-items: center;
   height: 22px;
   line-height: 22px;
   padding: 0 6px;
-  border-radius: 0;
+  border-radius: 4px;
 }
 
 .message-branch[data-streaming="true"] .message-content {
-  order: 2;
   padding: 0;
   margin: 0;
-  flex: 0 1 auto;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .message-branch[data-streaming="true"] .loading-container {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  justify-content: flex-start;
-  min-height: 0;
-  gap: 6px;
-  height: 22px;
-  min-width: 22px;
+  justify-content: center;
+  min-height: 40px;
+  gap: 8px;
 }
 
 .message-branch[data-streaming="true"] .spinner {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
 }
 
 .message-branch[data-streaming="true"] .branch-actions {
-  position: static;
-  top: auto;
-  right: auto;
+  position: absolute;
+  top: 8px;
+  right: 8px;
   opacity: 1;
-  order: 3;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 4px;
-  margin: 0;
 }
 
 .message-branch[data-streaming="true"] .branch-actions .branch-action-btn {
-  width: 22px;
-  height: 22px;
-  border-radius: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
 }
 
 /* 保证分支消息加载时停止并删除按钮始终显示边框 */

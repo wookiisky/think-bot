@@ -62,6 +62,25 @@
               </div>
             
               <div class="floating-label-field">
+                <div class="custom-multi-select" id="branchModelSelect" name="branchModelSelect">
+                  <div class="multi-select-container">
+                    <div class="selected-items" id="selected-branch-models">
+                      <span class="no-models-selected"></span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                      <button type="button" class="dropdown-toggle" id="branch-models-toggle">
+                        <i class="material-icons">arrow_drop_down</i>
+                      </button>
+                      <div class="dropdown-options" id="branch-models-dropdown">
+                        <!-- Options will be populated dynamically -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <label for="branchModelSelect" class="floating-label" data-i18n="options_branch_models_label">Branch Models</label>
+              </div>
+            
+              <div class="floating-label-field">
                 <select id="theme" name="theme">
                   <option value="light" data-i18n="options_theme_light">Light</option>
                   <option value="dark" data-i18n="options_theme_dark">Dark</option>

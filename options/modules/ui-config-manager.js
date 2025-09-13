@@ -118,6 +118,7 @@ export class UIConfigManager {
         contentDisplayHeight: Math.min(Math.max(parseInt(domElements.contentDisplayHeight.value), 0), 600),
         theme: domElements.theme.value,
         defaultModelId: modelManager.getDefaultModelId(), // Move to basic for timestamp protection
+        branchModelIds: this.getBranchModelIds(domElements), // Add branch model IDs
         language: domElements.languageSelector.value,
         lastModified: Date.now()
       }
@@ -274,6 +275,78 @@ export class UIConfigManager {
     } catch (error) {
       logger.error('Error checking configuration health:', error.message);
       return null;
+    }
+  }
+
+  // Get branch model IDs from the custom multi-select component
+  static getBranchModelIds(domElements) {
+    if (!domElements.selectedBranchModels) {
+      return [];
+    }
+    
+    const selectedItems = domElements.selectedBranchModels.querySelectorAll('.selected-model-item');
+    return Array.from(selectedItems).map(item => item.dataset.modelId).filter(Boolean);
+  }
+
+  // Populate branch model selector with available models
+  static populateBranchModelSelector(domElements, allModels, selectedIds = []) {
+    if (!domElements.branchModelsDropdown || !domElements.selectedBranchModels) {
+      return;
+    }
+
+    // Clear existing options
+    domElements.branchModelsDropdown.innerHTML = '';
+    
+    // Add options for each model
+    allModels.forEach(model => {
+      if (model.enabled) { // Only show enabled models
+        const optionItem = document.createElement('div');
+        optionItem.className = 'option-item';
+        optionItem.dataset.value = model.id;
+        optionItem.innerHTML = `<span class="option-text">${model.name || model.id}</span>`;
+        domElements.branchModelsDropdown.appendChild(optionItem);
+      }
+    });
+
+    // Update selected items display
+    this.updateBranchModelSelection(domElements, allModels, selectedIds);
+  }
+
+  // Update the selected branch models display
+  static updateBranchModelSelection(domElements, allModels, selectedIds) {
+    if (!domElements.selectedBranchModels || !Array.isArray(selectedIds)) {
+      return;
+    }
+
+    if (selectedIds.length === 0) {
+      domElements.selectedBranchModels.innerHTML = '<span class="no-models-selected"></span>';
+      return;
+    }
+
+    // Find the model objects for selected IDs
+    const selectedModels = selectedIds.map(id => 
+      allModels.find(model => model.id === id)
+    ).filter(Boolean);
+
+    // Render selected models
+    const selectedItemsHtml = selectedModels.map(model => `
+      <span class="selected-model-item" data-model-id="${model.id}">
+        <span class="model-name">${model.name || model.id}</span>
+        <span class="model-remove-icon" data-model-id="${model.id}">
+          <i class="material-icons">close</i>
+        </span>
+      </span>
+    `).join('');
+
+    domElements.selectedBranchModels.innerHTML = selectedItemsHtml;
+
+    // Update floating label state for the custom multi-select
+    const multiSelectField = domElements.selectedBranchModels.closest('.floating-label-field');
+    if (multiSelectField && window.floatingLabelManager) {
+      const customMultiSelect = multiSelectField.querySelector('.custom-multi-select');
+      if (customMultiSelect) {
+        window.floatingLabelManager.updateCustomMultiSelectState(multiSelectField, customMultiSelect);
+      }
     }
   }
 

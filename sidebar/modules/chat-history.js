@@ -397,9 +397,15 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
             }
           }
           
+          // 添加模型标签到分支顶部
+          const modelLabel = document.createElement('div');
+          modelLabel.className = 'branch-model-label';
+          modelLabel.textContent = response.model || 'unknown';
+          branchDiv.appendChild(modelLabel);
+
           branchDiv.appendChild(contentDiv);
 
-          // loading状态：仅在右上角显示“停止并删除当前分支”按钮，不加入悬浮按钮组
+          // loading状态：仅在右上角显示"停止并删除当前分支"按钮，不加入悬浮按钮组
           if (response.status === 'loading') {
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'branch-actions';
@@ -473,12 +479,6 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
             }
             branchDiv.appendChild(buttonContainer);
           }
-          
-          // 添加模型标签（在内容下方）
-          const modelLabel = document.createElement('div');
-          modelLabel.className = 'branch-model-label';
-          modelLabel.textContent = response.model || 'unknown';
-          branchDiv.appendChild(modelLabel);
           
           branchesDiv.appendChild(branchDiv);
         });

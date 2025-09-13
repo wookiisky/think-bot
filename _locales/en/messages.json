@@ -254,6 +254,9 @@
   "options_default_model_label": {
     "message": "Model"
   },
+  "options_branch_models_label": {
+    "message": "Branch Models"
+  },
   "options_export_config_button": {
     "message": "Export Configuration"
   },

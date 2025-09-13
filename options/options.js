@@ -24,7 +24,10 @@ class OptionsPage {
     this.isAutoSyncing = false;
     this.isInitializing = true; // 添加初始化标志，防止在页面加载时意外重置syncEnabled
     // Initialize ModelManager with change notification callback
-    this.modelManager = new ModelManager(domElements, () => this.markAsChanged());
+    this.modelManager = new ModelManager(domElements, () => {
+      this.markAsChanged();
+      this.updateBranchModelSelector(); // Update branch model selector when models change
+    });
   }
   
   // Initialize the options page
@@ -71,11 +74,14 @@ class OptionsPage {
   async loadSettings() {
     const config = await UIConfigManager.loadSettings();
     if (config) {
-      // Initialize model manager first to populate model selector options
-      this.modelManager.init(config, () => this.markAsChanged());
+    // Initialize model manager first to populate model selector options
+    this.modelManager.init(config, () => this.markAsChanged());
 
-      // Then populate form with loaded config (including default model selection)
-      FormHandler.populateForm(config, this.domElements);
+    // Then populate form with loaded config (including default model selection)
+    FormHandler.populateForm(config, this.domElements);
+    
+    // Initialize branch model selector
+    this.initializeBranchModelSelector(config);
 
       // Apply theme based on loaded configuration
       this.applyTheme(config);
@@ -1133,6 +1139,127 @@ class OptionsPage {
         messageContainer.style.display = 'none';
       }, 300);
     }, 3000);
+  }
+
+  // Initialize branch model selector with configuration
+  initializeBranchModelSelector(config) {
+    const basicConfig = config.basic || config;
+    const branchModelIds = basicConfig.branchModelIds || [];
+    const allModels = this.modelManager.getAllModels();
+    
+    // Populate and update branch model selector
+    UIConfigManager.populateBranchModelSelector(this.domElements, allModels, branchModelIds);
+    
+    // Setup event listeners for branch model selector
+    this.setupBranchModelEventListeners();
+  }
+
+  // Update branch model selector when models change
+  updateBranchModelSelector() {
+    const allModels = this.modelManager.getAllModels();
+    const currentBranchModelIds = UIConfigManager.getBranchModelIds(this.domElements);
+    
+    UIConfigManager.populateBranchModelSelector(this.domElements, allModels, currentBranchModelIds);
+  }
+
+  // Setup event listeners for branch model selector
+  setupBranchModelEventListeners() {
+    // Toggle dropdown
+    this.domElements.branchModelsToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      this.toggleBranchModelDropdown();
+    });
+
+    // Click on selected items area to toggle dropdown
+    this.domElements.selectedBranchModels.addEventListener('click', (e) => {
+      if (!e.target.closest('.model-remove-icon')) {
+        this.toggleBranchModelDropdown();
+      }
+    });
+
+    // Handle option selection and removal
+    this.domElements.branchModelsDropdown.addEventListener('click', (e) => {
+      const optionItem = e.target.closest('.option-item');
+      if (optionItem) {
+        e.preventDefault();
+        const modelId = optionItem.dataset.value;
+        this.toggleBranchModelSelection(modelId);
+      }
+    });
+
+    // Handle selected model removal
+    this.domElements.selectedBranchModels.addEventListener('click', (e) => {
+      const removeIcon = e.target.closest('.model-remove-icon');
+      if (removeIcon) {
+        e.preventDefault();
+        const modelId = removeIcon.dataset.modelId;
+        this.removeBranchModelSelection(modelId);
+      }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#branchModelSelect')) {
+        this.closeBranchModelDropdown();
+      }
+    });
+  }
+
+  // Toggle branch model dropdown visibility
+  toggleBranchModelDropdown() {
+    const dropdown = this.domElements.branchModelsDropdown;
+    const toggle = this.domElements.branchModelsToggle;
+    const multiSelect = this.domElements.branchModelSelect;
+
+    const isOpen = dropdown.classList.contains('open');
+    
+    if (isOpen) {
+      dropdown.classList.remove('open');
+      toggle.classList.remove('open');
+      multiSelect.classList.remove('dropdown-open');
+    } else {
+      dropdown.classList.add('open');
+      toggle.classList.add('open');
+      multiSelect.classList.add('dropdown-open');
+    }
+  }
+
+  // Close branch model dropdown
+  closeBranchModelDropdown() {
+    const dropdown = this.domElements.branchModelsDropdown;
+    const toggle = this.domElements.branchModelsToggle;
+    const multiSelect = this.domElements.branchModelSelect;
+
+    dropdown.classList.remove('open');
+    toggle.classList.remove('open');
+    multiSelect.classList.remove('dropdown-open');
+  }
+
+  // Toggle branch model selection
+  toggleBranchModelSelection(modelId) {
+    const currentIds = UIConfigManager.getBranchModelIds(this.domElements);
+    const isSelected = currentIds.includes(modelId);
+    
+    let newIds;
+    if (isSelected) {
+      newIds = currentIds.filter(id => id !== modelId);
+    } else {
+      newIds = [...currentIds, modelId];
+    }
+    
+    const allModels = this.modelManager.getAllModels();
+    UIConfigManager.updateBranchModelSelection(this.domElements, allModels, newIds);
+    this.markAsChanged();
+  }
+
+  // Remove branch model selection
+  removeBranchModelSelection(modelId) {
+    const currentIds = UIConfigManager.getBranchModelIds(this.domElements);
+    const newIds = currentIds.filter(id => id !== modelId);
+    
+    const allModels = this.modelManager.getAllModels();
+    UIConfigManager.updateBranchModelSelection(this.domElements, allModels, newIds);
+    this.markAsChanged();
   }
 
   // Check for and display errors caught by global handlers

@@ -53,6 +53,7 @@
     "contentDisplayHeight": 100,
     "theme": "system",
     "defaultModelId": "gemini-pro",
+    "branchModelIds": ["openai-gpt41"],
     "lastModified": 1735372800000
   }
 }

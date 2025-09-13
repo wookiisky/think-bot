@@ -254,6 +254,9 @@
   "options_default_model_label": {
     "message": "默认模型"
   },
+  "options_branch_models_label": {
+    "message": "分支模型"
+  },
   "options_export_config_button": {
     "message": "导出配置"
   },

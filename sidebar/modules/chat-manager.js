@@ -1066,9 +1066,15 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
     loadingContainer.innerHTML = '<div class="spinner"></div>';
     contentDiv.appendChild(loadingContainer);
 
+    // 模型标签添加到分支顶部（仅显示模型名）
+    const modelLabel = document.createElement('div');
+    modelLabel.className = 'branch-model-label';
+    modelLabel.textContent = (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown';
+    branchDiv.appendChild(modelLabel);
+
     branchDiv.appendChild(contentDiv);
 
-    // 顶部右侧仅保留“停止并删除”按钮
+    // 顶部右侧仅保留"停止并删除"按钮
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'branch-actions';
     const stopDeleteButton = document.createElement('button');
@@ -1079,12 +1085,6 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
     stopDeleteButton.setAttribute('data-branch-id', localBranchId);
     actionsDiv.appendChild(stopDeleteButton);
     branchDiv.appendChild(actionsDiv);
-
-    // 模型标签（仅显示模型名）
-    const modelLabel = document.createElement('div');
-    modelLabel.className = 'branch-model-label';
-    modelLabel.textContent = (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown';
-    branchDiv.appendChild(modelLabel);
 
     branchesDiv.appendChild(branchDiv);
     branchContainer.appendChild(branchesDiv);
@@ -1287,6 +1287,12 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     loadingContainer.innerHTML = '<div class="spinner"></div>';
     contentDiv.appendChild(loadingContainer);
 
+    // Model label at the top of branch (name only)
+    const modelLabel = document.createElement('div');
+    modelLabel.className = 'branch-model-label';
+    modelLabel.textContent = (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown';
+    branchDiv.appendChild(modelLabel);
+
     branchDiv.appendChild(contentDiv);
 
     // Top-right actions: only stop-and-delete for loading
@@ -1301,12 +1307,6 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     // 点击逻辑改为委托到 chat-history.js 的分支事件，避免重复绑定与双触发
     actionsDiv.appendChild(stopDeleteButton);
     branchDiv.appendChild(actionsDiv);
-
-    // Model label under content (name only)
-    const modelLabel = document.createElement('div');
-    modelLabel.className = 'branch-model-label';
-    modelLabel.textContent = (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown';
-    branchDiv.appendChild(modelLabel);
 
     branchesDiv.appendChild(branchDiv);
     branchContainer.appendChild(branchesDiv);
@@ -1394,7 +1394,7 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
       logger.debug('registerBranchStart failed (non-blocking):', e.message);
     }
 
-    // Send message to background script for LLM processing
+    // Send message to background script for LLM processing (default model)
     await window.MessageHandler.sendLlmMessage({
       messages: messagesForPayload,
       systemPromptTemplate: systemPromptTemplateForPayload,
@@ -1406,6 +1406,69 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
       branchId: quickBranchId || undefined,
       model: selectedModel || undefined
     });
+
+    // Auto-create branch models for quick input (reuse branch functionality)
+    const branchModelIds = basicConfig.branchModelIds || [];
+    if (branchModelIds.length > 0) {
+      logger.info(`Creating auto-branches for quick input with models: ${branchModelIds.join(', ')}`);
+      
+      // Get all available models configuration
+      const llmConfig = config.llm_models || config.llm;
+      const availableModels = llmConfig?.models || [];
+      
+      // Find the current assistant message container (branch container)
+      const branchContainer = assistantLoadingMessage.closest('.branch-container');
+      const branchesContainer = branchContainer.querySelector('.message-branches');
+      
+      // Build context for branch creation (same as buildBranchContext but inline)
+      const context = buildBranchContext(branchContainer);
+      
+      // Create branches for each configured branch model
+      for (const modelId of branchModelIds) {
+        try {
+          // Find model configuration
+          const branchModel = availableModels.find(m => m.id === modelId && m.enabled);
+          if (!branchModel) {
+            logger.warn(`Branch model ${modelId} not found or disabled, skipping`);
+            continue;
+          }
+          
+          // Generate branch ID
+          const branchBranchId = generateBranchId();
+          
+          // Create UI element for branch
+          const branchElement = createBranchElement(branchBranchId, branchModel, 'loading');
+          branchesContainer.appendChild(branchElement);
+          
+          // Register branch start for loading state tracking
+          try {
+            if (window.TabManager && window.TabManager.registerBranchStart) {
+              await window.TabManager.registerBranchStart(currentTabId, branchBranchId);
+            }
+          } catch (e) {
+            logger.debug('registerBranchStart failed for branch model (non-blocking):', e.message);
+          }
+          
+          // Send LLM request for branch model
+          await sendBranchLlmRequest(context, branchModel, branchBranchId);
+          
+          logger.info(`Auto-created branch for model ${branchModel.name} (${branchModel.id})`);
+        } catch (branchError) {
+          logger.error(`Error creating auto-branch for model ${modelId}:`, branchError);
+        }
+      }
+      
+      // Update chat history after creating all branches
+      try {
+        const updatedChatHistory = getChatHistoryFromDOM(chatContainer);
+        if (window.TabManager && window.TabManager.saveCurrentTabChatHistory) {
+          await window.TabManager.saveCurrentTabChatHistory(updatedChatHistory);
+        }
+        logger.info('Updated chat history after creating auto-branches');
+      } catch (historyError) {
+        logger.warn('Failed to update chat history after creating auto-branches:', historyError);
+      }
+    }
   } catch (error) {
     logger.error('Error sending quick message:', error);
     // Pass loading message element to handleLlmError for updating it in case of failure
@@ -1828,6 +1891,12 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
     }
   }
   
+  // 添加模型标签到分支顶部（仅显示模型名）
+  const modelLabel = document.createElement('div');
+  modelLabel.className = 'branch-model-label';
+  modelLabel.textContent = model.name || 'unknown';
+  branchDiv.appendChild(modelLabel);
+  
   branchDiv.appendChild(contentDiv);
   
   // 添加操作按钮
@@ -1854,7 +1923,7 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
   }
   deleteButton.setAttribute('data-branch-id', branchId);
   
-  // loading 状态下仅保留“停止并删除”按钮
+  // loading 状态下仅保留"停止并删除"按钮
   if (status === 'loading') {
     actionsDiv.appendChild(deleteButton);
   } else {
@@ -1862,12 +1931,6 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
     actionsDiv.appendChild(deleteButton);
   }
   branchDiv.appendChild(actionsDiv);
-  
-  // 添加模型标签（仅显示模型名）
-  const modelLabel = document.createElement('div');
-  modelLabel.className = 'branch-model-label';
-  modelLabel.textContent = model.name || 'unknown';
-  branchDiv.appendChild(modelLabel);
   
   return branchDiv;
 };

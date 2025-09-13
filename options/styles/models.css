@@ -454,3 +454,58 @@
 .floating-label-field .custom-multi-select:hover {
   border-color: var(--border-color-hover);
 }
+
+/* Branch Models Multi-Select Specific Styles */
+.selected-model-item {
+  display: inline-flex;
+  align-items: center;
+  background-color: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  transition: all var(--transition-normal) ease;
+  line-height: 1;
+  gap: 0.25rem;
+}
+
+.selected-model-item:hover {
+  background-color: var(--hover-color);
+  border-color: var(--border-color-hover);
+}
+
+.selected-model-item .model-name {
+  flex: 1;
+}
+
+.selected-model-item .model-remove-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+  font-size: 0.6rem;
+}
+
+.selected-model-item .model-remove-icon:hover {
+  color: var(--error-color);
+  background-color: transparent;
+}
+
+.selected-model-item .model-remove-icon .material-icons {
+  font-size: 10px;
+}
+
+.no-models-selected {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-style: italic;
+  user-select: none;
+}

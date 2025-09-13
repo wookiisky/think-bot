@@ -14,6 +14,10 @@ export const domElements = {
   
   // LLM model elements
   defaultModelSelect: document.getElementById('defaultModelSelect'),
+  branchModelSelect: document.getElementById('branchModelSelect'),
+  selectedBranchModels: document.getElementById('selected-branch-models'),
+  branchModelsToggle: document.getElementById('branch-models-toggle'),
+  branchModelsDropdown: document.getElementById('branch-models-dropdown'),
   modelsContainer: document.getElementById('modelsContainer'),
   
   // UI settings

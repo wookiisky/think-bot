@@ -302,6 +302,13 @@ const retryMessage = (messageElement, retryCallback) => {
         loadingContainer.className = 'loading-container';
         loadingContainer.innerHTML = '<div class="spinner"></div>';
         contentDiv.appendChild(loadingContainer);
+        
+        // 添加模型标签到分支顶部
+        const modelLabel = document.createElement('div');
+        modelLabel.className = 'branch-model-label';
+        modelLabel.textContent = (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown';
+        branchDiv.appendChild(modelLabel);
+        
         branchDiv.appendChild(contentDiv);
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'branch-actions';
@@ -313,10 +320,6 @@ const retryMessage = (messageElement, retryCallback) => {
         stopDeleteButton.setAttribute('data-branch-id', retryBranchId);
         actionsDiv.appendChild(stopDeleteButton);
         branchDiv.appendChild(actionsDiv);
-        const modelLabel = document.createElement('div');
-        modelLabel.className = 'branch-model-label';
-        modelLabel.textContent = (selectedModelForLabel && (selectedModelForLabel.name || selectedModelForLabel.model)) || 'unknown';
-        branchDiv.appendChild(modelLabel);
         branchesDiv.appendChild(branchDiv);
         branchContainer.appendChild(branchesDiv);
         chatEl.appendChild(branchContainer);
