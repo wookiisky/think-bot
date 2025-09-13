@@ -43,6 +43,19 @@
   pointer-events: none;
 }
 
+/* When a model is disabled we still want the action controls (toggle/remove)
+   to be clickable so the user can re-enable or remove the entry. The global
+   `.disabled { pointer-events: none }` rule (in base.css) would block clicks
+   for the whole item; override it here for the actions column only. */
+.model-config-item.disabled .model-actions-column {
+  pointer-events: auto; /* allow click events on actions */
+}
+
+.model-config-item.disabled .model-actions-column .model-toggle,
+.model-config-item.disabled .model-actions-column .remove-model-btn {
+  pointer-events: auto; /* ensure the inner controls are interactive */
+}
+
 /* Model card header row with handle and actions */
 .model-card-header {
   display: flex;

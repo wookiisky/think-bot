@@ -46,6 +46,10 @@ export class ModelManager {
     container.innerHTML = '';
 
     this.models.forEach((model, index) => {
+      // Skip rendering deleted models
+      if (model.isDeleted) {
+        return;
+      }
       const modelElement = this.createModelElement(model, index);
       container.appendChild(modelElement);
     });
@@ -379,7 +383,7 @@ export class ModelManager {
     }
   }
 
-  // Remove a model configuration
+  // Remove a model configuration (soft delete)
   removeModel(index) {
     const model = this.models[index];
     if (!model) return;
@@ -395,10 +399,12 @@ export class ModelManager {
       confirmText: i18n.getMessage('common_delete') || 'Delete',
       cancelText: i18n.getMessage('common_cancel') || 'Cancel',
       onConfirm: () => {
-        this.models.splice(index, 1);
+        // Use soft delete: mark as deleted instead of removing from array
+        this.models[index].isDeleted = true;
+        this.models[index].lastModified = Date.now(); // Update timestamp for sync merging
         this.renderModels();
         this.updateDefaultModelSelector();
-        logger.info(`Removed model "${modelName}" at index ${index}`);
+        logger.info(`Soft deleted model "${modelName}" at index ${index}`);
         if (this.changeCallback) {
           this.changeCallback();
         }
@@ -691,14 +697,35 @@ export class ModelManager {
     return false;
   }
   
-  // Get all models that are enabled and have complete configurations
+  // Get all models that are enabled and have complete configurations (excluding deleted ones)
   getCompleteModels() {
-    return this.models.filter(model => model.enabled && this.isModelComplete(model));
+    return this.models.filter(model => !model.isDeleted && model.enabled && this.isModelComplete(model));
   }
 
-  // Get all models (including incomplete ones) with timestamps preserved
+  // Get all models (including incomplete and deleted ones) with timestamps preserved for sync
   getAllModels() {
     return this.models.map(model => ({ ...model })); // Return a copy to avoid mutations
+  }
+
+  // Get only active (non-deleted) models
+  getActiveModels() {
+    return this.models.filter(model => !model.isDeleted).map(model => ({ ...model }));
+  }
+
+  // Clean up soft-deleted models after successful sync
+  cleanupDeletedModels() {
+    const originalLength = this.models.length;
+    this.models = this.models.filter(model => !model.isDeleted);
+    const cleanedCount = originalLength - this.models.length;
+    
+    if (cleanedCount > 0) {
+      logger.info(`Cleaned up ${cleanedCount} soft-deleted models`);
+      this.renderModels();
+      this.updateDefaultModelSelector();
+      if (this.changeCallback) {
+        this.changeCallback();
+      }
+    }
   }
 
   // Update the default model selector
@@ -755,13 +782,27 @@ export class ModelManager {
       const modelItem = target.closest('.model-config-item');
       if (!modelItem) return;
 
+      // Determine model index from the containing item
       const index = parseInt(modelItem.dataset.index, 10);
 
+      // Remove button handling (preserve existing behavior)
       if (target.classList.contains('remove-model-btn') || target.closest('.remove-model-btn')) {
         e.stopPropagation(); // Prevent event bubbling to avoid immediate dialog dismissal
         this.removeModel(index);
-      } else if (target.classList.contains('model-toggle')) {
-        this.toggleModel(index, target.checked);
+        return;
+      }
+
+      // Toggle handling: support clicks on the actual checkbox input as well as
+      // clicks on the label/slider area. Use closest lookup to find the
+      // toggle input reliably.
+      const toggleInput = target.classList.contains('model-toggle')
+        ? target
+        : (target.closest('.toggle-switch') ? target.closest('.toggle-switch').querySelector('.model-toggle') : null);
+
+      if (toggleInput) {
+        // Ensure we get the correct index (input may carry its own data-model-index)
+        const inputIndex = parseInt(toggleInput.dataset.modelIndex || modelItem.dataset.index, 10);
+        this.toggleModel(inputIndex, toggleInput.checked);
       }
     });
 
@@ -784,12 +825,24 @@ export class ModelManager {
     });
 
     container.addEventListener('change', (e) => {
+      // Provider select changes
       if (e.target.classList.contains('model-provider-select')) {
         const modelItem = e.target.closest('.model-config-item');
         if (modelItem) {
           const index = parseInt(modelItem.dataset.index, 10);
           this.updateModelProvider(index, e.target.value);
         }
+        return;
+      }
+
+      // Toggle checkbox change - use change event to reliably get new checked state
+      if (e.target.classList.contains('model-toggle')) {
+        const toggle = e.target;
+        const modelItem = toggle.closest('.model-config-item');
+        if (!modelItem) return;
+        const index = parseInt(toggle.dataset.modelIndex || modelItem.dataset.index, 10);
+        this.toggleModel(index, toggle.checked);
+        return;
       }
     });
 

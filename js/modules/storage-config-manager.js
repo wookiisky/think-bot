@@ -883,5 +883,62 @@ storageConfigManager.cleanupDeletedQuickInputs = async function() {
   }
 };
 
+// Clean up models that are marked for deletion
+storageConfigManager.cleanupDeletedModels = async function() {
+  try {
+    storageConfigLogger.info('Starting cleanup of soft-deleted models.');
+    
+    // Get current configuration
+    const config = await storageConfigManager.getConfig();
+    if (!config || !config.llm_models || !config.llm_models.models) {
+      storageConfigLogger.info('No models found to clean up.');
+      return false;
+    }
+
+    const models = config.llm_models.models;
+    const activeModels = [];
+    let deletedCount = 0;
+
+    models.forEach(model => {
+      if (model.isDeleted) {
+        deletedCount++;
+        storageConfigLogger.debug(`Found soft-deleted model to cleanup: ${model.id} (${model.name || 'Unnamed'})`);
+      } else {
+        activeModels.push(model);
+      }
+    });
+
+    if (deletedCount > 0) {
+      storageConfigLogger.info(`Found ${deletedCount} models to permanently delete.`);
+      
+      // Update the configuration with only active models
+      const updatedConfig = {
+        ...config,
+        llm_models: {
+          ...config.llm_models,
+          models: activeModels
+        }
+      };
+
+      // Save the updated configuration
+      const saveResult = await storageConfigManager.saveConfig(updatedConfig, false);
+      
+      if (saveResult) {
+        storageConfigLogger.info('Cleanup of soft-deleted models completed successfully.');
+        return true;
+      } else {
+        storageConfigLogger.error('Failed to save configuration after model cleanup.');
+        return false;
+      }
+    } else {
+      storageConfigLogger.info('No soft-deleted models found to clean up.');
+      return false;
+    }
+  } catch (error) {
+    storageConfigLogger.error('Error during cleanup of soft-deleted models:', error.message);
+    throw error;
+  }
+};
+
 // Maintain backward compatibility by creating an alias
 var configManager = storageConfigManager;

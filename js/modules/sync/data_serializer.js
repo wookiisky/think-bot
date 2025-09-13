@@ -823,11 +823,11 @@ dataSerializer.mergeBasicConfig = function(localBasic, remoteBasic) {
 };
 
 /**
- * Merge LLM models arrays based on individual model timestamps
+ * Merge LLM models arrays based on individual model timestamps with soft-delete support
  */
 dataSerializer.mergeLlmModels = function(localModels, remoteModels) {
   try {
-    serializerLogger.info('Starting LLM models merge based on lastModified timestamps');
+    serializerLogger.info('Starting LLM models merge with soft-delete support based on lastModified timestamps');
 
     if (!localModels && !remoteModels) {
       return [];
@@ -862,41 +862,71 @@ dataSerializer.mergeLlmModels = function(localModels, remoteModels) {
     const mergedModels = [];
     const processedIds = new Set();
 
-    // Process models that exist in both local and remote
-    localMap.forEach((localModel, id) => {
-      if (remoteMap.has(id)) {
-        const remoteModel = remoteMap.get(id);
+    // Get all unique model IDs from both local and remote
+    const allModelIds = new Set([...localMap.keys(), ...remoteMap.keys()]);
+
+    // Process each unique model ID
+    for (const id of allModelIds) {
+      const localModel = localMap.get(id);
+      const remoteModel = remoteMap.get(id);
+
+      if (localModel && remoteModel) {
+        // Both exist, compare timestamps and handle soft delete conflicts
         const localTimestamp = localModel.lastModified || 0;
         const remoteTimestamp = remoteModel.lastModified || 0;
+        const localIsDeleted = localModel.isDeleted === true;
+        const remoteIsDeleted = remoteModel.isDeleted === true;
 
-        if (localTimestamp >= remoteTimestamp) {
-          mergedModels.push(localModel);
-          serializerLogger.debug(`Using local model: ${id} (local: ${new Date(localTimestamp).toISOString()}, remote: ${new Date(remoteTimestamp).toISOString()})`);
+        if (localIsDeleted && remoteIsDeleted) {
+          // Both are deleted, keep the newer deletion record
+          const newerModel = localTimestamp >= remoteTimestamp ? localModel : remoteModel;
+          mergedModels.push(newerModel);
+          serializerLogger.debug(`Both local and remote model ${id} are deleted, using newer deletion record`);
+        } else if (localIsDeleted && !remoteIsDeleted) {
+          // Local is deleted, remote has data
+          if (localTimestamp > remoteTimestamp) {
+            // Deletion is newer, keep deletion
+            mergedModels.push(localModel);
+            serializerLogger.debug(`Local deletion of ${id} is newer than remote data, keeping deletion`);
+          } else {
+            // Remote data is newer, keep it
+            mergedModels.push(remoteModel);
+            serializerLogger.debug(`Remote data for ${id} is newer than local deletion, keeping data`);
+          }
+        } else if (!localIsDeleted && remoteIsDeleted) {
+          // Remote is deleted, local has data
+          if (remoteTimestamp > localTimestamp) {
+            // Deletion is newer, keep deletion
+            mergedModels.push(remoteModel);
+            serializerLogger.debug(`Remote deletion of ${id} is newer than local data, keeping deletion`);
+          } else {
+            // Local data is newer, keep it
+            mergedModels.push(localModel);
+            serializerLogger.debug(`Local data for ${id} is newer than remote deletion, keeping data`);
+          }
         } else {
-          mergedModels.push(remoteModel);
-          serializerLogger.debug(`Using remote model: ${id} (local: ${new Date(localTimestamp).toISOString()}, remote: ${new Date(remoteTimestamp).toISOString()})`);
+          // Neither is deleted, normal timestamp comparison
+          if (localTimestamp >= remoteTimestamp) {
+            mergedModels.push(localModel);
+            serializerLogger.debug(`Using local model: ${id} (local: ${new Date(localTimestamp).toISOString()}, remote: ${new Date(remoteTimestamp).toISOString()})`);
+          } else {
+            mergedModels.push(remoteModel);
+            serializerLogger.debug(`Using remote model: ${id} (local: ${new Date(localTimestamp).toISOString()}, remote: ${new Date(remoteTimestamp).toISOString()})`);
+          }
         }
         processedIds.add(id);
-      }
-    });
-
-    // Add models that only exist in local
-    localMap.forEach((localModel, id) => {
-      if (!processedIds.has(id)) {
+      } else if (localModel && !remoteModel) {
+        // Only local exists
         mergedModels.push(localModel);
-        serializerLogger.debug(`Adding local-only model: ${id}`);
+        serializerLogger.debug(`Adding local-only model: ${id} (deleted: ${localModel.isDeleted || false})`);
         processedIds.add(id);
-      }
-    });
-
-    // Add models that only exist in remote
-    remoteMap.forEach((remoteModel, id) => {
-      if (!processedIds.has(id)) {
+      } else if (!localModel && remoteModel) {
+        // Only remote exists
         mergedModels.push(remoteModel);
-        serializerLogger.debug(`Adding remote-only model: ${id}`);
+        serializerLogger.debug(`Adding remote-only model: ${id} (deleted: ${remoteModel.isDeleted || false})`);
         processedIds.add(id);
       }
-    });
+    }
 
     serializerLogger.info(`Merged LLM models: ${mergedModels.length} items (local: ${localModels.length}, remote: ${remoteModels.length})`);
     return mergedModels;
