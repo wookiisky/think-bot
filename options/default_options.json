@@ -36,12 +36,14 @@
       "id": "qi_default_summary",
       "displayText": "总结",
       "sendText": "简明概要的总结下面的文章:\n\n{CONTENT}",
+      "branchModelIds": [],
       "lastModified": 1735372800000
     },
     {
       "id": "qi_default_keypoints",
       "displayText": "提取要点",
       "sendText": "Extract key points from this content:\n{CONTENT}",
+      "branchModelIds": [],
       "lastModified": 1735372800000
     }
   ],

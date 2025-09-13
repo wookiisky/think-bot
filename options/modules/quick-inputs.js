@@ -54,6 +54,14 @@ export class QuickInputsManager {
     
     // Add to container
     domElements.quickInputsContainer.appendChild(template);
+
+    // Populate branch models for the newly added item
+    const newItem = domElements.quickInputsContainer.querySelector('.quick-input-item:last-child');
+    const modelManager = window.optionsPage?.modelManager;
+    if (newItem && modelManager) {
+      const allModels = modelManager.getAllModels();
+      this.populateQuickInputBranchModels(newItem, allModels, []);
+    }
     
     // Apply i18n translations to the newly added elements
     if (typeof i18n !== 'undefined' && i18n.applyToDOM) {
@@ -78,6 +86,7 @@ export class QuickInputsManager {
       const sendText = item.querySelector('.quick-input-send').value.trim();
       const idInput = item.querySelector('.quick-input-id');
       const autoTriggerCheckbox = item.querySelector('.auto-trigger-checkbox');
+      const branchModelIds = this.getQuickInputBranchModelIds(item);
       const isDeleted = item.dataset.deleted === 'true';
       const id = idInput ? idInput.value : this.generateRandomId();
 
@@ -96,6 +105,7 @@ export class QuickInputsManager {
           displayText,
           sendText,
           autoTrigger: autoTriggerEnabled,
+          branchModelIds: branchModelIds || [],
           isDeleted: false
           // Note: lastModified timestamp will be calculated during save by comparing with old config
         });
@@ -160,7 +170,7 @@ export class QuickInputsManager {
   }
   
   // Render quick inputs from config (preserving existing IDs and handling soft deletes)
-  static renderQuickInputs(quickInputs, domElements) {
+  static renderQuickInputs(quickInputs, domElements, modelManager = null) {
     // Clear existing quick inputs
     domElements.quickInputsContainer.innerHTML = '';
 
@@ -179,11 +189,30 @@ export class QuickInputsManager {
 
       // Set auto-trigger state immediately after adding the input
       this.setAutoTriggerState(id, input.autoTrigger || false, domElements);
+
+      // Set branch model selection
+      if (input.branchModelIds && input.branchModelIds.length > 0 && modelManager) {
+        const item = domElements.quickInputsContainer.querySelector(`.quick-input-item:last-child`);
+        if (item) {
+          const allModels = modelManager.getAllModels();
+          this.populateQuickInputBranchModels(item, allModels, input.branchModelIds);
+        }
+      }
     });
 
     // Add an empty one if no active inputs exist
     if (activeInputsCount === 0) {
       this.addQuickInput(domElements);
+    }
+
+    // Populate branch models for all items after rendering
+    if (modelManager) {
+      const allModels = modelManager.getAllModels();
+      const items = domElements.quickInputsContainer.querySelectorAll('.quick-input-item');
+      items.forEach(item => {
+        const currentIds = this.getQuickInputBranchModelIds(item);
+        this.populateQuickInputBranchModels(item, allModels, currentIds);
+      });
     }
 
     // Apply i18n translations to newly created DOM elements
@@ -207,6 +236,137 @@ export class QuickInputsManager {
         }
       }
     });
+  }
+
+  // Get branch model IDs from a quick input item
+  static getQuickInputBranchModelIds(item) {
+    const selectedItems = item.querySelector('.quick-input-selected-branch-models');
+    if (!selectedItems) return [];
+    
+    const modelItems = selectedItems.querySelectorAll('.selected-model-item');
+    return Array.from(modelItems).map(item => item.dataset.modelId).filter(Boolean);
+  }
+
+  // Populate branch model selector for a quick input item
+  static populateQuickInputBranchModels(item, allModels, selectedIds = []) {
+    const dropdown = item.querySelector('.quick-input-branch-models-dropdown');
+    const selectedContainer = item.querySelector('.quick-input-selected-branch-models');
+    
+    if (!dropdown || !selectedContainer) return;
+
+    // Clear existing options
+    dropdown.innerHTML = '';
+    
+    // Add options for each model - filter out deleted and disabled models
+    allModels.forEach(model => {
+      if (!model.isDeleted && model.enabled) {
+        const optionItem = document.createElement('div');
+        optionItem.className = 'option-item';
+        optionItem.dataset.value = model.id;
+        optionItem.innerHTML = `<span class="option-text">${model.name || model.id}</span>`;
+        dropdown.appendChild(optionItem);
+      }
+    });
+
+    // Update selected items display
+    this.updateQuickInputBranchModelSelection(item, allModels, selectedIds);
+  }
+
+  // Update the selected branch models display for a quick input item
+  static updateQuickInputBranchModelSelection(item, allModels, selectedIds) {
+    const selectedContainer = item.querySelector('.quick-input-selected-branch-models');
+    if (!selectedContainer || !Array.isArray(selectedIds)) return;
+
+    if (selectedIds.length === 0) {
+      selectedContainer.innerHTML = '<span class="no-models-selected"></span>';
+      return;
+    }
+
+    // Find the model objects for selected IDs and filter out deleted models
+    const selectedModels = selectedIds.map(id => 
+      allModels.find(model => model.id === id)
+    ).filter(model => model && !model.isDeleted);
+
+    // Render selected models
+    const selectedItemsHtml = selectedModels.map(model => `
+      <span class="selected-model-item" data-model-id="${model.id}">
+        <span class="model-name">${model.name || model.id}</span>
+        <span class="model-remove-icon" data-model-id="${model.id}">
+          <i class="material-icons">close</i>
+        </span>
+      </span>
+    `).join('');
+
+    selectedContainer.innerHTML = selectedItemsHtml;
+
+    // Update floating label state
+    const multiSelectField = selectedContainer.closest('.floating-label-field');
+    if (multiSelectField && window.floatingLabelManager) {
+      const customMultiSelect = multiSelectField.querySelector('.custom-multi-select');
+      if (customMultiSelect) {
+        window.floatingLabelManager.updateCustomMultiSelectState(multiSelectField, customMultiSelect);
+      }
+    }
+  }
+
+  // Toggle branch model selection for a quick input item
+  static toggleQuickInputBranchModelSelection(item, modelId) {
+    const currentIds = this.getQuickInputBranchModelIds(item);
+    const isSelected = currentIds.includes(modelId);
+    
+    let newIds;
+    if (isSelected) {
+      newIds = currentIds.filter(id => id !== modelId);
+    } else {
+      newIds = [...currentIds, modelId];
+    }
+    
+    // Get all models for display update
+    const modelManager = window.optionsPage?.modelManager;
+    if (modelManager) {
+      const allModels = modelManager.getAllModels();
+      this.updateQuickInputBranchModelSelection(item, allModels, newIds);
+    }
+    
+    if (this.changeCallback) {
+      this.changeCallback();
+    }
+  }
+
+  // Toggle dropdown visibility for a quick input item
+  static toggleQuickInputBranchModelDropdown(item) {
+    const dropdown = item.querySelector('.quick-input-branch-models-dropdown');
+    const toggle = item.querySelector('.quick-input-branch-models-toggle');
+    const multiSelect = item.querySelector('.quick-input-branch-models');
+
+    if (!dropdown || !toggle || !multiSelect) return;
+
+    const isOpen = dropdown.classList.contains('open');
+    
+    // Close all other quick input dropdowns first
+    const allDropdowns = document.querySelectorAll('.quick-input-branch-models-dropdown');
+    const allToggles = document.querySelectorAll('.quick-input-branch-models-toggle');
+    const allMultiSelects = document.querySelectorAll('.quick-input-branch-models');
+    
+    allDropdowns.forEach(d => {
+      if (d !== dropdown) d.classList.remove('open');
+    });
+    allToggles.forEach(t => {
+      if (t !== toggle) t.classList.remove('open');
+    });
+    allMultiSelects.forEach(ms => {
+      if (ms !== multiSelect) ms.classList.remove('dropdown-open');
+    });
+    
+    if (isOpen) {
+      dropdown.classList.remove('open');
+      toggle.classList.remove('open');
+      multiSelect.classList.remove('dropdown-open');
+    } else {
+      dropdown.classList.add('open');
+      toggle.classList.add('open');
+      multiSelect.classList.add('dropdown-open');
+    }
   }
 
   // Set up all event listeners for the quick inputs section
@@ -247,6 +407,50 @@ export class QuickInputsManager {
             }
           });
         }
+      }
+    });
+
+    // Branch model dropdown events
+    domElements.quickInputsContainer.addEventListener('click', e => {
+      const item = e.target.closest('.quick-input-item');
+      if (!item) return;
+
+      // Toggle dropdown
+      if (e.target.closest('.quick-input-branch-models-toggle')) {
+        e.preventDefault();
+        this.toggleQuickInputBranchModelDropdown(item);
+      }
+      // Click on selected items area to toggle dropdown
+      else if (e.target.closest('.quick-input-selected-branch-models') && !e.target.closest('.model-remove-icon')) {
+        e.preventDefault();
+        this.toggleQuickInputBranchModelDropdown(item);
+      }
+      // Handle option selection
+      else if (e.target.closest('.quick-input-branch-models-dropdown .option-item')) {
+        e.preventDefault();
+        const optionItem = e.target.closest('.option-item');
+        const modelId = optionItem.dataset.value;
+        this.toggleQuickInputBranchModelSelection(item, modelId);
+      }
+      // Handle selected model removal
+      else if (e.target.closest('.quick-input-selected-branch-models .model-remove-icon')) {
+        e.preventDefault();
+        const removeIcon = e.target.closest('.model-remove-icon');
+        const modelId = removeIcon.dataset.modelId;
+        this.toggleQuickInputBranchModelSelection(item, modelId);
+      }
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.quick-input-branch-models')) {
+        const openDropdowns = document.querySelectorAll('.quick-input-branch-models-dropdown.open');
+        const openToggles = document.querySelectorAll('.quick-input-branch-models-toggle.open');
+        const openMultiSelects = document.querySelectorAll('.quick-input-branch-models.dropdown-open');
+        
+        openDropdowns.forEach(dropdown => dropdown.classList.remove('open'));
+        openToggles.forEach(toggle => toggle.classList.remove('open'));
+        openMultiSelects.forEach(multiSelect => multiSelect.classList.remove('dropdown-open'));
       }
     });
     

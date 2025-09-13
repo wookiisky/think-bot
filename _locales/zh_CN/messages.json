@@ -518,6 +518,9 @@
   "options_quick_input_message_label": {
     "message": "消息内容"
   },
+  "options_quick_input_branch_models_label": {
+    "message": "分支模型"
+  },
   "options_quick_input_tabs_title": {
     "message": "标签页"
   },

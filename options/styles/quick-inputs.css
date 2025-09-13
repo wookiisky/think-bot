@@ -178,3 +178,56 @@
     gap: 0.5rem;
   }
 }
+
+/* Branch Models Multi-Select for Quick Inputs */
+.quick-input-item .custom-multi-select {
+  position: relative;
+}
+
+.quick-input-item .dropdown-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  z-index: 1001;
+  max-height: 280px;
+  overflow-y: auto;
+  display: none;
+  scrollbar-width: thin;
+}
+
+.quick-input-item .dropdown-options.open {
+  display: block;
+}
+
+/* Compact option items for quick input branch models */
+.quick-input-item .option-item {
+  padding: 0.25rem 0.4rem;
+}
+
+.quick-input-item .option-item .option-text {
+  font-size: 0.75rem;
+  line-height: 1.1;
+}
+
+/* Compact scrollbar for quick input dropdown */
+.quick-input-item .dropdown-options::-webkit-scrollbar {
+  width: 6px;
+}
+
+.quick-input-item .dropdown-options::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+
+.quick-input-item .dropdown-options::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.quick-input-item .dropdown-options::-webkit-scrollbar-thumb:hover {
+  background: var(--border-color-hover);
+}

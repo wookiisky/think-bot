@@ -518,6 +518,9 @@
   "options_quick_input_message_label": {
     "message": "Message"
   },
+  "options_quick_input_branch_models_label": {
+    "message": "Branch Models"
+  },
   "options_quick_input_tabs_title": {
     "message": "Quick Input Tabs"
   },

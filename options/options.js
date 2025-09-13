@@ -87,7 +87,7 @@ class OptionsPage {
       this.applyTheme(config);
 
       // Render quick inputs
-      QuickInputsManager.renderQuickInputs(config.quickInputs || [], this.domElements);
+      QuickInputsManager.renderQuickInputs(config.quickInputs || [], this.domElements, this.modelManager);
 
       // Toggle appropriate settings based on current values
       FormHandler.toggleExtractionMethodSettings(this.domElements, this.domGroups);
@@ -174,7 +174,7 @@ class OptionsPage {
         
 
         // Re-render quick inputs to remove any empty items that were filtered out during save
-        QuickInputsManager.renderQuickInputs(config.quickInputs || [], this.domElements);
+        QuickInputsManager.renderQuickInputs(config.quickInputs || [], this.domElements, this.modelManager);
 
         // Check if auto sync is enabled and perform sync
         if (syncSettings.enabled && typeof syncManager !== 'undefined') {
@@ -222,7 +222,7 @@ class OptionsPage {
         this.hasUnsavedChanges = false;
 
         // Re-render quick inputs
-        QuickInputsManager.renderQuickInputs(config.quickInputs || [], this.domElements);
+        QuickInputsManager.renderQuickInputs(config.quickInputs || [], this.domElements, this.modelManager);
 
         // Perform sync using syncManager if available
         if (typeof syncManager !== 'undefined') {
@@ -1256,6 +1256,18 @@ class OptionsPage {
     const currentBranchModelIds = UIConfigManager.getBranchModelIds(this.domElements);
     
     UIConfigManager.populateBranchModelSelector(this.domElements, allModels, currentBranchModelIds);
+
+    // Also update quick input branch model selectors
+    this.updateQuickInputBranchModelSelectors(allModels);
+  }
+
+  // Update branch model selectors for all quick input items
+  updateQuickInputBranchModelSelectors(allModels) {
+    const items = this.domElements.quickInputsContainer.querySelectorAll('.quick-input-item');
+    items.forEach(item => {
+      const currentIds = QuickInputsManager.getQuickInputBranchModelIds(item);
+      QuickInputsManager.populateQuickInputBranchModels(item, allModels, currentIds);
+    });
   }
 
   // Setup event listeners for branch model selector
@@ -1394,5 +1406,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   
   const optionsPage = new OptionsPage();
+  // Set global reference for access from other modules
+  window.optionsPage = optionsPage;
   await optionsPage.init();
 });

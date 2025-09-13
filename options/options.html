@@ -315,6 +315,26 @@
           <textarea class="quick-input-send" rows="5"></textarea>
           <label class="floating-label" data-i18n="options_quick_input_message_label">Message</label>
         </div>
+        
+        <!-- Branch Models Selection -->
+        <div class="floating-label-field">
+          <div class="custom-multi-select quick-input-branch-models" id="quick-input-branch-models">
+            <div class="multi-select-container">
+              <div class="selected-items quick-input-selected-branch-models">
+                <span class="no-models-selected"></span>
+              </div>
+              <div class="multi-select-dropdown">
+                <button type="button" class="dropdown-toggle quick-input-branch-models-toggle">
+                  <i class="material-icons">arrow_drop_down</i>
+                </button>
+                <div class="dropdown-options quick-input-branch-models-dropdown">
+                  <!-- Options will be populated dynamically -->
+                </div>
+              </div>
+            </div>
+          </div>
+          <label for="quick-input-branch-models" class="floating-label" data-i18n="options_quick_input_branch_models_label">Branch Models</label>
+        </div>
       </div>
     </div>
   </template>

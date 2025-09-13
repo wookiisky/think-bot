@@ -245,9 +245,10 @@
 
 .no-tools-selected {
   color: var(--text-secondary);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-style: italic;
   user-select: none;
+  padding: 0.125rem 0;
 }
 
 .multi-select-dropdown {
@@ -297,10 +298,29 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   z-index: 1000;
   width: 100%;
-  max-height: 160px;
+  max-height: 280px;
   overflow-y: auto;
   display: none;
   animation: slideDown 0.15s ease-out;
+  scrollbar-width: thin;
+}
+
+/* Compact scrollbar for dropdown */
+.dropdown-options::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-options::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+
+.dropdown-options::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.dropdown-options::-webkit-scrollbar-thumb:hover {
+  background: var(--border-color-hover);
 }
 
 .dropdown-options.open {
@@ -322,7 +342,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.35rem 0.5rem;
+  padding: 0.25rem 0.4rem;
   cursor: pointer;
   transition: all var(--transition-normal) ease;
   border-bottom: 1px solid var(--divider-color);
@@ -337,8 +357,8 @@
 }
 
 .option-item .option-text {
-  font-size: 0.8rem;
-  line-height: 1.2;
+  font-size: 0.75rem;
+  line-height: 1.1;
   color: var(--text-color);
   text-align: center;
   width: 100%;
@@ -497,7 +517,8 @@
 
 .no-models-selected {
   color: var(--text-secondary);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-style: italic;
   user-select: none;
+  padding: 0.125rem 0;
 }
