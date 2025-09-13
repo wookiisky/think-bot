@@ -376,9 +376,11 @@ const handleStreamChunk = (chatContainer, chunk, tabId, url, branchId = null) =>
     if (containsMarkdown) {
       // For markdown content, render it
       streamingMessageContentDiv.innerHTML = marked.parse(currentBuffer);
+      streamingMessageContentDiv.classList.remove('no-markdown');
     } else {
       // For plain text, preserve formatting
       streamingMessageContentDiv.innerHTML = currentBuffer.replace(/\n/g, '<br>');
+      streamingMessageContentDiv.classList.add('no-markdown');
     }
     
     // Log successful chunk processing
@@ -387,6 +389,7 @@ const handleStreamChunk = (chatContainer, chunk, tabId, url, branchId = null) =>
     logger.error('Error rendering stream chunk:', error);
     // Fallback to plain text display
     streamingMessageContentDiv.innerHTML = currentBuffer.replace(/\n/g, '<br>');
+    streamingMessageContentDiv.classList.add('no-markdown');
   }
 };
 
@@ -456,12 +459,14 @@ const handleStreamEnd = (chatContainer, fullResponse, onComplete, finishReason =
     } else {
       // Use plain text with preserved line breaks for content without markdown
       contentDiv.classList.add('no-markdown');
-      contentDiv.textContent = fullResponse;
+      // Use innerHTML with <br> replacement to maintain consistency with streaming chunks
+      contentDiv.innerHTML = fullResponse.replace(/\n/g, '<br>');
     }
   } catch (markdownError) {
     logger.error('Error parsing Markdown in stream end:', markdownError);
     contentDiv.classList.add('no-markdown');
-    contentDiv.textContent = fullResponse; // Fallback to plain text
+    // Use innerHTML with <br> replacement for consistency
+    contentDiv.innerHTML = fullResponse.replace(/\n/g, '<br>');
   }
 
   // Add finish reason warning if it's an abnormal finish
@@ -1486,6 +1491,9 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
           const branchElement = createBranchElement(branchBranchId, branchModel, 'loading');
           branchesContainer.appendChild(branchElement);
           
+          // Update branch container style after adding branch
+          updateBranchContainerStyle(branchesContainer);
+          
           // Register branch start for loading state tracking
           try {
             if (window.TabManager && window.TabManager.registerBranchStart) {
@@ -1798,7 +1806,7 @@ const createBranch = async (originalBranchId, model) => {
     const newBranchDiv = createBranchElement(newBranchId, model, 'loading');
     branchesContainer.appendChild(newBranchDiv);
     
-    // Check if there are more than 3 branches and update CSS class
+    // Check if there are 3 or more branches and update CSS class
     updateBranchContainerStyle(branchesContainer);
     
     // 滚动到新分支
@@ -1993,7 +2001,7 @@ const updateBranchContainerStyle = (branchesContainer) => {
   
   const branchCount = branchesContainer.querySelectorAll('.message-branch').length;
   
-  if (branchCount > 3) {
+  if (branchCount >= 3) {
     branchesContainer.classList.add('many-branches');
     // Create or update dual scrollbar
     createDualScrollbar(branchesContainer);
@@ -2072,7 +2080,8 @@ const updateScrollbarContent = (branchesContainer) => {
   const branchCount = branchesContainer.querySelectorAll('.message-branch').length;
   const branchWidth = 380; // Fixed width per branch - updated to match CSS
   const gap = 6; // Gap between branches
-  const totalWidth = branchCount * branchWidth + (branchCount - 1) * gap;
+  const padding = 8; // Left and right padding (4px each side)
+  const totalWidth = branchCount * branchWidth + (branchCount - 1) * gap + padding;
   
   topScrollContent.style.width = `${totalWidth}px`;
 };

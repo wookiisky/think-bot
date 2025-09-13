@@ -528,7 +528,8 @@
   grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
   gap: 6px;
   width: 100%;
-  overflow-x: auto;
+  overflow-x: hidden; /* Changed from auto to hidden for grid layout */
+  overflow-y: visible;
   padding: 4px 0;
 }
 
@@ -575,7 +576,7 @@
   background: var(--primary-color-hover, #0056b3);
 }
 
-/* 超过3个分支时的横向滚动样式 */
+/* 大于等于3个分支时的横向滚动样式 */
 .message-branches.many-branches {
   display: flex;
   flex-direction: row;
@@ -587,7 +588,7 @@
   padding: 4px 0;
 }
 
-/* 当分支数量大于3个时，固定分支宽度确保横向滚动 */
+/* 当分支数量大于等于3个时，固定分支宽度确保横向滚动 */
 .message-branches.many-branches .message-branch {
   min-width: 380px;
   max-width: 380px;
@@ -664,6 +665,12 @@
   line-height: 1.6;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  white-space: normal; /* Ensure normal white-space handling */
+}
+
+/* Preserve line breaks for branch content with no-markdown class */
+.message-branch .message-content.no-markdown {
+  white-space: pre-wrap;
 }
 
 /* 分支模型标签 */
@@ -945,9 +952,28 @@
   padding: 0;
   margin: 0;
   flex: 1;
+  /* Remove flex display that was breaking text flow during streaming */
+  /* Only apply flex centering when showing loading container */
+}
+
+/* Specific style for loading container centering */
+.message-branch[data-streaming="true"] .message-content:has(.loading-container) {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Fallback for browsers that don't support :has() pseudo-class */
+.message-branch[data-streaming="true"] .message-content .loading-container {
+  /* Ensure loading container is properly centered */
+  margin: auto;
+  text-align: center;
+}
+
+/* Ensure normal text flow when streaming content appears */
+.message-branch[data-streaming="true"] .message-content:not(:has(.loading-container)) {
+  display: block;
+  text-align: left;
 }
 
 .message-branch[data-streaming="true"] .loading-container {

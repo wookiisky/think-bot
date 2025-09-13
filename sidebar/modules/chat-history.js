@@ -544,17 +544,12 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
           branchesDiv.appendChild(branchDiv);
         });
         
-        // Check if there are more than 3 branches and add appropriate CSS class
-        if (message.responses && message.responses.length > 3) {
-          branchesDiv.classList.add('many-branches');
-          
-          // Create dual scrollbar if ChatManager is available
-          if (window.ChatManager && window.ChatManager.updateBranchContainerStyle) {
-            // Use a setTimeout to ensure DOM is ready
-            setTimeout(() => {
-              window.ChatManager.updateBranchContainerStyle(branchesDiv);
-            }, 0);
-          }
+        // Update branch container style based on number of branches
+        if (window.ChatManager && window.ChatManager.updateBranchContainerStyle) {
+          // Use a setTimeout to ensure DOM is ready
+          setTimeout(() => {
+            window.ChatManager.updateBranchContainerStyle(branchesDiv);
+          }, 0);
         }
         
         branchContainer.appendChild(branchesDiv);
