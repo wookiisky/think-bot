@@ -297,9 +297,9 @@ export class UIConfigManager {
     // Clear existing options
     domElements.branchModelsDropdown.innerHTML = '';
     
-    // Add options for each model
+    // Add options for each model - filter out deleted and disabled models
     allModels.forEach(model => {
-      if (model.enabled) { // Only show enabled models
+      if (!model.isDeleted && model.enabled) { // Only show enabled and non-deleted models
         const optionItem = document.createElement('div');
         optionItem.className = 'option-item';
         optionItem.dataset.value = model.id;
@@ -323,10 +323,10 @@ export class UIConfigManager {
       return;
     }
 
-    // Find the model objects for selected IDs
+    // Find the model objects for selected IDs and filter out deleted models
     const selectedModels = selectedIds.map(id => 
       allModels.find(model => model.id === id)
-    ).filter(Boolean);
+    ).filter(model => model && !model.isDeleted); // Filter out null/undefined models and deleted models
 
     // Render selected models
     const selectedItemsHtml = selectedModels.map(model => `

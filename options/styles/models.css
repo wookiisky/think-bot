@@ -150,7 +150,8 @@
 /* Custom multi-select tools styling */
 .custom-multi-select {
   position: relative;
-  height: 32px;
+  min-height: 32px;
+  height: auto;
   border: 1px solid var(--border-color);
   background-color: var(--input-bg);
   color: var(--text-color);
@@ -177,8 +178,8 @@
 .multi-select-container {
   position: relative;
   display: flex;
-  align-items: center;
-  height: 30px;
+  align-items: flex-start;
+  min-height: 30px;
   padding: 0.45rem 0.5rem 0.35rem 0.5rem;
   gap: 0.25rem;
 }
@@ -186,38 +187,14 @@
 .selected-items {
   flex: 1;
   display: flex;
-  flex-wrap: nowrap;
-  gap: 0.125rem;
+  flex-wrap: wrap;
+  gap: 0.125rem 0.125rem;
   min-height: 1rem;
-  align-items: center;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  align-items: flex-start;
+  align-content: flex-start;
   cursor: pointer;
 }
 
-.selected-items::-webkit-scrollbar {
-  display: none;
-}
-
-.selected-items:hover {
-  scrollbar-width: thin;
-}
-
-.selected-items:hover::-webkit-scrollbar {
-  display: block;
-  height: 2px;
-}
-
-.selected-items:hover::-webkit-scrollbar-thumb {
-  background-color: var(--border-color-hover);
-  border-radius: 1px;
-}
-
-.selected-items:hover::-webkit-scrollbar-track {
-  background-color: var(--light-gray);
-}
 
 .selected-tool-item {
   display: inline-flex;
@@ -276,7 +253,8 @@
 .multi-select-dropdown {
   position: static;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 0.125rem;
 }
 
 .dropdown-toggle {
@@ -445,7 +423,8 @@
 
 /* Floating label field integration */
 .floating-label-field .custom-multi-select {
-  height: 32px;
+  min-height: 32px;
+  height: auto;
   width: 100%;
   padding: 0;
   border: 1px solid var(--border-color);
