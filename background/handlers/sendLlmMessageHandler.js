@@ -371,57 +371,41 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                 serviceLogger.error('SEND_LLM: Error sending error message to sidebar:', sendError.message);
             }
 
-            // Persist error into chat history for branch BEFORE broadcasting
+            // Clear loading state from chat history instead of persisting error
             if (branchId && currentUrl && tabId) {
                 try {
                     const tabSpecificUrl = `${currentUrl}#${tabId}`;
                     let history = await storage.getChatHistory(tabSpecificUrl);
                     if (!Array.isArray(history)) history = [];
 
-                    const nowTs = Date.now();
                     let updated = false;
 
+                    // Remove loading branch from history - errors should only show in UI
                     for (let i = history.length - 1; i >= 0 && !updated; i--) {
                         const msg = history[i];
                         if (msg && msg.role === 'assistant' && Array.isArray(msg.responses)) {
                             for (let j = msg.responses.length - 1; j >= 0; j--) {
                                 const r = msg.responses[j];
-                                if (r && r.branchId === branchId) {
-                                    r.status = 'error';
-                                    r.content = errorMessage || '';
-                                    r.errorMessage = errorMessage || '';
-                                    r.updatedAt = nowTs;
+                                if (r && r.branchId === branchId && r.status === 'loading') {
+                                    // Remove the loading branch instead of converting to error
+                                    msg.responses.splice(j, 1);
                                     updated = true;
                                     break;
                                 }
                             }
-                            if (updated) {
-                                msg.timestamp = msg.timestamp || nowTs;
+                            // If no responses left, remove the entire assistant message
+                            if (updated && msg.responses.length === 0) {
+                                history.splice(i, 1);
                             }
                         }
                     }
 
-                    if (!updated) {
-                        history.push({
-                            role: 'assistant',
-                            timestamp: nowTs,
-                            responses: [
-                                {
-                                    branchId: branchId,
-                                    model: (defaultModel && (defaultModel.model || defaultModel.name)) || 'unknown',
-                                    content: errorMessage || '',
-                                    status: 'error',
-                                    errorMessage: errorMessage || '',
-                                    updatedAt: nowTs
-                                }
-                            ]
-                        });
+                    if (updated) {
+                        await storage.saveChatHistory(tabSpecificUrl, history);
+                        serviceLogger.info(`SEND_LLM: Removed loading branch ${branchId} from chat history after error`);
                     }
-
-                    await storage.saveChatHistory(tabSpecificUrl, history);
-                    serviceLogger.info(`SEND_LLM: Persisted branch ${branchId} error to chat history for tab ${tabId}`);
                 } catch (persistErr) {
-                    serviceLogger.warn('SEND_LLM: Failed to persist branch error to chat history:', persistErr.message);
+                    serviceLogger.warn('SEND_LLM: Failed to clean loading state from chat history:', persistErr.message);
                 }
             }
 

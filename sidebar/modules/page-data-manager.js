@@ -266,14 +266,23 @@ const directLoadingStateCheck = async (currentUrl, tabId) => {
         }
         
         // Show loading indicator
-        window.ChatManager.appendMessageToUI(
-          chatContainer,
-          'assistant',
-          '<div class="spinner"></div>',
-          null,
-          true
-        );
-        logger.info('Restored loading UI for current tab');
+        const existingStreaming = chatContainer.querySelector('[data-streaming="true"]');
+        if (!existingStreaming) {
+          const currentUrlLocal = StateManager.getStateItem('currentUrl');
+          const streamIdLocal = `${currentUrlLocal}#${tabId}`;
+          window.ChatManager.appendMessageToUI(
+            chatContainer,
+            'assistant',
+            '<div class="spinner"></div>',
+            null,
+            true,
+            undefined,
+            streamIdLocal
+          );
+          logger.info('Restored loading UI for current tab');
+        } else {
+          logger.info('Skip restoring loader: streaming element already exists');
+        }
         
         // Set up reconnection listener for ongoing LLM stream
         setupStreamReconnection(currentUrl, tabId);

@@ -126,97 +126,20 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
   contentDiv.setAttribute('data-raw-content', content);
   
   if (role === 'assistant' && isStreaming) {
+    // 旧的助手消息流程已废弃，统一使用分支消息流程
+    // 如果仍有调用到此处的旧式流程，仅显示简单 spinner，不添加按钮
     try {
-      // Create container for spinner and stop button
       const loadingContainer = document.createElement('div');
       loadingContainer.className = 'loading-container';
-      loadingContainer.style.display = 'flex';
-      loadingContainer.style.alignItems = 'center';
-      loadingContainer.style.gap = '8px';
-      
-      // Add spinner
-      const spinnerDiv = document.createElement('div');
-      spinnerDiv.innerHTML = '<div class="spinner"></div>'; // Use fixed spinner html
-      loadingContainer.appendChild(spinnerDiv);
-      
-      // Add stop button
-      const stopButton = document.createElement('button');
-      stopButton.className = 'stop-request-btn';
-      stopButton.innerHTML = '<i class="material-icons">close</i>';
-      stopButton.title = i18n.getMessage('sidebar_chatManager_title_stopGenerating');
-      stopButton.addEventListener('click', async () => {
-        const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
-        const success = await cancelLlmRequest(currentTabId);
-        
-        if (success) {
-          // Update UI to show cancellation
-          contentDiv.innerHTML = `<span style="color: var(--text-color); font-style: italic;">${i18n.getMessage('common_response_stopped_by_user')}</span>`;
-          messageDiv.removeAttribute('data-streaming');
-          
-          // Update tab loading state
-          updateTabLoadingState(currentTabId, false).catch(error => 
-            logger.warn('Error updating tab loading state after cancellation:', error)
-          );
-          
-          // Re-enable send button
-          const sendBtn = document.getElementById('sendBtn');
-          if (sendBtn) sendBtn.disabled = false;
-        }
-      });
-      
-      // Add stop and clear button
-      const stopClearButton = document.createElement('button');
-      stopClearButton.className = 'stop-clear-btn';
-      stopClearButton.innerHTML = '<i class="material-icons">delete_forever</i>';
-      stopClearButton.title = i18n.getMessage('sidebar_title_stopAndClear');
-      stopClearButton.addEventListener('click', async () => {
-        const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
-        
-        // First cancel the current request
-        const success = await cancelLlmRequest(currentTabId);
-        
-        if (success) {
-          logger.info('LLM request cancelled, now clearing conversation');
-        } else {
-          logger.warn('Failed to cancel LLM request, but proceeding with clearing conversation');
-        }
-        
-        // Clear conversation regardless of cancellation success
-        // This ensures consistent behavior equivalent to clicking the clear button in bottom right
-        await clearConversationAndContext(chatContainer);
-        
-        // Update tab loading state
-        updateTabLoadingState(currentTabId, false).catch(error => 
-          logger.warn('Error updating tab loading state after stop and clear:', error)
-        );
-        
-        // Re-enable send button
-        const sendBtn = document.getElementById('sendBtn');
-        if (sendBtn) sendBtn.disabled = false;
-        
-        logger.info('Successfully stopped generation and cleared conversation');
-      });
-      
-      loadingContainer.appendChild(stopButton);
-      loadingContainer.appendChild(stopClearButton);
+      loadingContainer.innerHTML = '<div class="spinner"></div>';
       contentDiv.appendChild(loadingContainer);
-      
-      // Explicitly set raw-content to empty for streaming messages to avoid saving spinner HTML
       contentDiv.setAttribute('data-raw-content', '');
+      logger.warn('Legacy assistant streaming message created - should use branch flow instead');
     } catch (error) {
-      logger.error(`Error creating loading container:`, error);
+      logger.error(`Error creating simple loading container:`, error);
       contentDiv.innerHTML = content; // Fallback to original content
     }
     messageDiv.dataset.streaming = 'true';
-    
-    // Update tab loading state when loading spinner is added
-    if (content.includes('<div class="spinner"></div>')) {
-      const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
-      currentRequestTabId = currentTabId; // Track current request
-      updateTabLoadingState(currentTabId, true).catch(error => 
-        logger.warn('Error updating tab loading state:', error)
-      );
-    }
   } else {
     // For user messages, preserve line breaks by using textContent instead of markdown parsing
     if (role === 'user') {
@@ -1330,7 +1253,7 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     // Determine selected model for label (safe to call early)
     const selectedModelForLabel = modelSelector ? modelSelector.getSelectedModel() : null;
 
-    // Create branch container message
+    // Create branch container message (unified branch UI)
     const assistantTimestamp = Date.now();
     const branchContainer = document.createElement('div');
     branchContainer.className = 'chat-message assistant-message branch-container';
@@ -1370,38 +1293,12 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'branch-actions';
     const stopDeleteButton = document.createElement('button');
-    stopDeleteButton.className = 'btn-base message-action-btn delete-btn';
+    stopDeleteButton.className = 'branch-action-btn delete-btn';
     stopDeleteButton.innerHTML = '<i class="material-icons">stop</i>';
     stopDeleteButton.title = i18n.getMessage('branch_stopAndDelete');
     stopDeleteButton.setAttribute('data-action', 'stop-delete');
     stopDeleteButton.setAttribute('data-branch-id', quickBranchId);
-    stopDeleteButton.addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      try {
-        const currentTabIdLocal = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
-        const cancelled = await cancelLlmRequest(currentTabIdLocal);
-        if (!cancelled) {
-          logger.warn('Stop request for quick input stream did not confirm cancellation');
-        }
-      } catch (err) {
-        logger.warn('Error while cancelling quick input stream:', err);
-      }
-      // Remove this assistant branch and its preceding user message (to mirror branch removal UX)
-      const container = branchDiv.closest('.branch-container');
-      if (container) {
-        const prev = container.previousElementSibling;
-        if (prev && prev.classList.contains('user-message')) {
-          prev.remove();
-        }
-        container.remove();
-      }
-      // Update loading/UI states
-      const currentTabIdForState = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
-      updateTabLoadingState(currentTabIdForState, false).catch(err => logger.warn('Error updating tab state after stop-delete:', err));
-      // Re-enable send button
-      if (sendBtn) sendBtn.disabled = false;
-    });
+    // 点击逻辑改为委托到 chat-history.js 的分支事件，避免重复绑定与双触发
     actionsDiv.appendChild(stopDeleteButton);
     branchDiv.appendChild(actionsDiv);
 
@@ -2079,10 +1976,12 @@ const cancelBranchRequest = async (branchId) => {
     logger.info(`Cancelling branch request for ${branchId}`);
     
     const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
+    const currentUrl = window.StateManager ? window.StateManager.getStateItem('currentUrl') : window.location.href;
     
     // 发送取消请求
     const response = await chrome.runtime.sendMessage({
       type: 'CANCEL_LLM_REQUEST',
+      url: currentUrl,
       tabId: currentTabId,
       branchId: branchId
     });

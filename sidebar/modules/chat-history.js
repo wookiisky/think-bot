@@ -19,9 +19,9 @@ const getChatHistoryFromDOM = (chatContainer) => {
   let currentAssistantMessage = null;
 
   messageElements.forEach(messageEl => {
-    // Skip messages that are currently streaming, but NOT error messages
-    // Error messages might have data-streaming but should still be included in history
-    if (messageEl.hasAttribute('data-streaming') && !messageEl.classList.contains('error-message')) {
+    // Skip messages that are currently streaming or are error messages
+    // Error messages should not be saved to history - they are UI-only
+    if (messageEl.hasAttribute('data-streaming') || messageEl.classList.contains('error-message')) {
       return;
     }
 
@@ -515,7 +515,7 @@ const addBranchEventListeners = (chatContainer) => {
   // 使用事件委托处理分支按钮点击
   chatContainer.addEventListener('click', (event) => {
     const target = event.target;
-    const button = target.closest('.branch-action-btn');
+    const button = target.closest('.branch-action-btn, .message-action-btn.delete-btn');
     
     if (!button) return;
     
@@ -538,6 +538,11 @@ const addBranchEventListeners = (chatContainer) => {
       case 'stop-delete':
         handleStopAndDeleteBranch(branchId);
         break;
+      default:
+        // 兼容旧按钮类名：顶部右侧仅保留停止并删除
+        if (button.classList.contains('delete-btn') && branchId) {
+          handleStopAndDeleteBranch(branchId);
+        }
     }
   });
 };
@@ -592,6 +597,49 @@ const handleDeleteBranch = (branchId) => {
 const handleStopAndDeleteBranch = (branchId) => {
   logger.info(`Stopping and deleting branch ${branchId}`);
   
+  // Helper function to handle post-delete operations
+  const handlePostDelete = () => {
+    // Check if this tab has any remaining content after deletion
+    const chatContainer = document.getElementById('chatContainer');
+    if (chatContainer) {
+      const chatHistory = getChatHistoryFromDOM(chatContainer);
+      const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
+      
+      // If the tab has no content after deletion, reset its initialization state
+      // This allows quick input tabs to trigger auto-send again
+      // Only do this for quick input tabs (non-default tabs with quickInputId)
+      if (chatHistory.length === 0 && window.TabManager) {
+        const currentTab = window.TabManager.getActiveTab();
+        if (currentTab && !currentTab.isDefault && currentTab.quickInputId) {
+          logger.info(`Resetting initialization state for empty quick input tab ${currentTabId} after stop-delete`);
+          if (window.TabManager.resetTabInitializationState) {
+            window.TabManager.resetTabInitializationState(currentTabId);
+          }
+          // Also reset runtime state to ensure clean state
+          if (window.TabManager.resetTabRuntime) {
+            window.TabManager.resetTabRuntime(currentTabId);
+          }
+        } else {
+          logger.debug(`Tab ${currentTabId} is not a quick input tab, skipping initialization state reset`);
+        }
+      } else if (chatHistory.length > 0) {
+        logger.debug(`Tab ${currentTabId} still has content after branch deletion, keeping initialization state`);
+      }
+    }
+    
+    // Update Tab loading 状态：从 activeBranches 中移除此分支
+    try {
+      const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
+      if (window.TabManager && window.TabManager.registerBranchError) {
+        window.TabManager.registerBranchError(currentTabId, branchId);
+      } else if (window.TabManager && window.TabManager.updateTabLoadingState) {
+        window.TabManager.updateTabLoadingState(currentTabId, false);
+      }
+    } catch (stateErr) {
+      logger.warn('Failed to update tab loading state after stop-delete:', stateErr);
+    }
+  };
+  
   // 首先尝试取消请求
   if (window.ChatManager && window.ChatManager.cancelBranchRequest) {
     window.ChatManager.cancelBranchRequest(branchId).then(() => {
@@ -600,6 +648,8 @@ const handleStopAndDeleteBranch = (branchId) => {
       if (branchElement) {
         removeBranchFromDOM(branchElement, branchId);
       }
+      
+      handlePostDelete();
     }).catch(error => {
       logger.error('Failed to cancel branch request:', error);
       // 即使取消失败也允许删除
@@ -607,6 +657,8 @@ const handleStopAndDeleteBranch = (branchId) => {
       if (branchElement) {
         removeBranchFromDOM(branchElement, branchId);
       }
+      
+      handlePostDelete();
     });
   } else {
     // 没有取消功能，直接删除
@@ -614,6 +666,8 @@ const handleStopAndDeleteBranch = (branchId) => {
     if (branchElement) {
       removeBranchFromDOM(branchElement, branchId);
     }
+    
+    handlePostDelete();
   }
 };
 

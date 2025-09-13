@@ -460,8 +460,8 @@ class ErrorDisplayManager {
         contentDiv.removeAttribute('data-raw-content');
         contentDiv.appendChild(this.createErrorElement(error));
         
-        // Set the raw content for history saving
-        contentDiv.setAttribute('data-raw-content', error.getDisplayMessage());
+        // Do not set raw content for error messages - errors should not be saved to history
+        contentDiv.removeAttribute('data-raw-content');
       }
       
       // Cleanup streaming state thoroughly
@@ -488,7 +488,7 @@ class ErrorDisplayManager {
       const contentDiv = document.createElement('div');
       contentDiv.className = 'message-content';
       contentDiv.appendChild(this.createErrorElement(error));
-      contentDiv.setAttribute('data-raw-content', error.getDisplayMessage());
+      // Do not set raw content for error messages - errors should not be saved to history
       
       messageDiv.appendChild(roleDiv);
       messageDiv.appendChild(contentDiv);

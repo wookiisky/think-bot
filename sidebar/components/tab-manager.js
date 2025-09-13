@@ -609,7 +609,18 @@ const handleTabClick = async (tabId) => {
       // Check if this tab has existing chat history
       const hasExistingHistory = chatHistory && chatHistory.length > 0;
 
-      if (!hasExistingHistory && !tab.hasInitialized) {
+      // Special case: if tab was initialized but has no history now, 
+      // it might have been cleared by stop-delete action, so allow re-initialization
+      let shouldAllowAutoSend = !hasExistingHistory && !tab.hasInitialized;
+      if (!shouldAllowAutoSend && !hasExistingHistory && tab.hasInitialized) {
+        logger.info(`Tab ${tabId} was initialized but has no history - checking if auto-send should be re-enabled`);
+        // Reset initialization state for empty quick input tabs to allow re-triggering
+        tab.hasInitialized = false;
+        shouldAllowAutoSend = true;
+        logger.info(`Reset initialization state for empty quick input tab ${tabId}`);
+      }
+
+      if (shouldAllowAutoSend) {
         // Check if content extraction result is available
         const currentState = window.StateManager ? window.StateManager.getState() : {};
         const hasExtractedContent = currentState.extractedContent && currentState.extractedContent.trim().length > 0;
@@ -825,29 +836,30 @@ const checkAndRestoreLoadingState = async (currentUrl, tabId, chatContainer) => 
       });
       
       if (loadingState.status === 'loading') {
-        // Show enhanced loading indicator with additional context
+        // Restore loading using unified branch UI to avoid duplicate loaders
         if (chatContainer && window.ChatManager) {
-          let loadingMessage = '<div class="spinner"></div>';
-          
-          // Add context if this was a retry operation
-          if (loadingState.isRetry) {
-            loadingMessage += `<div class="loading-context">${i18n.getMessage('sidebar_tabManager_retryingMessage')}</div>`;
-          } else if (loadingState.lastMessageContent) {
-            const shortContent = loadingState.lastMessageContent.length > 50
-              ? loadingState.lastMessageContent.substring(0, 50) + '...'
-              : loadingState.lastMessageContent;
-            loadingMessage += `<div class="loading-context">${i18n.getMessage('sidebar_tabManager_text_processing', { content: shortContent })}</div>`;
+          try {
+            // If any streaming element already exists, do not add another loader
+            const existingStreaming = chatContainer.querySelector('[data-streaming="true"]');
+            if (!existingStreaming) {
+              const currentUrl = window.StateManager ? window.StateManager.getStateItem('currentUrl') : window.location.href;
+              const streamId = `${currentUrl}#${tabId}`;
+              window.ChatManager.appendMessageToUI(
+                chatContainer,
+                'assistant',
+                '<div class="spinner"></div>',
+                null,
+                true,
+                undefined,
+                streamId
+              );
+              logger.info(`Restored loading UI for tab ${tabId} (streamId bound)`);
+            } else {
+              logger.debug('Skip adding loader: streaming element already exists');
+            }
+          } catch (e) {
+            logger.warn('Failed to restore unified loading UI:', e);
           }
-          
-          window.ChatManager.appendMessageToUI(
-            chatContainer,
-            'assistant',
-            loadingMessage,
-            null,
-            true
-          );
-          
-          logger.info(`Restored enhanced loading UI for tab ${tabId} with context`);
         }
         
         // Update tab visual state

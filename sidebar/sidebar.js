@@ -143,7 +143,7 @@ const handleTabAction = async (displayText, sendTextTemplate, tabId, isAutoSend,
   }
   
   try {
-    // Handle quick input auto-send
+    // Handle quick input auto-send（统一走分支消息流程）
     await ChatManager.handleQuickInputClick(
       displayText,
       sendTextTemplate,
