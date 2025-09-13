@@ -260,6 +260,9 @@
   "options_export_config_button": {
     "message": "Export Configuration"
   },
+  "options_save_and_sync": {
+    "message": "Save & Sync"
+  },
   "options_extracted_content_height_label": {
     "message": "Content Area Height"
   },

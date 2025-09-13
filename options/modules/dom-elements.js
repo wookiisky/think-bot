@@ -49,7 +49,9 @@ export const domElements = {
   importConfigBtn: document.getElementById('importConfigBtn'),
   importConfigFile: document.getElementById('importConfigFile'),
   resetBtn: document.getElementById('resetBtn'),
-  saveBtn: document.getElementById('saveBtn')
+  saveBtn: document.getElementById('saveBtn'),
+  // New: Save and Sync button exposed for scripting
+  saveAndSyncBtn: document.getElementById('saveAndSyncBtn')
 };
 
 // DOM element groups for easier management

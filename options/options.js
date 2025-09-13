@@ -200,6 +200,96 @@ class OptionsPage {
       this.showSaveError(saveBtn, error?.message);
     }
   }
+
+  // Save settings and force a sync operation regardless of auto-sync toggle
+  async saveAndSync() {
+    const saveBtn = this.domElements.saveBtn;
+    try {
+      // First save using existing save logic (but avoid double UI updates)
+      // Build config from form
+      const config = UIConfigManager.buildConfigFromForm(this.domElements, this.modelManager);
+      const syncSettings = this.buildSyncConfigFromForm();
+
+      // Show visual saving state on the Save & Sync button if available
+      const syncBtn = this.domElements.saveAndSyncBtn;
+      if (syncBtn) {
+        syncBtn.classList.add('saving');
+        syncBtn.querySelector('span').textContent = i18n.getMessage('options_js_saving');
+      }
+
+      const result = await UIConfigManager.saveSettings(config, syncSettings);
+      if (result.success) {
+        this.hasUnsavedChanges = false;
+
+        // Re-render quick inputs
+        QuickInputsManager.renderQuickInputs(config.quickInputs || [], this.domElements);
+
+        // Perform sync using syncManager if available
+        if (typeof syncManager !== 'undefined') {
+          try {
+            this.updateSyncStatus('syncing', i18n.getMessage('common_syncing'));
+            const syncResult = await syncManager.fullSync();
+            if (syncResult.success) {
+              this.updateSyncStatus('success', i18n.getMessage('options_js_sync_completed_successfully'));
+              if (syncBtn) {
+                syncBtn.classList.remove('saving');
+                syncBtn.classList.add('saved');
+                syncBtn.querySelector('span').textContent = i18n.getMessage('options_js_sync_synced');
+              }
+            } else {
+              this.updateSyncStatus('error', syncResult.error || i18n.getMessage('options_js_sync_operation_failed'));
+              if (syncBtn) {
+                syncBtn.classList.remove('saving');
+                syncBtn.classList.add('error');
+                syncBtn.querySelector('span').textContent = i18n.getMessage('options_js_sync_error');
+              }
+            }
+          } catch (syncError) {
+            logger.error('Error during explicit saveAndSync:', syncError);
+            this.updateSyncStatus('error', i18n.getMessage('options_js_sync_operation_failed'));
+            if (syncBtn) {
+              syncBtn.classList.remove('saving');
+              syncBtn.classList.add('error');
+              syncBtn.querySelector('span').textContent = i18n.getMessage('options_js_sync_error');
+            }
+          }
+        } else {
+          // No sync manager available
+          this.updateSyncStatus('idle', i18n.getMessage('options_sync_status_not_configured'));
+          if (syncBtn) {
+            syncBtn.classList.remove('saving');
+            syncBtn.classList.add('saved');
+            syncBtn.querySelector('span').textContent = i18n.getMessage('options_js_saved');
+          }
+        }
+      } else {
+        // Save failed
+        this.showSaveError(saveBtn, result.error);
+        if (this.domElements.saveAndSyncBtn) {
+          const b = this.domElements.saveAndSyncBtn;
+          b.classList.remove('saving');
+          b.classList.add('error');
+        }
+      }
+    } catch (error) {
+      logger.error('Unexpected error in saveAndSync:', error);
+      this.showSaveError(saveBtn, error?.message);
+      if (this.domElements.saveAndSyncBtn) {
+        const b = this.domElements.saveAndSyncBtn;
+        b.classList.remove('saving');
+        b.classList.add('error');
+      }
+    } finally {
+      // Reset Save & Sync button text after a short delay
+      if (this.domElements.saveAndSyncBtn) {
+        setTimeout(() => {
+          const b = this.domElements.saveAndSyncBtn;
+          b.classList.remove('saved', 'error', 'saving');
+          b.querySelector('span').textContent = i18n.getMessage('options_save_and_sync') || 'Save & Sync';
+        }, 3000);
+      }
+    }
+  }
   
   // Show error state on save button
   showSaveError(saveBtn, error = null) {
@@ -250,6 +340,12 @@ class OptionsPage {
     };
 
     this.domElements.saveBtn.addEventListener('click', debouncedSaveSettings);
+    // Save & Sync button - triggers save then immediate sync regardless of auto-sync toggle
+    if (this.domElements.saveAndSyncBtn) {
+      this.domElements.saveAndSyncBtn.addEventListener('click', async () => {
+        await this.saveAndSync();
+      });
+    }
     
     // Model manager will handle its own event listeners and change notifications
     

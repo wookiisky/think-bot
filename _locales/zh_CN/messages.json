@@ -260,6 +260,9 @@
   "options_export_config_button": {
     "message": "导出配置"
   },
+  "options_save_and_sync": {
+    "message": "保存并同步"
+  },
   "options_extracted_content_height_label": {
     "message": "内容区域高度"
   },

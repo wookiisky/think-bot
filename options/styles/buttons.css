@@ -306,6 +306,69 @@
   font-size: 0.75rem;
 }
 
+/* Header Save & Sync Button */
+.header-actions #saveAndSyncBtn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  box-shadow: none;
+}
+
+.header-actions #saveAndSyncBtn:hover {
+  background-color: var(--primary-dark);
+  transform: none;
+  box-shadow: none;
+}
+
+.header-actions #saveAndSyncBtn:active {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
+.header-actions #saveAndSyncBtn.saved {
+  background-color: var(--success-color);
+}
+
+.header-actions #saveAndSyncBtn.saving {
+  background-color: var(--warning-color);
+  cursor: not-allowed;
+  pointer-events: none;
+  position: relative;
+}
+
+.header-actions #saveAndSyncBtn.saving .material-icons {
+  animation: spin 1s linear infinite;
+}
+
+.header-actions #saveAndSyncBtn.syncing {
+  background-color: var(--warning-color);
+  cursor: not-allowed;
+  pointer-events: none;
+  position: relative;
+}
+
+.header-actions #saveAndSyncBtn.syncing .material-icons {
+  animation: spin 1s linear infinite;
+}
+
+.header-actions #saveAndSyncBtn.error {
+  background-color: var(--error-color);
+}
+
+.header-actions #saveAndSyncBtn .material-icons {
+  font-size: 14px;
+  margin: 0;
+}
+
+.header-actions #saveAndSyncBtn span {
+  margin: 0;
+  font-size: 0.75rem;
+}
+
 /* Test Button */
 .test-btn {
   flex-shrink: 0;
