@@ -268,18 +268,55 @@ const directLoadingStateCheck = async (currentUrl, tabId) => {
         // Show loading indicator
         const existingStreaming = chatContainer.querySelector('[data-streaming="true"]');
         if (!existingStreaming) {
-          const currentUrlLocal = StateManager.getStateItem('currentUrl');
-          const streamIdLocal = `${currentUrlLocal}#${tabId}`;
-          window.ChatManager.appendMessageToUI(
-            chatContainer,
-            'assistant',
-            '<div class="spinner"></div>',
-            null,
-            true,
-            undefined,
-            streamIdLocal
-          );
-          logger.info('Restored loading UI for current tab');
+          // Create proper branch structure instead of using legacy appendMessageToUI
+          const branchId = `br-reconnect-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+          const assistantTimestamp = Date.now();
+          
+          // Create branch container
+          const branchContainer = document.createElement('div');
+          branchContainer.className = 'chat-message assistant-message branch-container';
+          branchContainer.id = `message-${assistantTimestamp}`;
+          
+          // Create role element
+          const roleDiv = document.createElement('div');
+          roleDiv.className = 'message-role';
+          branchContainer.appendChild(roleDiv);
+          
+          // Create branches container
+          const branchesDiv = document.createElement('div');
+          branchesDiv.className = 'message-branches';
+          
+          // Create branch element
+          const branchDiv = document.createElement('div');
+          branchDiv.className = 'message-branch';
+          branchDiv.setAttribute('data-branch-id', branchId);
+          branchDiv.setAttribute('data-streaming', 'true');
+          branchDiv.setAttribute('data-model', 'reconnecting');
+          
+          // Create content div
+          const contentDiv = document.createElement('div');
+          contentDiv.className = 'message-content';
+          contentDiv.setAttribute('data-raw-content', '');
+          
+          // Create loading container
+          const loadingContainer = document.createElement('div');
+          loadingContainer.className = 'loading-container';
+          loadingContainer.innerHTML = '<div class="spinner"></div>';
+          contentDiv.appendChild(loadingContainer);
+          
+          // Create model label
+          const modelLabel = document.createElement('div');
+          modelLabel.className = 'branch-model-label';
+          modelLabel.textContent = 'reconnecting';
+          branchDiv.appendChild(modelLabel);
+          
+          // Assemble the structure
+          branchDiv.appendChild(contentDiv);
+          branchesDiv.appendChild(branchDiv);
+          branchContainer.appendChild(branchesDiv);
+          chatContainer.appendChild(branchContainer);
+          
+          logger.info(`Restored loading UI for current tab using branch structure (branchId: ${branchId})`);
         } else {
           logger.info('Skip restoring loader: streaming element already exists');
         }

@@ -979,29 +979,66 @@ const checkAndRestoreLoadingState = async (currentUrl, tabId, chatContainer) => 
       });
       
       if (loadingState.status === 'loading') {
-        // Restore loading using unified branch UI to avoid duplicate loaders
+        // Restore loading using proper branch structure to avoid legacy warning
         if (chatContainer && window.ChatManager) {
           try {
             // If any streaming element already exists, do not add another loader
             const existingStreaming = chatContainer.querySelector('[data-streaming="true"]');
             if (!existingStreaming) {
-              const currentUrl = window.StateManager ? window.StateManager.getStateItem('currentUrl') : window.location.href;
-              const streamId = `${currentUrl}#${tabId}`;
-              window.ChatManager.appendMessageToUI(
-                chatContainer,
-                'assistant',
-                '<div class="spinner"></div>',
-                null,
-                true,
-                undefined,
-                streamId
-              );
-              logger.info(`Restored loading UI for tab ${tabId} (streamId bound)`);
+              // Create proper branch structure instead of using legacy appendMessageToUI
+              const branchId = `br-restore-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+              const assistantTimestamp = Date.now();
+              
+              // Create branch container
+              const branchContainer = document.createElement('div');
+              branchContainer.className = 'chat-message assistant-message branch-container';
+              branchContainer.id = `message-${assistantTimestamp}`;
+              
+              // Create role element
+              const roleDiv = document.createElement('div');
+              roleDiv.className = 'message-role';
+              branchContainer.appendChild(roleDiv);
+              
+              // Create branches container
+              const branchesDiv = document.createElement('div');
+              branchesDiv.className = 'message-branches';
+              
+              // Create branch element
+              const branchDiv = document.createElement('div');
+              branchDiv.className = 'message-branch';
+              branchDiv.setAttribute('data-branch-id', branchId);
+              branchDiv.setAttribute('data-streaming', 'true');
+              branchDiv.setAttribute('data-model', 'restored');
+              
+              // Create content div
+              const contentDiv = document.createElement('div');
+              contentDiv.className = 'message-content';
+              contentDiv.setAttribute('data-raw-content', '');
+              
+              // Create loading container
+              const loadingContainer = document.createElement('div');
+              loadingContainer.className = 'loading-container';
+              loadingContainer.innerHTML = '<div class="spinner"></div>';
+              contentDiv.appendChild(loadingContainer);
+              
+              // Create model label
+              const modelLabel = document.createElement('div');
+              modelLabel.className = 'branch-model-label';
+              modelLabel.textContent = 'restored';
+              branchDiv.appendChild(modelLabel);
+              
+              // Assemble the structure
+              branchDiv.appendChild(contentDiv);
+              branchesDiv.appendChild(branchDiv);
+              branchContainer.appendChild(branchesDiv);
+              chatContainer.appendChild(branchContainer);
+              
+              logger.info(`Restored loading UI for tab ${tabId} using branch structure (branchId: ${branchId})`);
             } else {
               logger.debug('Skip adding loader: streaming element already exists');
             }
           } catch (e) {
-            logger.warn('Failed to restore unified loading UI:', e);
+            logger.warn('Failed to restore loading UI using branch structure:', e);
           }
         }
         

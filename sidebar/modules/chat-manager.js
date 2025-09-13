@@ -1094,19 +1094,19 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
     assistantBranchElement = branchDiv;
   } catch (uiError) {
     logger.error('Error creating branch-style loading UI for user message, falling back:', uiError);
-    // 最小回退：仍然渲染一个流式消息，避免无 UI
-    const currentUrl = window.StateManager ? window.StateManager.getStateItem('currentUrl') : window.location.href;
-    const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
-    const fallbackStreamId = `${currentUrl}#${currentTabId}`;
+    // 最小回退：创建简单的加载消息，不使用遗留的流式消息
     assistantBranchElement = appendMessageToUI(
       chatContainer,
       'assistant',
-      '<div class="spinner"></div>',
+      '<div class="loading-container"><div class="spinner"></div></div>',
       null,
-      true,
-      undefined,
-      fallbackStreamId
+      false, // Use false to avoid legacy warning
+      Date.now()
     );
+    // Manually add streaming attribute to maintain compatibility
+    if (assistantBranchElement) {
+      assistantBranchElement.setAttribute('data-streaming', 'true');
+    }
   }
   
   // If image was attached, send and remove
@@ -1330,12 +1330,15 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     assistantLoadingMessage = appendMessageToUI(
       chatContainer,
       'assistant',
-      '<div class="spinner"></div>',
+      '<div class="loading-container"><div class="spinner"></div></div>',
       null,
-      true,
-      undefined,
-      streamId
+      false, // Use false to avoid legacy warning
+      Date.now()
     );
+    // Manually add streaming attribute to maintain compatibility
+    if (assistantLoadingMessage) {
+      assistantLoadingMessage.setAttribute('data-streaming', 'true');
+    }
   }
   
   // Get dialog history from DOM (raw with branches)

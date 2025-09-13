@@ -824,9 +824,9 @@ const getAvailableModels = async () => {
         return [];
       }
       
-      // 过滤启用的模型并转换格式（仅显示模型名，不包含 provider）
+      // 过滤启用且未删除的模型并转换格式（仅显示模型名，不包含 provider）
       const models = llmConfig.models
-        .filter(model => model.enabled)
+        .filter(model => model.enabled && !model.deleted && !model.isDeleted)
         .map(model => {
           return {
             id: model.id,                         // 直接使用配置中的模型ID
