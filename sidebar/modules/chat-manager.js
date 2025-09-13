@@ -245,7 +245,16 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
     scrollTopButton.className = 'btn-base message-action-btn';
     scrollTopButton.innerHTML = '<i class="material-icons">arrow_upward</i>';
     scrollTopButton.title = i18n.getMessage('sidebar_chatManager_title_scrollToTop');
-    scrollTopButton.onclick = () => messageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    scrollTopButton.onclick = () => {
+      messageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Wait for smooth scrolling to complete, then offset upward by 5px
+      setTimeout(() => {
+        const chatContainer = messageDiv.closest('.chat-container');
+        if (chatContainer) {
+          chatContainer.scrollTop -= 20;
+        }
+      }, 100);
+    };
 
     // Copy text button
     const copyTextButton = document.createElement('button');
@@ -266,7 +275,16 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
     scrollBottomButton.className = 'btn-base message-action-btn';
     scrollBottomButton.innerHTML = '<i class="material-icons">arrow_downward</i>';
     scrollBottomButton.title = i18n.getMessage('sidebar_chatManager_title_scrollToBottom');
-    scrollBottomButton.onclick = () => messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    scrollBottomButton.onclick = () => {
+      messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      // Wait for smooth scrolling to complete, then offset downward by 5px
+      setTimeout(() => {
+        const chatContainer = messageDiv.closest('.chat-container');
+        if (chatContainer) {
+          chatContainer.scrollTop += 20;
+        }
+      }, 100);
+    };
     
     const buttons = [scrollTopButton, copyTextButton, copyMarkdownButton, scrollBottomButton];
     const buttonGroups = [
@@ -526,14 +544,32 @@ const handleStreamEnd = (chatContainer, fullResponse, onComplete, finishReason =
     scrollTopButton.className = 'btn-base message-action-btn';
     scrollTopButton.innerHTML = '<i class="material-icons">arrow_upward</i>';
     scrollTopButton.title = i18n.getMessage('sidebar_chatManager_title_scrollToTop');
-    scrollTopButton.onclick = () => streamingMessageContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    scrollTopButton.onclick = () => {
+      streamingMessageContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Wait for smooth scrolling to complete, then offset upward by 5px
+      setTimeout(() => {
+        const chatContainer = streamingMessageContainer.closest('.chat-container');
+        if (chatContainer) {
+          chatContainer.scrollTop -= 5;
+        }
+      }, 300);
+    };
 
     // Scroll to bottom button
     const scrollBottomButton = document.createElement('button');
     scrollBottomButton.className = 'btn-base message-action-btn';
     scrollBottomButton.innerHTML = '<i class="material-icons">arrow_downward</i>';
     scrollBottomButton.title = i18n.getMessage('sidebar_chatManager_title_scrollToBottom');
-    scrollBottomButton.onclick = () => streamingMessageContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    scrollBottomButton.onclick = () => {
+      streamingMessageContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      // Wait for smooth scrolling to complete, then offset downward by 5px
+      setTimeout(() => {
+        const chatContainer = streamingMessageContainer.closest('.chat-container');
+        if (chatContainer) {
+          chatContainer.scrollTop += 5;
+        }
+      }, 300);
+    };
 
     // Copy text button
     const copyTextButton = document.createElement('button');
@@ -2029,7 +2065,7 @@ const updateScrollbarContent = (branchesContainer) => {
   
   // Calculate total content width
   const branchCount = branchesContainer.querySelectorAll('.message-branch').length;
-  const branchWidth = 320; // Fixed width per branch
+  const branchWidth = 380; // Fixed width per branch - updated to match CSS
   const gap = 6; // Gap between branches
   const totalWidth = branchCount * branchWidth + (branchCount - 1) * gap;
   

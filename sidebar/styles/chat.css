@@ -525,7 +525,7 @@
 /* 分支列容器 */
 .message-branches {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
   gap: 6px;
   width: 100%;
   overflow-x: auto;
@@ -589,8 +589,8 @@
 
 /* 当分支数量大于3个时，固定分支宽度确保横向滚动 */
 .message-branches.many-branches .message-branch {
-  min-width: 320px;
-  max-width: 320px;
+  min-width: 380px;
+  max-width: 380px;
   flex-shrink: 0;
 }
 
@@ -892,7 +892,7 @@
 /* 响应式调整 */
 @media (max-width: 1024px) {
   .message-branches {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
     gap: 12px;
   }
 }

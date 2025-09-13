@@ -472,14 +472,32 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
             scrollTopButton.className = 'btn-base message-action-btn';
             scrollTopButton.innerHTML = '<i class="material-icons">arrow_upward</i>';
             scrollTopButton.title = i18n.getMessage('sidebar_chatManager_title_scrollToTop');
-            scrollTopButton.onclick = () => branchDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            scrollTopButton.onclick = () => {
+              branchDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              // Wait for smooth scrolling to complete, then offset upward by 5px
+              setTimeout(() => {
+                const chatContainer = branchDiv.closest('.chat-container');
+                if (chatContainer) {
+                  chatContainer.scrollTop -= 20;
+                }
+              }, 100);
+            };
 
             // 跳转底部
             const scrollBottomButton = document.createElement('button');
             scrollBottomButton.className = 'btn-base message-action-btn';
             scrollBottomButton.innerHTML = '<i class="material-icons">arrow_downward</i>';
             scrollBottomButton.title = i18n.getMessage('sidebar_chatManager_title_scrollToBottom');
-            scrollBottomButton.onclick = () => branchDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            scrollBottomButton.onclick = () => {
+              branchDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+              // Wait for smooth scrolling to complete, then offset downward by 5px
+              setTimeout(() => {
+                const chatContainer = branchDiv.closest('.chat-container');
+                if (chatContainer) {
+                  chatContainer.scrollTop += 20;
+                }
+              }, 100);
+            };
 
             // 复制文本
             const copyTextButton = document.createElement('button');
