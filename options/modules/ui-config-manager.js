@@ -107,7 +107,7 @@ export class UIConfigManager {
 
     const config = {
       llm_models: {
-        models: modelManager.getAllModels() // Get all models with timestamps preserved
+        models: modelManager.getActiveModels() // Get only active (non-deleted) models for saving/syncing
       },
       quickInputs: quickInputs,
       basic: {
