@@ -147,14 +147,24 @@ export class UIConfigManager {
         config.blacklist = { patterns: blacklistResponse.patterns };
       }
 
-      // Add sync configuration (exportable version without sensitive data)
+      // Add complete sync configuration including credentials
       if (syncResponse && syncResponse.type === 'SYNC_CONFIG_LOADED' && syncResponse.config) {
         config.sync = {
           enabled: syncResponse.config.enabled || false,
           autoSync: syncResponse.config.autoSync || false,
+          storageType: syncResponse.config.storageType || 'gist',
+          // Gist configuration
+          gistToken: syncResponse.config.gistToken || '',
+          gistId: syncResponse.config.gistId || '',
+          // WebDAV configuration
+          webdavUrl: syncResponse.config.webdavUrl || '',
+          webdavUsername: syncResponse.config.webdavUsername || '',
+          webdavPassword: syncResponse.config.webdavPassword || '',
+          // Status and metadata
           lastSyncTime: syncResponse.config.lastSyncTime || null,
-          deviceId: syncResponse.config.deviceId || null
-          // Exclude gistToken and gistId for security
+          deviceId: syncResponse.config.deviceId || null,
+          syncStatus: syncResponse.config.syncStatus || 'idle',
+          lastError: syncResponse.config.lastError || null
         };
       }
 
@@ -232,8 +242,26 @@ export class UIConfigManager {
         return false;
       }
 
+      // Extract sync configuration if present
+      let syncSettings = null;
+      if (config.sync) {
+        syncSettings = config.sync;
+        // Remove sync from main config to avoid duplication
+        delete config.sync;
+        
+        logger.info('Found sync configuration in import data:', {
+          enabled: syncSettings.enabled,
+          storageType: syncSettings.storageType,
+          hasGistToken: !!syncSettings.gistToken,
+          hasGistId: !!syncSettings.gistId,
+          hasWebdavUrl: !!syncSettings.webdavUrl,
+          hasWebdavUsername: !!syncSettings.webdavUsername,
+          hasWebdavPassword: !!syncSettings.webdavPassword
+        });
+      }
+
       // Save imported configuration via storage manager
-      const success = await this.saveSettings(config);
+      const success = await this.saveSettings(config, syncSettings);
 
       if (success) {
         logger.info('Configuration imported successfully');
