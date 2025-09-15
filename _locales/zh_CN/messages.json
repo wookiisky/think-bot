@@ -35,6 +35,9 @@
   "common_confirmation_title": {
     "message": "确认"
   },
+  "common_copy": {
+    "message": "复制"
+  },
   "common_copy_markdown": {
     "message": "复制 Markdown"
   },

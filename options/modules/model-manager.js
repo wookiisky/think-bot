@@ -91,6 +91,10 @@ export class ModelManager {
                    data-model-index="${index}" class="model-toggle">
             <span class="slider round"></span>
           </label>
+          <button type="button" class="copy-model-btn icon-btn secondary"
+                  data-model-index="${index}" data-i18n-title="common_copy" title="Copy Model">
+            <i class="material-icons">content_copy</i>
+          </button>
           <button type="button" class="remove-model-btn icon-btn danger"
                   data-model-index="${index}" data-i18n-title="common_remove" title="Remove Model">
             <i class="material-icons">delete</i>
@@ -378,6 +382,44 @@ export class ModelManager {
     this.renderModels();
     this.updateDefaultModelSelector();
     logger.info('Added new model');
+    if (this.changeCallback) {
+      this.changeCallback();
+    }
+  }
+
+  // Copy an existing model configuration
+  copyModel(index) {
+    const sourceModel = this.models[index];
+    if (!sourceModel) {
+      logger.warn(`Cannot copy model at index ${index}: model not found`);
+      return;
+    }
+
+    // Generate UUID-based model ID with timestamp
+    const timestamp = Date.now().toString(36);
+    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+
+    // Create a deep copy of the source model
+    const copiedModel = {
+      ...sourceModel,
+      id: `model_${timestamp}_${uuid}`,
+      name: `${sourceModel.name} - Copy`,
+      tools: sourceModel.tools ? [...sourceModel.tools] : [], // Deep copy tools array
+      lastModified: Date.now() // Update timestamp for sync merging
+    };
+
+    // Insert the copied model right after the source model
+    this.models.splice(index + 1, 0, copiedModel);
+    this.renderModels();
+    this.updateDefaultModelSelector();
+    
+    const sourceModelName = sourceModel.name || i18n.getMessage('options_model_unnamed') || 'Unnamed Model';
+    logger.info(`Copied model "${sourceModelName}" with new ID: ${copiedModel.id}`);
+    
     if (this.changeCallback) {
       this.changeCallback();
     }
@@ -784,6 +826,13 @@ export class ModelManager {
 
       // Determine model index from the containing item
       const index = parseInt(modelItem.dataset.index, 10);
+
+      // Copy button handling
+      if (target.classList.contains('copy-model-btn') || target.closest('.copy-model-btn')) {
+        e.stopPropagation(); // Prevent event bubbling
+        this.copyModel(index);
+        return;
+      }
 
       // Remove button handling (preserve existing behavior)
       if (target.classList.contains('remove-model-btn') || target.closest('.remove-model-btn')) {

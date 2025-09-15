@@ -35,6 +35,9 @@
   "common_confirmation_title": {
     "message": "Confirmation"
   },
+  "common_copy": {
+    "message": "Copy"
+  },
   "common_copy_markdown": {
     "message": "Copy Markdown"
   },
