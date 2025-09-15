@@ -607,14 +607,11 @@ class OptionsPage {
   // Enable auto sync: test connection and perform initial sync
   async enableAutoSync() {
     try {
-      const token = this.domElements.gistToken.value.trim();
-      const gistId = this.domElements.gistId.value.trim();
-
-      if (!token || !gistId) {
-        const missingFields = [];
-        if (!token) missingFields.push(i18n.getMessage('options_js_sync_github_token'));
-        if (!gistId) missingFields.push(i18n.getMessage('options_js_sync_gist_id'));
-        this.updateSyncStatus('error', i18n.getMessage('options_js_sync_missing_fields', [missingFields.join(' and ')]));
+      // Use the existing validateSyncConfig method to check configuration for both Gist and WebDAV
+      const validation = this.validateSyncConfig();
+      
+      if (!validation.isValid) {
+        this.updateSyncStatus('error', i18n.getMessage('options_js_sync_missing_fields', [validation.errors.join(', ')]));
         this.domElements.syncEnabled.checked = false;
         return;
       }
@@ -632,13 +629,28 @@ class OptionsPage {
           try {
             // Save sync configuration first before attempting sync
             const syncSettings = this.buildSyncConfigFromForm();
-            logger.info('Attempting to save sync settings:', {
-              enabled: syncSettings.enabled,
-              hasToken: !!syncSettings.gistToken,
-              hasGistId: !!syncSettings.gistId,
-              tokenLength: syncSettings.gistToken.length,
-              gistIdLength: syncSettings.gistId.length
-            });
+            const storageType = syncSettings.storageType;
+            
+            if (storageType === 'gist') {
+              logger.info('Attempting to save Gist sync settings:', {
+                enabled: syncSettings.enabled,
+                storageType: storageType,
+                hasToken: !!syncSettings.gistToken,
+                hasGistId: !!syncSettings.gistId,
+                tokenLength: syncSettings.gistToken.length,
+                gistIdLength: syncSettings.gistId.length
+              });
+            } else if (storageType === 'webdav') {
+              logger.info('Attempting to save WebDAV sync settings:', {
+                enabled: syncSettings.enabled,
+                storageType: storageType,
+                hasWebdavUrl: !!syncSettings.webdavUrl,
+                hasWebdavUsername: !!syncSettings.webdavUsername,
+                hasWebdavPassword: !!syncSettings.webdavPassword,
+                webdavUrlLength: syncSettings.webdavUrl.length,
+                webdavUsernameLength: syncSettings.webdavUsername.length
+              });
+            }
 
             if (typeof syncConfig !== 'undefined') {
               const saveResult = await syncConfig.saveSyncConfig(syncSettings);
@@ -655,16 +667,32 @@ class OptionsPage {
               // Wait a moment for the save to complete
               await new Promise(resolve => setTimeout(resolve, 200));
 
-              // Verify the save worked
+              // Verify the save worked based on storage type
               const verifyConfig = await syncConfig.getSyncConfig();
-              logger.info('Verified saved config:', {
-                hasToken: !!verifyConfig.gistToken,
-                hasGistId: !!verifyConfig.gistId,
-                tokenLength: verifyConfig.gistToken ? verifyConfig.gistToken.length : 0,
-                gistIdLength: verifyConfig.gistId ? verifyConfig.gistId.length : 0
-              });
+              
+              let configValid = false;
+              if (verifyConfig.storageType === 'gist') {
+                logger.info('Verified saved Gist config:', {
+                  storageType: verifyConfig.storageType,
+                  hasToken: !!verifyConfig.gistToken,
+                  hasGistId: !!verifyConfig.gistId,
+                  tokenLength: verifyConfig.gistToken ? verifyConfig.gistToken.length : 0,
+                  gistIdLength: verifyConfig.gistId ? verifyConfig.gistId.length : 0
+                });
+                configValid = !!(verifyConfig.gistToken && verifyConfig.gistId);
+              } else if (verifyConfig.storageType === 'webdav') {
+                logger.info('Verified saved WebDAV config:', {
+                  storageType: verifyConfig.storageType,
+                  hasWebdavUrl: !!verifyConfig.webdavUrl,
+                  hasWebdavUsername: !!verifyConfig.webdavUsername,
+                  hasWebdavPassword: !!verifyConfig.webdavPassword,
+                  webdavUrlLength: verifyConfig.webdavUrl ? verifyConfig.webdavUrl.length : 0,
+                  webdavUsernameLength: verifyConfig.webdavUsername ? verifyConfig.webdavUsername.length : 0
+                });
+                configValid = !!(verifyConfig.webdavUrl && verifyConfig.webdavUsername && verifyConfig.webdavPassword);
+              }
 
-              if (!verifyConfig.gistToken || !verifyConfig.gistId) {
+              if (!configValid) {
                 this.updateSyncStatus('error', i18n.getMessage('options_js_sync_config_not_saved_properly'));
                 this.domElements.syncErrorMessage.textContent = i18n.getMessage('options_js_sync_config_not_saved_properly_details');
                 this.domElements.syncErrorMessage.style.display = 'block';
