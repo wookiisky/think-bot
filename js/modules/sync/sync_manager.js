@@ -401,15 +401,8 @@ syncManager.applyDownloadedData = async function(data) {
     // Clean up deletion records after merge is complete
     await this.cleanupDeletionRecords();
 
-    // Clean up soft-deleted quick inputs after successful sync and merge
-    if (data.config && data.config.quickInputs) {
-      await configManager.cleanupDeletedQuickInputs();
-    }
-
-    // Clean up soft-deleted models after successful sync and merge
-    if (data.config && data.config.llm_models && data.config.llm_models.models) {
-      await configManager.cleanupDeletedModels();
-    }
+    // Note: quickInputs and models cleanup is now done during merge process
+    // before upload, so downloaded data should already be clean
 
     syncLogger.info('All downloaded data applied successfully');
   } catch (error) {

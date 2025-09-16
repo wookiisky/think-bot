@@ -506,6 +506,9 @@ dataSerializer.mergeData = function(localData, remoteData) {
     // Merge chat history data (select entire chat history per tab based on latest message timestamp)
     mergedData.chatHistory = this.mergeChatHistoryData(localData.chatHistory, remoteData.chatHistory);
 
+    // Clean up deleted items from merged data before upload
+    mergedData = this.cleanupDeletedItemsAfterMerge(mergedData);
+
     serializerLogger.info('Data merged successfully using field-level timestamp comparison:', {
       strategy: 'field-level-timestamp-based',
       configMerged: Object.keys(mergedData.config).length > 0,
@@ -618,17 +621,40 @@ dataSerializer.mergeQuickInputs = function(localQuickInputs = [], remoteQuickInp
       if (local && remote) {
         const localTimestamp = local.lastModified || 0;
         const remoteTimestamp = remote.lastModified || 0;
+        const localIsDeleted = local.isDeleted === true;
+        const remoteIsDeleted = remote.isDeleted === true;
 
-        // If one is deleted, the merged result is deleted, taking the newer timestamp.
-        if (local.isDeleted || remote.isDeleted) {
-          const deletedItem = { ...(localTimestamp > remoteTimestamp ? local : remote) };
-          deletedItem.isDeleted = true;
-          deletedItem.lastModified = Math.max(localTimestamp, remoteTimestamp);
-          mergedMap.set(id, deletedItem);
-          serializerLogger.debug(`Merged item ${id} as deleted.`);
+        if (localIsDeleted && remoteIsDeleted) {
+          // Both are deleted, keep the newer deletion record
+          const newerItem = localTimestamp >= remoteTimestamp ? local : remote;
+          mergedMap.set(id, newerItem);
+          serializerLogger.debug(`Both local and remote quickInput ${id} are deleted, using newer deletion record`);
+        } else if (localIsDeleted && !remoteIsDeleted) {
+          // Local is deleted, remote has data
+          if (localTimestamp > remoteTimestamp) {
+            // Deletion is newer, keep deletion
+            mergedMap.set(id, local);
+            serializerLogger.debug(`Local deletion of quickInput ${id} is newer than remote data, keeping deletion`);
+          } else {
+            // Remote data is newer, keep it (cancel deletion)
+            mergedMap.set(id, remote);
+            serializerLogger.debug(`Remote data for quickInput ${id} is newer than local deletion, keeping data`);
+          }
+        } else if (!localIsDeleted && remoteIsDeleted) {
+          // Remote is deleted, local has data
+          if (remoteTimestamp > localTimestamp) {
+            // Deletion is newer, keep deletion
+            mergedMap.set(id, remote);
+            serializerLogger.debug(`Remote deletion of quickInput ${id} is newer than local data, keeping deletion`);
+          } else {
+            // Local data is newer, keep it (cancel deletion)
+            mergedMap.set(id, local);
+            serializerLogger.debug(`Local data for quickInput ${id} is newer than remote deletion, keeping data`);
+          }
         } else {
-          // Neither is deleted, pick the newer one.
+          // Neither is deleted, normal timestamp comparison
           mergedMap.set(id, localTimestamp >= remoteTimestamp ? local : remote);
+          serializerLogger.debug(`Using ${localTimestamp >= remoteTimestamp ? 'local' : 'remote'} quickInput: ${id}`);
         }
       } else {
         // Item exists in only one list, so we take it as is.
@@ -1138,5 +1164,66 @@ dataSerializer.getChatHistoryTimestamp = function(chatHistory) {
   } catch (error) {
     serializerLogger.error('Error getting chat history timestamp:', error.message);
     return 0;
+  }
+};
+
+/**
+ * Clean up deleted items from merged data after merge is complete
+ */
+dataSerializer.cleanupDeletedItemsAfterMerge = function(mergedData) {
+  try {
+    serializerLogger.info('Cleaning up deleted items from merged data');
+    
+    let deletedQuickInputsCount = 0;
+    let deletedModelsCount = 0;
+    
+    // Clean up deleted quick inputs
+    if (mergedData.config && mergedData.config.quickInputs) {
+      const originalCount = mergedData.config.quickInputs.length;
+      mergedData.config.quickInputs = mergedData.config.quickInputs.filter(item => {
+        if (item.isDeleted === true) {
+          deletedQuickInputsCount++;
+          serializerLogger.debug(`Removing deleted quickInput from upload: ${item.id}`);
+          return false;
+        }
+        return true;
+      });
+      serializerLogger.info(`Filtered quickInputs: removed ${deletedQuickInputsCount} deleted items (${originalCount} → ${mergedData.config.quickInputs.length})`);
+    }
+    
+    // Clean up deleted models from both old and new format
+    if (mergedData.config && mergedData.config.llm_models && mergedData.config.llm_models.models) {
+      const originalCount = mergedData.config.llm_models.models.length;
+      mergedData.config.llm_models.models = mergedData.config.llm_models.models.filter(model => {
+        if (model.isDeleted === true) {
+          deletedModelsCount++;
+          serializerLogger.debug(`Removing deleted model from upload: ${model.id} (${model.name || 'Unnamed'})`);
+          return false;
+        }
+        return true;
+      });
+      serializerLogger.info(`Filtered LLM models: removed ${deletedModelsCount} deleted items (${originalCount} → ${mergedData.config.llm_models.models.length})`);
+    }
+    
+    // Handle old format LLM config if exists
+    if (mergedData.config && mergedData.config.llm && mergedData.config.llm.models) {
+      const originalCount = mergedData.config.llm.models.length;
+      mergedData.config.llm.models = mergedData.config.llm.models.filter(model => {
+        if (model.isDeleted === true) {
+          deletedModelsCount++;
+          serializerLogger.debug(`Removing deleted model from old format upload: ${model.id} (${model.name || 'Unnamed'})`);
+          return false;
+        }
+        return true;
+      });
+      serializerLogger.info(`Filtered old format LLM models: removed ${deletedModelsCount} deleted items (${originalCount} → ${mergedData.config.llm.models.length})`);
+    }
+    
+    serializerLogger.info(`Cleanup completed: removed ${deletedQuickInputsCount} quickInputs and ${deletedModelsCount} models`);
+    return mergedData;
+  } catch (error) {
+    serializerLogger.error('Error cleaning up deleted items after merge:', error.message);
+    // Return original data if cleanup fails to avoid breaking the sync
+    return mergedData;
   }
 };
