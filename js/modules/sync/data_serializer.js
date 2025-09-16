@@ -481,7 +481,7 @@ dataSerializer.mergeData = function(localData, remoteData) {
     }
 
     // Initialize merged data structure
-    const mergedData = {
+    let mergedData = {
       metadata: {
         version: SYNC_DATA_VERSION, // Always use current version for merged data
         timestamp: Date.now(),
