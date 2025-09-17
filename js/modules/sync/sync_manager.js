@@ -18,10 +18,10 @@ const SYNC_STATES = {
   SUCCESS: 'success'
 };
 
-// 内部并发控制（去重同类操作，防止重复调用导致性能浪费）
+// Internal concurrency control (deduplicate similar operations to prevent performance waste from repeated calls)
 syncManager._operationPromises = {};
 syncManager._runExclusive = function(operationKey, executor) {
-  // 如果已有同名操作在进行，直接复用同一个 Promise（去重）
+  // If an operation with the same name is already in progress, reuse the same Promise (deduplication)
   if (this._operationPromises[operationKey]) {
     syncLogger.info(`Skip duplicate operation: ${operationKey} already in progress`);
     return this._operationPromises[operationKey];
@@ -30,7 +30,7 @@ syncManager._runExclusive = function(operationKey, executor) {
     try {
       return await executor();
     } finally {
-      // 清理占位，允许后续同类操作再次执行
+      // Clear placeholder to allow subsequent similar operations to execute again
       delete this._operationPromises[operationKey];
     }
   })();
@@ -58,7 +58,7 @@ syncManager.getStorageClient = async function() {
     return {
       type: 'gist',
       client: gistClient,
-      // 为gist客户端创建统一接口
+      // Create unified interface for gist client
       getFile: async (filePath) => await gistClient.getGistFile(config.gistId, filePath),
       updateFile: async (filePath, content) => await gistClient.updateGistFile(config.gistId, filePath, content),
       testConnection: async () => await gistClient.testConnection(config.gistToken, config.gistId),
@@ -71,12 +71,12 @@ syncManager.getStorageClient = async function() {
     return {
       type: 'webdav',
       client: webdavClient,
-      // 为webdav客户端创建统一接口
+      // Create unified interface for webdav client
       getFile: async (filePath) => await webdavClient.getFile(filePath),
       updateFile: async (filePath, content) => await webdavClient.updateFile(filePath, content),
       testConnection: async () => await webdavClient.testConnection(config.webdavUrl, config.webdavUsername, config.webdavPassword),
       checkNetworkConnectivity: async () => {
-        // WebDAV没有专门的网络检查方法，返回true（会在实际操作时检查）
+        // WebDAV doesn't have a dedicated network check method, return true (will check during actual operation)
         return true;
       }
     };
@@ -229,7 +229,7 @@ syncManager.uploadData = async function(options = {}) {
         merged: finalData !== localData
       });
 
-      // 可选：上传后直接本地应用合并结果，避免冗余下载
+      // Optional: Apply merged result locally after upload to avoid redundant download
       let appliedLocally = false;
       if (options.applyLocally) {
         const sApplyAfterUpload = this.performanceMonitor.startStage(operation, 'applyAfterUpload');
@@ -252,7 +252,7 @@ syncManager.uploadData = async function(options = {}) {
         storageUrl: result.html_url || null, // Only available for gist
         merged: finalData !== localData,
         appliedLocally,
-        finalData // 保留以便上层按需使用（例如跳过下载）
+        finalData // Keep for upper layer to use as needed (e.g., skip download)
       };
 
       this.performanceMonitor.endOperation(operation, true);
@@ -515,7 +515,7 @@ syncManager.fullSync = async function() {
       // Force refresh of sync configuration to get latest values
       await syncConfig.initializeIfNeeded();
 
-      // Check once to avoid重复检查
+      // Check once to avoid duplicate checks
       const isConfigured = await this.isConfigured({ silent: false });
       if (!isConfigured) {
         const errorMessage = 'Sync configuration incomplete. Please configure GitHub Token and Gist ID in the options page.';
@@ -529,13 +529,13 @@ syncManager.fullSync = async function() {
 
       syncLogger.info('Starting full sync...');
 
-      // Upload with merge; 上传成功后本地直接应用合并结果，避免冗余下载
+      // Upload with merge; apply merged result locally after successful upload to avoid redundant download
       const uploadResult = await this.uploadData({ skipConfigCheck: true, applyLocally: true });
       if (!uploadResult.success) {
         return uploadResult;
       }
 
-      // 如果已经本地应用，则跳过下载；否则执行下载以确保一致性
+      // If already applied locally, skip download; otherwise execute download to ensure consistency
       let downloadResult = { skipped: true, success: true, message: 'Download skipped (local applied after upload)' };
       if (!uploadResult.appliedLocally) {
         downloadResult = await this.downloadData({ skipConfigCheck: true });
@@ -643,14 +643,14 @@ syncManager.performanceMonitor = {
       duration: null,
       success: null,
       error: null,
-      // 分阶段信息
+      // Stage information
       stages: []
     };
     this.operations.push(operation);
     return operation;
   },
 
-  // 开始一个阶段
+  // Start a stage
   startStage: function(operation, stageName, extra = {}) {
     const stage = {
       name: stageName,
@@ -667,7 +667,7 @@ syncManager.performanceMonitor = {
     return stage;
   },
 
-  // 结束一个阶段并输出日志
+  // End a stage and output logs
   endStage: function(operation, stage, metrics = {}) {
     if (!stage) return;
     stage.endTime = Date.now();
@@ -728,7 +728,7 @@ syncManager.performanceMonitor = {
     return stats;
   },
 
-  // 计算速度（MB/s）
+  // Calculate speed (MB/s)
   _calcSpeed: function(bytes, durationMs) {
     try {
       if (!bytes || !durationMs || durationMs <= 0) return null;
@@ -741,7 +741,7 @@ syncManager.performanceMonitor = {
     }
   },
 
-  // 格式化字节
+  // Format bytes
   _formatBytes: function(bytes) {
     if (typeof bytes !== 'number' || isNaN(bytes)) return null;
     const units = ['B', 'KB', 'MB', 'GB'];

@@ -121,17 +121,17 @@
   height: 22px;
 }
 
-/* 悬停状态 - 使用与选中相同的背景色 */
+/* Hover state - use same background color as selected */
 .page-list-item:hover {
   background-color: var(--hover-color);
 }
 
-/* 选中状态 - 扁平化但醒目 */
+/* Selected state - flat but prominent */
 .page-list-item.selected {
   background-color: var(--accent-color-alpha);
 }
 
-/* 删除多余的装饰元素 */
+/* Remove redundant decorative elements */
 .page-list-item.selected::before,
 .page-list-item.selected::after {
   display: none;
@@ -203,7 +203,7 @@
   border-bottom: 1px solid transparent;
 }
 
-/* 为选中项微调视觉效果 */
+/* Fine-tune visual effects for selected items */
 .page-list-item.selected .page-title {
   color: var(--accent-color);
   font-weight: 600; 
@@ -211,7 +211,7 @@
   border-bottom: 1px dotted var(--accent-color-alpha);
 }
 
-/* 悬停时标题效果 */
+/* Title effect on hover */
 .page-list-item:hover .page-title {
   color: var(--text-color-hover, var(--text-color));
 }
@@ -248,14 +248,14 @@
   transition: all 0.15s ease;
   flex-shrink: 0;
   padding: 0;
-  opacity: 1; /* 始终显示 */
+  opacity: 1; /* Always visible */
 }
 
 .page-open-btn {
   margin-right: 1px;
 }
 
-/* 按钮悬停效果 */
+/* Button hover effects */
 .page-open-btn:hover {
   color: var(--accent-color);
 }
@@ -265,21 +265,21 @@
   color: var(--error-color);
 }
 
-/* 按钮图标大小 */
+/* Button icon size */
 .page-open-btn .material-icons,
 .page-delete-btn .material-icons {
   font-size: 14px;
   padding: 0;
 }
 
-/* 删除多余的伪元素代码 */
+/* Remove redundant pseudo-element code */
 .page-list-item.selected::before,
 .page-list-item.selected::after {
   display: none;
 }
 
 
-/* 在深色模式下调整悬停效果 */
+/* Adjust hover effects in dark mode */
 .dark-theme .page-list-item.selected:hover {
   background-color: rgba(var(--accent-color-rgb), 0.22);
 }
@@ -617,13 +617,13 @@
   box-shadow: 0 0 0 2px var(--accent-color);
 }
 
-/* 删除原来设置的动画效果 */
+/* Remove originally set animation effects */
 @keyframes subtle-pop {
   0% { transform: none; }
   100% { transform: none; }
 } 
 
-/* 按钮样式 - 保留这些样式供其他地方使用 */
+/* Button styles - keep these styles for use elsewhere */
 .button-danger {
   background-color: var(--error-color, #d9534f);
   color: white;

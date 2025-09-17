@@ -510,10 +510,10 @@
 }
 
 /* =========================
-   分支功能样式 (Branching Styles)
+   Branching Styles
    ========================= */
 
-/* 分支容器样式 */
+/* Branch container styles */
 .branch-container {
   flex-direction: column;  
 }
@@ -522,7 +522,7 @@
   margin-bottom: 8px;
 }
 
-/* 分支列容器 */
+/* Branch column container */
 .message-branches {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
@@ -533,12 +533,12 @@
   padding: 4px 0;
 }
 
-/* 分支滚动容器包装器 */
+/* Branch scroll container wrapper */
 .branches-scroll-wrapper {
   position: relative;
 }
 
-/* 上方自定义滚动条容器 */
+/* Top custom scrollbar container */
 .top-scrollbar-container {
   height: 12px;
   margin-bottom: 4px;
@@ -551,13 +551,13 @@
   border: 1px solid var(--border-light, rgba(0,0,0,0.1));
 }
 
-/* 上方滚动条的内容占位 */
+/* Top scrollbar content placeholder */
 .top-scrollbar-content {
   height: 1px;
   background: transparent;
 }
 
-/* 上方滚动条样式 - Webkit */
+/* Top scrollbar styles - Webkit */
 .top-scrollbar-container::-webkit-scrollbar {
   height: 8px;
 }
@@ -576,7 +576,7 @@
   background: var(--primary-color-hover, #0056b3);
 }
 
-/* 大于等于3个分支时的横向滚动样式 */
+/* Horizontal scroll styles when 3 or more branches */
 .message-branches.many-branches {
   display: flex;
   flex-direction: row;
@@ -588,14 +588,14 @@
   padding: 4px 0;
 }
 
-/* 当分支数量大于等于3个时，固定分支宽度确保横向滚动 */
+/* When 3 or more branches, fix branch width to ensure horizontal scrolling */
 .message-branches.many-branches .message-branch {
   min-width: 380px;
   max-width: 380px;
   flex-shrink: 0;
 }
 
-/* Webkit浏览器的滚动条样式 */
+/* Webkit browser scrollbar styles */
 .message-branches.many-branches::-webkit-scrollbar {
   height: 8px;
 }
@@ -614,19 +614,19 @@
   background: var(--primary-color-hover, #0056b3);
 }
 
-/* 移动端单列布局 */
+/* Mobile single column layout */
 @media (max-width: 768px) {
   .message-branches {
     grid-template-columns: 1fr;
     gap: 12px;
   }
   
-  /* 在移动端，隐藏上方滚动条 */
+  /* Hide top scrollbar on mobile */
   .top-scrollbar-container {
     display: none;
   }
   
-  /* 在移动端，多分支仍使用单列布局，但保持滚动功能 */
+  /* On mobile, multi-branch still uses single column layout but maintains scroll functionality */
   .message-branches.many-branches {
     display: grid;
     grid-template-columns: 1fr;
@@ -640,7 +640,7 @@
   }
 }
 
-/* 单个分支列样式 */
+/* Single branch column styles */
 .message-branch {
   position: relative;
   border: 1px solid var(--border-color);  
@@ -657,7 +657,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* 分支内容样式 */
+/* Branch content styles */
 .message-branch .message-content {
   flex: 1;
   padding: 0;
@@ -673,7 +673,7 @@
   white-space: pre-wrap;
 }
 
-/* 分支模型标签 */
+/* Branch model label */
 .branch-model-label {
   font-size: 0.75em;
   color: var(--text-muted);
@@ -691,7 +691,7 @@
   margin: 0;
 }
 
-/* 分支状态样式 */
+/* Branch status styles */
 .message-branch[data-streaming="true"] {
   border-color: var(--primary-color);
   background-color: var(--loading-bg, rgba(0, 123, 255, 0.05));
@@ -702,7 +702,7 @@
   background-color: var(--error-bg, rgba(220, 53, 69, 0.05));
 }
 
-/* 分支操作按钮容器 */
+/* Branch action button container */
 .branch-actions {
   position: absolute;
   top: 8px;
@@ -718,7 +718,7 @@
   opacity: 1;
 }
 
-/* 分支操作按钮 */
+/* Branch action buttons */
 .branch-action-btn {
   width: 28px;
   height: 28px;
@@ -750,7 +750,7 @@
   background-color: var(--success-color, #28a745);
 }
 
-/* 停止并删除分支按钮样式：与顶部配置页按钮一致 */
+/* Stop and delete branch button styles: consistent with top config page buttons */
 .branch-action-btn[data-action="stop-delete"] {
   width: 26px;
   height: 26px;
@@ -784,7 +784,7 @@
   box-shadow: 0 1px 3px rgba(66, 133, 244, 0.2);
 }
 
-/* 快速输入流式加载时的停止并删除按钮（tab 级别） */
+/* Stop and delete button during quick input streaming loading (tab level) */
 .branch-action-btn[data-action="stop-delete-tab"] {
   width: 26px;
   height: 26px;
@@ -818,7 +818,7 @@
   box-shadow: 0 1px 3px rgba(66, 133, 244, 0.2);
 }
 
-/* 模型选择下拉菜单 */
+/* Model selection dropdown menu */
 .model-dropdown {
   position: fixed;
   top: 0;
@@ -870,7 +870,7 @@
   font-style: italic;
 }
 
-/* 分支加载动画优化 */
+/* Branch loading animation optimization */
 .message-branch .loading-container {
   display: flex;
   align-items: center;
@@ -884,7 +884,7 @@
   height: 20px;
 }
 
-/* 分支错误显示优化 */
+/* Branch error display optimization */
 .message-branch .error-display {
   border-radius: 6px;
   margin: 0;
@@ -896,7 +896,7 @@
   margin: 0;
 }
 
-/* 响应式调整 */
+/* Responsive adjustments */
 @media (max-width: 1024px) {
   .message-branches {
     grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
@@ -924,7 +924,7 @@
   }
 } 
 
-/* 分支 loading 状态样式调整 */
+/* Branch loading state style adjustments */
 .message-branch[data-streaming="true"] {
   min-height: auto;
   display: flex;
@@ -1005,7 +1005,7 @@
   border-radius: 4px;
 }
 
-/* 保证分支消息加载时停止并删除按钮始终显示边框 */
+/* Ensure stop and delete button always shows border during branch message loading */
 .message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="stop-delete"] {
   border: 1px solid #9f9f9f;
   background-color: transparent;

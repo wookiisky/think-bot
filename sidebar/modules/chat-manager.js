@@ -126,8 +126,8 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
   contentDiv.setAttribute('data-raw-content', content);
   
   if (role === 'assistant' && isStreaming) {
-    // 旧的助手消息流程已废弃，统一使用分支消息流程
-    // 如果仍有调用到此处的旧式流程，仅显示简单 spinner，不添加按钮
+    // Legacy assistant message flow is deprecated, unified use of branch message flow
+    // If there are still calls to this legacy flow, only show simple spinner without buttons
     try {
       const loadingContainer = document.createElement('div');
       loadingContainer.className = 'loading-container';
@@ -225,7 +225,7 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
         }
       }
       
-      // 统一交由 retryMessage 内部构建分支样式 UI，这里仅清理后续消息并滚动
+      // Delegate to retryMessage to build branch-style UI internally, only clean up subsequent messages and scroll here
       chatContainer.scrollTop = chatContainer.scrollHeight;
     });
     
@@ -1080,15 +1080,15 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
     systemPromptTemplateForPayload = systemPromptTemplateForPayload + '\n\nPage Content:\n' + pageContentForPayload; 
   }
   
-  // 统一使用分支消息样式：创建分支容器并显示 loading
-  // 本地生成分支ID（与 generateBranchId 一致的策略，避免提升函数声明顺序）
+  // Unified use of branch message style: create branch container and show loading
+  // Generate branch ID locally (consistent strategy with generateBranchId to avoid function declaration hoisting)
   const localBranchId = (typeof crypto !== 'undefined' && crypto.randomUUID)
     ? `br-${crypto.randomUUID()}`
     : `br-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
   let assistantBranchElement = null;
   try {
-    // 选取当前模型用于标签展示
+    // Select current model for label display
     const selectedModelForLabel = modelSelector ? modelSelector.getSelectedModel() : null;
 
     const assistantTimestamp = Date.now();
@@ -1122,7 +1122,7 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
     loadingContainer.innerHTML = '<div class="spinner"></div>';
     contentDiv.appendChild(loadingContainer);
 
-    // 模型标签添加到分支顶部（仅显示模型名）
+    // Add model label to top of branch (only show model name)
     const modelLabel = document.createElement('div');
     modelLabel.className = 'branch-model-label';
     modelLabel.textContent = (selectedModelForLabel && selectedModelForLabel.name) || 'unknown';
@@ -1130,7 +1130,7 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
 
     branchDiv.appendChild(contentDiv);
 
-    // 顶部右侧仅保留"停止并删除"按钮
+    // Only keep "stop and delete" button on top right
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'branch-actions';
     const stopDeleteButton = document.createElement('button');
@@ -1150,7 +1150,7 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
     assistantBranchElement = branchDiv;
   } catch (uiError) {
     logger.error('Error creating branch-style loading UI for user message, falling back:', uiError);
-    // 最小回退：创建简单的加载消息，不使用遗留的流式消息
+    // Minimal fallback: create simple loading message without using legacy streaming message
     assistantBranchElement = appendMessageToUI(
       chatContainer,
       'assistant',
@@ -1302,7 +1302,7 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     streamId = `${currentUrl}#${currentTabId}`;
   }
 
-  // Build branch-style assistant container immediately以统一分支行为
+  // Build branch-style assistant container immediately to unify branch behavior
   let assistantLoadingMessage;
   let quickBranchId = null;
   try {
@@ -1325,7 +1325,7 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     const branchDiv = document.createElement('div');
     branchDiv.className = 'message-branch';
     branchDiv.setAttribute('data-streaming', 'true');
-    // 生成分支ID
+    // Generate branch ID
     quickBranchId = (typeof crypto !== 'undefined' && crypto.randomUUID)
       ? `br-${crypto.randomUUID()}`
       : `br-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -1362,7 +1362,7 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     stopDeleteButton.title = i18n.getMessage('branch_stopAndDelete');
     stopDeleteButton.setAttribute('data-action', 'stop-delete');
     stopDeleteButton.setAttribute('data-branch-id', quickBranchId);
-    // 点击逻辑改为委托到 chat-history.js 的分支事件，避免重复绑定与双触发
+    // Change click logic to delegate to chat-history.js branch events to avoid duplicate binding and double triggering
     actionsDiv.appendChild(stopDeleteButton);
     branchDiv.appendChild(actionsDiv);
 
@@ -1784,7 +1784,7 @@ const clearAllErrorMessages = (chatContainer) => {
 };
 
 // =============================
-// 分支功能 (Branching Features)
+// Branching Features
 // =============================
 
 /**
@@ -1806,17 +1806,17 @@ const generateBranchId = () => {
 const createBranch = async (originalBranchId, model) => {
   logger.info(`Creating new branch from ${originalBranchId} using model ${model.label}`);
   
-  // 在try块外声明newBranchId，避免在catch块中访问未定义变量
+  // Declare newBranchId outside try block to avoid accessing undefined variable in catch block
   let newBranchId = null;
   
   try {
-    // 获取当前聊天容器
+    // Get current chat container
     const chatContainer = document.getElementById('chatContainer');
     if (!chatContainer) {
       throw new Error('Chat container not found');
     }
     
-    // 查找原始分支所在的助手消息
+    // Find assistant message containing original branch
     const originalBranch = chatContainer.querySelector(`[data-branch-id="${originalBranchId}"]`);
     if (!originalBranch) {
       throw new Error(`Original branch ${originalBranchId} not found`);
@@ -1825,27 +1825,27 @@ const createBranch = async (originalBranchId, model) => {
     const branchContainer = originalBranch.closest('.branch-container');
     const branchesContainer = originalBranch.closest('.message-branches');
     
-    // 构建上下文：从对话开始到当前助手消息之前
+    // Build context: from conversation start to before current assistant message
     const context = buildBranchContext(branchContainer);
     
-    // 生成新的分支ID
+    // Generate new branch ID
     newBranchId = generateBranchId();
     
-    // 在UI中创建新的分支列
+    // Create new branch column in UI
     const newBranchDiv = createBranchElement(newBranchId, model, 'loading');
     branchesContainer.appendChild(newBranchDiv);
     
     // Check if there are 3 or more branches and update CSS class
     updateBranchContainerStyle(branchesContainer);
     
-    // 滚动到新分支
+    // Scroll to new branch
     newBranchDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
     
-    // 更新聊天历史
+    // Update chat history
     const chatHistory = getChatHistoryFromDOM(chatContainer);
     saveChatHistory(chatHistory);
     
-    // 发送LLM请求
+    // Send LLM request
     await sendBranchLlmRequest(context, model, newBranchId);
     
     logger.info(`Branch ${newBranchId} created successfully`);
@@ -1877,13 +1877,13 @@ const buildBranchContext = (branchContainer) => {
   const allMessages = Array.from(chatContainer.children);
   const branchIndex = allMessages.indexOf(branchContainer);
   
-  // 获取从开始到当前分支容器之前的所有消息
+  // Get all messages from start to before current branch container
   const contextElements = allMessages.slice(0, branchIndex + 1);
   const context = [];
   
   contextElements.forEach(element => {
     if (element.classList.contains('user-message')) {
-      // 用户消息
+      // User message
       const contentEl = element.querySelector('.message-content');
       const content = contentEl ? contentEl.getAttribute('data-raw-content') || contentEl.textContent : '';
       const imageBase64 = element.getAttribute('data-image');
@@ -1897,14 +1897,14 @@ const buildBranchContext = (branchContainer) => {
       context.push(messageObj);
       
     } else if (element.classList.contains('branch-container')) {
-      // 分支容器 - 取第一个分支作为上下文
+      // Branch container - take first branch as context
       const firstBranch = element.querySelector('.message-branch[data-branch-id]');
       if (firstBranch) {
         const contentEl = firstBranch.querySelector('.message-content');
         const content = contentEl ? contentEl.getAttribute('data-raw-content') || contentEl.textContent : '';
         const model = firstBranch.getAttribute('data-model') || 'unknown';
         
-        // 只有状态为done的分支才作为上下文
+        // Only branches with done status are used as context
         if (!firstBranch.hasAttribute('data-streaming') && !firstBranch.classList.contains('error-message')) {
           context.push({
             role: 'assistant',
@@ -1933,7 +1933,7 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
   branchDiv.setAttribute('data-branch-id', branchId);
   branchDiv.setAttribute('data-model', model.name || 'unknown');
   
-  // 分支内容
+  // Branch content
   const contentDiv = document.createElement('div');
   contentDiv.className = 'message-content';
   contentDiv.setAttribute('data-raw-content', content);
@@ -1964,7 +1964,7 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
     errorContainer.appendChild(errorContent);
     contentDiv.appendChild(errorContainer);
   } else {
-    // done状态
+    // Done status
     if (hasMarkdownElements(content)) {
       try {
         contentDiv.innerHTML = window.marked.parse(content);
@@ -1978,7 +1978,7 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
     }
   }
   
-  // 添加模型标签到分支顶部（仅显示模型名）
+  // Add model label to top of branch (only show model name)
   const modelLabel = document.createElement('div');
   modelLabel.className = 'branch-model-label';
   modelLabel.textContent = model.name || 'unknown';
@@ -1986,7 +1986,7 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
   
   branchDiv.appendChild(contentDiv);
   
-  // 添加操作按钮
+  // Add action buttons
   const actionsDiv = document.createElement('div');
   actionsDiv.className = 'branch-actions';
   
@@ -2010,7 +2010,7 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
   }
   deleteButton.setAttribute('data-branch-id', branchId);
   
-  // loading 状态下仅保留"停止并删除"按钮
+  // In loading state, only keep "stop and delete" button
   if (status === 'loading') {
     actionsDiv.appendChild(deleteButton);
   } else {
@@ -2150,7 +2150,7 @@ const setupScrollbarSync = (topScrollContainer, branchesContainer) => {
  */
 const sendBranchLlmRequest = async (context, model, branchId) => {
   try {
-    // 获取当前配置
+    // Get current configuration
     const config = await window.StateManager.getConfig();
     const basicConfig = config.basic || config;
     const systemPrompt = basicConfig.systemPrompt || '';
@@ -2160,13 +2160,13 @@ const sendBranchLlmRequest = async (context, model, branchId) => {
     const includePageContent = window.StateManager.getStateItem('includePageContent');
     const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
     
-    // 构建系统提示
+    // Build system prompt
     let systemPromptWithContent = systemPrompt;
     if (includePageContent) {
       systemPromptWithContent += '\n\nPage Content:\n' + extractedContent;
     }
     
-    // 使用MessageHandler发送消息，确保正确的payload格式
+    // Use MessageHandler to send message, ensure correct payload format
     await window.MessageHandler.sendLlmMessage({
       messages: context,
       systemPromptTemplate: systemPromptWithContent,
@@ -2174,8 +2174,8 @@ const sendBranchLlmRequest = async (context, model, branchId) => {
       currentUrl: currentUrl,
       extractionMethod: extractionMethod,
       tabId: currentTabId,
-      branchId: branchId, // 添加branchId
-      model: model // 指定模型
+      branchId: branchId, // Add branchId
+      model: model // Specify model
     });
     
     logger.info(`Branch LLM request sent successfully for ${branchId}`);
@@ -2183,10 +2183,10 @@ const sendBranchLlmRequest = async (context, model, branchId) => {
   } catch (error) {
     logger.error(`Error sending branch LLM request for ${branchId}:`, error);
     
-    // 更新分支为错误状态
+    // Update branch to error state
     const branchElement = document.querySelector(`[data-branch-id="${branchId}"]`);
     if (branchElement) {
-      updateBranchToError(branchElement, error.message || '请求失败');
+      updateBranchToError(branchElement, error.message || 'Request failed');
     }
     
     // Do not throw error to prevent it from being handled by parent context
@@ -2271,7 +2271,7 @@ const updateBranchToError = (branchElement, errorMessage) => {
     contentDiv.appendChild(errorContainer);
   }
   
-  // 更新删除按钮
+  // Update delete button
   const deleteButton = branchElement.querySelector('.delete-btn');
   if (deleteButton) {
     deleteButton.innerHTML = '<i class="material-icons">delete</i>';
@@ -2292,7 +2292,7 @@ const cancelBranchRequest = async (branchId) => {
     const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
     const currentUrl = window.StateManager ? window.StateManager.getStateItem('currentUrl') : window.location.href;
     
-    // 发送取消请求
+    // Send cancel request
     const response = await chrome.runtime.sendMessage({
       type: 'CANCEL_LLM_REQUEST',
       url: currentUrl,
@@ -2326,12 +2326,12 @@ const saveChatHistory = async (chatHistory) => {
       return;
     }
     
-    // 使用TabManager保存（如果可用）
+    // Use TabManager to save (if available)
     if (window.TabManager && window.TabManager.saveCurrentTabChatHistory) {
       await window.TabManager.saveCurrentTabChatHistory(chatHistory);
       logger.info('Chat history saved via TabManager');
     } else {
-      // 回退到原始方法
+      // Fallback to original method
       await chrome.runtime.sendMessage({
         type: 'SAVE_CHAT_HISTORY',
         url: currentUrl,
@@ -2365,12 +2365,12 @@ export {
   hasActiveStream,
   updateInputAreaState,
   updateBranchContainerStyle,
-  // 分支功能
+  // Branching features
   generateBranchId,
   createBranch,
   buildBranchContext,
   createBranchElement,
-  // 双滚动条功能
+  // Dual scrollbar features
   createDualScrollbar,
   removeDualScrollbar,
   updateScrollbarContent,

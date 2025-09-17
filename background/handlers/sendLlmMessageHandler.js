@@ -240,7 +240,7 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                 try {
                     if (currentUrl && messages) {
                         const tabSpecificUrl = tabId ? `${currentUrl}#${tabId}` : currentUrl;
-                        // 保留模型信息，避免刷新后显示为 unknown
+                        // Preserve model information to avoid showing as unknown after refresh
                         const assistantModel = (defaultModel && (defaultModel.model || defaultModel.name)) || 'unknown';
                         const updatedMessages = [
                             ...messages,

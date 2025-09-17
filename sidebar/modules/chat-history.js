@@ -29,7 +29,7 @@ const getChatHistoryFromDOM = (chatContainer) => {
     const timestamp = parseInt(messageEl.id.split('-')[1], 10) || Date.now();
     
     if (role === 'user') {
-      // 处理用户消息（保持原有逻辑）
+      // Handle user messages (maintain original logic)
       const contentEl = messageEl.querySelector('.message-content');
       const content = contentEl ? contentEl.getAttribute('data-raw-content') || contentEl.textContent : '';
       const imageBase64 = messageEl.getAttribute('data-image');
@@ -51,14 +51,14 @@ const getChatHistoryFromDOM = (chatContainer) => {
       }
       
       chatHistory.push(messageObj);
-      currentAssistantMessage = null; // 重置当前助手消息
+      currentAssistantMessage = null; // Reset current assistant message
       
     } else if (role === 'assistant') {
-      // 处理助手消息（分支容器与兼容旧格式）
+      // Handle assistant messages (branch container and compatible with old format)
       const isBranchContainer = messageEl.classList.contains('branch-container');
 
       if (isBranchContainer) {
-        // 分支容器：遍历 .message-branch 子项，收集所有分支
+        // Branch container: iterate through .message-branch children, collect all branches
         const branchEls = messageEl.querySelectorAll('.message-branch');
         const responses = [];
 
@@ -91,7 +91,7 @@ const getChatHistoryFromDOM = (chatContainer) => {
           });
         });
 
-        // 只有当有分支时才推入历史
+        // Only push to history when there are branches
         if (responses.length > 0) {
           chatHistory.push({
             role: 'assistant',
@@ -99,10 +99,10 @@ const getChatHistoryFromDOM = (chatContainer) => {
             responses
           });
         }
-        // 分支容器一次性完成，重置当前助手消息聚合
+        // Branch container completed at once, reset current assistant message aggregation
         currentAssistantMessage = null;
       } else {
-        // 非分支容器（兼容旧结构或流式单分支）
+        // Non-branch container (compatible with old structure or streaming single branch)
         const contentEl = messageEl.querySelector('.message-content');
         const branchId = messageEl.getAttribute('data-branch-id');
         const model = messageEl.getAttribute('data-model') || 'unknown';
@@ -304,7 +304,7 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
       }
       
       if (message.role === 'user') {
-        // 处理用户消息（保持原有逻辑）
+        // Handle user messages (maintain original logic)
         if (!message.content) {
           return;
         }
@@ -335,9 +335,9 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
         }
         
       } else if (message.role === 'assistant') {
-        // 处理助手消息（新的分支逻辑）
+        // Handle assistant messages (new branch logic)
         if (!message.responses || !Array.isArray(message.responses) || message.responses.length === 0) {
-          // 兼容旧格式：如果没有responses但有content，当作单分支处理
+          // Compatible with old format: if no responses but has content, treat as single branch
           if (message.content) {
             const messageElement = appendMessageToUIFunc(
               chatContainer,
@@ -348,7 +348,7 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
               message.timestamp
             );
             
-            // 标记错误消息
+            // Mark error message
             if (message.isError && messageElement) {
               messageElement.classList.add('error-message');
             }
@@ -356,7 +356,7 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
           return;
         }
         
-        // 创建多分支容器
+        // Create multi-branch container
         const branchContainer = document.createElement('div');
         branchContainer.className = 'chat-message assistant-message branch-container';
         branchContainer.id = `message-${message.timestamp}`;
@@ -365,11 +365,11 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
         roleDiv.className = 'message-role';
         branchContainer.appendChild(roleDiv);
         
-        // 创建分支列容器
+        // Create branch column container
         const branchesDiv = document.createElement('div');
         branchesDiv.className = 'message-branches';
         
-        // 渲染每个分支
+        // Render each branch
         message.responses.forEach((response, index) => {
           if (!response) return;
           
@@ -383,21 +383,21 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
             branchDiv.setAttribute('data-model', response.model || 'unknown');
           });
           
-          // 分支内容
+          // Branch content
           const contentDiv = document.createElement('div');
           contentDiv.className = 'message-content';
           contentDiv.setAttribute('data-raw-content', response.content || '');
           
-          // 根据分支状态渲染内容
+          // Render content based on branch status
           if (response.status === 'loading') {
-            // 加载状态
+            // Loading state
             branchDiv.setAttribute('data-streaming', 'true');
             const loadingContainer = document.createElement('div');
             loadingContainer.className = 'loading-container';
             loadingContainer.innerHTML = '<div class="spinner"></div>';
             contentDiv.appendChild(loadingContainer);
           } else if (response.status === 'error') {
-            // 错误状态
+            // Error state
             branchDiv.classList.add('error-message');
             const errorContainer = document.createElement('div');
             errorContainer.className = 'error-display';
@@ -419,7 +419,7 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
             errorContainer.appendChild(errorContent);
             contentDiv.appendChild(errorContainer);
           } else {
-            // 完成状态
+            // Completed state
             if (hasMarkdownElements(response.content || '')) {
               try {
                 contentDiv.innerHTML = window.marked.parse(response.content || '');
@@ -433,7 +433,7 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
             }
           }
           
-          // 添加模型标签到分支顶部
+          // Add model label to top of branch
           const modelLabel = document.createElement('div');
           modelLabel.className = 'branch-model-label';
           
@@ -448,7 +448,7 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
 
           branchDiv.appendChild(contentDiv);
 
-          // loading状态：仅在右上角显示"停止并删除当前分支"按钮，不加入悬浮按钮组
+          // Loading state: only show "stop and delete current branch" button in top right, not in floating button group
           if (response.status === 'loading') {
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'branch-actions';
@@ -463,11 +463,11 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
             actionsDiv.appendChild(stopDeleteButton);
             branchDiv.appendChild(actionsDiv);
           } else {
-            // 非loading：添加分支级悬浮按钮组，包含 创建/删除 按钮
+            // Non-loading: add branch-level floating button group, including create/delete buttons
             const buttonContainer = document.createElement('div');
             buttonContainer.className = 'message-buttons';
 
-            // 跳转顶部
+            // Scroll to top
             const scrollTopButton = document.createElement('button');
             scrollTopButton.className = 'btn-base message-action-btn';
             scrollTopButton.innerHTML = '<i class="material-icons">arrow_upward</i>';
@@ -483,7 +483,7 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
               }, 100);
             };
 
-            // 跳转底部
+            // Scroll to bottom
             const scrollBottomButton = document.createElement('button');
             scrollBottomButton.className = 'btn-base message-action-btn';
             scrollBottomButton.innerHTML = '<i class="material-icons">arrow_downward</i>';
@@ -499,21 +499,21 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
               }, 100);
             };
 
-            // 复制文本
+            // Copy text
             const copyTextButton = document.createElement('button');
             copyTextButton.className = 'btn-base message-action-btn';
             copyTextButton.innerHTML = '<i class="material-icons">content_copy</i>';
             copyTextButton.title = i18n.getMessage('sidebar_chatManager_title_copyText');
             copyTextButton.onclick = () => window.ChatManager.copyMessageText(branchDiv);
 
-            // 复制Markdown
+            // Copy Markdown
             const copyMarkdownButton = document.createElement('button');
             copyMarkdownButton.className = 'btn-base message-action-btn';
             copyMarkdownButton.innerHTML = '<i class="material-icons">code</i>';
             copyMarkdownButton.title = i18n.getMessage('common_copy_markdown');
             copyMarkdownButton.onclick = () => window.ChatManager.copyMessageMarkdown(branchDiv);
 
-            // 创建分支（加入事件委托识别 + 布局样式）
+            // Create branch (add event delegation recognition + layout styles)
             const branchButton = document.createElement('button');
             branchButton.className = 'btn-base message-action-btn branch-btn';
             branchButton.innerHTML = '<i class="material-icons">call_split</i>';
@@ -521,7 +521,7 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
             branchButton.setAttribute('data-action', 'branch');
             branchButton.setAttribute('data-branch-id', response.branchId);
 
-            // 删除当前分支（加入事件委托识别 + 布局样式）
+            // Delete current branch (add event delegation recognition + layout styles)
             const deleteButton = document.createElement('button');
             deleteButton.className = 'btn-base message-action-btn delete-btn';
             deleteButton.innerHTML = '<i class="material-icons">delete</i>';
@@ -529,10 +529,10 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
             deleteButton.setAttribute('data-action', 'delete');
             deleteButton.setAttribute('data-branch-id', response.branchId);
 
-            // 顺序：顶部、底部、复制文本、复制Markdown、创建分支、删除分支
+            // Order: top, bottom, copy text, copy Markdown, create branch, delete branch
             const buttons = [scrollTopButton, scrollBottomButton, copyTextButton, copyMarkdownButton, branchButton, deleteButton];
 
-            // 使用现有布局工具以适配悬浮/自适应
+            // Use existing layout tools to adapt to floating/responsive
             if (window.ChatManager && window.ChatManager.layoutMessageButtons) {
               window.ChatManager.layoutMessageButtons(buttonContainer, buttons, branchDiv);
             } else {
@@ -560,7 +560,7 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
     // Scroll to last user message if exists, otherwise scroll to bottom
     scrollToLastUserMessage(chatContainer);
 
-    // 添加分支操作事件监听器
+    // Add branch operation event listeners
     addBranchEventListeners(chatContainer);
 
   } catch (error) {
@@ -573,7 +573,7 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
  * @param {HTMLElement} chatContainer - Chat container element
  */
 const addBranchEventListeners = (chatContainer) => {
-  // 避免重复绑定导致点击触发两次（会出现创建后立刻被移除的现象）
+  // Avoid duplicate binding causing double click triggers (would cause creation then immediate removal)
   if (chatContainer && chatContainer.dataset && chatContainer.dataset.branchEventsAttached === 'true') {
     return;
   }
@@ -581,7 +581,7 @@ const addBranchEventListeners = (chatContainer) => {
     chatContainer.dataset.branchEventsAttached = 'true';
   }
 
-  // 使用事件委托处理分支按钮点击
+  // Use event delegation to handle branch button clicks
   chatContainer.addEventListener('click', (event) => {
     const target = event.target;
     const button = target.closest('.branch-action-btn, .message-action-btn.delete-btn, .message-action-btn.branch-btn');
@@ -596,7 +596,7 @@ const addBranchEventListeners = (chatContainer) => {
     event.preventDefault();
     event.stopPropagation();
     
-    // 处理不同的操作
+    // Handle different operations
     switch (action) {
       case 'branch':
         handleBranchAction(button, branchId);
@@ -608,7 +608,7 @@ const addBranchEventListeners = (chatContainer) => {
         handleStopAndDeleteBranch(branchId);
         break;
       default:
-        // 兼容旧按钮类名：顶部右侧仅保留停止并删除
+        // Compatible with old button class names: only keep stop and delete in top right
         if (button.classList.contains('delete-btn') && branchId) {
           handleStopAndDeleteBranch(branchId);
         }
@@ -624,7 +624,7 @@ const addBranchEventListeners = (chatContainer) => {
 const handleBranchAction = (button, branchId) => {
   logger.info(`Creating branch from ${branchId}`);
   
-  // 检查是否已经有下拉菜单打开
+  // Check if dropdown menu is already open
   const existingDropdown = document.querySelector('.model-dropdown');
   if (existingDropdown) {
     const existingAnchorId = existingDropdown.getAttribute('data-anchor-branch-id');
@@ -635,7 +635,7 @@ const handleBranchAction = (button, branchId) => {
     existingDropdown.remove();
   }
   
-  // 创建模型选择下拉菜单
+  // Create model selection dropdown menu
   createModelDropdown(button, branchId);
 };
 
@@ -646,14 +646,14 @@ const handleBranchAction = (button, branchId) => {
 const handleDeleteBranch = (branchId) => {
   logger.info(`Deleting branch ${branchId}`);
   
-  // 获取分支元素
+  // Get branch element
   const branchElement = document.querySelector(`[data-branch-id="${branchId}"]`);
   if (!branchElement) {
     logger.warn(`Branch element not found for ${branchId}`);
     return;
   }
   
-  // 确认删除
+  // Confirm deletion
   if (window.confirm(i18n.getMessage('branch_confirmDelete'))) {
     removeBranchFromDOM(branchElement, branchId);
   }
@@ -696,7 +696,7 @@ const handleStopAndDeleteBranch = (branchId) => {
       }
     }
     
-    // Update Tab loading 状态：从 activeBranches 中移除此分支
+    // Update Tab loading state: remove this branch from activeBranches
     try {
       const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
       if (window.TabManager && window.TabManager.registerBranchError) {
@@ -709,10 +709,10 @@ const handleStopAndDeleteBranch = (branchId) => {
     }
   };
   
-  // 首先尝试取消请求
+  // First try to cancel request
   if (window.ChatManager && window.ChatManager.cancelBranchRequest) {
     window.ChatManager.cancelBranchRequest(branchId).then(() => {
-      // 取消成功后删除分支
+      // Delete branch after successful cancellation
       const branchElement = document.querySelector(`[data-branch-id="${branchId}"]`);
       if (branchElement) {
         removeBranchFromDOM(branchElement, branchId);
@@ -721,7 +721,7 @@ const handleStopAndDeleteBranch = (branchId) => {
       handlePostDelete();
     }).catch(error => {
       logger.error('Failed to cancel branch request:', error);
-      // 即使取消失败也允许删除
+      // Allow deletion even if cancellation fails
       const branchElement = document.querySelector(`[data-branch-id="${branchId}"]`);
       if (branchElement) {
         removeBranchFromDOM(branchElement, branchId);
@@ -730,7 +730,7 @@ const handleStopAndDeleteBranch = (branchId) => {
       handlePostDelete();
     });
   } else {
-    // 没有取消功能，直接删除
+    // No cancellation function, delete directly
     const branchElement = document.querySelector(`[data-branch-id="${branchId}"]`);
     if (branchElement) {
       removeBranchFromDOM(branchElement, branchId);
@@ -746,21 +746,21 @@ const handleStopAndDeleteBranch = (branchId) => {
  * @param {string} branchId - Branch ID
  */
 const createModelDropdown = (button, branchId) => {
-  // 创建下拉菜单容器
+  // Create dropdown menu container
   const dropdown = document.createElement('div');
   dropdown.className = 'model-dropdown';
   dropdown.setAttribute('data-anchor-branch-id', branchId);
   
-  // 获取可用模型列表
+  // Get available model list
   getAvailableModels().then(models => {
     if (!models || models.length === 0) {
-      // 没有可用模型
+      // No available models
       const emptyItem = document.createElement('div');
       emptyItem.className = 'model-dropdown-empty';
       emptyItem.textContent = i18n.getMessage('branch_noModels');
       dropdown.appendChild(emptyItem);
     } else {
-      // 添加模型选项
+      // Add model options
       models.forEach(model => {
         const item = document.createElement('button');
         item.className = 'model-dropdown-item';
@@ -776,10 +776,10 @@ const createModelDropdown = (button, branchId) => {
       });
     }
     
-    // 追加到 body 并以 fixed 模式定位在按钮正下方
+    // Append to body and position in fixed mode below button
     document.body.appendChild(dropdown);
     
-    // 计算并设置位置（按钮下方，避免越界）
+    // Calculate and set position (below button, avoid overflow)
     const positionDropdown = () => {
       const buttonRect = button.getBoundingClientRect();
       const dropdownRect = dropdown.getBoundingClientRect();
@@ -793,7 +793,7 @@ const createModelDropdown = (button, branchId) => {
 
       let top = buttonRect.bottom + offset;
       if (top + dropdownRect.height + viewportPadding > window.innerHeight) {
-        // 不够空间则展示在按钮上方
+        // If not enough space, show above button
         top = Math.max(
           viewportPadding,
           buttonRect.top - dropdownRect.height - offset
@@ -804,10 +804,10 @@ const createModelDropdown = (button, branchId) => {
       dropdown.style.top = `${top}px`;
     };
 
-    // 初次定位
+    // Initial positioning
     positionDropdown();
 
-    // 点击外部/滚动/窗口变化时关闭
+    // Close when clicking outside/scrolling/window changes
     const cleanup = () => {
       try { document.removeEventListener('click', outsideClickHandler, { capture: true }); } catch (_) {}
       try { window.removeEventListener('scroll', cleanup, { passive: true }); } catch (_) {}
@@ -823,7 +823,7 @@ const createModelDropdown = (button, branchId) => {
       }
     };
 
-    // 避免当前点击立刻触发关闭
+    // Avoid current click immediately triggering close
     setTimeout(() => {
       document.addEventListener('click', outsideClickHandler, { capture: true });
       window.addEventListener('scroll', cleanup, { once: true, passive: true });
@@ -838,11 +838,11 @@ const createModelDropdown = (button, branchId) => {
  */
 const getAvailableModels = async () => {
   try {
-    // 从StateManager获取配置
+    // Get configuration from StateManager
     if (window.StateManager && window.StateManager.getConfig) {
       const config = await window.StateManager.getConfig();
       
-      // 使用正确的配置结构 (与model-selector.js保持一致)
+      // Use correct configuration structure (consistent with model-selector.js)
       const llmConfig = config.llm_models || config.llm;
       
       if (!llmConfig || !llmConfig.models || !Array.isArray(llmConfig.models)) {
@@ -850,17 +850,17 @@ const getAvailableModels = async () => {
         return [];
       }
       
-      // 过滤启用且未删除的模型并转换格式（仅显示模型名，不包含 provider）
+      // Filter enabled and non-deleted models and convert format (only show model name, not including provider)
       const models = llmConfig.models
         .filter(model => model.enabled && !model.deleted && !model.isDeleted)
         .map(model => {
           return {
-            id: model.id,                         // 直接使用配置中的模型ID
-            name: model.name,                     // 使用显示名称作为name属性
-            label: model.name,                    // 下拉显示仅展示模型名
+            id: model.id,                         // Use model ID directly from config
+            name: model.name,                     // Use display name as name attribute
+            label: model.name,                    // Dropdown display only shows model name
             provider: model.provider,
-            displayName: model.name,              // 保存原始显示名称
-            modelConfig: model // 保存完整的模型配置用于后续使用
+            displayName: model.name,              // Save original display name
+            modelConfig: model // Save complete model config for later use
           };
         });
       
@@ -883,7 +883,7 @@ const getAvailableModels = async () => {
 const createNewBranch = (originalBranchId, model) => {
   logger.info(`Creating new branch from ${originalBranchId} using ${model.label}`);
   
-  // 委托给ChatManager处理分支创建
+  // Delegate to ChatManager to handle branch creation
   if (window.ChatManager && window.ChatManager.createBranch) {
     window.ChatManager.createBranch(originalBranchId, model);
   } else {
@@ -900,13 +900,13 @@ const removeBranchFromDOM = (branchElement, branchId) => {
   const branchContainer = branchElement.closest('.branch-container');
   const branchesContainer = branchElement.closest('.message-branches');
   
-  // 移除分支元素
+  // Remove branch element
   branchElement.remove();
   
-  // 如果这是最后一个分支，移除整个消息容器
+  // If this is the last branch, remove the entire message container
   const remainingBranches = branchesContainer.querySelectorAll('.message-branch');
   if (remainingBranches.length === 0) {
-    // 找到前一个用户消息也一起删除
+    // Find previous user message and delete together
     let prevElement = branchContainer.previousElementSibling;
     if (prevElement && prevElement.classList.contains('user-message')) {
       prevElement.remove();
@@ -919,7 +919,7 @@ const removeBranchFromDOM = (branchElement, branchId) => {
     }
   }
   
-  // 保存更新后的聊天历史
+  // Save updated chat history
   saveChatHistoryAfterBranchOperation();
 };
 

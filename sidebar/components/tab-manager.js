@@ -615,12 +615,12 @@ const switchToTabAndCheckAction = async (tabId, options = {}) => {
       const currentState = window.StateManager ? window.StateManager.getState() : {};
       const hasExtractedContent = currentState.extractedContent && currentState.extractedContent.trim().length > 0;
 
-      // 不要在这里设置 hasInitialized，应该在实际发送消息后设置
+      // Do not set hasInitialized here, should be set after actually sending message
 
       if (!hasExtractedContent) {
         logger.info(`Skipping auto-send for tab ${tabId}: content extraction result is empty`);
         shouldSend = false;
-        // 只有在确定不发送消息时才标记为已初始化
+        // Only mark as initialized when certain not to send message
         tab.hasInitialized = true;
       } else {
         shouldSend = true;
@@ -705,7 +705,7 @@ const handleTabClick = async (tabId) => {
     const previousActiveTabId = activeTabId;
     logger.info(`Switching from tab ${previousActiveTabId} to tab ${tabId}`);
 
-    // 在切换前保存当前活动 Tab 的聊天历史，避免未保存内容丢失（包含分支）
+    // Save current active Tab chat history before switching to avoid losing unsaved content (including branches)
     try {
       const chatContainer = document.getElementById('chatContainer');
       if (chatContainer && window.ChatHistory && window.ChatHistory.getChatHistoryFromDOM && window.TabManager && window.TabManager.saveCurrentTabChatHistory) {
@@ -779,7 +779,7 @@ const handleTabClick = async (tabId) => {
           }
         } else {
           // Only auto-send if no existing history and not yet initialized and content is available
-          // 不要在这里设置 hasInitialized，应该在消息发送完成后设置
+          // Do not set hasInitialized here, should be set after message sending is complete
 
           // For Quick Input auto-send, always force include page content (but don't change UI state)
           const forceIncludePageContent = true;
@@ -788,7 +788,7 @@ const handleTabClick = async (tabId) => {
           if (onTabClickHandler) {
             logger.info(`Auto-sending Quick Input for tab ${tabId} (no existing history) with forced page content inclusion`);
             onTabClickHandler(tab.displayText, tab.sendText, tabId, true, forceIncludePageContent);
-            // 在发送消息后立即标记为已初始化
+            // Mark as initialized immediately after sending message
             tab.hasInitialized = true;
           }
         }

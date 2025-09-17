@@ -269,7 +269,7 @@ const retryMessage = (messageElement, retryCallback) => {
       if (includePageContent) {
         systemPromptWithContent += '\n\nPage Content:\n' + extractedContent;
       }
-      // 分支样式重试：创建新的分支 loading，并传入 branchId
+      // Branch style retry: create new branch loading and pass branchId
       const chatEl = chatContainer;
       let retryBranchId = null;
       try {
@@ -303,7 +303,7 @@ const retryMessage = (messageElement, retryCallback) => {
         loadingContainer.innerHTML = '<div class="spinner"></div>';
         contentDiv.appendChild(loadingContainer);
         
-        // 添加模型标签到分支顶部
+        // Add model label to top of branch
         const modelLabel = document.createElement('div');
         modelLabel.className = 'branch-model-label';
         modelLabel.textContent = (selectedModelForLabel && selectedModelForLabel.name) || 'unknown';
@@ -328,7 +328,7 @@ const retryMessage = (messageElement, retryCallback) => {
         logger.warn('Retry branch UI creation failed, proceeding without branch UI:', retryUiError);
       }
 
-      // 发送带 branchId 的请求
+      // Send request with branchId
       try {
         const selectedModel = (window.modelSelector && typeof window.modelSelector.getSelectedModel === 'function')
           ? window.modelSelector.getSelectedModel()

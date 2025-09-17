@@ -53,27 +53,27 @@ export class FormHandler {
       if (typeof syncConfig !== 'undefined') {
         const syncSettings = await syncConfig.getSyncConfig();
 
-        // 基本同步设置
+        // Basic sync settings
         const syncEnabledValue = syncSettings.enabled || false;
         domElements.syncEnabled.checked = syncEnabledValue;
         domElements.storageType.value = syncSettings.storageType || 'gist';
         
-        logger.info('设置syncEnabled状态:', {
-          从配置读取的enabled值: syncSettings.enabled,
-          实际设置的值: syncEnabledValue,
-          DOM元素当前checked状态: domElements.syncEnabled.checked
+        logger.info('Setting syncEnabled state:', {
+          enabledValueFromConfig: syncSettings.enabled,
+          actualSetValue: syncEnabledValue,
+          currentCheckedStateOfDOMElement: domElements.syncEnabled.checked
         });
         
-        // Gist配置
+        // Gist configuration
         domElements.gistToken.value = syncSettings.gistToken || '';
         domElements.gistId.value = syncSettings.gistId || '';
         
-        // WebDAV配置
+        // WebDAV configuration
         domElements.webdavUrl.value = syncSettings.webdavUrl || '';
         domElements.webdavUsername.value = syncSettings.webdavUsername || '';
         domElements.webdavPassword.value = syncSettings.webdavPassword || '';
         
-        logger.info('同步设置已加载:', {
+        logger.info('Sync settings loaded:', {
           storageType: syncSettings.storageType,
           enabled: syncSettings.enabled,
           hasGistToken: !!syncSettings.gistToken,
@@ -83,7 +83,7 @@ export class FormHandler {
           hasWebdavPassword: !!syncSettings.webdavPassword
         });
 
-        // 返回storageType以便调用者更新UI状态
+        // Return storageType for caller to update UI state
         return syncSettings.storageType || 'gist';
       }
     } catch (error) {

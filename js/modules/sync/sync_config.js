@@ -74,7 +74,7 @@ syncConfig.getSyncConfig = async function() {
  */
 syncConfig.saveSyncConfig = async function(config) {
   try {
-    // 记录保存的配置信息（不包含敏感数据）
+    // Record saved configuration information (excluding sensitive data)
     syncConfigLogger.info('保存同步配置:', {
       enabled: config.enabled,
       storageType: config.storageType,

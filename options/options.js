@@ -22,7 +22,7 @@ class OptionsPage {
     this.domGroups = domGroups;
     this.hasUnsavedChanges = false;
     this.isAutoSyncing = false;
-    this.isInitializing = true; // 添加初始化标志，防止在页面加载时意外重置syncEnabled
+    this.isInitializing = true; // Add initialization flag to prevent accidental syncEnabled reset during page load
     // Initialize ModelManager with change notification callback
     this.modelManager = new ModelManager(domElements, () => {
       this.markAsChanged();
@@ -112,7 +112,7 @@ class OptionsPage {
       disabled: this.domElements.syncEnabled.disabled
     });
     
-    // 标记初始化完成，允许事件监听器正常工作
+    // Mark initialization complete, allow event listeners to work normally
     this.isInitializing = false;
     logger.info('Initialization complete; event listeners are now active');
   }
@@ -446,7 +446,7 @@ class OptionsPage {
     this.updateSyncStatus('idle', i18n.getMessage('options_sync_status_not_configured'));
     this.domElements.syncErrorMessage.style.display = 'none';
     
-    // 仅当用户实际更改存储类型（非初始化阶段）时，才自动关闭自动同步
+    // Only automatically disable auto sync when user actually changes storage type (not during initialization)
     if (!this.isInitializing && this.domElements.syncEnabled.checked) {
       this.domElements.syncEnabled.checked = false;
       this.disableAutoSync();
@@ -585,7 +585,7 @@ class OptionsPage {
       }
     });
 
-    // Sync configuration inputs - 包括gist和webdav所有相关字段
+    // Sync configuration inputs - including all gist and webdav related fields
     [
       this.domElements.gistToken, 
       this.domElements.gistId,
@@ -598,9 +598,9 @@ class OptionsPage {
         // Clear previous error messages when user starts typing
         this.updateSyncStatus('idle', 'Not configured');
 
-        // 只有在页面初始化完成后，且用户手动更改凭据时，才自动禁用同步
+        // Only automatically disable sync when page initialization is complete and user manually changes credentials
         if (!this.isInitializing && this.domElements.syncEnabled.checked) {
-          logger.info('用户更改了同步凭据，自动禁用同步功能');
+          logger.info('User changed sync credentials, automatically disabling sync functionality');
           this.domElements.syncEnabled.checked = false;
           this.disableAutoSync();
         }
@@ -1132,8 +1132,8 @@ class OptionsPage {
       autoSync: this.domElements.syncEnabled.checked // Legacy field, same as enabled
     };
     
-    // 添加调试日志以验证配置读取
-    logger.info('从表单构建同步配置:', {
+    // Add debug logs to verify configuration reading
+    logger.info('Building sync configuration from form:', {
       enabled: config.enabled,
       storageType: config.storageType,
       hasGistToken: !!config.gistToken,
@@ -1435,7 +1435,7 @@ class OptionsPage {
 document.addEventListener('DOMContentLoaded', async () => {
   // Initialize logger for options page
   if (window.logger) {
-    // 使用configure方法进行配置，而不是不存在的init方法
+    // Use configure method for configuration, not the non-existent init method
     window.logger.configure({
       level: window.LOG_LEVELS.INFO,
       enableConsole: true,

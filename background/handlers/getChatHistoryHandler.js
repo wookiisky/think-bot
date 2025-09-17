@@ -3,7 +3,7 @@
  * @returns {string} Unique branch ID
  */
 function generateBranchId() {
-  // 优先使用 crypto.randomUUID()，若不支持则回退到时间戳+随机数
+  // Prefer crypto.randomUUID(), fallback to timestamp + random number if not supported
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return `br-${crypto.randomUUID()}`;
   }
@@ -16,17 +16,17 @@ function generateBranchId() {
  * @returns {Object} Migrated message object
  */
 function migrateLegacyMessage(message) {
-  // 如果是用户消息，直接返回
+  // If user message, return directly
   if (message.role === 'user') {
     return message;
   }
 
-  // 如果是助手消息且已经是新格式（包含responses），直接返回
+  // If assistant message and already new format (contains responses), return directly
   if (message.role === 'assistant' && message.responses) {
     return message;
   }
 
-  // 如果是助手消息但是旧格式，转换为新格式
+  // If assistant message but old format, convert to new format
   if (message.role === 'assistant') {
     const newMessage = {
       role: 'assistant',
@@ -35,14 +35,14 @@ function migrateLegacyMessage(message) {
           branchId: generateBranchId(),
           model: message.model || 'unknown',
           content: message.content || '',
-          status: 'done', // 历史消息默认为完成状态
+          status: 'done', // Historical messages default to completed state
           errorMessage: null,
           updatedAt: message.timestamp || Date.now()
         }
       ]
     };
 
-    // 保留其他可能的字段（如timestamp等）
+    // Preserve other possible fields (such as timestamp, etc.)
     Object.keys(message).forEach(key => {
       if (!['role', 'content', 'model'].includes(key) && !newMessage.hasOwnProperty(key)) {
         newMessage[key] = message[key];
@@ -52,7 +52,7 @@ function migrateLegacyMessage(message) {
     return newMessage;
   }
 
-  // 其他类型消息直接返回
+  // Other message types return directly
   return message;
 }
 
@@ -105,7 +105,7 @@ async function handleGetChatHistory(data, serviceLogger, storage) {
     const rawChatHistory = await storage.getChatHistory(url);
     
     if (rawChatHistory && rawChatHistory.length > 0) {
-      // 执行数据迁移（仅在内存中，不修改存储）
+      // Execute data migration (only in memory, do not modify storage)
       const migratedChatHistory = migrateChatHistory(rawChatHistory, serviceLogger);
       
       serviceLogger.info(`GET_CHAT_HISTORY: Retrieved ${migratedChatHistory.length} messages for ${url}`);

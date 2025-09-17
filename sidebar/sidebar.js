@@ -143,7 +143,7 @@ const handleTabAction = async (displayText, sendTextTemplate, tabId, isAutoSend,
   }
   
   try {
-    // Handle quick input auto-send（统一走分支消息流程）
+    // Handle quick input auto-send (unified branch message flow)
     await ChatManager.handleQuickInputClick(
       displayText,
       sendTextTemplate,
@@ -155,8 +155,8 @@ const handleTabAction = async (displayText, sendTextTemplate, tabId, isAutoSend,
         const chatHistory = ChatHistory.getChatHistoryFromDOM(elements.chatContainer);
         await TabManager.saveCurrentTabChatHistory(chatHistory);
         
-        // 不在此处设置 has-content，交由读取/分支完成后统一计算
-        // 但确保 loading 状态在 UI 上被正确设置
+        // Do not set has-content here, let reading/branch completion handle unified calculation
+        // But ensure loading state is correctly set in UI
         if (isAutoSend && tabId) {
           await TabManager.updateTabLoadingState(tabId, true);
           logger.info(`Set loading state for tab ${tabId} after auto-send initiated`);
@@ -632,7 +632,7 @@ async function triggerAutoInputs() {
           await handleTabAction(input.displayText, input.sendText, tabId, true, forceIncludePageContent);
           lastTriggeredTabId = tabId;
           
-          // 标记 tab 为已初始化，只有在实际发送消息后才设置
+          // Mark tab as initialized, only set after actually sending message
           await TabManager.markTabAsInitialized(tabId);
           logger.info(`Marked tab ${tabId} as initialized after auto-send`);
         }
@@ -648,7 +648,7 @@ async function triggerAutoInputs() {
     // After all silent updates, render the final UI state once
     await TabManager.renderCurrentTabsState();
     
-    // 确保 loading 状态正确更新
+    // Ensure loading state is correctly updated
     if (lastTriggeredTabId) {
       await TabManager.updateTabsLoadingStates();
       logger.info(`Updated loading states for all tabs after auto-trigger, last triggered: ${lastTriggeredTabId}`);
