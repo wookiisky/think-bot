@@ -151,13 +151,11 @@ var BaseProvider = (function() {
                 // For non-JSON responses, try to get the text content for better error messages
                 try {
                     const textContent = await response.text();
-                    const truncatedContent = textContent.length > 200 ? 
-                        textContent.substring(0, 200) + '...' : textContent;
                     
                     baseProviderLogger.error(`[${providerName}] Received non-JSON response`, {
                         status: response.status,
                         contentType: contentType,
-                        responsePreview: truncatedContent
+                        responsePreview: textContent
                     });
                     
                     throw new EnhancedError(

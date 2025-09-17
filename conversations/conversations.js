@@ -1224,7 +1224,8 @@ function setupMessageListeners() {
           },
           errorDetails,
           tabId,
-          url
+          url,
+          message.branchId // Pass branchId for proper branch error handling
         );
         
         logger.info(`LLM error processed for conversations page tab ${tabId}`);
@@ -1285,7 +1286,10 @@ function setupMessageListeners() {
               // Re-enable send button
               window.conversationsElements.sendBtn.disabled = false;
             },
-            message.errorDetails
+            message.errorDetails,
+            null, // tabId
+            null, // url
+            message.branchId // Pass branchId for proper branch error handling
           );
         } else if (status === 'cancelled') {
           // Handle cancelled response

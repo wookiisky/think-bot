@@ -669,7 +669,7 @@ const cleanupStreamingState = (messageElement) => {
  * @param {Function} onComplete - Callback function after completion
  * @param {Object} errorDetails - Optional detailed error information
  */
-const handleLlmError = (chatContainer, error, streamingMessageElement = null, onComplete = null, errorDetails = null, tabId = null, url = null) => {
+const handleLlmError = (chatContainer, error, streamingMessageElement = null, onComplete = null, errorDetails = null, tabId = null, url = null, branchId = null) => {
   // Update tab loading state when error occurs
   const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
   updateTabLoadingState(currentTabId, false).catch(error => 
@@ -677,18 +677,55 @@ const handleLlmError = (chatContainer, error, streamingMessageElement = null, on
   );
   
   let specificStreamingElement = streamingMessageElement;
-  if (!specificStreamingElement && tabId && url) {
-    const streamId = `${url}#${tabId}`;
-    specificStreamingElement = chatContainer.querySelector(`[data-stream-id="${streamId}"][data-streaming="true"]`);
+  
+  // Try to find streaming element in this order:
+  // 1. Use provided streamingMessageElement
+  // 2. If branchId is provided, find branch element
+  // 3. If tabId/url provided, find by stream-id
+  // 4. Fallback to any streaming element
+  if (!specificStreamingElement) {
+    if (branchId) {
+      // Try to find branch element first with data-streaming="true"
+      specificStreamingElement = chatContainer.querySelector(`[data-branch-id="${branchId}"][data-streaming="true"]`);
+      // If not found with data-streaming, try without it (element might have already been partially processed)
+      if (!specificStreamingElement) {
+        specificStreamingElement = chatContainer.querySelector(`[data-branch-id="${branchId}"]`);
+      }
+      logger.debug(`Looking for branch element with branchId: ${branchId}, found: ${!!specificStreamingElement}`);
+    } else if (tabId && url) {
+      const streamId = `${url}#${tabId}`;
+      specificStreamingElement = chatContainer.querySelector(`[data-stream-id="${streamId}"][data-streaming="true"]`);
+      logger.debug(`Looking for stream element with streamId: ${streamId}, found: ${!!specificStreamingElement}`);
+    }
+    
+    // Final fallback to any streaming element
+    if (!specificStreamingElement) {
+      specificStreamingElement = chatContainer.querySelector('[data-streaming="true"]');
+      logger.debug(`Fallback to any streaming element, found: ${!!specificStreamingElement}`);
+    }
   }
 
   // Check if this is a branch-level error that should be handled locally
   if (specificStreamingElement && specificStreamingElement.classList.contains('message-branch')) {
-    const branchId = specificStreamingElement.getAttribute('data-branch-id');
-    logger.info(`Handling error for branch ${branchId} at branch level`);
+    const elementBranchId = specificStreamingElement.getAttribute('data-branch-id');
+    logger.info(`Handling error for branch ${elementBranchId} at branch level`);
     
-    // Handle branch error locally using updateBranchToError
-    const errorMessage = errorDetails?.message || (typeof error === 'string' ? error : error.message || 'Request failed');
+    // Handle branch error locally using updateBranchToError with enhanced error details
+    let errorMessage = 'Request failed';
+    
+    // Try to extract detailed error information
+    if (errorDetails && errorDetails.rawResponse) {
+      try {
+        // Show raw response for better debugging
+        errorMessage = errorDetails.rawResponse;
+      } catch (e) {
+        logger.warn('Error processing rawResponse:', e);
+        errorMessage = errorDetails.message || (typeof error === 'string' ? error : error.message || 'Request failed');
+      }
+    } else {
+      errorMessage = errorDetails?.message || (typeof error === 'string' ? error : error.message || 'Request failed');
+    }
+    
     updateBranchToError(specificStreamingElement, errorMessage);
     
     if (typeof onComplete === 'function') {
@@ -1627,7 +1664,16 @@ const fallbackErrorDisplay = (chatContainer, error, streamingMessageElement = nu
     const branchId = streamingMessageElement.getAttribute('data-branch-id');
     logger.info(`Fallback: Handling error for branch ${branchId} at branch level`);
     
-    const errorMessage = typeof error === 'string' ? error : (error?.message || 'Request failed');
+    // Try to show enhanced error details including raw response
+    let errorMessage = 'Request failed';
+    if (typeof error === 'object' && error.rawResponse) {
+      errorMessage = error.rawResponse;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    } else {
+      errorMessage = error?.message || 'Request failed';
+    }
+    
     updateBranchToError(streamingMessageElement, errorMessage);
     
     if (typeof onComplete === 'function') {
@@ -2183,10 +2229,21 @@ const sendBranchLlmRequest = async (context, model, branchId) => {
   } catch (error) {
     logger.error(`Error sending branch LLM request for ${branchId}:`, error);
     
-    // Update branch to error state
+    // Update branch to error state with enhanced error details
     const branchElement = document.querySelector(`[data-branch-id="${branchId}"]`);
     if (branchElement) {
-      updateBranchToError(branchElement, error.message || 'Request failed');
+      // Try to extract detailed error information for better debugging
+      let errorMessage = 'Request failed';
+      
+      if (error.rawResponse) {
+        errorMessage = error.rawResponse;
+      } else if (error.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      updateBranchToError(branchElement, errorMessage);
     }
     
     // Do not throw error to prevent it from being handled by parent context
@@ -2240,7 +2297,7 @@ const getTabSpecificBranchModels = async (currentTabId, config) => {
 /**
  * Update branch to error state
  * @param {HTMLElement} branchElement - Branch element
- * @param {string} errorMessage - Error message
+ * @param {string} errorMessage - Error message (can be raw response or formatted error)
  */
 const updateBranchToError = (branchElement, errorMessage) => {
   branchElement.removeAttribute('data-streaming');
@@ -2259,12 +2316,14 @@ const updateBranchToError = (branchElement, errorMessage) => {
       white-space: pre-wrap;
       font-family: monospace;
       font-size: 0.9em;
-      margin: 0;
-      padding: 8px;
+      margin: 0px;
+      padding: 12px;
       background-color: var(--error-bg, #fff5f5);
       border-left: 4px solid var(--error-color);
       border-radius: 4px;
     `;
+    
+    // Display the raw error message, preserving formatting for JSON or structured data
     errorContent.textContent = errorMessage;
     
     errorContainer.appendChild(errorContent);
