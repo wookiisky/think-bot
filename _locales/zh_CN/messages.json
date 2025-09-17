@@ -32,9 +32,6 @@
   "common_confirm_reset_message": {
     "message": "您确定要重置为默认设置吗？"
   },
-  "common_confirmation_title": {
-    "message": "确认"
-  },
   "common_copy": {
     "message": "复制"
   },
@@ -49,9 +46,6 @@
   },
   "common_include_page_content": {
     "message": "将页面内容插入到system prompt中"
-  },
-  "common_options_js_save": {
-    "message": "保存"
   },
   "common_remove": {
     "message": "移除"
@@ -131,6 +125,33 @@
   "global_time_just_now": {
     "message": "刚刚"
   },
+  "global_time_minutes_ago": {
+    "message": "$MINUTES$分钟前",
+    "placeholders": {
+      "minutes": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "global_time_hours_ago": {
+    "message": "$HOURS$小时前",
+    "placeholders": {
+      "hours": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "global_time_days_ago": {
+    "message": "$DAYS$天前",
+    "placeholders": {
+      "days": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
   "options_add_new_model_button": {
     "message": "添加新模型"
   },
@@ -139,9 +160,6 @@
   },
   "options_basic_settings_title": {
     "message": "基础设置"
-  },
-  "options_blacklist_add_button": {
-    "message": "添加"
   },
   "options_blacklist_add_dialog_title": {
     "message": "添加黑名单模式"
@@ -188,9 +206,6 @@
   "options_blacklist_pattern_updated_success": {
     "message": "模式更新成功"
   },
-  "options_blacklist_reset_button": {
-    "message": "重置"
-  },
   "options_blacklist_reset_confirm_message": {
     "message": "默认模式将被恢复。\n\n此操作无法撤消。\n\n您是否要继续？"
   },
@@ -236,9 +251,6 @@
   "options_cache_label": {
     "message": "本地数据："
   },
-  "options_clear_cache_button": {
-    "message": "清除"
-  },
   "options_cloud_sync_description": {
     "message": "同步配置 (包括模型密钥！) 和页面、聊天数据"
   },
@@ -253,12 +265,6 @@
   },
   "options_default_extraction_method_label": {
     "message": "默认提取方法"
-  },
-  "options_default_model_label": {
-    "message": "默认模型"
-  },
-  "options_branch_models_label": {
-    "message": "分支模型"
   },
   "options_export_config_button": {
     "message": "导出配置"
@@ -290,9 +296,6 @@
   "options_github_token_create_link": {
     "message": "创建令牌"
   },
-  "options_github_token_label": {
-    "message": "GitHub 令牌"
-  },
   "options_github_token_permission_note": {
     "message": "(需要 Gist 权限)"
   },
@@ -313,9 +316,6 @@
   },
   "options_webdav_password_label": {
     "message": "密码"
-  },
-  "options_header_title_text": {
-    "message": "洞察助手设置"
   },
   "options_import_config_button": {
     "message": "导入配置"
@@ -388,9 +388,6 @@
   },
   "options_js_sync_gist_id_required": {
     "message": "需要 Gist ID"
-  },
-  "options_js_sync_github_token": {
-    "message": "GitHub 令牌"
   },
   "options_js_sync_github_token_required": {
     "message": "需要 GitHub 令牌"
@@ -473,9 +470,6 @@
   "options_model_max_tokens_label": {
     "message": "最大 token 数"
   },
-  "options_model_model_label": {
-    "message": "模型"
-  },
   "options_model_no_models_configured": {
     "message": "未配置模型"
   },
@@ -506,9 +500,6 @@
   "options_model_unnamed": {
     "message": "未命名模型"
   },
-  "options_page_title": {
-    "message": "设置"
-  },
   "options_quick_input_auto_trigger_title": {
     "message": "侧边栏打开时自动发送"
   },
@@ -520,9 +511,6 @@
   },
   "options_quick_input_message_label": {
     "message": "消息内容"
-  },
-  "options_quick_input_branch_models_label": {
-    "message": "分支模型"
   },
   "options_quick_input_tabs_title": {
     "message": "标签页"
@@ -587,9 +575,6 @@
   "page_list_manager_delete_conversation_title": {
     "message": "删除此对话"
   },
-  "page_list_manager_empty_list_subtitle": {
-    "message": "浏览页面并开始聊天，即可在此处看到对话记录"
-  },
   "page_list_manager_empty_list_title": {
     "message": "未找到对话"
   },
@@ -610,6 +595,15 @@
   },
   "sidebar_chatManager_finishReason_other": {
     "message": "响应因未知原因结束。"
+  },
+  "sidebar_chatManager_finishReason_default": {
+    "message": "生成停止：$REASON$",
+    "placeholders": {
+      "reason": {
+        "content": "$1",
+        "example": "stop"
+      }
+    }
   },
   "sidebar_chatManager_finishReason_recitation": {
     "message": "由于潜在的版权内容，响应已停止。"
@@ -658,12 +652,6 @@
   },
   "branch_stopAndDelete": {
     "message": "停止并删除此分支"
-  },
-  "branch_model": {
-    "message": "模型"
-  },
-  "branch_selectModel": {
-    "message": "选择模型"
   },
   "branch_noModels": {
     "message": "暂无可用模型"
@@ -767,9 +755,6 @@
   "sidebar_title_retryExtraction": {
     "message": "重试提取"
   },
-  "sidebar_title_stopAndClear": {
-    "message": "停止生成并清除对话"
-  },
   "sidebar_uiManager_error_noContentExtracted": {
     "message": "未提取任何内容"
   },
@@ -781,5 +766,206 @@
   },
   "sidebar_uiManager_text_restrictedPageMessage": {
     "message": "无法在 Chrome 内部页面（chrome://, chrome-extension:// 等）上工作。"
+  },
+  "common_matched_pattern": {
+    "message": "匹配的模式：$PATTERN$",
+    "placeholders": {
+      "pattern": {
+        "content": "$1",
+        "example": "*.example.com"
+      }
+    }
+  },
+  "common_model": {
+    "message": "默认模型"
+  },
+  "common_branch_models": {
+    "message": "分支模型"
+  },
+  "common_github_token": {
+    "message": "GitHub 令牌"
+  },
+  "common_settings_title": {
+    "message": "设置"
+  },
+  "global_stop_and_clear_title": {
+    "message": "停止并清除"
+  },
+  "options_cache_settings_title": {
+    "message": "缓存设置"
+  },
+  "options_system_prompt_placeholder": {
+    "message": "输入系统提示词..."
+  },
+  "options_extracted_content_height_placeholder": {
+    "message": "输入像素高度（例如：300）"
+  },
+  "options_jina_api_key_placeholder": {
+    "message": "输入 Jina AI API 密钥"
+  },
+  "options_jina_response_template_placeholder": {
+    "message": "输入响应模板..."
+  },
+  "options_github_token_placeholder": {
+    "message": "输入 GitHub 令牌"
+  },
+  "options_gist_id_placeholder": {
+    "message": "输入 Gist ID"
+  },
+  "options_model_max_tokens_placeholder": {
+    "message": "例如：4096"
+  },
+  "options_model_temperature_placeholder": {
+    "message": "0.0 - 2.0"
+  },
+  "options_model_new_name": {
+    "message": "新模型"
+  },
+  "options_model_remove_button_title": {
+    "message": "移除模型"
+  },
+  "options_model_remove_confirm_with_name": {
+    "message": "您确定要移除模型 '$NAME$' 吗？",
+    "placeholders": {
+      "name": {
+        "content": "$1",
+        "example": "GPT-4"
+      }
+    }
+  },
+  "options_quick_input_placeholder_message": {
+    "message": "输入消息..."
+  },
+  "options_quick_input_remove_button_title": {
+    "message": "移除快速输入"
+  },
+  "options_blacklist_confirm_delete": {
+    "message": "您确定要删除此模式吗？"
+  },
+  "options_blacklist_reset_confirm_title": {
+    "message": "重置黑名单设置"
+  },
+  "options_blacklist_reset_confirm_line1": {
+    "message": "这将移除所有黑名单模式"
+  },
+  "options_blacklist_reset_confirm_line2": {
+    "message": "并重置为默认设置。"
+  },
+  "options_blacklist_reset_confirm_line3": {
+    "message": ""
+  },
+  "options_blacklist_reset_confirm_line4": {
+    "message": "此操作无法撤销。"
+  },
+  "options_blacklist_reset_confirm_line5": {
+    "message": ""
+  },
+  "options_js_save": {
+    "message": "已保存"
+  },
+  "options_js_sync_missing_fields": {
+    "message": "缺少必需字段：$FIELDS$",
+    "placeholders": {
+      "fields": {
+        "content": "$1",
+        "example": "token, gistId"
+      }
+    }
+  },
+  "options_language_change_success": {
+    "message": "语言已成功更改为$LANGUAGE$",
+    "placeholders": {
+      "language": {
+        "content": "$1",
+        "example": "中文"
+      }
+    }
+  },
+  "options_language_change_error": {
+    "message": "更改语言失败：$ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "网络错误"
+      }
+    }
+  },
+  "options_ui_config_import_confirm_export_date": {
+    "message": "导出日期：$DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1",
+        "example": "2024-01-01"
+      }
+    }
+  },
+  "options_ui_config_import_confirm_exported_by": {
+    "message": "导出者：$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1",
+        "example": "Think Bot v1.0"
+      }
+    }
+  },
+  "options_ui_config_import_confirm_version": {
+    "message": "版本：$VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1",
+        "example": "1.0.0"
+      }
+    }
+  },
+  "options_ui_config_import_generic_error": {
+    "message": "导入配置失败"
+  },
+  "options_ui_config_import_missing_field": {
+    "message": "缺少必需字段：$FIELD$",
+    "placeholders": {
+      "field": {
+        "content": "$1",
+        "example": "defaultExtractionMethod"
+      }
+    }
+  },
+  "conversations_js_failed_to_delete": {
+    "message": "删除对话失败"
+  },
+  "conversations_js_response_stopped": {
+    "message": "用户停止了响应"
+  },
+  "export_default_tab_name": {
+    "message": "洞察助手对话"
+  },
+  "page_list_manager_tooltip_extracted": {
+    "message": "于$DATE$提取",
+    "placeholders": {
+      "date": {
+        "content": "$1",
+        "example": "2024-01-01 10:30"
+      }
+    }
+  },
+  "page_list_manager_tooltip_no_extraction_time": {
+    "message": "无提取时间信息"
+  },
+  "sidebar_errorHandler_error_llmService": {
+    "message": "LLM 服务错误"
+  },
+  "sidebar_errorHandler_error_parseRawResponse": {
+    "message": "解析响应失败"
+  },
+  "sidebar_js_streamSilent": {
+    "message": "流已静默$SECONDS$秒",
+    "placeholders": {
+      "seconds": {
+        "content": "$1",
+        "example": "30"
+      }
+    }
+  },
+  "sidebar_tabManager_text_processing": {
+    "message": "处理中..."
   }
 }

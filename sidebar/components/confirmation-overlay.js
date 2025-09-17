@@ -43,7 +43,7 @@ class ConfirmationOverlay {
       <div class="overlay-backdrop"></div>
       <div class="overlay-content">
         <div class="overlay-header">
-          <h3 class="overlay-title" data-i18n="common_confirmation_title">Confirmation</h3>
+          <h3 class="overlay-title" data-i18n="common_confirm">Confirmation</h3>
         </div>
         <div class="overlay-body">
           <p class="overlay-message" data-i18n="common_confirm_are_you_sure">Are you sure you want to proceed?</p>
@@ -124,7 +124,7 @@ class ConfirmationOverlay {
     }
 
     const {
-      title = i18n.getMessage('common_confirmation_title'),
+      title = i18n.getMessage('common_confirm'),
       message = i18n.getMessage('common_confirm_are_you_sure'),
       confirmText = i18n.getMessage('common_confirm'),
       cancelText = i18n.getMessage('common_cancel'),

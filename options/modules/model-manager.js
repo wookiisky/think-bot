@@ -160,7 +160,7 @@ export class ModelManager {
         <div class="floating-label-field">
           <input type="text" class="model-model" id="model-model-${index}" value="${model.model || 'gpt-3.5-turbo'}"
                  data-model-index="${index}" data-field="model" placeholder=" ">
-          <label for="model-model-${index}" class="floating-label" data-i18n="options_model_model_label">Model</label>
+          <label for="model-model-${index}" class="floating-label" data-i18n="common_model">Model</label>
         </div>
       `;
     } else if (model.provider === 'gemini') {
@@ -178,7 +178,7 @@ export class ModelManager {
         <div class="floating-label-field">
           <input type="text" class="model-model" id="model-model-${index}" value="${model.model || 'gemini-pro'}"
                  data-model-index="${index}" data-field="model" placeholder=" ">
-          <label for="model-model-${index}" class="floating-label" data-i18n="options_model_model_label">Model</label>
+          <label for="model-model-${index}" class="floating-label" data-i18n="common_model">Model</label>
         </div>
         <div class="floating-label-field">
           <div class="custom-multi-select" id="model-tools-${index}" data-model-index="${index}" data-field="tools">
@@ -365,7 +365,7 @@ export class ModelManager {
 
     const newModel = {
       id: `model_${timestamp}_${uuid}`,
-      name: i18n.getMessage('options_model_model_label', [this.models.length + 1]),
+      name: i18n.getMessage('common_model', [this.models.length + 1]),
       provider: 'openai',
       apiKey: '',
       baseUrl: 'https://api.openai.com',

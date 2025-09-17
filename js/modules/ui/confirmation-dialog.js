@@ -423,8 +423,8 @@ class ConfirmationDialog {
     return this.show({
       type: 'danger',
       message: options.message || i18n.getMessage('common_confirm_reset_message'),
-      confirmText: options.confirmText || i18n.getMessage('confirmationDialog_resetButton'),
-      cancelText: options.cancelText || i18n.getMessage('confirmationDialog_cancel'),
+      confirmText: options.confirmText || i18n.getMessage('common_reset'),
+      cancelText: options.cancelText || i18n.getMessage('common_cancel'),
       ...options
     });
   }
@@ -437,8 +437,8 @@ class ConfirmationDialog {
     return this.show({
       type: 'danger',
       message: options.message || i18n.getMessage('common_confirm_clear_message'),
-      confirmText: options.confirmText || i18n.getMessage('confirmationDialog_clearButton'),
-      cancelText: options.cancelText || i18n.getMessage('confirmationDialog_cancel'),
+      confirmText: options.confirmText || i18n.getMessage('common_clear'),
+      cancelText: options.cancelText || i18n.getMessage('common_cancel'),
       ...options
     });
   }

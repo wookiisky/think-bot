@@ -185,7 +185,7 @@ class OptionsPage {
           setTimeout(() => {
             if (saveBtn.classList.contains('saved')) {
               saveBtn.classList.remove('saved');
-              saveBtn.querySelector('span').textContent = i18n.getMessage('common_options_js_save');
+              saveBtn.querySelector('span').textContent = i18n.getMessage('common_save');
             }
           }, 2000);
         }
@@ -313,7 +313,7 @@ class OptionsPage {
     // Reset button state after 3 seconds
     setTimeout(() => {
       saveBtn.classList.remove('error');
-      saveBtn.querySelector('span').textContent = i18n.getMessage('common_options_js_save');
+      saveBtn.querySelector('span').textContent = i18n.getMessage('common_save');
     }, 3000);
   }
   
@@ -882,7 +882,7 @@ class OptionsPage {
       if (saveBtn) {
         setTimeout(() => {
           saveBtn.classList.remove('saved', 'error');
-          saveBtn.querySelector('span').textContent = i18n.getMessage('common_options_js_save');
+          saveBtn.querySelector('span').textContent = i18n.getMessage('common_save');
         }, 3000);
       }
     }

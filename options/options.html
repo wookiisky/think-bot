@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-i18n="options_page_title">Think Bot Settings</title>
+  <title data-i18n="common_settings_title">Think Bot Settings</title>
   <link rel="stylesheet" href="options.css">
   <link rel="stylesheet" href="styles/blacklist.css">
   <link rel="stylesheet" href="../js/modules/ui/confirmation-dialog.css">
@@ -22,7 +22,7 @@
     <header class="header-row">
       <div class="header-content">
         <div class="header-left">
-          <h1 data-i18n="options_header_title_text">Think Bot Settings</h1>
+          <h1 data-i18n="common_settings_title">Think Bot Settings</h1>
         </div>
         <div class="header-right">
           <div class="header-actions">
@@ -56,13 +56,13 @@
               <div class="form-group cache-item-group">
                 <label data-i18n="options_cache_label">Local Data:</label>
                 <p><span id="totalCacheDisplay">0B</span></p>
-                <button type="button" id="clearAllCacheBtn" class="secondary-btn small-btn" data-i18n="options_clear_cache_button">Clear</button>
+                <button type="button" id="clearAllCacheBtn" class="secondary-btn small-btn" data-i18n="common_clear">Clear</button>
               </div>
               <div class="floating-label-field">
                 <select id="defaultModelSelect" name="defaultModelSelect">
                   <!-- Options will be populated dynamically -->
                 </select>
-                <label for="defaultModelSelect" class="floating-label" data-i18n="options_default_model_label">Model</label>
+                <label for="defaultModelSelect" class="floating-label" data-i18n="common_model">Model</label>
               </div>
             
               <div class="floating-label-field">
@@ -81,7 +81,7 @@
                     </div>
                   </div>
                 </div>
-                <label for="branchModelSelect" class="floating-label" data-i18n="options_branch_models_label">Branch Models</label>
+                <label for="branchModelSelect" class="floating-label" data-i18n="common_branch_models">Branch Models</label>
               </div>
             
               <div class="floating-label-field">
@@ -161,7 +161,7 @@
               <div id="gistConfigGroup" class="sync-config-group" style="display: block;">
                 <div class="floating-label-field">
                   <input type="password" id="gistToken" name="gistToken">
-                  <label for="gistToken" class="floating-label" data-i18n="options_github_token_label">GitHub Token</label>
+                  <label for="gistToken" class="floating-label" data-i18n="common_github_token">GitHub Token</label>
                   <small><a href="https://github.com/settings/tokens" target="_blank" data-i18n="options_github_token_create_link">Create token</a><span data-i18n="options_github_token_permission_note">(Requires Gist permission)</span></small>
                 </div>
 
@@ -225,11 +225,11 @@
               <div class="blacklist-controls">
                 <button type="button" id="addBlacklistBtn" class="secondary-btn small-btn">
                   <i class="material-icons">add</i>
-                  <span data-i18n="options_blacklist_add_button">Add</span>
+                  <span data-i18n="common_add">Add</span>
                 </button>
                 <button type="button" id="resetBlacklistBtn" class="secondary-btn small-btn">
                   <i class="material-icons">refresh</i>
-                  <span data-i18n="options_blacklist_reset_button">Reset</span>
+                  <span data-i18n="common_reset">Reset</span>
                 </button>
               </div>
 
@@ -333,7 +333,7 @@
               </div>
             </div>
           </div>
-          <label for="quick-input-branch-models" class="floating-label" data-i18n="options_quick_input_branch_models_label">Branch Models</label>
+          <label for="quick-input-branch-models" class="floating-label" data-i18n="common_branch_models">Branch Models</label>
         </div>
       </div>
     </div>

@@ -400,7 +400,7 @@ export class PageListManager {
     this.container.innerHTML = `
       <div class="empty-state">
         <p>${i18n.getMessage('page_list_manager_empty_list_title')}</p>
-        <p class="empty-subtitle">${i18n.getMessage('page_list_manager_empty_list_subtitle')}</p>
+        <p class="empty-subtitle">${i18n.getMessage('conversations_empty_list_subtitle')}</p>
       </div>
     `;
   }

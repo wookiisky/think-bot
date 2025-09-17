@@ -1,0 +1,152 @@
+{
+  "conversations_js_failed_to_delete": {
+    "message": "TODO: Add translation for 'conversations_js_failed_to_delete'"
+  },
+  "conversations_js_response_stopped": {
+    "message": "TODO: Add translation for 'conversations_js_response_stopped'"
+  },
+  "export_default_tab_name": {
+    "message": "TODO: Add translation for 'export_default_tab_name'"
+  },
+  "options_blacklist_confirm_delete": {
+    "message": "TODO: Add translation for 'options_blacklist_confirm_delete'"
+  },
+  "options_blacklist_reset_confirm_line1": {
+    "message": "TODO: Add translation for 'options_blacklist_reset_confirm_line1'"
+  },
+  "options_blacklist_reset_confirm_line2": {
+    "message": "TODO: Add translation for 'options_blacklist_reset_confirm_line2'"
+  },
+  "options_blacklist_reset_confirm_line3": {
+    "message": "TODO: Add translation for 'options_blacklist_reset_confirm_line3'"
+  },
+  "options_blacklist_reset_confirm_line4": {
+    "message": "TODO: Add translation for 'options_blacklist_reset_confirm_line4'"
+  },
+  "options_blacklist_reset_confirm_line5": {
+    "message": "TODO: Add translation for 'options_blacklist_reset_confirm_line5'"
+  },
+  "options_blacklist_reset_confirm_title": {
+    "message": "TODO: Add translation for 'options_blacklist_reset_confirm_title'"
+  },
+  "options_cache_settings_title": {
+    "message": "TODO: Add translation for 'options_cache_settings_title'"
+  },
+  "options_default_model_title": {
+    "message": "TODO: Add translation for 'options_default_model_title'"
+  },
+  "options_extracted_content_height_placeholder": {
+    "message": "TODO: Add translation for 'options_extracted_content_height_placeholder'"
+  },
+  "options_gist_id_placeholder": {
+    "message": "TODO: Add translation for 'options_gist_id_placeholder'"
+  },
+  "options_github_token_placeholder": {
+    "message": "TODO: Add translation for 'options_github_token_placeholder'"
+  },
+  "options_jina_api_key_placeholder": {
+    "message": "TODO: Add translation for 'options_jina_api_key_placeholder'"
+  },
+  "options_jina_response_template_placeholder": {
+    "message": "TODO: Add translation for 'options_jina_response_template_placeholder'"
+  },
+  "options_js_save": {
+    "message": "TODO: Add translation for 'options_js_save'"
+  },
+  "options_js_sync_missing_fields": {
+    "message": "TODO: Add translation for 'options_js_sync_missing_fields'"
+  },
+  "options_js_sync_status_not_configured": {
+    "message": "TODO: Add translation for 'options_js_sync_status_not_configured'"
+  },
+  "options_js_sync_status_syncing": {
+    "message": "TODO: Add translation for 'options_js_sync_status_syncing'"
+  },
+  "options_js_syncing": {
+    "message": "TODO: Add translation for 'options_js_syncing'"
+  },
+  "options_language_change_error": {
+    "message": "TODO: Add translation for 'options_language_change_error'"
+  },
+  "options_language_change_success": {
+    "message": "TODO: Add translation for 'options_language_change_success'"
+  },
+  "options_language_title": {
+    "message": "TODO: Add translation for 'options_language_title'"
+  },
+  "options_model_max_tokens_placeholder": {
+    "message": "TODO: Add translation for 'options_model_max_tokens_placeholder'"
+  },
+  "options_model_new_name": {
+    "message": "TODO: Add translation for 'options_model_new_name'"
+  },
+  "options_model_remove_button_title": {
+    "message": "TODO: Add translation for 'options_model_remove_button_title'"
+  },
+  "options_model_remove_confirm_with_name": {
+    "message": "TODO: Add translation for 'options_model_remove_confirm_with_name'"
+  },
+  "options_model_temperature_placeholder": {
+    "message": "TODO: Add translation for 'options_model_temperature_placeholder'"
+  },
+  "options_quick_input_placeholder_button_text": {
+    "message": "TODO: Add translation for 'options_quick_input_placeholder_button_text'"
+  },
+  "options_quick_input_placeholder_message": {
+    "message": "TODO: Add translation for 'options_quick_input_placeholder_message'"
+  },
+  "options_quick_input_remove_button_title": {
+    "message": "TODO: Add translation for 'options_quick_input_remove_button_title'"
+  },
+  "options_system_prompt_placeholder": {
+    "message": "TODO: Add translation for 'options_system_prompt_placeholder'"
+  },
+  "options_system_prompt_title": {
+    "message": "TODO: Add translation for 'options_system_prompt_title'"
+  },
+  "options_theme_title": {
+    "message": "TODO: Add translation for 'options_theme_title'"
+  },
+  "options_ui_config_import_confirm_export_date": {
+    "message": "TODO: Add translation for 'options_ui_config_import_confirm_export_date'"
+  },
+  "options_ui_config_import_confirm_exported_by": {
+    "message": "TODO: Add translation for 'options_ui_config_import_confirm_exported_by'"
+  },
+  "options_ui_config_import_confirm_version": {
+    "message": "TODO: Add translation for 'options_ui_config_import_confirm_version'"
+  },
+  "options_ui_config_import_generic_error": {
+    "message": "TODO: Add translation for 'options_ui_config_import_generic_error'"
+  },
+  "options_ui_config_import_missing_field": {
+    "message": "TODO: Add translation for 'options_ui_config_import_missing_field'"
+  },
+  "page_list_manager_tooltip_extracted": {
+    "message": "TODO: Add translation for 'page_list_manager_tooltip_extracted'"
+  },
+  "page_list_manager_tooltip_no_extraction_time": {
+    "message": "TODO: Add translation for 'page_list_manager_tooltip_no_extraction_time'"
+  },
+  "sidebar_errorHandler_error_llmService": {
+    "message": "TODO: Add translation for 'sidebar_errorHandler_error_llmService'"
+  },
+  "sidebar_errorHandler_error_parseRawResponse": {
+    "message": "TODO: Add translation for 'sidebar_errorHandler_error_parseRawResponse'"
+  },
+  "sidebar_js_responseStoppedByUser": {
+    "message": "TODO: Add translation for 'sidebar_js_responseStoppedByUser'"
+  },
+  "sidebar_js_streamSilent": {
+    "message": "TODO: Add translation for 'sidebar_js_streamSilent'"
+  },
+  "sidebar_tabManager_text_chat": {
+    "message": "TODO: Add translation for 'sidebar_tabManager_text_chat'"
+  },
+  "sidebar_tabManager_text_processing": {
+    "message": "TODO: Add translation for 'sidebar_tabManager_text_processing'"
+  },
+  "sidebar_tabManager_text_retryingMessage": {
+    "message": "TODO: Add translation for 'sidebar_tabManager_text_retryingMessage'"
+  }
+}

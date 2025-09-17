@@ -32,9 +32,6 @@
   "common_confirm_reset_message": {
     "message": "Are you sure you want to reset to defaults?"
   },
-  "common_confirmation_title": {
-    "message": "Confirmation"
-  },
   "common_copy": {
     "message": "Copy"
   },
@@ -49,9 +46,6 @@
   },
   "common_include_page_content": {
     "message": "Include page content in system prompt"
-  },
-  "common_options_js_save": {
-    "message": "Save"
   },
   "common_remove": {
     "message": "Remove"
@@ -131,6 +125,33 @@
   "global_time_just_now": {
     "message": "Just now"
   },
+  "global_time_minutes_ago": {
+    "message": "$MINUTES$ minutes ago",
+    "placeholders": {
+      "minutes": {
+        "content": "$1",
+        "example": "5"
+      }
+    }
+  },
+  "global_time_hours_ago": {
+    "message": "$HOURS$ hours ago",
+    "placeholders": {
+      "hours": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "global_time_days_ago": {
+    "message": "$DAYS$ days ago",
+    "placeholders": {
+      "days": {
+        "content": "$1",
+        "example": "3"
+      }
+    }
+  },
   "options_add_new_model_button": {
     "message": "Add New Model"
   },
@@ -139,9 +160,6 @@
   },
   "options_basic_settings_title": {
     "message": "Basic Settings"
-  },
-  "options_blacklist_add_button": {
-    "message": "Add"
   },
   "options_blacklist_add_dialog_title": {
     "message": "Add Blacklist Pattern"
@@ -188,9 +206,6 @@
   "options_blacklist_pattern_updated_success": {
     "message": "Pattern updated successfully"
   },
-  "options_blacklist_reset_button": {
-    "message": "Reset"
-  },
   "options_blacklist_reset_confirm_message": {
     "message": "The default patterns will be restored.\n\nThis action cannot be undone.\n\nDo you want to continue?"
   },
@@ -236,9 +251,6 @@
   "options_cache_label": {
     "message": "Local Data:"
   },
-  "options_clear_cache_button": {
-    "message": "Clear"
-  },
   "options_cloud_sync_description": {
     "message": "Sync your config (!INCLUDE api-key!), page and chat data"
   },
@@ -253,12 +265,6 @@
   },
   "options_default_extraction_method_label": {
     "message": "Default Extraction Method"
-  },
-  "options_default_model_label": {
-    "message": "Model"
-  },
-  "options_branch_models_label": {
-    "message": "Branch Models"
   },
   "options_export_config_button": {
     "message": "Export Configuration"
@@ -290,9 +296,6 @@
   "options_github_token_create_link": {
     "message": "Create token"
   },
-  "options_github_token_label": {
-    "message": "GitHub Token"
-  },
   "options_github_token_permission_note": {
     "message": "(Requires Gist permission)"
   },
@@ -307,15 +310,12 @@
   },
   "options_webdav_url_label": {
     "message": "WebDAV URL"
-  }, 
+  },
   "options_webdav_username_label": {
     "message": "Username"
   },
   "options_webdav_password_label": {
     "message": "Password"
-  },
-  "options_header_title_text": {
-    "message": "Think Bot Settings"
   },
   "options_import_config_button": {
     "message": "Import Configuration"
@@ -388,9 +388,6 @@
   },
   "options_js_sync_gist_id_required": {
     "message": "Gist ID is required"
-  },
-  "options_js_sync_github_token": {
-    "message": "GitHub Token"
   },
   "options_js_sync_github_token_required": {
     "message": "GitHub Token is required"
@@ -473,9 +470,6 @@
   "options_model_max_tokens_label": {
     "message": "Max Tokens"
   },
-  "options_model_model_label": {
-    "message": "Model"
-  },
   "options_model_no_models_configured": {
     "message": "No models configured"
   },
@@ -506,9 +500,6 @@
   "options_model_unnamed": {
     "message": "Unnamed Model"
   },
-  "options_page_title": {
-    "message": "Think Bot Settings"
-  },
   "options_quick_input_auto_trigger_title": {
     "message": "Auto-trigger when sidebar opens"
   },
@@ -520,9 +511,6 @@
   },
   "options_quick_input_message_label": {
     "message": "Message"
-  },
-  "options_quick_input_branch_models_label": {
-    "message": "Branch Models"
   },
   "options_quick_input_tabs_title": {
     "message": "Quick Input Tabs"
@@ -587,9 +575,6 @@
   "page_list_manager_delete_conversation_title": {
     "message": "Delete this conversation"
   },
-  "page_list_manager_empty_list_subtitle": {
-    "message": "Browse pages and chat to see conversations here"
-  },
   "page_list_manager_empty_list_title": {
     "message": "No conversations found"
   },
@@ -610,6 +595,15 @@
   },
   "sidebar_chatManager_finishReason_other": {
     "message": "Response ended for an unknown reason."
+  },
+  "sidebar_chatManager_finishReason_default": {
+    "message": "Generation stopped: $REASON$",
+    "placeholders": {
+      "reason": {
+        "content": "$1",
+        "example": "stop"
+      }
+    }
   },
   "sidebar_chatManager_finishReason_recitation": {
     "message": "Response was stopped due to potential copyright content."
@@ -658,12 +652,6 @@
   },
   "branch_stopAndDelete": {
     "message": "Stop and Delete Branch"
-  },
-  "branch_model": {
-    "message": "Model"
-  },
-  "branch_selectModel": {
-    "message": "Select Model"
   },
   "branch_noModels": {
     "message": "No models available"
@@ -767,9 +755,6 @@
   "sidebar_title_retryExtraction": {
     "message": "Retry extraction"
   },
-  "sidebar_title_stopAndClear": {
-    "message": "Stop generating and clear conversation"
-  },
   "sidebar_uiManager_error_noContentExtracted": {
     "message": "No content extracted"
   },
@@ -781,5 +766,206 @@
   },
   "sidebar_uiManager_text_restrictedPageMessage": {
     "message": "Think Bot cannot work on Chrome internal pages (chrome://, chrome-extension://, etc.)."
+  },
+  "common_matched_pattern": {
+    "message": "Matched pattern: $PATTERN$",
+    "placeholders": {
+      "pattern": {
+        "content": "$1",
+        "example": "*.example.com"
+      }
+    }
+  },
+  "common_model": {
+    "message": "Model"
+  },
+  "common_branch_models": {
+    "message": "Branch Models"
+  },
+  "common_github_token": {
+    "message": "GitHub Token"
+  },
+  "common_settings_title": {
+    "message": "Think Bot Settings"
+  },
+  "global_stop_and_clear_title": {
+    "message": "Stop and clear"
+  },
+  "options_cache_settings_title": {
+    "message": "Cache Settings"
+  },
+  "options_system_prompt_placeholder": {
+    "message": "Enter system prompt..."
+  },
+  "options_extracted_content_height_placeholder": {
+    "message": "Enter height in pixels (e.g., 300)"
+  },
+  "options_jina_api_key_placeholder": {
+    "message": "Enter Jina AI API key"
+  },
+  "options_jina_response_template_placeholder": {
+    "message": "Enter response template..."
+  },
+  "options_github_token_placeholder": {
+    "message": "Enter GitHub token"
+  },
+  "options_gist_id_placeholder": {
+    "message": "Enter Gist ID"
+  },
+  "options_model_max_tokens_placeholder": {
+    "message": "e.g., 4096"
+  },
+  "options_model_temperature_placeholder": {
+    "message": "0.0 - 2.0"
+  },
+  "options_model_new_name": {
+    "message": "New Model"
+  },
+  "options_model_remove_button_title": {
+    "message": "Remove Model"
+  },
+  "options_model_remove_confirm_with_name": {
+    "message": "Are you sure you want to remove the model '$NAME$'?",
+    "placeholders": {
+      "name": {
+        "content": "$1",
+        "example": "GPT-4"
+      }
+    }
+  },
+  "options_quick_input_placeholder_message": {
+    "message": "Enter message..."
+  },
+  "options_quick_input_remove_button_title": {
+    "message": "Remove Quick Input"
+  },
+  "options_blacklist_confirm_delete": {
+    "message": "Are you sure you want to delete this pattern?"
+  },
+  "options_blacklist_reset_confirm_title": {
+    "message": "Reset Blacklist Settings"
+  },
+  "options_blacklist_reset_confirm_line1": {
+    "message": "This will remove all blacklist patterns"
+  },
+  "options_blacklist_reset_confirm_line2": {
+    "message": "and reset to default settings."
+  },
+  "options_blacklist_reset_confirm_line3": {
+    "message": ""
+  },
+  "options_blacklist_reset_confirm_line4": {
+    "message": "This action cannot be undone."
+  },
+  "options_blacklist_reset_confirm_line5": {
+    "message": ""
+  },
+  "options_js_save": {
+    "message": "Saved"
+  },
+  "options_js_sync_missing_fields": {
+    "message": "Missing required fields: $FIELDS$",
+    "placeholders": {
+      "fields": {
+        "content": "$1",
+        "example": "token, gistId"
+      }
+    }
+  },
+  "options_language_change_success": {
+    "message": "Language changed to $LANGUAGE$ successfully",
+    "placeholders": {
+      "language": {
+        "content": "$1",
+        "example": "English"
+      }
+    }
+  },
+  "options_language_change_error": {
+    "message": "Failed to change language: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "Network error"
+      }
+    }
+  },
+  "options_ui_config_import_confirm_export_date": {
+    "message": "Export Date: $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1",
+        "example": "2024-01-01"
+      }
+    }
+  },
+  "options_ui_config_import_confirm_exported_by": {
+    "message": "Exported by: $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1",
+        "example": "Think Bot v1.0"
+      }
+    }
+  },
+  "options_ui_config_import_confirm_version": {
+    "message": "Version: $VERSION$",
+    "placeholders": {
+      "version": {
+        "content": "$1",
+        "example": "1.0.0"
+      }
+    }
+  },
+  "options_ui_config_import_generic_error": {
+    "message": "Failed to import configuration"
+  },
+  "options_ui_config_import_missing_field": {
+    "message": "Missing required field: $FIELD$",
+    "placeholders": {
+      "field": {
+        "content": "$1",
+        "example": "defaultExtractionMethod"
+      }
+    }
+  },
+  "conversations_js_failed_to_delete": {
+    "message": "Failed to delete conversation"
+  },
+  "conversations_js_response_stopped": {
+    "message": "Response stopped by user"
+  },
+  "export_default_tab_name": {
+    "message": "Think Bot Conversation"
+  },
+  "page_list_manager_tooltip_extracted": {
+    "message": "Extracted on $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1",
+        "example": "2024-01-01 10:30"
+      }
+    }
+  },
+  "page_list_manager_tooltip_no_extraction_time": {
+    "message": "No extraction time available"
+  },
+  "sidebar_errorHandler_error_llmService": {
+    "message": "LLM service error"
+  },
+  "sidebar_errorHandler_error_parseRawResponse": {
+    "message": "Failed to parse response"
+  },
+  "sidebar_js_streamSilent": {
+    "message": "Stream has been silent for $SECONDS$ seconds",
+    "placeholders": {
+      "seconds": {
+        "content": "$1",
+        "example": "30"
+      }
+    }
+  },
+  "sidebar_tabManager_text_processing": {
+    "message": "Processing..."
   }
 }
