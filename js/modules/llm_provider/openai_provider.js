@@ -1,17 +1,15 @@
-// OpenAI Provider Module for LLM Service
-// Uses BaseProvider utilities for common functionality
+// Simplified OpenAI Provider Module for LLM Service
 
 const openaiLogger = logger.createModuleLogger('OpenAIProvider');
 
 var openaiProvider = (function() {
     
-    // Import utilities from BaseProvider
+    // Import simplified utilities from BaseProvider
     const { 
-        EnhancedError, 
+        RawError, 
         ParameterUtils, 
         StreamUtils, 
         ApiUtils, 
-        ValidationUtils,
         OpenAIUtils
     } = BaseProvider;
     
@@ -22,9 +20,8 @@ var openaiProvider = (function() {
         temperature: 1.0,
         max_tokens: 20480
     };
-    // All models now support image input by default
 
-    // Normalize parameters using BaseProvider utilities
+    // Normalize parameters
     function normalizeParameters(llmConfig) {
         const normalized = { ...llmConfig };
         
@@ -35,18 +32,15 @@ var openaiProvider = (function() {
         return normalized;
     }
 
-    // Helper function to build API URL
+    // Build API URL
     function buildApiUrl(baseUrl) {
-        // Remove trailing slash to prevent double slashes
         const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-        const apiUrl = `${cleanBaseUrl}/v1/chat/completions`;
-        
-        return apiUrl;
+        return `${cleanBaseUrl}/v1/chat/completions`;
     }
 
 
 
-    // Main execution function
+    // Simplified main execution function
     async function execute(
         messages,
         llmConfig,
@@ -65,30 +59,24 @@ var openaiProvider = (function() {
         const maxTokens = llmConfig.maxTokens || llmConfig.max_tokens || DEFAULT_CONFIG.max_tokens;
         const temperature = llmConfig.temperature !== undefined ? llmConfig.temperature : DEFAULT_CONFIG.temperature;
 
-        // Validate API key using BaseProvider utilities
-        const keyError = ValidationUtils.validateApiKey(apiKey, 'OpenAI');
-        if (keyError) {
-            errorCallback(keyError);
+        // Basic API key validation
+        if (!apiKey) {
+            const error = new Error('OpenAI API key is required');
+            errorCallback(error);
             return;
         }
 
-        // Validate base URL format
+        // Basic URL validation
         try {
             new URL(baseUrl);
         } catch (urlError) {
-            const errorMessage = `Invalid OpenAI base URL: ${baseUrl}`;
-            openaiLogger.error('[Config] Invalid base URL format', {
-                baseUrl,
-                error: urlError.message
-            });
-            errorCallback(new Error(errorMessage));
+            const error = new Error(`Invalid OpenAI base URL: ${baseUrl}`);
+            errorCallback(error);
             return;
         }
 
-        // Normalize parameters
-        const normalizedConfig = normalizeParameters(llmConfig);
-
         try {
+            const normalizedConfig = normalizeParameters(llmConfig);
             const apiUrl = buildApiUrl(baseUrl);
             const openaiMessages = OpenAIUtils.buildMessages(messages, systemPrompt, imageBase64, model, openaiLogger);
 
@@ -100,18 +88,13 @@ var openaiProvider = (function() {
                 stream: !!streamCallback
             };
 
-            // Log HTTP request details - URL and parameters
-            openaiLogger.info('[HTTP Request] OpenAI API call', {
+            openaiLogger.info('[Request] OpenAI API call', {
                 url: apiUrl,
-                method: 'POST',
                 model: requestBody.model,
-                maxTokens: requestBody.max_tokens,
-                temperature: requestBody.temperature,
-                messageCount: openaiMessages.length,
                 isStreaming: requestBody.stream
             });
 
-            const { response } = await ApiUtils.safeFetch(apiUrl, {
+            const response = await ApiUtils.simpleFetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -121,79 +104,25 @@ var openaiProvider = (function() {
             }, 'OpenAI', abortController);
 
             if (!response.ok) {
-                // Handle error responses with improved error parsing
-                try {
-                    const errorData = await ApiUtils.parseJsonResponse(response, 'OpenAI');
-                    const errorMessage = `OpenAI API error: ${response.status} - ${JSON.stringify(errorData)}`;
-                    const errorText = JSON.stringify(errorData);
-                    openaiLogger.error('[Request] OpenAI API returned error', {
-                        status: response.status,
-                        statusText: response.statusText,
-                        errorData
-                    });
-                    throw new EnhancedError(errorMessage, errorText, errorData, response.status);
-                } catch (parseError) {
-                    // If parsing fails, this is likely a non-JSON error response (like HTML error page)
-                    // The parseJsonResponse method will have already logged details and thrown an EnhancedError
-                    openaiLogger.error('[Request] OpenAI API returned non-JSON error response', {
-                        status: response.status,
-                        statusText: response.statusText,
-                        parseError: parseError.message,
-                        apiUrl
-                    });
-                    
-                    // Provide specific guidance for common HTTP errors
-                    let errorMessage = `OpenAI API error: ${response.status} - ${response.statusText}`;
-                    let errorDetails = { status: response.status, statusText: response.statusText };
-                    
-                    if (response.status === 405) {
-                        errorMessage = `OpenAI API error: Method not allowed (405). This usually indicates an incorrect base URL. Current URL: ${apiUrl}`;
-                        errorDetails.troubleshooting = [
-                            'Verify your base URL configuration',
-                            'Ensure the base URL points to a valid OpenAI-compatible API',
-                            'Common valid base URLs: https://api.openai.com or your custom proxy URL',
-                            'Remove any trailing slashes or extra path segments from the base URL'
-                        ];
-                    } else if (response.status >= 500) {
-                        errorMessage = `OpenAI API server error: ${response.status} - ${response.statusText}`;
-                        errorDetails.troubleshooting = ['API server is experiencing issues', 'Try again later'];
-                    }
-                    
-                    // Re-throw the enhanced error from parseJsonResponse if available
-                    if (parseError instanceof EnhancedError) {
-                        // Update the message with our improved guidance
-                        parseError.message = errorMessage;
-                        parseError.errorData = { ...parseError.errorData, ...errorDetails };
-                        throw parseError;
-                    }
-                    
-                    // Fallback for unexpected errors
-                    throw new EnhancedError(errorMessage, null, errorDetails, response.status);
-                }
+                await ApiUtils.handleRawError(response, 'OpenAI');
+                return;
             }
 
             if (streamCallback) {
                 await OpenAIUtils.handleStream(response, streamCallback, doneCallback, errorCallback, openaiLogger, 'OpenAI', abortController, url, tabId);
             } else {
-                const data = await ApiUtils.parseJsonResponse(response, 'OpenAI');
+                const data = await ApiUtils.getRawResponse(response);
                 const responseText = data.choices[0].message.content;
                 doneCallback(responseText);
             }
         } catch (error) {
-            // Check if this is a user cancellation - log as info instead of error
             if (error.message === 'Request was cancelled by user') {
-                openaiLogger.info('[Request] Request cancelled by user', {
-                    error: error.message,
-                    model,
-                    baseUrl
-                });
+                openaiLogger.info('[Request] Request cancelled by user');
             } else {
                 openaiLogger.error('[Request] OpenAI API call failed', {
                     error: error.message,
-                    errorType: error.constructor.name,
                     model,
-                    baseUrl,
-                    stack: error.stack
+                    baseUrl
                 });
             }
             errorCallback(error);

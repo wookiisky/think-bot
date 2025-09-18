@@ -1,17 +1,15 @@
-// Azure OpenAI Provider Module for LLM Service
-// Uses BaseProvider utilities for common functionality
+// Simplified Azure OpenAI Provider Module for LLM Service
 
 const azureOpenaiLogger = logger.createModuleLogger('AzureOpenAIProvider');
 
 var azureOpenaiProvider = (function() {
     
-    // Import utilities from BaseProvider
+    // Import simplified utilities from BaseProvider
     const { 
-        EnhancedError, 
+        RawError, 
         ParameterUtils, 
         StreamUtils, 
         ApiUtils, 
-        ValidationUtils,
         OpenAIUtils
     } = BaseProvider;
     
@@ -22,7 +20,7 @@ var azureOpenaiProvider = (function() {
         apiVersion: '2025-01-01-preview'
     };
 
-    // Normalize parameters using BaseProvider utilities
+    // Normalize parameters
     function normalizeParameters(llmConfig) {
         const normalized = { ...llmConfig };
         
@@ -33,7 +31,7 @@ var azureOpenaiProvider = (function() {
         return normalized;
     }
 
-    // Helper function to build Azure OpenAI API URL
+    // Build Azure OpenAI API URL
     function buildApiUrl(endpoint, deploymentName, apiVersion = DEFAULT_CONFIG.apiVersion) {
         if (!endpoint || !deploymentName) {
             throw new Error('Azure endpoint and deploymentName are required');
@@ -41,7 +39,7 @@ var azureOpenaiProvider = (function() {
         return `${endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${apiVersion}`;
     }
 
-    // Main execution function
+    // Simplified main execution function
     async function execute(
         messages,
         llmConfig,
@@ -57,32 +55,26 @@ var azureOpenaiProvider = (function() {
         const apiKey = llmConfig.apiKey;
         const endpoint = llmConfig.endpoint;
         const deploymentName = llmConfig.deploymentName;
-        const model = llmConfig.model || deploymentName; // Use deploymentName as model fallback
+        const model = llmConfig.model || deploymentName;
         const maxTokens = llmConfig.maxTokens || llmConfig.max_tokens || DEFAULT_CONFIG.max_tokens;
         const temperature = llmConfig.temperature !== undefined ? llmConfig.temperature : DEFAULT_CONFIG.temperature;
         const apiVersion = llmConfig.apiVersion || DEFAULT_CONFIG.apiVersion;
 
-        // Validate required parameters
-        const keyError = ValidationUtils.validateApiKey(apiKey, 'Azure OpenAI');
-        if (keyError) {
-            errorCallback(keyError);
+        // Basic validation
+        if (!apiKey) {
+            const error = new Error('Azure OpenAI API key is required');
+            errorCallback(error);
             return;
         }
 
         if (!endpoint || !deploymentName) {
-            const configError = new Error('Azure OpenAI endpoint and deploymentName are required');
-            azureOpenaiLogger.error('Missing required configuration', { 
-                hasEndpoint: !!endpoint, 
-                hasDeploymentName: !!deploymentName 
-            });
-            errorCallback(configError);
+            const error = new Error('Azure OpenAI endpoint and deploymentName are required');
+            errorCallback(error);
             return;
         }
 
-        // Normalize parameters
-        const normalizedConfig = normalizeParameters(llmConfig);
-
         try {
+            const normalizedConfig = normalizeParameters(llmConfig);
             const apiUrl = buildApiUrl(endpoint, deploymentName, apiVersion);
             const openaiMessages = OpenAIUtils.buildMessages(messages, systemPrompt, imageBase64, model, azureOpenaiLogger);
 
@@ -94,20 +86,15 @@ var azureOpenaiProvider = (function() {
                 stream: !!streamCallback
             };
 
-            // Log HTTP request details - URL and parameters
-            azureOpenaiLogger.info('[HTTP Request] Azure OpenAI API call', {
+            azureOpenaiLogger.info('[Request] Azure OpenAI API call', {
                 url: apiUrl,
-                method: 'POST',
                 model: requestBody.model,
                 deploymentName,
                 apiVersion,
-                maxTokens: requestBody.max_completion_tokens,
-                temperature: requestBody.temperature,
-                messageCount: openaiMessages.length,
                 isStreaming: requestBody.stream
             });
 
-            const { response } = await ApiUtils.safeFetch(apiUrl, {
+            const response = await ApiUtils.simpleFetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -117,79 +104,26 @@ var azureOpenaiProvider = (function() {
             }, 'AzureOpenAI', abortController);
 
             if (!response.ok) {
-                // Handle error responses with improved error parsing
-                try {
-                    const errorData = await ApiUtils.parseJsonResponse(response, 'AzureOpenAI');
-                    const errorMessage = `Azure OpenAI API error: ${response.status} - ${JSON.stringify(errorData)}`;
-                    const errorText = JSON.stringify(errorData);
-                    azureOpenaiLogger.error('[Request] Azure OpenAI API returned error', {
-                        status: response.status,
-                        statusText: response.statusText,
-                        errorData
-                    });
-                    throw new EnhancedError(errorMessage, errorText, errorData, response.status);
-                } catch (parseError) {
-                    // If parsing fails, this is likely a non-JSON error response (like HTML error page)
-                    azureOpenaiLogger.error('[Request] Azure OpenAI API returned non-JSON error response', {
-                        status: response.status,
-                        statusText: response.statusText,
-                        parseError: parseError.message,
-                        apiUrl
-                    });
-                    
-                    // Provide specific guidance for common HTTP errors
-                    let errorMessage = `Azure OpenAI API error: ${response.status} - ${response.statusText}`;
-                    let errorDetails = { status: response.status, statusText: response.statusText };
-                    
-                    if (response.status === 405) {
-                        errorMessage = `Azure OpenAI API error: Method not allowed (405). This usually indicates an incorrect endpoint URL. Current URL: ${apiUrl}`;
-                        errorDetails.troubleshooting = [
-                            'Verify your Azure OpenAI endpoint URL',
-                            'Ensure the URL format is correct: https://{resource}.openai.azure.com/',
-                            'Check your API version parameter',
-                            'Verify the deployment name is correct'
-                        ];
-                    } else if (response.status >= 500) {
-                        errorMessage = `Azure OpenAI API server error: ${response.status} - ${response.statusText}`;
-                        errorDetails.troubleshooting = ['Azure OpenAI service is experiencing issues', 'Try again later'];
-                    }
-                    
-                    // Re-throw the enhanced error from parseJsonResponse if available
-                    if (parseError instanceof EnhancedError) {
-                        parseError.message = errorMessage;
-                        parseError.errorData = { ...parseError.errorData, ...errorDetails };
-                        throw parseError;
-                    }
-                    
-                    // Fallback for unexpected errors
-                    throw new EnhancedError(errorMessage, null, errorDetails, response.status);
-                }
+                await ApiUtils.handleRawError(response, 'AzureOpenAI');
+                return;
             }
 
             if (streamCallback) {
                 await OpenAIUtils.handleStream(response, streamCallback, doneCallback, errorCallback, azureOpenaiLogger, 'Azure OpenAI', abortController, url, tabId);
             } else {
-                const data = await ApiUtils.parseJsonResponse(response, 'AzureOpenAI');
+                const data = await ApiUtils.getRawResponse(response);
                 const responseText = data.choices[0].message.content;
                 doneCallback(responseText);
             }
         } catch (error) {
-            // Check if this is a user cancellation - log as info instead of error
             if (error.message === 'Request was cancelled by user') {
-                azureOpenaiLogger.info('[Request] Request cancelled by user', {
+                azureOpenaiLogger.info('[Request] Request cancelled by user');
+            } else {
+                azureOpenaiLogger.error('[Request] Azure OpenAI API call failed', {
                     error: error.message,
                     model,
                     deploymentName,
                     apiVersion
-                });
-            } else {
-                azureOpenaiLogger.error('[Request] Azure OpenAI API call failed', {
-                    error: error.message,
-                    errorType: error.constructor.name,
-                    model,
-                    deploymentName,
-                    apiVersion,
-                    stack: error.stack
                 });
             }
             errorCallback(error);

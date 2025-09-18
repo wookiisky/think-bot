@@ -269,8 +269,8 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                 status: null
             };
             
-            // Check if this is an EnhancedError with raw response data
-            if (err.name === 'EnhancedError') {
+            // Check if this is a RawError with raw response data  
+            if (err.name === 'RawError') {
                 errorDetails.rawResponse = err.rawResponse;
                 errorDetails.errorData = err.errorData;
                 errorDetails.status = err.status;

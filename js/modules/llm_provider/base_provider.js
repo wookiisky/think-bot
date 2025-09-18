@@ -1,72 +1,45 @@
-// Base Provider Module for LLM Service
-// Contains common functionality shared across all LLM providers
+// Simplified Base Provider Module for LLM Service
+// Contains essential functionality shared across all LLM providers
 
 const baseProviderLogger = logger.createModuleLogger('BaseProvider');
 
 var BaseProvider = (function() {
     
-    // Enhanced Error class to include raw response data
-    class EnhancedError extends Error {
-        constructor(message, rawResponse = null, errorData = null, status = null) {
+    // Simple error class for raw response data
+    class RawError extends Error {
+        constructor(message, rawResponse = null, status = null) {
             super(message);
-            this.name = 'EnhancedError';
+            this.name = 'RawError';
             this.rawResponse = rawResponse;
-            this.errorData = errorData;
+            this.errorData = null; // For compatibility with error handler
             this.status = status;
             this.timestamp = Date.now();
         }
     }
     
-    // Common parameter normalization utilities
+    // Basic parameter utilities
     const ParameterUtils = {
-        // Convert string numbers to actual numbers for temperature
         normalizeTemperature(value) {
             if (value === undefined || value === null) return value;
             const temp = parseFloat(value);
             return !isNaN(temp) ? temp : value;
         },
         
-        // Convert string numbers to actual numbers for token limits
         normalizeTokens(value) {
             if (value === undefined || value === null) return value;
             const tokens = parseInt(value, 10);
             return !isNaN(tokens) ? tokens : value;
         },
         
-        // Convert string numbers to actual numbers for count parameters
         normalizeCount(value) {
             if (value === undefined || value === null) return value;
             const count = parseInt(value, 10);
             return !isNaN(count) ? count : value;
-        },
-        
-        // Generic parameter validation
-        validateNumber(value, name, min = null, max = null, mustBeInteger = false) {
-            if (value === undefined || value === null) return null;
-            
-            if (typeof value !== 'number' || isNaN(value)) {
-                return `${name} must be a number (received: ${value}, type: ${typeof value})`;
-            }
-            
-            if (mustBeInteger && !Number.isInteger(value)) {
-                return `${name} must be an integer (received: ${value})`;
-            }
-            
-            if (min !== null && value < min) {
-                return `${name} must be >= ${min} (received: ${value})`;
-            }
-            
-            if (max !== null && value > max) {
-                return `${name} must be <= ${max} (received: ${value})`;
-            }
-            
-            return null;
         }
     };
     
-    // Common stream processing utilities
+    // Stream processing utilities
     const StreamUtils = {
-        // Create a simplified stream monitor for safety checks only
         createStreamMonitor() {
             return {
                 startTime: Date.now(),
@@ -75,7 +48,6 @@ var BaseProvider = (function() {
             };
         },
         
-        // Update empty read counter
         updateMonitor(monitor, chunkSize = 0) {
             if (chunkSize > 0) {
                 monitor.consecutiveEmptyReads = 0;
@@ -85,19 +57,17 @@ var BaseProvider = (function() {
             return monitor;
         },
         
-        // Check if stream should be aborted due to empty reads
         shouldAbortStream(monitor) {
             return monitor.consecutiveEmptyReads >= monitor.MAX_EMPTY_READS;
         }
     };
     
-    // Common API call utilities
+    // Simplified API utilities
     const ApiUtils = {
-        // Generic fetch with error handling
-        async safeFetch(url, options, providerName, abortController = null) {
+        // Basic fetch with minimal error handling
+        async simpleFetch(url, options, providerName, abortController = null) {
             const startTime = Date.now();
             try {
-                // Add abort signal if provided
                 const fetchOptions = abortController ?
                     { ...options, signal: abortController.signal } :
                     options;
@@ -105,272 +75,66 @@ var BaseProvider = (function() {
                 const response = await fetch(url, fetchOptions);
                 const duration = Date.now() - startTime;
 
-                baseProviderLogger.info(`[${providerName}] API response received`, {
+                baseProviderLogger.info(`[${providerName}] API response`, {
                     status: response.status,
-                    statusText: response.statusText,
-                    duration,
-                    contentType: response.headers.get('content-type'),
-                    contentLength: response.headers.get('content-length'),
-                    hasAbortController: !!abortController
+                    duration
                 });
 
-                return { response, duration };
+                return response;
             } catch (error) {
                 const duration = Date.now() - startTime;
 
-                // Check if error is due to abort
                 if (error.name === 'AbortError') {
-                    baseProviderLogger.info(`[${providerName}] API request aborted`, {
-                        duration,
-                        url: url.substring(0, 100) + '...'
-                    });
+                    baseProviderLogger.info(`[${providerName}] Request aborted`, { duration });
                     throw new Error('Request was cancelled by user');
                 }
 
-                baseProviderLogger.error(`[${providerName}] API request failed`, {
+                baseProviderLogger.error(`[${providerName}] Request failed`, {
                     error: error.message,
-                    duration,
-                    url: url.substring(0, 100) + '...' // Truncate for security
+                    duration
                 });
                 throw error;
             }
         },
         
-        // Parse JSON response with error handling
-        async parseJsonResponse(response, providerName) {
-            const contentType = response.headers.get('content-type') || '';
-            
-            // Check if response is likely to be JSON
-            if (!contentType.includes('application/json')) {
-                baseProviderLogger.warn(`[${providerName}] Response content-type is not JSON`, {
-                    status: response.status,
-                    contentType: contentType,
-                    statusText: response.statusText
-                });
-                
-                // For non-JSON responses, try to get the text content for better error messages
-                try {
-                    const textContent = await response.text();
-                    
-                    baseProviderLogger.error(`[${providerName}] Received non-JSON response`, {
-                        status: response.status,
-                        contentType: contentType,
-                        responsePreview: textContent
-                    });
-                    
-                    throw new EnhancedError(
-                        `${providerName} API returned non-JSON response (${response.status}): ${response.statusText}`,
-                        textContent,
-                        { message: textContent, contentType },
-                        response.status
-                    );
-                } catch (textError) {
-                    throw new EnhancedError(
-                        `${providerName} API returned invalid response (${response.status}): ${response.statusText}`,
-                        null,
-                        { message: 'Failed to read response', contentType },
-                        response.status
-                    );
-                }
-            }
-            
+        // Return raw response data without conversion
+        async getRawResponse(response) {
             try {
-                return await response.json();
-            } catch (error) {
-                baseProviderLogger.error(`[${providerName}] Failed to parse JSON response`, {
-                    error: error.message,
-                    status: response.status,
-                    contentType: contentType
-                });
-                
-                // Try to get the raw text for debugging
+                const text = await response.text();
+                // Try to parse as JSON, but return raw text if it fails
                 try {
-                    const responseText = await response.text();
-                    throw new EnhancedError(
-                        `Failed to parse ${providerName} API response as JSON: ${error.message}`,
-                        responseText,
-                        { message: error.message, rawResponse: responseText },
-                        response.status
-                    );
-                } catch (textError) {
-                    throw new EnhancedError(
-                        `Failed to parse ${providerName} API response as JSON: ${error.message}`,
-                        null,
-                        { message: error.message },
-                        response.status
-                    );
+                    return JSON.parse(text);
+                } catch {
+                    return text;
                 }
+            } catch (error) {
+                throw new Error(`Failed to read response: ${error.message}`);
             }
         },
         
-        // Handle non-OK responses
-        async handleErrorResponse(response, providerName, errorMessageExtractor) {
-            let errorData = null;
-            let errorText = '';
+        // Handle error response with raw data
+        async handleRawError(response, providerName) {
+            const rawResponse = await this.getRawResponse(response);
             
-            try {
-                errorText = await response.text();
-                errorData = JSON.parse(errorText);
-            } catch (parseError) {
-                errorData = { message: errorText };
-            }
-            
-            const userMessage = errorMessageExtractor ? 
-                errorMessageExtractor(response.status, errorData) : 
-                `${providerName} API error (${response.status}): ${errorData?.message || errorText}`;
-            
-            baseProviderLogger.error(`[${providerName}] API error response`, {
+            baseProviderLogger.error(`[${providerName}] API error`, {
                 status: response.status,
                 statusText: response.statusText,
-                errorText: errorText.substring(0, 500) + (errorText.length > 500 ? '...' : ''),
-                userMessage
+                response: typeof rawResponse === 'string' ? 
+                    rawResponse.substring(0, 500) : rawResponse
             });
             
-            throw new EnhancedError(userMessage, errorText, errorData, response.status);
+            // Return raw response directly
+            throw new RawError(
+                `${providerName} API error (${response.status})`,
+                rawResponse,
+                response.status
+            );
         }
     };
     
-    // Common validation utilities
-    const ValidationUtils = {
-        // Validate required API key
-        validateApiKey(apiKey, providerName) {
-            if (!apiKey) {
-                const error = new Error(`${providerName} API key is required`);
-                baseProviderLogger.error(error.message);
-                return error;
-            }
-            return null;
-        },
-        
-        // Validate and log parameter errors
-        validateParameters(errors, config, providerName) {
-            if (errors.length > 0) {
-                const error = new Error(`Invalid parameters: ${errors.join('; ')}`);
-                baseProviderLogger.error(`[${providerName}] Parameter validation failed:`, errors.join('; '));
-                return error;
-            }
-            return null;
-        }
-    };
-    
-    // Base Provider class that other providers can extend
-    class Provider {
-        constructor(name, defaultConfig = {}) {
-            this.name = name;
-            this.defaultConfig = defaultConfig;
-            this.logger = logger.createModuleLogger(name);
-        }
-        
-        // Template method pattern - subclasses must implement these
-        buildApiUrl(config, isStreaming) {
-            throw new Error(`${this.name} provider must implement buildApiUrl method`);
-        }
-        
-        buildRequestBody(messages, config, systemPrompt, imageBase64) {
-            throw new Error(`${this.name} provider must implement buildRequestBody method`);
-        }
-        
-        handleStreamChunk(chunk, monitor, streamCallback) {
-            throw new Error(`${this.name} provider must implement handleStreamChunk method`);
-        }
-        
-        extractResponse(data) {
-            throw new Error(`${this.name} provider must implement extractResponse method`);
-        }
-        
-        // Common execution flow that subclasses can use
-        async executeCommon(
-            messages,
-            llmConfig,
-            systemPrompt,
-            imageBase64,
-            streamCallback,
-            doneCallback,
-            errorCallback,
-            {
-                normalizeConfig,
-                validateConfig,
-                getErrorMessage
-            },
-            abortController = null
-        ) {
-            try {
-                // Validate API key
-                const keyError = ValidationUtils.validateApiKey(llmConfig.apiKey, this.name);
-                if (keyError) {
-                    errorCallback(keyError);
-                    return;
-                }
-                
-                // Normalize and validate configuration
-                const normalizedConfig = normalizeConfig ? normalizeConfig(llmConfig) : llmConfig;
-                if (validateConfig) {
-                    const paramErrors = validateConfig(normalizedConfig);
-                    const validationError = ValidationUtils.validateParameters(paramErrors, normalizedConfig, this.name);
-                    if (validationError) {
-                        errorCallback(validationError);
-                        return;
-                    }
-                }
-                
-                this.logger.info('[Request] Starting API call', { 
-                    model: normalizedConfig.model || this.defaultConfig.model,
-                    isStreaming: !!(streamCallback && doneCallback) 
-                });
-                
-                const isStreaming = !!(streamCallback && doneCallback);
-                const apiUrl = this.buildApiUrl(normalizedConfig, isStreaming);
-                const requestBody = this.buildRequestBody(messages, normalizedConfig, systemPrompt, imageBase64);
-
-                if (isStreaming) {
-                    await this.handleStreaming(apiUrl, requestBody, streamCallback, doneCallback, errorCallback, getErrorMessage, abortController);
-                } else {
-                    await this.handleNonStreaming(apiUrl, requestBody, doneCallback, errorCallback, getErrorMessage, abortController);
-                }
-                
-            } catch (error) {
-                this.logger.error('[Request] API call failed', {
-                    error: error.message,
-                    errorType: error.constructor.name,
-                    stack: error.stack
-                });
-                errorCallback(error);
-            }
-        }
-        
-        // Common non-streaming handler
-        async handleNonStreaming(apiUrl, requestBody, doneCallback, errorCallback, getErrorMessage, abortController = null) {
-            const { response } = await ApiUtils.safeFetch(apiUrl, {
-                method: 'POST',
-                headers: this.getHeaders(),
-                body: JSON.stringify(requestBody)
-            }, this.name, abortController);
-
-            if (!response.ok) {
-                await ApiUtils.handleErrorResponse(response, this.name, getErrorMessage);
-                return;
-            }
-
-            const data = await ApiUtils.parseJsonResponse(response, this.name);
-            const { responseText, finishReason } = this.extractResponse(data);
-
-            this.logger.info('[Request] Non-streaming response received', {
-                responseLength: responseText?.length || 0,
-                finishReason
-            });
-
-            doneCallback(responseText, finishReason);
-        }
-        
-        // Override in subclasses for custom headers
-        getHeaders() {
-            return { 'Content-Type': 'application/json' };
-        }
-    }
-    
-    // Common OpenAI-compatible utilities (shared between OpenAI and Azure OpenAI)
+    // Simplified OpenAI-compatible utilities
     const OpenAIUtils = {
-        // Build OpenAI-compatible messages array with image support
+        // Build OpenAI messages with basic image support
         buildMessages(messages, systemPrompt, imageBase64, model, logger) {
             const openaiMessages = [];
 
@@ -387,18 +151,9 @@ var BaseProvider = (function() {
                     imageBase64 &&
                     message === messages[messages.length - 1]
                 ) {
-                    // Validate image data format
                     if (!imageBase64.startsWith('data:image/')) {
-                        logger.error('Invalid image format - must be data URL');
                         throw new Error('Invalid image format');
                     }
-
-                    // Log image processing for debugging
-                    logger.info('Processing image with model', {
-                        model,
-                        imageSize: imageBase64.length,
-                        hasText: !!message.content
-                    });
 
                     openaiMessages.push({
                         role: 'user',
@@ -414,7 +169,6 @@ var BaseProvider = (function() {
                         ]
                     });
                 } else {
-                    // Handle text-only messages
                     openaiMessages.push({
                         role: message.role,
                         content: message.content
@@ -422,75 +176,44 @@ var BaseProvider = (function() {
                 }
             }
 
-            // Log final message structure for debugging
-            logger.info('Built OpenAI-compatible messages', {
-                messageCount: openaiMessages.length,
-                hasImageContent: openaiMessages.some(msg => 
-                    Array.isArray(msg.content) && 
-                    msg.content.some(content => content.type === 'image_url')
-                )
-            });
-
             return openaiMessages;
         },
 
-        // Handle OpenAI-compatible streaming response
+        // Simplified stream handler
         async handleStream(response, streamCallback, doneCallback, errorCallback, logger, providerName = 'OpenAI', abortController = null, url = null, tabId = null) {
             const monitor = StreamUtils.createStreamMonitor();
             let finishReason = null;
-            
-            logger.info('[Stream] Starting stream processing', { 
-                timestamp: monitor.startTime,
-                responseStatus: response.status,
-                contentType: response.headers.get('content-type')
-            });
+            let fullResponse = '';
 
             try {
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder('utf-8');
                 let buffer = '';
-                let fullResponse = '';
 
                 while (true) {
-                    // Check if request was aborted
+                    // Check abort conditions
                     if (abortController && abortController.signal.aborted) {
-                        logger.info('[Stream] Request was aborted, stopping stream processing');
                         throw new Error('Request was cancelled by user');
                     }
 
-                    // Additional check for loading state cancellation (fallback safety)
                     if (url && tabId && typeof loadingStateCache !== 'undefined') {
                         try {
                             const loadingState = await loadingStateCache.getLoadingState(url, tabId);
                             if (loadingState && loadingState.status === 'cancelled') {
-                                logger.info('[Stream] Loading state is cancelled, stopping stream processing');
                                 throw new Error('Request was cancelled by user');
                             }
                         } catch (stateError) {
-                            // Don't fail the stream for state check errors, just log
-                            logger.warn('[Stream] Error checking loading state:', stateError.message);
+                            // Ignore state check errors
                         }
                     }
 
                     const { done, value } = await reader.read();
 
-                    if (done) {
-                        logger.info('[Stream] Stream completed normally', { finishReason });
-                        break;
-                    }
+                    if (done) break;
 
                     if (!value || value.length === 0) {
                         StreamUtils.updateMonitor(monitor, 0);
-                        logger.warn('[Stream] Empty read from stream', {
-                            consecutiveEmptyReads: monitor.consecutiveEmptyReads,
-                            timeSinceLastChunk: Date.now() - monitor.startTime
-                        });
-
                         if (StreamUtils.shouldAbortStream(monitor)) {
-                            logger.error('[Stream] Too many consecutive empty reads, aborting stream', {
-                                consecutiveEmptyReads: monitor.consecutiveEmptyReads,
-                                duration: Date.now() - monitor.startTime
-                            });
                             throw new Error(`Stream interrupted: ${monitor.consecutiveEmptyReads} consecutive empty reads`);
                         }
                         continue;
@@ -507,7 +230,6 @@ var BaseProvider = (function() {
                         if (line.startsWith('data: ')) {
                             const data = line.slice(6).trim();
                             if (data === '[DONE]') {
-                                logger.info('[Stream] Received [DONE] signal', { finishReason });
                                 doneCallback(fullResponse, finishReason);
                                 return;
                             }
@@ -520,22 +242,14 @@ var BaseProvider = (function() {
                                     streamCallback(textChunk);
                                 } else if (parsedData.choices?.[0]?.finish_reason) {
                                     finishReason = parsedData.choices[0].finish_reason;
-                                    logger.info('[Stream] Stream finished with reason', {
-                                        finishReason,
-                                        finalResponseLength: fullResponse.length
-                                    });
                                 }
                             } catch (parseError) {
-                                // Handle concatenated JSON chunks (known OpenAI API issue)
-                                // Multiple JSON objects sometimes get concatenated without proper delimiters
+                                // Try to handle concatenated JSON
                                 if (data.includes('}{')) {
-                                    logger.warn('[Stream] Detected concatenated JSON chunks, attempting to parse separately');
                                     try {
-                                        // Split concatenated JSON objects by inserting commas and wrapping in array
                                         const fixedData = '[' + data.replace(/}{/g, '},{') + ']';
                                         const parsedArray = JSON.parse(fixedData);
                                         
-                                        // Process each JSON object in the array
                                         for (const parsedData of parsedArray) {
                                             if (parsedData.choices?.[0]?.delta?.content) {
                                                 const textChunk = parsedData.choices[0].delta.content;
@@ -543,64 +257,29 @@ var BaseProvider = (function() {
                                                 streamCallback(textChunk);
                                             } else if (parsedData.choices?.[0]?.finish_reason) {
                                                 finishReason = parsedData.choices[0].finish_reason;
-                                                logger.info('[Stream] Stream finished with reason (from concatenated chunk)', {
-                                                    finishReason,
-                                                    finalResponseLength: fullResponse.length
-                                                });
                                             }
                                         }
-                                        
-                                        logger.info('[Stream] Successfully parsed concatenated JSON chunks', {
-                                            chunkCount: parsedArray.length,
-                                            totalLength: data.length
-                                        });
                                     } catch (arrayParseError) {
-                                        logger.error('[Stream] Failed to parse concatenated JSON chunks:', {
-                                            error: arrayParseError.message,
-                                            dataLength: data.length,
-                                            dataPreview: data.substring(0, 200) + '...'
-                                        });
+                                        // Ignore parsing errors
                                     }
-                                } else {
-                                    logger.error('[Stream] Error parsing stream data:', {
-                                        error: parseError.message,
-                                        dataLength: data.length,
-                                        dataPreview: data.substring(0, 100) + '...'
-                                    });
                                 }
                             }
-                        } else if (line.trim() && !line.startsWith(':')) {
-                            // Handle unexpected line format (not SSE comment or data)
-                            logger.warn('[Stream] Unexpected line format in stream:', {
-                                line: line.substring(0, 100) + (line.length > 100 ? '...' : ''),
-                                lineLength: line.length
-                            });
                         }
                     }
                 }
                 
-                // Handle case where stream ends without [DONE] signal
+                // Stream ended without [DONE]
                 if (fullResponse.length > 0) {
-                    logger.warn('[Stream] Stream ended without [DONE] signal, processing accumulated response');
                     doneCallback(fullResponse, finishReason);
                 } else {
-                    logger.error('[Stream] Stream ended with no content received');
                     throw new Error('Stream ended without receiving any content');
                 }
                 
             } catch (error) {
-                const streamInfo = {
-                    error: error.message,
-                    duration: Date.now() - monitor.startTime,
-                    finalResponseLength: fullResponse.length,
-                    consecutiveEmptyReads: monitor.consecutiveEmptyReads
-                };
-
-                // Check if this is a user cancellation - log as info instead of error
                 if (error.message === 'Request was cancelled by user') {
-                    logger.info('[Stream] Request cancelled by user:', streamInfo);
+                    logger.info('[Stream] Request cancelled by user');
                 } else {
-                    logger.error(`[Stream] Error in ${providerName} stream processing:`, streamInfo);
+                    logger.error(`[Stream] ${providerName} stream error:`, error.message);
                 }
 
                 errorCallback(error);
@@ -608,49 +287,13 @@ var BaseProvider = (function() {
         }
     };
 
-    // Export all utilities and classes
+    // Export simplified utilities
     return {
-        EnhancedError,
+        RawError,
         ParameterUtils,
         StreamUtils,
         ApiUtils,
-        ValidationUtils,
         OpenAIUtils,
-        Provider,
-        logger: baseProviderLogger,
-        
-        // Test utility for concatenated JSON parsing (for development/debugging)
-        testConcatenatedJsonParsing(testData) {
-            baseProviderLogger.info('[Test] Testing concatenated JSON parsing with data:', {
-                dataLength: testData.length,
-                dataPreview: testData.substring(0, 100) + '...'
-            });
-            
-            try {
-                // First try normal parsing
-                const normalParse = JSON.parse(testData);
-                baseProviderLogger.info('[Test] Normal JSON parsing succeeded');
-                return [normalParse];
-            } catch (parseError) {
-                // Try concatenated JSON parsing
-                if (testData.includes('}{')) {
-                    baseProviderLogger.info('[Test] Attempting concatenated JSON parsing');
-                    try {
-                        const fixedData = '[' + testData.replace(/}{/g, '},{') + ']';
-                        const parsedArray = JSON.parse(fixedData);
-                        baseProviderLogger.info('[Test] Concatenated JSON parsing succeeded', {
-                            chunkCount: parsedArray.length
-                        });
-                        return parsedArray;
-                    } catch (arrayParseError) {
-                        baseProviderLogger.error('[Test] Concatenated JSON parsing failed:', arrayParseError.message);
-                        throw arrayParseError;
-                    }
-                } else {
-                    baseProviderLogger.error('[Test] JSON parsing failed and no concatenation detected:', parseError.message);
-                    throw parseError;
-                }
-            }
-        }
+        logger: baseProviderLogger
     };
 })(); 
