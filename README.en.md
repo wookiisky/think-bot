@@ -11,7 +11,11 @@ Chrome extension:
 
 It was initially created for summarizing web pages then evolved to handle tasks like abbreviation, inspiration, and critical analysis, becoming a key tool for me to enhance my cognition with AI.
 
-Note: **Do not let AI think for you.**
+Note: 
+- **Only declarative writing, unfettered by the pursuit of exhaustive correctness, is truly valuable.**
+
+- **Do not let AI think for you.**
+
 
 ### Vibe Coding
 
