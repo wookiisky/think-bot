@@ -1,6 +1,9 @@
 {
   "appName": {
     "message": "Think Bot"
+  },  
+  "appDesc": {
+    "message": "Your Cognitive Copilot, Personal Mind Coach, Thinking Partner."
   },
   "common_add": {
     "message": "Add"

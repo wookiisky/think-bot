@@ -2,6 +2,9 @@
   "appName": {
     "message": "洞察助手"
   },
+  "appDesc": {
+    "message": "你的认知助手，心灵教练，思考伙伴"
+  },
   "common_add": {
     "message": "添加"
   },
