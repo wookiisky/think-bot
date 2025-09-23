@@ -4,12 +4,12 @@
 
 ## Introduction
 
-This Chrome extension was initially created for summarizing web pages. It has since evolved to handle tasks like abbreviation, inspiration, and critical analysis, becoming a key tool for me to enhance my cognition (reading, extending, writing) with AI.
-
-It is:
-- A handy tool for conversing with web pages
+Chrome extension:
+- A handy tool for conversing with web pages, summary, etc.
 - Emphasizes making the AI think a little more
 - Prompts designed with 'Role' rather than workflow
+
+It was initially created for summarizing web pages then evolved to handle tasks like abbreviation, inspiration, and critical analysis, becoming a key tool for me to enhance my cognition with AI.
 
 Note: **Do not let AI think for you.**
 
