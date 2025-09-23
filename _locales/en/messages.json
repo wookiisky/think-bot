@@ -99,7 +99,13 @@
     "message": "Search pages..."
   },
   "conversations_welcome_subtitle": {
-    "message": "Select a page from the left to view its content and continue chatting."
+    "message": "To broaden your vision, not to replace your mind."
+  },
+  "conversations_welcome_subtitle2": {
+    "message": "Provide inspiration, not answers."
+  },
+  "conversations_welcome_subtitle3": {
+    "message": "With AI as wings, the reach is boundless; with Self as helm, the course is true."
   },
   "export_default_title": {
     "message": "Conversation"

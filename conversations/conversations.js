@@ -64,6 +64,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initialize i18n system
   await i18n.init();
 
+  // Set random welcome subtitle after i18n is initialized
+  setRandomWelcomeSubtitle();
+
   try {
     // Initialize UI element references
     const elements = initConversationsElements();
@@ -1580,4 +1583,33 @@ function setupTitleEditing() {
   });
   
   logger.info('Title editing functionality set up');
+}
+
+/**
+ * Set random welcome subtitle from the available options
+ */
+function setRandomWelcomeSubtitle() {
+  const welcomeElement = document.getElementById('welcomeSubtitle');
+  
+  if (!welcomeElement) {
+    logger.warn('Welcome subtitle element not found');
+    return;
+  }
+  
+  // Available welcome subtitle keys
+  const subtitleKeys = [
+    'conversations_welcome_subtitle',
+    'conversations_welcome_subtitle2', 
+    'conversations_welcome_subtitle3'
+  ];
+  
+  // Randomly select one of the subtitle keys
+  const randomIndex = Math.floor(Math.random() * subtitleKeys.length);
+  const selectedKey = subtitleKeys[randomIndex];
+  
+  // Get the translated message and set it
+  const message = i18n.getMessage(selectedKey);
+  welcomeElement.textContent = message;
+  
+  logger.info(`Random welcome subtitle set: ${selectedKey} -> ${message}`);
 }

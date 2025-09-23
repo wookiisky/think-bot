@@ -99,8 +99,14 @@
     "message": "搜索页面..."
   },
   "conversations_welcome_subtitle": {
-    "message": "从左侧选择一个页面以查看其内容并继续聊天。"
+    "message": "激发灵感，而非取代思考。"
   },
+  "conversations_welcome_subtitle2": {
+    "message": "提供灵感，而非答案。"
+  },
+  "conversations_welcome_subtitle3": {
+    "message": "AI为翼，可至无垠；我心为舵，不失航向。"
+  },  
   "export_default_title": {
     "message": "对话"
   },
