@@ -22,17 +22,15 @@
   },
   "permissions": [
     "storage",
-    "unlimitedStorage",
-    "activeTab",
     "tabs",
-    "scripting",
     "contextMenus",
     "offscreen",
     "sidePanel",
     "notifications"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "https://*/*",
+    "http://*/*"
   ],
   "background": {
     "service_worker": "background/service-worker.js"
@@ -40,21 +38,21 @@
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' https: data:; media-src 'self' https:; font-src 'self'; frame-src 'self' https://www.youtube-nocookie.com/ https://player.vimeo.com/ https://v.qq.com/ https://*.bilibili.com/ https://player.twitch.tv/;"
   },
-  "web_accessible_resources": [
-    {
-      "resources": ["icons/*.png"],
-      "matches": ["<all_urls>"]
-    }
-  ],
   "options_ui": {
     "page": "options/options.html",
     "open_in_tab": true
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["js/modules/logger.js", "content_scripts/content_script.js"],
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ],
+      "js": [
+        "js/modules/logger.js",
+        "content_scripts/content_script.js"
+      ],
       "run_at": "document_idle"
     }
   ]
-} 
+}
