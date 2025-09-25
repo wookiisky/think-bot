@@ -21,6 +21,7 @@
     "default_path": "sidebar/sidebar.html"
   },
   "permissions": [
+    "unlimitedStorage",
     "storage",
     "tabs",
     "contextMenus",
