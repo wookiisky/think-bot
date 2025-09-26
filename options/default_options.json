@@ -42,7 +42,7 @@
     "theme": "system",
     "defaultModelId": "gemini-pro",
     "branchModelIds": [],
-    "language": "zh",
+    "language": "zh_CN",
     "lastModified": 1735372800000
   }
 }

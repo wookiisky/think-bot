@@ -67,7 +67,7 @@ const i18n = {
       const browserLanguage = chrome.i18n.getUILanguage().replace('-', '_');
       
       // Load translations from _locales directory
-      const response = await fetch(`/_locales/${language}/messages.json`);
+      const response = await fetch(chrome.runtime.getURL(`_locales/${language}/messages.json`));
       if (!response.ok) {
         throw new Error(`Failed to load translations for ${language}: ${response.statusText}`);
       }

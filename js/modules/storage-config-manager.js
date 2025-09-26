@@ -18,12 +18,36 @@ const QUICK_INPUTS_INDEX_KEY = CONFIG_KEYS.QUICK_INPUTS_INDEX;
 const QUICK_INPUT_PREFIX = CONFIG_KEYS.QUICK_INPUT_PREFIX;
 const SYSTEM_PROMPT_KEY = CONFIG_KEYS.SYSTEM_PROMPT;
 
-// Get default configuration
+// Get default configuration based on browser language
 storageConfigManager.getDefaultConfig = async function() {
   try {
-    const response = await fetch('/options/default_options.json');
+    // Get browser language
+    const browserLanguage = chrome.i18n.getUILanguage();
+
+    // Determine config file to load based on language
+    let configFile = '/options/default_options.en.json'; // Default to English
+
+    // If browser language is Chinese, use Chinese config
+    if (browserLanguage.startsWith('zh')) {
+      configFile = '/options/default_options.json';
+    }
+
+    storageConfigLogger.debug(`Loading config for browser language: ${browserLanguage}, using file: ${configFile}`);
+
+    // Try to load language-specific config first
+    const response = await fetch(configFile);
     if (!response.ok) {
-      throw new Error(`Unable to load default settings: ${response.statusText}`);
+      // If language-specific config fails, fallback to English config
+      if (configFile !== '/options/default_options.en.json') {
+        storageConfigLogger.warn(`Failed to load ${configFile}, falling back to English config`);
+        const fallbackResponse = await fetch('/options/default_options.en.json');
+        if (!fallbackResponse.ok) {
+          throw new Error(`Unable to load English fallback settings: ${fallbackResponse.statusText}`);
+        }
+        return await fallbackResponse.json();
+      } else {
+        throw new Error(`Unable to load default settings: ${response.statusText}`);
+      }
     }
     return await response.json();
   } catch (error) {

@@ -55,5 +55,11 @@
       ],
       "run_at": "document_idle"
     }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["_locales/*/messages.json"],
+      "matches": ["<all_urls>"]
+    }
   ]
 }
