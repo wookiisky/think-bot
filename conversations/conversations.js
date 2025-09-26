@@ -1019,7 +1019,7 @@ async function handlePageDelete(url) {
     return true;
   } catch (error) {
     logger.error('Error deleting page data:', error);
-            alert(i18n.getMessage('conversations_js_failed_to_delete', { error: error.message || 'Unknown error' }));
+            alert(i18n.getMessage('conversations_js_failed_to_delete'));
     return false;
   }
 }

@@ -226,14 +226,14 @@ export class UIConfigManager {
       // Validate required configuration fields (support both old and new formats)
       const basicConfig = config.basic || config;
       if (!basicConfig.defaultExtractionMethod) {
-        throw new Error(i18n.getMessage('options_ui_config_import_missing_field', { fieldName: 'defaultExtractionMethod' }));
+        throw new Error(i18n.getMessage('options_ui_config_import_missing_field', { field: 'defaultExtractionMethod' }));
       }
 
       // Show confirmation dialog with import details
       let confirmMessage = `${i18n.getMessage('options_ui_config_import_confirm_title')}\n\n` +
                            `${i18n.getMessage('options_ui_config_import_confirm_export_date', { date: importData.exportedAt || 'Unknown' })}\n` +
                            `${i18n.getMessage('options_ui_config_import_confirm_version', { version: importData.version || 'Unknown' })}\n` +
-                           `${i18n.getMessage('options_ui_config_import_confirm_exported_by', { author: importData.exportedBy || 'Unknown' })}\n`;
+                           `${i18n.getMessage('options_ui_config_import_confirm_exported_by', { version: importData.exportedBy || 'Unknown' })}\n`;
 
       confirmMessage += `\n\n${i18n.getMessage('options_ui_config_import_confirm_footer')}`;
 
@@ -279,7 +279,7 @@ export class UIConfigManager {
 
     } catch (error) {
       logger.error('Error importing configuration:', error.message);
-      alert(i18n.getMessage('options_ui_config_import_generic_error', { error: error.message }));
+      alert(i18n.getMessage('options_ui_config_import_generic_error'));
       return false;
     }
   }

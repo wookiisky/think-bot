@@ -615,7 +615,7 @@ class OptionsPage {
       const validation = this.validateSyncConfig();
       
       if (!validation.isValid) {
-        this.updateSyncStatus('error', i18n.getMessage('options_js_sync_missing_fields', [validation.errors.join(', ')]));
+        this.updateSyncStatus('error', i18n.getMessage('options_js_sync_missing_fields', { fields: validation.errors.join(', ') }));
         this.domElements.syncEnabled.checked = false;
         return;
       }
@@ -960,11 +960,11 @@ class OptionsPage {
       // Add sync time information if provided
       if (lastSyncTime) {
         const syncDate = new Date(lastSyncTime);
-        displayText += `\n${i18n.getMessage('options_js_sync_last_sync', [this.formatSyncDate(syncDate)])}`;
+        displayText += `\n${i18n.getMessage('options_js_sync_last_sync', { time: this.formatSyncDate(syncDate) })}`;
       } else if (status === 'success') {
         // For success status without specific time, use current time
         const now = new Date();
-        displayText += `\n${i18n.getMessage('options_js_sync_last_sync', [this.formatSyncDate(now)])}`;
+        displayText += `\n${i18n.getMessage('options_js_sync_last_sync', { time: this.formatSyncDate(now) })}`;
       }
 
       statusText.textContent = displayText;
@@ -1216,13 +1216,13 @@ class OptionsPage {
 
   // Show language change success message
   showLanguageChangeSuccess(language) {
-    const message = i18n.getMessage('options_language_change_success', [language]);
+    const message = i18n.getMessage('options_language_change_success', { language: language });
     this.showTemporaryMessage(message, 'success');
   }
 
   // Show language change error message
   showLanguageChangeError(errorMessage) {
-    const message = i18n.getMessage('options_language_change_error', [errorMessage]);
+    const message = i18n.getMessage('options_language_change_error', { error: errorMessage });
     this.showTemporaryMessage(message, 'error');
   }
 

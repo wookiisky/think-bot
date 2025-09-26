@@ -143,6 +143,9 @@ const i18n = {
           for (const [key, value] of Object.entries(substitutions)) {
             // Replace named placeholders in curly braces
             message = message.replace(`{${key}}`, value);
+            // Also handle uppercase format like $MINUTES$, $HOURS$, etc.
+            const upperKey = key.toUpperCase();
+            message = message.replace(`$${upperKey}$`, value);
           }
           
           // Then handle positional placeholders for backward compatibility

@@ -405,7 +405,13 @@
     "message": "Initial sync failed"
   },
   "options_js_sync_last_sync": {
-    "message": "Last sync: {0}"
+    "message": "Last sync: $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1",
+        "example": "2024-01-01 10:30"
+      }
+    }
   },
   "options_js_sync_load_status_error": {
     "message": "Failed to load sync status"

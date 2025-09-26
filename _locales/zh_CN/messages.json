@@ -405,7 +405,13 @@
     "message": "初始同步失败"
   },
   "options_js_sync_last_sync": {
-    "message": "上次同步: {0}"
+    "message": "上次同步: $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1",
+        "example": "2024-01-01 10:30"
+      }
+    }
   },
   "options_js_sync_load_status_error": {
     "message": "加载同步状态失败"
