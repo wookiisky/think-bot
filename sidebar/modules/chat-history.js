@@ -19,9 +19,10 @@ const getChatHistoryFromDOM = (chatContainer) => {
   let currentAssistantMessage = null;
 
   messageElements.forEach(messageEl => {
-    // Skip messages that are currently streaming or are error messages
-    // Error messages should not be saved to history - they are UI-only
-    if (messageEl.hasAttribute('data-streaming') || messageEl.classList.contains('error-message')) {
+    // Skip legacy streaming messages (not branch-container) or standalone error messages
+    // Branch-container messages are handled separately and can contain streaming branches
+    if ((messageEl.hasAttribute('data-streaming') && !messageEl.classList.contains('branch-container')) || 
+        (messageEl.classList.contains('error-message') && !messageEl.classList.contains('branch-container'))) {
       return;
     }
 
@@ -69,7 +70,15 @@ const getChatHistoryFromDOM = (chatContainer) => {
 
           let content = '';
           let isError = false;
-          if (branchEl.classList.contains('error-message')) {
+          let isStreaming = false;
+          
+          // Check if this branch is currently streaming
+          if (branchEl.hasAttribute('data-streaming')) {
+            isStreaming = true;
+            // For streaming branches, save the current buffer content
+            content = branchEl.getAttribute('data-markdown-buffer') || 
+                     (contentEl ? contentEl.getAttribute('data-raw-content') || '' : '');
+          } else if (branchEl.classList.contains('error-message')) {
             const errorDisplay = contentEl?.querySelector('.error-display pre');
             if (errorDisplay) {
               content = errorDisplay.textContent || '';
@@ -85,7 +94,7 @@ const getChatHistoryFromDOM = (chatContainer) => {
             branchId: branchId || `br-${Date.now()}-${Math.random().toString(36).slice(2)}`,
             model: model,
             content: content,
-            status: branchEl.hasAttribute('data-streaming') ? 'loading' : (isError ? 'error' : 'done'),
+            status: isStreaming ? 'loading' : (isError ? 'error' : 'done'),
             errorMessage: isError ? content : null,
             updatedAt: timestamp
           });
