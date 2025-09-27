@@ -56,6 +56,7 @@ window.ChatHistory = ChatHistory;
 window.ImageHandler = ImageHandler;
 window.ChatManager = ChatManager;
 window.TabManager = TabManager;
+window.confirmationDialog = confirmationDialog;
 
 // Initialize when DOM elements are loaded
 document.addEventListener('DOMContentLoaded', async () => {

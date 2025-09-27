@@ -48,6 +48,7 @@ window.MessageHandler = MessageHandler;
 window.ChatHistory = ChatHistory;
 window.ImageHandler = ImageHandler;
 window.ChatManager = ChatManager;
+window.confirmationDialog = confirmationDialog;
 window.TabManager = TabManager;
 
 // Initialize when DOM elements are loaded

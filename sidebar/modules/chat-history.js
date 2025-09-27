@@ -626,9 +626,35 @@ const handleDeleteBranch = (branchId) => {
     return;
   }
   
-  // Confirm deletion
-  if (window.confirm(i18n.getMessage('branch_confirmDelete'))) {
-    removeBranchFromDOM(branchElement, branchId);
+  // Find the delete button for this branch
+  const deleteBtn = branchElement.querySelector('.delete-btn');
+  if (!deleteBtn) {
+    logger.warn(`Delete button not found for branch ${branchId}`);
+    return;
+  }
+  
+  // Use mini confirmation dialog instead of window.confirm
+  if (window.confirmationDialog) {
+    window.confirmationDialog.show({
+      target: deleteBtn,
+      message: i18n.getMessage('branch_confirmDelete'),
+      confirmText: i18n.getMessage('common_delete'),
+      cancelText: i18n.getMessage('common_cancel'),
+      type: 'danger',
+      onConfirm: () => {
+        logger.info(`User confirmed deleting branch ${branchId}`);
+        removeBranchFromDOM(branchElement, branchId);
+      },
+      onCancel: () => {
+        logger.info(`User cancelled deleting branch ${branchId}`);
+      }
+    });
+  } else {
+    // Fallback to window.confirm if confirmationDialog is not available
+    logger.warn('confirmationDialog not available, using fallback');
+    if (window.confirm(i18n.getMessage('branch_confirmDelete'))) {
+      removeBranchFromDOM(branchElement, branchId);
+    }
   }
 };
 
@@ -638,6 +664,20 @@ const handleDeleteBranch = (branchId) => {
  */
 const handleStopAndDeleteBranch = (branchId) => {
   logger.info(`Stopping and deleting branch ${branchId}`);
+  
+  // Get branch element
+  const branchElement = document.querySelector(`[data-branch-id="${branchId}"]`);
+  if (!branchElement) {
+    logger.warn(`Branch element not found for ${branchId}`);
+    return;
+  }
+  
+  // Find the stop-delete button for this branch
+  const stopDeleteBtn = branchElement.querySelector('.delete-btn[data-action="stop-delete"]');
+  if (!stopDeleteBtn) {
+    logger.warn(`Stop-delete button not found for branch ${branchId}`);
+    return;
+  }
   
   // Helper function to handle post-delete operations
   const handlePostDelete = () => {
@@ -682,9 +722,11 @@ const handleStopAndDeleteBranch = (branchId) => {
     }
   };
   
-  // First try to cancel request
-  if (window.ChatManager && window.ChatManager.cancelBranchRequest) {
-    window.ChatManager.cancelBranchRequest(branchId).then(() => {
+  // Execute stop and delete operation
+  const executeStopDelete = () => {
+    // First try to cancel request
+    if (window.ChatManager && window.ChatManager.cancelBranchRequest) {
+      window.ChatManager.cancelBranchRequest(branchId).then(() => {
       // Delete branch after successful cancellation
       const branchElement = document.querySelector(`[data-branch-id="${branchId}"]`);
       if (branchElement) {
@@ -710,6 +752,29 @@ const handleStopAndDeleteBranch = (branchId) => {
     }
     
     handlePostDelete();
+  }
+  };
+  
+  // Use mini confirmation dialog instead of direct execution
+  if (window.confirmationDialog) {
+    window.confirmationDialog.show({
+      target: stopDeleteBtn,
+      message: i18n.getMessage('branch_confirmStopAndDelete') || i18n.getMessage('branch_confirmDelete'),
+      confirmText: i18n.getMessage('common_stop_and_delete') || i18n.getMessage('common_delete'),
+      cancelText: i18n.getMessage('common_cancel'),
+      type: 'danger',
+      onConfirm: () => {
+        logger.info(`User confirmed stopping and deleting branch ${branchId}`);
+        executeStopDelete();
+      },
+      onCancel: () => {
+        logger.info(`User cancelled stopping and deleting branch ${branchId}`);
+      }
+    });
+  } else {
+    // Fallback to direct execution if confirmationDialog is not available
+    logger.warn('confirmationDialog not available, executing stop-delete directly');
+    executeStopDelete();
   }
 };
 
