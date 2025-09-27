@@ -2281,18 +2281,23 @@ const removeDualScrollbar = (branchesContainer) => {
 const updateScrollbarContent = (branchesContainer) => {
   const wrapper = branchesContainer.closest('.branches-scroll-wrapper');
   if (!wrapper) return;
-  
+
+  const topScrollContainer = wrapper.querySelector('.top-scrollbar-container');
   const topScrollContent = wrapper.querySelector('.top-scrollbar-content');
-  if (!topScrollContent) return;
-  
-  // Calculate total content width
-  const branchCount = branchesContainer.querySelectorAll('.message-branch').length;
-  const branchWidth = 380; // Fixed width per branch - updated to match CSS
-  const gap = 6; // Gap between branches
-  const padding = 8; // Left and right padding (4px each side)
-  const totalWidth = branchCount * branchWidth + (branchCount - 1) * gap + padding;
-  
+  if (!topScrollContainer || !topScrollContent) return;
+
+  // Use actual scrollWidth to precisely mirror bottom scrollable width
+  const totalWidth = branchesContainer.scrollWidth;
   topScrollContent.style.width = `${totalWidth}px`;
+
+  // Keep scroll position in sync after width update
+  try {
+    topScrollContainer.scrollLeft = branchesContainer.scrollLeft;
+  } catch (e) {
+    logger.debug('Failed to sync top scrollbar after width update:', e);
+  }
+
+  logger.debug(`Dual scrollbar width updated: ${totalWidth}px`);
 };
 
 /**
