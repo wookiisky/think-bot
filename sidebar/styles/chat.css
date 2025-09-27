@@ -535,7 +535,7 @@
 /* Branch column container */
 .message-branches {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 6px;
   width: 100%;
   overflow-x: hidden; /* Changed from auto to hidden for grid layout */
@@ -600,8 +600,8 @@
 
 /* When 3 or more branches, fix branch width to ensure horizontal scrolling */
 .message-branches.many-branches .message-branch {
-  min-width: 380px;
-  max-width: 380px;
+  min-width: 400px;
+  max-width: 400px;
   flex-shrink: 0;
 }
 
@@ -909,7 +909,7 @@
 /* Responsive adjustments */
 @media (max-width: 1024px) {
   .message-branches {
-    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 12px;
   }
 }
