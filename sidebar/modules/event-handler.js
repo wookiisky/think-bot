@@ -419,11 +419,11 @@ const setupMessageButtonsScroll = (chatContainer) => {
       // Calculate best position for buttons in viewport
       const visibleTop = Math.max(messageRect.top, containerRect.top);
       const visibleBottom = Math.min(messageRect.bottom, containerRect.bottom);
-      const visible70Percent = visibleTop + (visibleBottom - visibleTop) * 0.7;
+      const visibleCenterPercent = visibleTop + (visibleBottom - visibleTop) * 0.4;
       
       // Set floating position
       buttons.style.position = 'fixed';
-      buttons.style.top = `${visible70Percent}px`;
+      buttons.style.top = `${visibleCenterPercent}px`;
       // Align to the right edge of the specific message/branch, not the container/page
       buttons.style.right = `${Math.max(0, window.innerWidth - messageRect.right)}px`;
       buttons.style.transform = 'translateY(-50%)';
