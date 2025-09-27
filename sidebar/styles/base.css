@@ -89,7 +89,8 @@ html, body {
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  /* Include emoji-capable fonts to correctly render characters like 1️⃣ */
+  font-family: 'Segoe UI', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', 'Apple Color Emoji', Tahoma, Geneva, Verdana, sans-serif;
   color: var(--text-color);
   width: 100%;
   overflow-x: hidden;
