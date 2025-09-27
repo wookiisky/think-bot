@@ -752,12 +752,50 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-.branch-action-btn.delete-btn:hover {
+/* Override for delete buttons outside of branch-actions container */
+.branch-action-btn.delete-btn:hover:not(.branch-actions *) {
   background-color: var(--error-color);
 }
 
-.branch-action-btn.branch-btn:hover {
+/* These rules are now handled by the universal branch-actions system above */
+
+/* Universal rule: ensure all branch control buttons have consistent styling */
+.branch-actions .branch-action-btn[data-action="branch"],
+.branch-actions .branch-action-btn[data-action="stop-delete"],
+.branch-actions .branch-action-btn[data-action="delete"] {
+  width: 26px;
+  height: 26px;
+  border: 1px solid #9c9c9c;
+  background-color: transparent;
+  color: var(--text-color);
+  border-radius: 0;
+  box-shadow: none;
+  transition: all 0.2s ease;
+}
+
+/* Universal hover rule: ensure all branch control buttons have consistent hover styling */
+.branch-actions .branch-action-btn:hover {
+  background-color: transparent;
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(66, 133, 244, 0.15);
+}
+
+/* Branch buttons outside of branch-actions should use different styling */
+.branch-action-btn.branch-btn:hover:not(.branch-actions *) {
   background-color: var(--success-color, #28a745);
+}
+
+/* Universal icon styling for branch control buttons */
+.branch-actions .branch-action-btn .material-icons {
+  font-size: 14px;
+  color: var(--text-color);
+  transition: color 0.2s ease;
+}
+
+/* Universal icon hover styling for branch control buttons */
+.branch-actions .branch-action-btn:hover .material-icons {
+  color: var(--primary-color);
 }
 
 /* Stop and delete branch button styles: consistent with top config page buttons */
@@ -780,7 +818,7 @@
 
 .branch-action-btn[data-action="stop-delete"]:hover {
   background-color: transparent;
-  border-color: #555555;
+  border-color: var(--primary-color) !important;
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(66, 133, 244, 0.15);
 }
@@ -814,7 +852,7 @@
 
 .branch-action-btn[data-action="stop-delete-tab"]:hover {
   background-color: transparent;
-  border-color: #555555;
+  border-color: var(--primary-color) !important;
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(66, 133, 244, 0.15);
 }
@@ -1009,30 +1047,163 @@
   gap: 4px;
 }
 
+/* Override general branch action button size for loading state - consistent with base style */
 .message-branch[data-streaming="true"] .branch-actions .branch-action-btn {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 0;
 }
 
 /* Ensure buttons always show border during branch message loading */
 .message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="stop-delete"],
 .message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="branch"] {
-  border: 1px solid #9f9f9f;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #9c9c9c;
   background-color: transparent;
+  border-radius: 0;
+  transition: all 0.2s ease;
 }
 
 /* Branch button specific styling during loading */
 .message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="branch"]:hover {
-  border-color: var(--primary-color);
-  background-color: rgba(66, 133, 244, 0.05);
+  background-color: transparent;
+  border-color: var(--primary-color) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(66, 133, 244, 0.15);
 }
 
 .message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="branch"] .material-icons {
+  font-size: 14px;
   color: var(--text-color);
   transition: color 0.2s ease;
 }
 
 .message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="branch"]:hover .material-icons {
   color: var(--primary-color);
+}
+
+.message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="branch"]:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(66, 133, 244, 0.2);
+}
+
+/* Stop button specific styling during loading */
+.message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="stop-delete"] .material-icons {
+  font-size: 14px;
+  color: var(--text-color);
+  transition: color 0.2s ease;
+}
+
+.message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="stop-delete"]:hover {
+  background-color: transparent;
+  border-color: var(--primary-color) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(66, 133, 244, 0.15);
+}
+
+.message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="stop-delete"]:hover .material-icons {
+  color: var(--primary-color);
+}
+
+.message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="stop-delete"]:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(66, 133, 244, 0.2);
+}
+
+/* Error state branch button styles - consistent with base branch button style */
+.message-branch.error-message .branch-actions .branch-action-btn[data-action="stop-delete"],
+.message-branch.error-message .branch-actions .branch-action-btn[data-action="branch"] {
+  width: 26px;
+  height: 26px;
+  border: 1px solid #9c9c9c;
+  background-color: transparent;
+  color: var(--text-color);
+  border-radius: 0;
+  transition: all 0.2s ease;
+  box-shadow: none;
+}
+
+.message-branch.error-message .branch-actions .branch-action-btn[data-action="stop-delete"] .material-icons,
+.message-branch.error-message .branch-actions .branch-action-btn[data-action="branch"] .material-icons {
+  font-size: 14px;
+  color: var(--text-color);
+  transition: color 0.2s ease;
+}
+
+.message-branch.error-message .branch-actions .branch-action-btn[data-action="stop-delete"]:hover,
+.message-branch.error-message .branch-actions .branch-action-btn[data-action="branch"]:hover {
+  background-color: transparent;
+  border-color: var(--primary-color) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(66, 133, 244, 0.15);
+}
+
+.message-branch.error-message .branch-actions .branch-action-btn[data-action="stop-delete"]:hover .material-icons,
+.message-branch.error-message .branch-actions .branch-action-btn[data-action="branch"]:hover .material-icons {
+  color: var(--primary-color);
+}
+
+.message-branch.error-message .branch-actions .branch-action-btn[data-action="stop-delete"]:active,
+.message-branch.error-message .branch-actions .branch-action-btn[data-action="branch"]:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(66, 133, 244, 0.2);
+}
+
+/* =======================
+   FLOATING BUTTONS SYSTEM - Small buttons in message-buttons container
+   ======================= */
+
+/* Ensure all floating buttons are consistent - small size, no border, blue background on hover */
+.message-buttons .message-action-btn {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background-color: transparent;
+  border-radius: 0;
+}
+
+.message-buttons .message-action-btn:hover {
+  background-color: var(--primary-color);
+}
+
+.message-buttons .message-action-btn:hover .material-icons {
+  color: white;
+}
+
+.message-buttons .message-action-btn .material-icons {
+  font-size: 12px;
+  color: var(--text-color);
+  transition: color 0.2s ease;
+}
+
+/* Floating button state styling */
+.message-buttons.floating .message-action-btn {
+  background-color: transparent;
+  color: #808080;
+}
+
+.message-buttons.floating .message-action-btn .material-icons {
+  color: #808080;
+}
+
+.message-buttons.floating .message-action-btn:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.message-buttons.floating .message-action-btn:hover .material-icons {
+  color: white;
+}
+
+/* =======================
+   BRANCH CONTROL BUTTONS SYSTEM - Large buttons in branch-actions container
+   ======================= */
+
+/* All branch control buttons styling is handled by the universal rules above */
+
+/* Universal active state for branch control buttons */
+.branch-actions .branch-action-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(66, 133, 244, 0.2);
 }
