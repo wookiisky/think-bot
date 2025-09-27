@@ -284,6 +284,12 @@
   "options_extracted_content_height_label": {
     "message": "Content Area Height"
   },
+  "options_filter_cot_label": {
+    "message": "Filter COT"
+  },
+  "options_filter_cot_tooltip": {
+    "message": "When enabled, content before </think> tags will be filtered out during streaming output"
+  },
   "options_extraction_method_jina": {
     "message": "Jina AI"
   },

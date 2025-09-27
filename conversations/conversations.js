@@ -1124,7 +1124,7 @@ function showErrorState(errorMessage) {
  */
 function setupMessageListeners() {
   MessageHandler.setupMessageListeners({
-    onStreamChunk: (chunk, tabId, url, branchId) => {
+    onStreamChunk: async (chunk, tabId, url, branchId) => {
       // Only process stream chunks for the current URL and active tab
       const activeTabId = TabManager.getActiveTabId();
 
@@ -1134,14 +1134,14 @@ function setupMessageListeners() {
           streamMonitor.updateStream(currentStreamId, chunk);
         }
 
-        ChatManager.handleStreamChunk(window.conversationsElements.chatContainer, chunk, tabId, url, branchId);
+        await ChatManager.handleStreamChunk(window.conversationsElements.chatContainer, chunk, tabId, url, branchId);
         logger.debug(`Stream chunk processed for conversations page tab ${tabId}${branchId ? ` branch ${branchId}` : ''}`);
       } else {
         logger.debug(`Stream chunk ignored - URL mismatch (${url} vs ${currentUrl}) or tab mismatch (${tabId} vs ${activeTabId})`);
       }
     },
     
-    onStreamEnd: (fullResponse, finishReason, isAbnormalFinish, tabId, url, branchId) => {
+    onStreamEnd: async (fullResponse, finishReason, isAbnormalFinish, tabId, url, branchId) => {
       // Always update tab loading state regardless of which tab is currently active
       if (url === currentUrl) {
         // Update tab loading state to not loading
@@ -1161,7 +1161,7 @@ function setupMessageListeners() {
           currentStreamId = null;
         }
         
-        ChatManager.handleStreamEnd(
+        await ChatManager.handleStreamEnd(
           window.conversationsElements.chatContainer,
           fullResponse,
           async (response) => {

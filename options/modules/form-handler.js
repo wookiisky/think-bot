@@ -43,6 +43,11 @@ export class FormHandler {
     domElements.systemPrompt.value = basicConfig.systemPrompt || '';
     domElements.theme.value = basicConfig.theme || 'system';
     domElements.languageSelector.value = basicConfig.language || 'en';
+    
+    // COT filtering setting
+    if (domElements.filterCOT) {
+      domElements.filterCOT.checked = basicConfig.filterCOT || false;
+    }
 
     // Sync settings - Load from sync config (will be called separately in loadSettings)
   }

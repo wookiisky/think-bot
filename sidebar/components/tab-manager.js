@@ -1087,13 +1087,26 @@ const saveCurrentTabChatHistory = async (chatHistory) => {
       return false;
     }
     
+    // Apply COT filtering to chat history before saving if enabled
+    let filteredChatHistory = chatHistory;
+    
+    if (window.ChatManager && window.ChatManager.applyCOTFilteringToChatHistory) {
+      try {
+        filteredChatHistory = await window.ChatManager.applyCOTFilteringToChatHistory(chatHistory);
+        logger.info(`COT filtering applied to chat history for tab ${activeTabId}`);
+      } catch (error) {
+        logger.warn('Failed to apply COT filtering during save, using original content:', error);
+        filteredChatHistory = chatHistory; // Fallback to original
+      }
+    }
+    
     const cacheKey = `${currentUrl}#${activeTabId}`;
-    logger.info(`Attempting to save chat history for tab ${activeTabId} with ${chatHistory.length} messages to key: ${cacheKey}`);
+    logger.info(`Attempting to save chat history for tab ${activeTabId} with ${filteredChatHistory.length} messages to key: ${cacheKey}`);
     
     const response = await chrome.runtime.sendMessage({
       type: 'SAVE_CHAT_HISTORY',
       url: cacheKey,
-      chatHistory: chatHistory
+      chatHistory: filteredChatHistory
     });
     
     logger.info(`Received response for tab ${activeTabId} save operation:`, response);

@@ -25,6 +25,7 @@ export const domElements = {
   systemPrompt: document.getElementById('systemPrompt'),
   theme: document.getElementById('theme'),
   languageSelector: document.getElementById('languageSelector'),
+  filterCOT: document.getElementById('filterCOT'),
   
   // Cache settings elements
   totalCacheDisplay: document.getElementById('totalCacheDisplay'),

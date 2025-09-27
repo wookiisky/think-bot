@@ -176,7 +176,7 @@ const handleTabAction = async (displayText, sendTextTemplate, tabId, isAutoSend,
  */
 function setupMessageListeners() {
   MessageHandler.setupMessageListeners({
-    onStreamChunk: (chunk, tabId, url, branchId) => {
+    onStreamChunk: async (chunk, tabId, url, branchId) => {
       // Only process stream chunks for the current active tab and URL
       const currentUrl = StateManager.getStateItem('currentUrl');
       const activeTabId = TabManager.getActiveTabId();
@@ -187,14 +187,14 @@ function setupMessageListeners() {
           streamMonitor.updateStream(currentStreamId, chunk);
         }
         
-        ChatManager.handleStreamChunk(UIManager.getElement('chatContainer'), chunk, tabId, url, branchId);
+        await ChatManager.handleStreamChunk(UIManager.getElement('chatContainer'), chunk, tabId, url, branchId);
         logger.debug(`Stream chunk processed for tab ${tabId}${branchId ? ` branch ${branchId}` : ''}`);
       } else {
         logger.debug(`Stream chunk ignored - URL mismatch (${url} vs ${currentUrl}) or tab mismatch (${tabId} vs ${activeTabId})`);
       }
     },
     
-    onStreamEnd: (fullResponse, finishReason, isAbnormalFinish, tabId, url, branchId) => {
+    onStreamEnd: async (fullResponse, finishReason, isAbnormalFinish, tabId, url, branchId) => {
       const currentUrl = StateManager.getStateItem('currentUrl');
       const activeTabId = TabManager.getActiveTabId();
       
@@ -222,7 +222,7 @@ function setupMessageListeners() {
           currentStreamId = null; // Clear current stream
         }
         
-        ChatManager.handleStreamEnd(
+        await ChatManager.handleStreamEnd(
           UIManager.getElement('chatContainer'),
           fullResponse,
           async (response) => {
@@ -351,7 +351,7 @@ function setupMessageListeners() {
       }
     },
     
-    onLoadingStateUpdate: (message) => {
+    onLoadingStateUpdate: async (message) => {
       // Handle stream-related loading state updates
       if (message.status === 'error' && currentStreamId && typeof streamMonitor !== 'undefined') {
         const errorObj = new Error(message.error || 'Loading state error');
@@ -362,7 +362,7 @@ function setupMessageListeners() {
         currentStreamId = null;
       }
       
-      handleLoadingStateUpdate(message);
+      await handleLoadingStateUpdate(message);
     },
     
     onTabChanged: PageDataManager.handleTabChanged,
@@ -398,7 +398,7 @@ function setupMessageListeners() {
  * Handle loading state updates from background script
  * @param {Object} message - Loading state update message
  */
-function handleLoadingStateUpdate(message) {
+async function handleLoadingStateUpdate(message) {
   try {
     const { url, tabId, status, result, error, finishReason } = message;
     const currentUrl = StateManager.getStateItem('currentUrl');
@@ -429,7 +429,7 @@ function handleLoadingStateUpdate(message) {
             finishReason !== 'STOP' && 
             finishReason !== 'end_turn';
         
-        ChatManager.handleStreamEnd(
+        await ChatManager.handleStreamEnd(
           chatContainer,
           result,
           async (response) => {

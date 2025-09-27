@@ -311,6 +311,85 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
 };
 
 /**
+ * Filter COT (Chain of Thought) content based on configuration
+ * @param {string} content - Original content with potential thinking tags
+ * @param {boolean} filterEnabled - Whether COT filtering is enabled
+ * @returns {string} Filtered content
+ */
+const filterCOTContent = (content, filterEnabled) => {
+  if (!filterEnabled || !content) {
+    return content;
+  }
+  
+  // Find the last </think> tag and return content after it
+  const thinkCloseTag = '</think>';
+  const lastThinkIndex = content.lastIndexOf(thinkCloseTag);
+  
+  if (lastThinkIndex !== -1) {
+    // Return content after the last </think> tag
+    return content.substring(lastThinkIndex + thinkCloseTag.length);
+  }
+  
+  // If no </think> tag found, check if we're still in thinking mode
+  const thinkOpenTag = '<think>';
+  const hasOpenThink = content.indexOf(thinkOpenTag) !== -1;
+  
+  if (hasOpenThink) {
+    // We're in the middle of thinking, return empty string
+    return '';
+  }
+  
+  return content;
+};
+
+/**
+ * Apply COT filtering to chat history if enabled
+ * @param {Array} chatHistory - Chat history array
+ * @returns {Promise<Array>} Filtered chat history
+ */
+const applyCOTFilteringToChatHistory = async (chatHistory) => {
+  try {
+    if (!window.StateManager || !window.StateManager.getConfig) {
+      return chatHistory;
+    }
+    
+    const config = await window.StateManager.getConfig();
+    const basicConfig = config.basic || {};
+    const filterCOTEnabled = basicConfig.filterCOT || false;
+    
+    if (!filterCOTEnabled) {
+      return chatHistory;
+    }
+    
+    const filteredChatHistory = chatHistory.map(message => {
+      if (message.role === 'assistant' && message.responses) {
+        // Apply COT filtering to each response in assistant messages
+        const filteredResponses = message.responses.map(response => {
+          if (response.content && response.status !== 'error') {
+            const filteredContent = filterCOTContent(response.content, true);
+            logger.debug('COT filtering applied during save', { 
+              original: response.content.length, 
+              filtered: filteredContent.length,
+              branchId: response.branchId
+            });
+            return { ...response, content: filteredContent };
+          }
+          return response;
+        });
+        return { ...message, responses: filteredResponses };
+      }
+      return message;
+    });
+    
+    logger.info(`COT filtering applied to chat history: ${chatHistory.length} messages processed`);
+    return filteredChatHistory;
+  } catch (error) {
+    logger.warn('Failed to apply COT filtering during save, using original content:', error);
+    return chatHistory; // Fallback to original
+  }
+};
+
+/**
  * Handle streaming chunk response
  * @param {HTMLElement} chatContainer - Chat container element
  * @param {string} chunk - Received text chunk
@@ -318,7 +397,7 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
  * @param {string} url - The URL for the stream
  * @param {string} branchId - Required branch ID for branch streaming
  */
-const handleStreamChunk = (chatContainer, chunk, tabId, url, branchId) => {
+const handleStreamChunk = async (chatContainer, chunk, tabId, url, branchId) => {
   // All messages must now use branch streaming - branchId is required
   if (!branchId) {
     logger.error('handleStreamChunk called without branchId - all messages must use branch format');
@@ -357,17 +436,35 @@ const handleStreamChunk = (chatContainer, chunk, tabId, url, branchId) => {
   // Save original content
   streamingMessageContentDiv.setAttribute('data-raw-content', currentBuffer);
   
+  // Get configuration to check if COT filtering is enabled
+  let displayContent = currentBuffer;
+  try {
+    if (window.StateManager && window.StateManager.getConfig) {
+      const config = await window.StateManager.getConfig();
+      const basicConfig = config.basic || {};
+      const filterCOTEnabled = basicConfig.filterCOT || false;
+      
+      if (filterCOTEnabled) {
+        displayContent = filterCOTContent(currentBuffer, true);
+        logger.debug('COT filtering applied', { original: currentBuffer.length, filtered: displayContent.length });
+      }
+    }
+  } catch (error) {
+    logger.warn('Failed to get config for COT filtering, showing original content:', error);
+    // Continue with original content if config fetch fails
+  }
+  
   // Detect if content contains markdown elements to decide how to display
-  const containsMarkdown = hasMarkdownElements(currentBuffer);
+  const containsMarkdown = hasMarkdownElements(displayContent);
   
   try {
     if (containsMarkdown) {
-      // For markdown content, render it
-      streamingMessageContentDiv.innerHTML = marked.parse(currentBuffer);
+      // For markdown content, render it using filtered content
+      streamingMessageContentDiv.innerHTML = marked.parse(displayContent);
       streamingMessageContentDiv.classList.remove('no-markdown');
     } else {
-      // For plain text, preserve formatting
-      streamingMessageContentDiv.innerHTML = currentBuffer.replace(/\n/g, '<br>');
+      // For plain text, preserve formatting using filtered content
+      streamingMessageContentDiv.innerHTML = displayContent.replace(/\n/g, '<br>');
       streamingMessageContentDiv.classList.add('no-markdown');
     }
     
@@ -392,7 +489,7 @@ const handleStreamChunk = (chatContainer, chunk, tabId, url, branchId) => {
  * @param {string} url - Optional URL (legacy)
  * @param {string} branchId - Required branch ID for branch streaming
  */
-const handleStreamEnd = (chatContainer, fullResponse, onComplete, finishReason = null, isAbnormalFinish = false, tabId = null, url = null, branchId) => {
+const handleStreamEnd = async (chatContainer, fullResponse, onComplete, finishReason = null, isAbnormalFinish = false, tabId = null, url = null, branchId) => {
   logger.info(`handleStreamEnd called - branchId: ${branchId}, responseLength: ${fullResponse?.length || 0}`);
   
   // All messages must now use branch streaming - branchId is required
@@ -430,7 +527,29 @@ const handleStreamEnd = (chatContainer, fullResponse, onComplete, finishReason =
     fullResponse = finalContent;
   }
   
-  const containsMarkdown = hasMarkdownElements(fullResponse);
+  // Apply COT filtering if enabled
+  let displayContent = fullResponse;
+  try {
+    if (window.StateManager && window.StateManager.getConfig) {
+      const config = await window.StateManager.getConfig();
+      const basicConfig = config.basic || {};
+      const filterCOTEnabled = basicConfig.filterCOT || false;
+      
+      if (filterCOTEnabled) {
+        displayContent = filterCOTContent(fullResponse, true);
+        logger.info('COT filtering applied at stream end', { 
+          original: fullResponse.length, 
+          filtered: displayContent.length,
+          branchId: branchId
+        });
+      }
+    }
+  } catch (error) {
+    logger.warn('Failed to get config for COT filtering in stream end, showing original content:', error);
+    // Continue with original content if config fetch fails
+  }
+  
+  const containsMarkdown = hasMarkdownElements(displayContent);
     
     try {
     // Save original content
@@ -438,19 +557,19 @@ const handleStreamEnd = (chatContainer, fullResponse, onComplete, finishReason =
     
     if (containsMarkdown) {
       contentDiv.classList.remove('no-markdown');
-      const parsedContent = window.marked.parse(fullResponse);
+      const parsedContent = window.marked.parse(displayContent);
       contentDiv.innerHTML = parsedContent;
     } else {
       // Use plain text with preserved line breaks for content without markdown
       contentDiv.classList.add('no-markdown');
       // Use innerHTML with <br> replacement to maintain consistency with streaming chunks
-      contentDiv.innerHTML = fullResponse.replace(/\n/g, '<br>');
+      contentDiv.innerHTML = displayContent.replace(/\n/g, '<br>');
     }
   } catch (markdownError) {
     logger.error('Error parsing Markdown in stream end:', markdownError);
     contentDiv.classList.add('no-markdown');
     // Use innerHTML with <br> replacement for consistency
-    contentDiv.innerHTML = fullResponse.replace(/\n/g, '<br>');
+    contentDiv.innerHTML = displayContent.replace(/\n/g, '<br>');
   }
 
   // Add finish reason warning if it's an abnormal finish
@@ -1071,11 +1190,12 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
     if (window.TabManager && window.TabManager.saveCurrentTabChatHistory) {
       await window.TabManager.saveCurrentTabChatHistory(rawChatHistory);
     } else {
-      // Fallback to original method
+      // Fallback to original method - apply COT filtering before saving
+      const filteredChatHistory = await applyCOTFilteringToChatHistory(rawChatHistory);
       await chrome.runtime.sendMessage({
         type: 'SAVE_CHAT_HISTORY',
         url: window.StateManager.getStateItem('currentUrl'),
-        chatHistory: rawChatHistory
+        chatHistory: filteredChatHistory
       });
     }
     if (onMessageSaved) onMessageSaved();
@@ -2403,11 +2523,12 @@ const saveChatHistory = async (chatHistory) => {
       await window.TabManager.saveCurrentTabChatHistory(chatHistory);
       logger.info('Chat history saved via TabManager');
     } else {
-      // Fallback to original method
+      // Fallback to original method - apply COT filtering before saving
+      const filteredChatHistory = await applyCOTFilteringToChatHistory(chatHistory);
       await chrome.runtime.sendMessage({
         type: 'SAVE_CHAT_HISTORY',
         url: currentUrl,
-        chatHistory: chatHistory
+        chatHistory: filteredChatHistory
       });
       logger.info('Chat history saved via direct message');
     }
@@ -2437,6 +2558,9 @@ export {
   hasActiveStream,
   updateInputAreaState,
   updateBranchContainerStyle,
+  // COT filtering
+  filterCOTContent,
+  applyCOTFilteringToChatHistory,
   // Branching features
   generateBranchId,
   createBranch,

@@ -284,6 +284,12 @@
   "options_extracted_content_height_label": {
     "message": "内容区域高度"
   },
+  "options_filter_cot_label": {
+    "message": "过滤COT"
+  },
+  "options_filter_cot_tooltip": {
+    "message": "启用时，流式输出会过滤掉</think>标签之前的内容"
+  },
   "options_extraction_method_jina": {
     "message": "Jina AI"
   },

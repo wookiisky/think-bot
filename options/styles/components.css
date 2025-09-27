@@ -92,6 +92,23 @@ input:focus + .slider {
   font-size: 14px;
   color: var(--text-color);
   user-select: none;
+  line-height: 1;
+  min-height: 20px; /* Match toggle height for proper vertical centering */
+}
+
+/* Ensure form-group toggle switches are properly aligned */
+.form-group .toggle-switch-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  line-height: 1;
+  min-height: 20px;
+}
+
+.form-group .toggle-switch {
+  vertical-align: middle;
+  margin: 0;
+  flex-shrink: 0;
 }
 
 /* Custom Checkbox */

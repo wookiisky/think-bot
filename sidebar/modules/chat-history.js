@@ -380,16 +380,18 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
             errorContainer.appendChild(errorContent);
             contentDiv.appendChild(errorContainer);
           } else {
-            // Completed state
-            if (hasMarkdownElements(response.content || '')) {
+            // Completed state - content is already filtered during save if COT filtering is enabled
+            const displayContent = response.content || '';
+            
+            if (hasMarkdownElements(displayContent)) {
               try {
-                contentDiv.innerHTML = window.marked.parse(response.content || '');
+                contentDiv.innerHTML = window.marked.parse(displayContent);
               } catch (error) {
-                contentDiv.textContent = response.content || '';
+                contentDiv.textContent = displayContent;
                 contentDiv.classList.add('no-markdown');
               }
             } else {
-              contentDiv.textContent = response.content || '';
+              contentDiv.textContent = displayContent;
               contentDiv.classList.add('no-markdown');
             }
           }

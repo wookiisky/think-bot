@@ -120,6 +120,7 @@ export class UIConfigManager {
         defaultModelId: modelManager.getDefaultModelId(), // Move to basic for timestamp protection
         branchModelIds: this.getBranchModelIds(domElements), // Add branch model IDs
         language: domElements.languageSelector.value,
+        filterCOT: domElements.filterCOT ? domElements.filterCOT.checked : false,
         lastModified: Date.now()
       }
     };

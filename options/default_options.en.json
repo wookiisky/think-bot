@@ -45,6 +45,7 @@
     "defaultModelId": "gemini-pro",
     "branchModelIds": [],
     "language": "en",
+    "filterCOT": false,
     "lastModified": 1735372800000
   }
 }

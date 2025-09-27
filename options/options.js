@@ -403,6 +403,7 @@ class OptionsPage {
       this.domElements.defaultModelSelect,
       this.domElements.theme,
       this.domElements.languageSelector,
+      this.domElements.filterCOT,
       this.domElements.syncEnabled,
       this.domElements.storageType,
       this.domElements.gistToken,

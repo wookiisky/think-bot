@@ -813,7 +813,7 @@ storageConfigManager.calculateConfigTimestamps = function(newConfig, existingCon
 
     if (existingBasic) {
       // Compare basic config fields to determine if anything was modified
-      const basicFields = ['defaultExtractionMethod', 'jinaApiKey', 'jinaResponseTemplate', 'systemPrompt', 'contentDisplayHeight', 'theme', 'defaultModelId', 'language'];
+      const basicFields = ['defaultExtractionMethod', 'jinaApiKey', 'jinaResponseTemplate', 'systemPrompt', 'contentDisplayHeight', 'theme', 'defaultModelId', 'language', 'filterCOT'];
       const fieldsChanged = basicFields.some(field =>
         existingBasic[field] !== processedConfig.basic[field]
       );
