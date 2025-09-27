@@ -102,44 +102,10 @@ const getChatHistoryFromDOM = (chatContainer) => {
         // Branch container completed at once, reset current assistant message aggregation
         currentAssistantMessage = null;
       } else {
-        // Non-branch container (compatible with old structure or streaming single branch)
-        const contentEl = messageEl.querySelector('.message-content');
-        const branchId = messageEl.getAttribute('data-branch-id');
-        const model = messageEl.getAttribute('data-model') || 'unknown';
-
-        let content = '';
-        let isError = false;
-        if (messageEl.classList.contains('error-message')) {
-          const errorDisplay = contentEl?.querySelector('.error-display pre');
-          if (errorDisplay) {
-            content = errorDisplay.textContent || '';
-          } else {
-            content = contentEl?.textContent || '';
-          }
-          isError = true;
-        } else {
-          content = contentEl ? contentEl.getAttribute('data-raw-content') || contentEl.textContent : '';
-        }
-
-        const branchObj = {
-          branchId: branchId || `br-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-          model: model,
-          content: content,
-          status: messageEl.hasAttribute('data-streaming') ? 'loading' : (isError ? 'error' : 'done'),
-          errorMessage: isError ? content : null,
-          updatedAt: timestamp
-        };
-
-        if (currentAssistantMessage && Math.abs(currentAssistantMessage.timestamp - timestamp) < 5000) {
-          currentAssistantMessage.responses.push(branchObj);
-        } else {
-          currentAssistantMessage = {
-            role: 'assistant',
-            timestamp: timestamp,
-            responses: [branchObj]
-          };
-          chatHistory.push(currentAssistantMessage);
-        }
+        // All assistant messages must now use branch-container format - skip legacy single messages
+        logger.warn('Skipping legacy non-branch assistant message - all assistant messages must use branch-container format now');
+        // Reset current assistant message aggregation since this is not a valid branch format
+        currentAssistantMessage = null;
       }
     }
   });
@@ -337,22 +303,8 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
       } else if (message.role === 'assistant') {
         // Handle assistant messages (new branch logic)
         if (!message.responses || !Array.isArray(message.responses) || message.responses.length === 0) {
-          // Compatible with old format: if no responses but has content, treat as single branch
-          if (message.content) {
-            const messageElement = appendMessageToUIFunc(
-              chatContainer,
-              message.role,
-              message.content,
-              null,
-              false,
-              message.timestamp
-            );
-            
-            // Mark error message
-            if (message.isError && messageElement) {
-              messageElement.classList.add('error-message');
-            }
-          }
+          // All assistant messages must now use branch format - skip legacy messages
+          logger.warn('Skipping assistant message without branch format - all messages must use branches now');
           return;
         }
         
@@ -448,19 +400,29 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
 
           branchDiv.appendChild(contentDiv);
 
-          // Loading state: only show "stop and delete current branch" button in top right, not in floating button group
+          // Loading state: show both branch and "stop and delete" buttons in top right, not in floating button group
           if (response.status === 'loading') {
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'branch-actions';
 
+            // Add branch button
+            const branchButton = document.createElement('button');
+            branchButton.className = 'branch-action-btn branch-btn';
+            branchButton.innerHTML = '<i class="material-icons">call_split</i>';
+            branchButton.title = i18n.getMessage('branch_add');
+            branchButton.setAttribute('data-action', 'branch');
+            branchButton.setAttribute('data-branch-id', response.branchId);
+            actionsDiv.appendChild(branchButton);
+
+            // Add stop and delete button
             const stopDeleteButton = document.createElement('button');
             stopDeleteButton.className = 'branch-action-btn delete-btn';
             stopDeleteButton.innerHTML = '<i class="material-icons">stop</i>';
             stopDeleteButton.title = i18n.getMessage('branch_stopAndDelete');
             stopDeleteButton.setAttribute('data-action', 'stop-delete');
             stopDeleteButton.setAttribute('data-branch-id', response.branchId);
-
             actionsDiv.appendChild(stopDeleteButton);
+
             branchDiv.appendChild(actionsDiv);
           } else {
             // Non-loading: add branch-level floating button group, including create/delete buttons

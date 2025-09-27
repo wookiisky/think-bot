@@ -733,7 +733,7 @@
   width: 28px;
   height: 28px;
   border: none;
-  border-radius: 6px;
+  border-radius: 0;
   background-color: var(--bg-secondary);
   color: var(--text-color);
   display: flex;
@@ -1012,11 +1012,27 @@
 .message-branch[data-streaming="true"] .branch-actions .branch-action-btn {
   width: 24px;
   height: 24px;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
-/* Ensure stop and delete button always shows border during branch message loading */
-.message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="stop-delete"] {
+/* Ensure buttons always show border during branch message loading */
+.message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="stop-delete"],
+.message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="branch"] {
   border: 1px solid #9f9f9f;
   background-color: transparent;
+}
+
+/* Branch button specific styling during loading */
+.message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="branch"]:hover {
+  border-color: var(--primary-color);
+  background-color: rgba(66, 133, 244, 0.05);
+}
+
+.message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="branch"] .material-icons {
+  color: var(--text-color);
+  transition: color 0.2s ease;
+}
+
+.message-branch[data-streaming="true"] .branch-actions .branch-action-btn[data-action="branch"]:hover .material-icons {
+  color: var(--primary-color);
 }

@@ -126,20 +126,9 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
   contentDiv.setAttribute('data-raw-content', content);
   
   if (role === 'assistant' && isStreaming) {
-    // Legacy assistant message flow is deprecated, unified use of branch message flow
-    // If there are still calls to this legacy flow, only show simple spinner without buttons
-    try {
-      const loadingContainer = document.createElement('div');
-      loadingContainer.className = 'loading-container';
-      loadingContainer.innerHTML = '<div class="spinner"></div>';
-      contentDiv.appendChild(loadingContainer);
-      contentDiv.setAttribute('data-raw-content', '');
-      logger.warn('Legacy assistant streaming message created - should use branch flow instead');
-    } catch (error) {
-      logger.error(`Error creating simple loading container:`, error);
-      contentDiv.innerHTML = content; // Fallback to original content
-    }
-    messageDiv.dataset.streaming = 'true';
+    // All assistant streaming messages must now use branch flow - this should not happen
+    logger.error('appendMessageToUI called with assistant streaming message - this is deprecated, use branch flow instead');
+    return null;
   } else {
     // For user messages, preserve line breaks by using textContent instead of markdown parsing
     if (role === 'user') {
@@ -327,25 +316,24 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
  * @param {string} chunk - Received text chunk
  * @param {string} tabId - The tab ID for the stream
  * @param {string} url - The URL for the stream
- * @param {string} branchId - Optional branch ID for branch streaming
+ * @param {string} branchId - Required branch ID for branch streaming
  */
-const handleStreamChunk = (chatContainer, chunk, tabId, url, branchId = null) => {
-  let streamId;
-  let streamingMessageContainer;
-  
-  if (branchId) {
-    // For branch streaming, look for the specific branch element
-    streamingMessageContainer = chatContainer.querySelector(`[data-branch-id="${branchId}"][data-streaming="true"]`);
-    logger.debug(`Looking for branch streaming container with branchId: ${branchId}`);
-  } else {
-    // For regular streaming, use the existing logic
-    streamId = `${url}#${tabId}`;
-    streamingMessageContainer = chatContainer.querySelector(`[data-stream-id="${streamId}"][data-streaming="true"]`);
-    logger.debug(`Looking for regular streaming container with streamId: ${streamId}`);
+const handleStreamChunk = (chatContainer, chunk, tabId, url, branchId) => {
+  // All messages must now use branch streaming - branchId is required
+  if (!branchId) {
+    logger.error('handleStreamChunk called without branchId - all messages must use branch format');
+    return;
   }
   
+  // Look for the specific branch element
+  const streamingMessageContainer = chatContainer.querySelector(`[data-branch-id="${branchId}"][data-streaming="true"]`);
+  logger.debug(`Looking for branch streaming container with branchId: ${branchId}, found: ${!!streamingMessageContainer}`);
+  
+  // Additional debug: check if branch element exists at all
   if (!streamingMessageContainer) {
-    logger.debug(`No streaming message container found for ${branchId ? `branch ${branchId}` : `stream ${streamId}`}`);
+    const branchElementExists = chatContainer.querySelector(`[data-branch-id="${branchId}"]`);
+    logger.debug(`Branch element exists without streaming flag: ${!!branchElementExists}`);
+    logger.error(`Branch streaming container not found for branchId: ${branchId}. Chunk discarded.`);
     return;
   }
 
@@ -384,7 +372,7 @@ const handleStreamChunk = (chatContainer, chunk, tabId, url, branchId = null) =>
     }
     
     // Log successful chunk processing
-    logger.debug(`Stream chunk processed successfully for ${streamId}, buffer length: ${currentBuffer.length}`);
+    logger.debug(`Stream chunk processed successfully for ${branchId}, buffer length: ${currentBuffer.length}`);
   } catch (error) {
     logger.error('Error rendering stream chunk:', error);
     // Fallback to plain text display
@@ -400,32 +388,28 @@ const handleStreamChunk = (chatContainer, chunk, tabId, url, branchId = null) =>
  * @param {Function} onComplete - Callback function after completion
  * @param {string} finishReason - Optional finish reason from LLM provider
  * @param {boolean} isAbnormalFinish - Whether the finish was abnormal
- * @param {string} tabId - Optional tab ID
- * @param {string} url - Optional URL
- * @param {string} branchId - Optional branch ID for branch streaming
+ * @param {string} tabId - Optional tab ID (legacy)
+ * @param {string} url - Optional URL (legacy)
+ * @param {string} branchId - Required branch ID for branch streaming
  */
-const handleStreamEnd = (chatContainer, fullResponse, onComplete, finishReason = null, isAbnormalFinish = false, tabId = null, url = null, branchId = null) => {
-  // Find the streaming message container
-  let streamingMessageContainer;
+const handleStreamEnd = (chatContainer, fullResponse, onComplete, finishReason = null, isAbnormalFinish = false, tabId = null, url = null, branchId) => {
+  logger.info(`handleStreamEnd called - branchId: ${branchId}, responseLength: ${fullResponse?.length || 0}`);
   
-  if (branchId) {
-    // For branch streaming, look for the specific branch element
-    streamingMessageContainer = chatContainer.querySelector(`[data-branch-id="${branchId}"][data-streaming="true"]`);
-    logger.debug(`Looking for branch streaming container to end with branchId: ${branchId}`);
-  } else if (tabId && url) {
-    // For regular streaming, use the existing logic
-    const streamId = `${url}#${tabId}`;
-    streamingMessageContainer = chatContainer.querySelector(`[data-stream-id="${streamId}"][data-streaming="true"]`);
-    logger.debug(`Looking for regular streaming container to end with streamId: ${streamId}`);
+  // All messages must now use branch streaming - branchId is required
+  if (!branchId) {
+    logger.error('handleStreamEnd called without branchId - all messages must use branch format');
+    return;
   }
   
-  // Fallback for cases where streamId is not available or the element is not found by streamId
-  if (!streamingMessageContainer) {
-    streamingMessageContainer = chatContainer.querySelector('[data-streaming="true"]');
-    logger.debug('Using fallback to find any streaming container');
-  }
+  // Look for the specific branch element
+  const streamingMessageContainer = chatContainer.querySelector(`[data-branch-id="${branchId}"][data-streaming="true"]`);
+  logger.info(`Looking for branch streaming container to end with branchId: ${branchId}, found: ${!!streamingMessageContainer}`);
   
+  // Additional debug: check if branch element exists at all
   if (!streamingMessageContainer) {
+    const branchElementExists = chatContainer.querySelector(`[data-branch-id="${branchId}"]`);
+    logger.warn(`Branch element exists without streaming flag: ${!!branchElementExists}`);
+    logger.error(`Branch streaming container not found for branchId: ${branchId}. Aborting handleStreamEnd to prevent content mixing.`);
     return;
   }
   
@@ -669,40 +653,36 @@ const cleanupStreamingState = (messageElement) => {
  * @param {Function} onComplete - Callback function after completion
  * @param {Object} errorDetails - Optional detailed error information
  */
-const handleLlmError = (chatContainer, error, streamingMessageElement = null, onComplete = null, errorDetails = null, tabId = null, url = null, branchId = null) => {
+const handleLlmError = (chatContainer, error, streamingMessageElement = null, onComplete = null, errorDetails = null, tabId = null, url = null, branchId) => {
   // Update tab loading state when error occurs
   const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
   updateTabLoadingState(currentTabId, false).catch(error => 
     logger.warn('Error updating tab loading state:', error)
   );
   
+  // All messages must now use branch format - branchId is required
+  if (!branchId) {
+    logger.error('handleLlmError called without branchId - all messages must use branch format');
+    return;
+  }
+  
   let specificStreamingElement = streamingMessageElement;
   
-  // Try to find streaming element in this order:
-  // 1. Use provided streamingMessageElement
-  // 2. If branchId is provided, find branch element
-  // 3. If tabId/url provided, find by stream-id
-  // 4. Fallback to any streaming element
+  // Try to find streaming element for the specific branch
   if (!specificStreamingElement) {
-    if (branchId) {
-      // Try to find branch element first with data-streaming="true"
-      specificStreamingElement = chatContainer.querySelector(`[data-branch-id="${branchId}"][data-streaming="true"]`);
-      // If not found with data-streaming, try without it (element might have already been partially processed)
-      if (!specificStreamingElement) {
-        specificStreamingElement = chatContainer.querySelector(`[data-branch-id="${branchId}"]`);
-      }
-      logger.debug(`Looking for branch element with branchId: ${branchId}, found: ${!!specificStreamingElement}`);
-    } else if (tabId && url) {
-      const streamId = `${url}#${tabId}`;
-      specificStreamingElement = chatContainer.querySelector(`[data-stream-id="${streamId}"][data-streaming="true"]`);
-      logger.debug(`Looking for stream element with streamId: ${streamId}, found: ${!!specificStreamingElement}`);
-    }
-    
-    // Final fallback to any streaming element
+    // Try to find branch element first with data-streaming="true"
+    specificStreamingElement = chatContainer.querySelector(`[data-branch-id="${branchId}"][data-streaming="true"]`);
+    // If not found with data-streaming, try without it (element might have already been partially processed)
     if (!specificStreamingElement) {
-      specificStreamingElement = chatContainer.querySelector('[data-streaming="true"]');
-      logger.debug(`Fallback to any streaming element, found: ${!!specificStreamingElement}`);
+      specificStreamingElement = chatContainer.querySelector(`[data-branch-id="${branchId}"]`);
     }
+    logger.debug(`Looking for branch element with branchId: ${branchId}, found: ${!!specificStreamingElement}`);
+  }
+
+  // If we cannot find the specific branch element, abort to prevent error mixing
+  if (!specificStreamingElement) {
+    logger.error(`Branch error handler cannot find branch element for branchId: ${branchId}. Aborting handleLlmError to prevent error mixing.`);
+    return;
   }
 
   // Check if this is a branch-level error that should be handled locally
@@ -1167,11 +1147,22 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
 
     branchDiv.appendChild(contentDiv);
 
-    // Only keep "stop and delete" button on top right
+    // Add "branch" and "stop and delete" buttons on top right during loading
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'branch-actions';
+    
+    // Add branch button
+    const branchButton = document.createElement('button');
+    branchButton.className = 'branch-action-btn branch-btn';
+    branchButton.innerHTML = '<i class="material-icons">call_split</i>';
+    branchButton.title = i18n.getMessage('branch_add');
+    branchButton.setAttribute('data-action', 'branch');
+    branchButton.setAttribute('data-branch-id', localBranchId);
+    actionsDiv.appendChild(branchButton);
+    
+    // Add stop and delete button
     const stopDeleteButton = document.createElement('button');
-    stopDeleteButton.className = 'btn-base message-action-btn delete-btn';
+    stopDeleteButton.className = 'branch-action-btn delete-btn';
     stopDeleteButton.innerHTML = '<i class="material-icons">stop</i>';
     stopDeleteButton.title = i18n.getMessage('branch_stopAndDelete');
     stopDeleteButton.setAttribute('data-action', 'stop-delete');
@@ -1186,20 +1177,27 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
 
     assistantBranchElement = branchDiv;
   } catch (uiError) {
-    logger.error('Error creating branch-style loading UI for user message, falling back:', uiError);
-    // Minimal fallback: create simple loading message without using legacy streaming message
-    assistantBranchElement = appendMessageToUI(
-      chatContainer,
-      'assistant',
-      '<div class="loading-container"><div class="spinner"></div></div>',
-      null,
-      false, // Use false to avoid legacy warning
-      Date.now()
-    );
-    // Manually add streaming attribute to maintain compatibility
-    if (assistantBranchElement) {
-      assistantBranchElement.setAttribute('data-streaming', 'true');
-    }
+    logger.error('Error creating branch-style loading UI for user message:', uiError);
+    // All messages must use branch format - cannot fallback to legacy format
+    // Instead, create error branch to indicate UI creation failure
+    const errorBranchElement = createBranchElement(localBranchId, selectedModelForLabel || { name: 'unknown' }, 'error', `UI creation failed: ${uiError.message}`);
+    
+    // Still create branch container structure
+    const branchContainer = document.createElement('div');
+    branchContainer.className = 'chat-message assistant-message branch-container';
+    branchContainer.id = `message-${Date.now()}`;
+    
+    const roleDiv = document.createElement('div');
+    roleDiv.className = 'message-role';
+    branchContainer.appendChild(roleDiv);
+    
+    const branchesDiv = document.createElement('div');
+    branchesDiv.className = 'message-branches';
+    branchesDiv.appendChild(errorBranchElement);
+    branchContainer.appendChild(branchesDiv);
+    chatContainer.appendChild(branchContainer);
+    
+    assistantBranchElement = errorBranchElement;
   }
   
   // If image was attached, send and remove
@@ -1390,9 +1388,20 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
 
     branchDiv.appendChild(contentDiv);
 
-    // Top-right actions: only stop-and-delete for loading
+    // Top-right actions: branch and stop-and-delete buttons for loading
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'branch-actions';
+    
+    // Add branch button
+    const branchButton = document.createElement('button');
+    branchButton.className = 'branch-action-btn branch-btn';
+    branchButton.innerHTML = '<i class="material-icons">call_split</i>';
+    branchButton.title = i18n.getMessage('branch_add');
+    branchButton.setAttribute('data-action', 'branch');
+    branchButton.setAttribute('data-branch-id', quickBranchId);
+    actionsDiv.appendChild(branchButton);
+    
+    // Add stop and delete button
     const stopDeleteButton = document.createElement('button');
     stopDeleteButton.className = 'branch-action-btn delete-btn';
     stopDeleteButton.innerHTML = '<i class="material-icons">stop</i>';
@@ -1974,6 +1983,8 @@ const buildBranchContext = (branchContainer) => {
  * @returns {HTMLElement} Branch element
  */
 const createBranchElement = (branchId, model, status = 'done', content = '') => {
+  logger.info(`Creating branch element - branchId: ${branchId}, model: ${model.name || model.id || 'unknown'}, status: ${status}`);
+  
   const branchDiv = document.createElement('div');
   branchDiv.className = 'message-branch';
   branchDiv.setAttribute('data-branch-id', branchId);
@@ -1986,6 +1997,7 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
   
   if (status === 'loading') {
     branchDiv.setAttribute('data-streaming', 'true');
+    logger.debug(`Branch element ${branchId} marked as streaming`);
     const loadingContainer = document.createElement('div');
     loadingContainer.className = 'loading-container';
     loadingContainer.innerHTML = '<div class="spinner"></div>';
@@ -2037,14 +2049,14 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
   actionsDiv.className = 'branch-actions';
   
   const branchButton = document.createElement('button');
-  branchButton.className = 'btn-base message-action-btn branch-btn';
+  branchButton.className = 'branch-action-btn branch-btn';
   branchButton.innerHTML = '<i class="material-icons">call_split</i>';
   branchButton.title = i18n.getMessage('branch_add');
   branchButton.setAttribute('data-action', 'branch');
   branchButton.setAttribute('data-branch-id', branchId);
   
   const deleteButton = document.createElement('button');
-  deleteButton.className = 'btn-base message-action-btn delete-btn';
+  deleteButton.className = 'branch-action-btn delete-btn';
   if (status === 'loading') {
     deleteButton.innerHTML = '<i class="material-icons">stop</i>';
     deleteButton.title = i18n.getMessage('branch_stopAndDelete');
@@ -2056,8 +2068,9 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
   }
   deleteButton.setAttribute('data-branch-id', branchId);
   
-  // In loading state, only keep "stop and delete" button
+  // In loading state, show both branch and stop-delete buttons; in done state, show both as well
   if (status === 'loading') {
+    actionsDiv.appendChild(branchButton);
     actionsDiv.appendChild(deleteButton);
   } else {
     actionsDiv.appendChild(branchButton);

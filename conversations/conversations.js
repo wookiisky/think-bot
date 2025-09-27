@@ -1124,7 +1124,7 @@ function showErrorState(errorMessage) {
  */
 function setupMessageListeners() {
   MessageHandler.setupMessageListeners({
-    onStreamChunk: (chunk, tabId, url) => {
+    onStreamChunk: (chunk, tabId, url, branchId) => {
       // Only process stream chunks for the current URL and active tab
       const activeTabId = TabManager.getActiveTabId();
 
@@ -1134,14 +1134,14 @@ function setupMessageListeners() {
           streamMonitor.updateStream(currentStreamId, chunk);
         }
 
-        ChatManager.handleStreamChunk(window.conversationsElements.chatContainer, chunk, tabId, url);
-        logger.debug(`Stream chunk processed for conversations page tab ${tabId}`);
+        ChatManager.handleStreamChunk(window.conversationsElements.chatContainer, chunk, tabId, url, branchId);
+        logger.debug(`Stream chunk processed for conversations page tab ${tabId}${branchId ? ` branch ${branchId}` : ''}`);
       } else {
         logger.debug(`Stream chunk ignored - URL mismatch (${url} vs ${currentUrl}) or tab mismatch (${tabId} vs ${activeTabId})`);
       }
     },
     
-    onStreamEnd: (fullResponse, finishReason, isAbnormalFinish, tabId, url) => {
+    onStreamEnd: (fullResponse, finishReason, isAbnormalFinish, tabId, url, branchId) => {
       // Always update tab loading state regardless of which tab is currently active
       if (url === currentUrl) {
         // Update tab loading state to not loading
@@ -1175,10 +1175,11 @@ function setupMessageListeners() {
           finishReason,
           isAbnormalFinish,
           tabId,
-          url
+          url,
+          branchId
         );
         
-        logger.info(`Stream ended for conversations page tab ${tabId}`);
+        logger.info(`Stream ended for conversations page tab ${tabId}${branchId ? ` branch ${branchId}` : ''}, response length: ${fullResponse?.length || 0}`);
       } else {
         logger.debug(`Stream end content processing ignored - URL mismatch (${url} vs ${currentUrl}) or tab mismatch (${tabId} vs ${activeTabId}), but tab loading state updated`);
       }
