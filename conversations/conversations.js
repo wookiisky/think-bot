@@ -1278,7 +1278,10 @@ function setupMessageListeners() {
               window.conversationsElements.sendBtn.disabled = false;
             },
             finishReason,
-            isAbnormalFinish
+            isAbnormalFinish,
+            tabId,
+            url,
+            message.branchId
           );
         } else if (status === 'error' && error) {
           // Handle error response
@@ -1291,9 +1294,9 @@ function setupMessageListeners() {
               window.conversationsElements.sendBtn.disabled = false;
             },
             message.errorDetails,
-            null, // tabId
-            null, // url
-            message.branchId // Pass branchId for proper branch error handling
+            tabId,
+            url,
+            message.branchId
           );
         } else if (status === 'cancelled') {
           // Handle cancelled response
