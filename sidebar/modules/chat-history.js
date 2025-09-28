@@ -355,8 +355,9 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
             branchDiv.setAttribute('data-streaming', 'true');
             const loadingContainer = document.createElement('div');
             loadingContainer.className = 'loading-container';
-            loadingContainer.innerHTML = '<div class="spinner"></div>';
+            // No inner spinner; border loader is handled by CSS on the branch
             contentDiv.appendChild(loadingContainer);
+            logger.debug(`History restore uses border loader (no spinner) for branch ${response.branchId}`);
           } else if (response.status === 'error') {
             // Error state
             branchDiv.classList.add('error-message');
@@ -759,8 +760,8 @@ const handleStopAndDeleteBranch = (branchId) => {
   if (window.confirmationDialog) {
     window.confirmationDialog.show({
       target: stopDeleteBtn,
-      message: i18n.getMessage('branch_confirmStopAndDelete') || i18n.getMessage('branch_confirmDelete'),
-      confirmText: i18n.getMessage('common_stop_and_delete') || i18n.getMessage('common_delete'),
+      message: i18n.getMessage('branch_confirmDelete'),
+      confirmText: i18n.getMessage('common_delete'),
       cancelText: i18n.getMessage('common_cancel'),
       type: 'danger',
       onConfirm: () => {

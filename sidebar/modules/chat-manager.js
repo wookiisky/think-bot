@@ -1256,8 +1256,9 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
 
     const loadingContainer = document.createElement('div');
     loadingContainer.className = 'loading-container';
-    loadingContainer.innerHTML = '<div class="spinner"></div>';
+    // Use border loader on the branch itself; no inner spinner element
     contentDiv.appendChild(loadingContainer);
+    logger.debug(`Branch ${localBranchId} uses border loader (no spinner)`);
 
     // Add model label to top of branch (only show model name)
     const modelLabel = document.createElement('div');
@@ -1497,7 +1498,7 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
 
     const loadingContainer = document.createElement('div');
     loadingContainer.className = 'loading-container';
-    loadingContainer.innerHTML = '<div class="spinner"></div>';
+    // No inner spinner; border loader is handled by CSS on the branch
     contentDiv.appendChild(loadingContainer);
 
     // Model label at the top of branch (name only)
@@ -1552,7 +1553,7 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     assistantLoadingMessage = appendMessageToUI(
       chatContainer,
       'assistant',
-      '<div class="loading-container"><div class="spinner"></div></div>',
+      '<div class="loading-container"></div>',
       null,
       false, // Use false to avoid legacy warning
       Date.now()
@@ -2120,8 +2121,9 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
     logger.debug(`Branch element ${branchId} marked as streaming`);
     const loadingContainer = document.createElement('div');
     loadingContainer.className = 'loading-container';
-    loadingContainer.innerHTML = '<div class="spinner"></div>';
+    // No inner spinner; border loader is handled by CSS on the branch
     contentDiv.appendChild(loadingContainer);
+    logger.debug(`Branch ${branchId} uses border loader (no spinner)`);
   } else if (status === 'error') {
     branchDiv.classList.add('error-message');
     const errorContainer = document.createElement('div');

@@ -703,8 +703,54 @@
 
 /* Branch status styles */
 .message-branch[data-streaming="true"] {
-  border-color: var(--primary-color);
+  border-color: transparent;
   background-color: var(--loading-bg, rgba(0, 123, 255, 0.05));
+}
+
+/* Branch loading border animation (tab-like line loader around full border) */
+.message-branch[data-streaming="true"]::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  bottom: -1px;
+  left: -1px;
+  padding: 2px; /* Loader thickness */
+  /* Conic gradient ring; phase animates clockwise via CSS variable (no element rotation) */
+  background: conic-gradient(from var(--branch-angle, 0deg),
+    #FFB6C1 0deg,
+    #FFA500 90deg,
+    #32CD32 180deg,
+    #FFA500 270deg,
+    #FFB6C1 360deg
+  );
+  /* Mask out the center to keep only the border ring */
+  -webkit-mask: 
+    linear-gradient(#000 0 0) content-box, 
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  border-radius: 0;
+  pointer-events: none;
+  z-index: 1;
+  will-change: background;
+  animation: branchBorderAngle 5s linear infinite; /* Match tab speed */
+}
+
+/* Register angle variable for smooth animation */
+@property --branch-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes branchBorderAngle {
+  to { --branch-angle: 360deg; }
+}
+
+/* Ensure legacy spinner is hidden for branch loading */
+.message-branch[data-streaming="true"] .spinner {
+  display: none !important;
 }
 
 .message-branch.error-message {
@@ -923,7 +969,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 60px;
+  min-height: 28px; /* Reduced from 60px for compact UI */
   gap: 12px;
 }
 
@@ -1028,7 +1074,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
+  min-height: 24px; /* Reduced from 40px for compact streaming UI */
   gap: 8px;
 }
 

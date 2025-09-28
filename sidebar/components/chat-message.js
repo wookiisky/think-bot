@@ -300,8 +300,9 @@ const retryMessage = (messageElement, retryCallback) => {
         contentDiv.setAttribute('data-raw-content', '');
         const loadingContainer = document.createElement('div');
         loadingContainer.className = 'loading-container';
-        loadingContainer.innerHTML = '<div class="spinner"></div>';
+        // No inner spinner; border loader is handled by CSS on the branch
         contentDiv.appendChild(loadingContainer);
+        logger.debug(`Retry branch ${retryBranchId} uses border loader (no spinner)`);
         
         // Add model label to top of branch
         const modelLabel = document.createElement('div');

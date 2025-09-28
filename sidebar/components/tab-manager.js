@@ -1018,8 +1018,9 @@ const checkAndRestoreLoadingState = async (currentUrl, tabId, chatContainer) => 
               // Create loading container
               const loadingContainer = document.createElement('div');
               loadingContainer.className = 'loading-container';
-              loadingContainer.innerHTML = '<div class="spinner"></div>';
+              // No inner spinner; border loader is handled by CSS on the branch
               contentDiv.appendChild(loadingContainer);
+              logger.debug(`Tab ${tabId} restore uses border loader (no spinner) for branch ${branchId}`);
               
               // Create model label
               const modelLabel = document.createElement('div');
