@@ -92,25 +92,28 @@ export class ModelManager {
 
     div.innerHTML = `
       <div class="model-item-header">
-        <div class="model-header-left">
+        <div class="col col-drag">
           <div class="drag-handle">
             <i class="material-icons">drag_indicator</i>
           </div>
-          <div class="model-summary">
-            <span class="model-summary-name">${displayName}</span>
-            <div class="model-summary-meta">
-              <span class="model-summary-provider">${providerLabel}</span>
-              <span class="model-summary-divider">•</span>
-              <span class="model-summary-model">${modelIdentifier}</span>
-            </div>
-          </div>
         </div>
-        <div class="model-header-actions">
+        <div class="col col-name">
+          <span class="model-summary-name">${displayName}</span>
+        </div>
+        <div class="col col-provider">
+          <span class="model-summary-provider">${providerLabel}</span>
+        </div>
+        <div class="col col-model">
+          <span class="model-summary-model">${modelIdentifier}</span>
+        </div>
+        <div class="col col-enabled">
           <label class="toggle-switch">
             <input type="checkbox" ${model.enabled ? 'checked' : ''}
                    data-model-index="${index}" class="model-toggle">
             <span class="slider round"></span>
           </label>
+        </div>
+        <div class="col col-actions">
           <button type="button" class="copy-model-btn icon-btn secondary"
                   data-model-index="${index}" data-i18n-title="common_copy" title="Copy Model">
             <i class="material-icons">content_copy</i>
@@ -119,16 +122,12 @@ export class ModelManager {
                   data-model-index="${index}" data-i18n-title="common_remove" title="Remove Model">
             <i class="material-icons">delete</i>
           </button>
-          <button type="button" class="model-expand-btn icon-btn secondary"
-                  data-model-index="${index}" data-model-id="${modelId}"
-                  data-i18n-title="options_model_toggle_details" title="Toggle Details"
-                  aria-expanded="${isExpanded}">
-            <i class="material-icons">expand_more</i>
-          </button>
+          
         </div>
       </div>
       <div class="model-details">
         <div class="model-form">
+          <!-- Unified into a single grid to avoid multiple rows -->
           <div class="form-grid">
             <div class="floating-label-field">
               <input type="text" class="model-name-input" id="model-name-${index}" value="${model.name || ''}"
@@ -145,11 +144,7 @@ export class ModelManager {
               </select>
               <label for="model-provider-${index}" class="floating-label" data-i18n="options_model_provider_label">Provider</label>
             </div>
-          </div>
-          <div class="form-grid model-specific-fields" id="model-specific-${index}">
             ${this.renderModelSpecificFields(model, index)}
-          </div>
-          <div class="form-grid">
             <div class="floating-label-field">
               <input type="number" class="model-max-tokens" id="model-max-tokens-${index}" value="${model.maxTokens || 2048}"
                      data-model-index="${index}" data-field="maxTokens"
@@ -166,6 +161,7 @@ export class ModelManager {
         </div>
       </div>
     `;
+    try { logger.debug(`Rendered model item ${modelId} with unified form-grid`); } catch (_) {}
     return div;
   }
 
@@ -179,7 +175,8 @@ export class ModelManager {
   ensureExpandedState(model, index) {
     const modelId = this.getModelId(model, index);
     if (!this.expandedStates.has(modelId)) {
-      this.expandedStates.set(modelId, true);
+      // Default collapsed for all models
+      this.expandedStates.set(modelId, false);
     }
     return this.expandedStates.get(modelId);
   }
@@ -203,6 +200,9 @@ export class ModelManager {
       button.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
     }
     this.setModelExpanded(modelId, isExpanded);
+    try {
+      logger.info(`Toggle model details -> id: ${modelId}, state: ${isExpanded ? 'expanded' : 'collapsed'}`);
+    } catch (_) {}
   }
 
   updateModelSummary(index) {
@@ -944,6 +944,25 @@ export class ModelManager {
       const target = e.target;
       const modelItem = target.closest('.model-config-item');
       if (!modelItem) return;
+
+      // Header click should toggle expand/collapse (excluding interactive elements)
+      const header = target.closest('.model-item-header');
+      const isInteractive = !!(
+        target.closest('button') ||
+        target.closest('input') ||
+        target.closest('select') ||
+        target.closest('label') ||
+        target.closest('.toggle-switch') ||
+        target.closest('.copy-model-btn') ||
+        target.closest('.remove-model-btn') ||
+        target.closest('.dropdown-toggle')
+      );
+      if (header && !isInteractive) {
+        e.preventDefault();
+        const modelIdFromHeader = modelItem.dataset.modelId;
+        this.toggleModelDetails(modelIdFromHeader);
+        return;
+      }
 
       const expandButton = target.classList.contains('model-expand-btn')
         ? target

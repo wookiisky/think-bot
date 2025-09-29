@@ -192,8 +192,18 @@
                   </button>
                 </div>
                 <div class="models-section">
-                  <div id="modelsContainer" class="models-container vertical-layout">
-                    <!-- Model configurations will be added here dynamically -->
+                  <div class="models-table">
+                    <div class="models-table-header">
+                      <div class="col col-drag"></div>
+                      <div class="col col-name" data-i18n="options_model_display_name_label">Display Name</div>
+                      <div class="col col-provider" data-i18n="options_model_provider_label">Provider</div>
+                      <div class="col col-model" data-i18n="common_model">Model</div>
+                      <div class="col col-enabled"></div>
+                      <div class="col col-actions"></div>
+                    </div>
+                    <div id="modelsContainer" class="models-container table-body">
+                      <!-- Model configurations will be added here dynamically -->
+                    </div>
                   </div>
                 </div>
               </section>
@@ -249,11 +259,6 @@
                   <div class="floating-label-field">
                     <input type="password" id="webdavPassword" name="webdavPassword" placeholder=" ">
                     <label for="webdavPassword" class="floating-label" data-i18n="options_webdav_password_label">Password</label>
-                  </div>
-
-                  <div class="floating-label-field">
-                    <input type="text" id="webdavDirectory" name="webdavDirectory" placeholder=" ">
-                    <label for="webdavDirectory" class="floating-label" data-i18n="options_webdav_directory_label">Directory (Optional)</label>
                   </div>
 
                 </div>
