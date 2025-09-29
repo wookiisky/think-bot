@@ -2014,8 +2014,7 @@ const createBranch = async (originalBranchId, model) => {
     // Check if there are 3 or more branches and update CSS class
     updateBranchContainerStyle(branchesContainer);
     
-    // Scroll to new branch
-    newBranchDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    logger.debug('Auto-scroll on branch creation is disabled');
     
     // Update chat history
     const chatHistory = getChatHistoryFromDOM(chatContainer);
