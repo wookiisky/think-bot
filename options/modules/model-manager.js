@@ -14,6 +14,7 @@ export class ModelManager {
     this.models = [];
     this.changeCallback = changeCallback;
     this.globalEventListenersAdded = false;
+    this.expandedStates = new Map();
   }
 
   // Initialize model configurations
@@ -74,18 +75,37 @@ export class ModelManager {
   // Create a single model configuration element
   createModelElement(model, index) {
     const div = document.createElement('div');
+    const modelId = this.getModelId(model, index);
+    const isExpanded = this.ensureExpandedState(model, index);
+
     div.className = `model-config-item ${!model.enabled ? 'disabled' : ''}`;
     div.dataset.index = index;
+    div.dataset.modelId = modelId;
 
-    // Create card layout with header and form content
+    if (isExpanded) {
+      div.classList.add('expanded');
+    }
+
+    const displayName = this.escapeHtml(model.name || i18n.getMessage('options_model_unnamed') || 'Model');
+    const providerLabel = this.escapeHtml(this.getProviderLabel(model.provider));
+    const modelIdentifier = this.escapeHtml(this.getModelIdentifier(model));
+
     div.innerHTML = `
-      <div class="model-card-header">
-        <div class="drag-handle-column">
+      <div class="model-item-header">
+        <div class="model-header-left">
           <div class="drag-handle">
             <i class="material-icons">drag_indicator</i>
           </div>
+          <div class="model-summary">
+            <span class="model-summary-name">${displayName}</span>
+            <div class="model-summary-meta">
+              <span class="model-summary-provider">${providerLabel}</span>
+              <span class="model-summary-divider">•</span>
+              <span class="model-summary-model">${modelIdentifier}</span>
+            </div>
+          </div>
         </div>
-        <div class="model-actions-column">
+        <div class="model-header-actions">
           <label class="toggle-switch">
             <input type="checkbox" ${model.enabled ? 'checked' : ''}
                    data-model-index="${index}" class="model-toggle">
@@ -99,9 +119,15 @@ export class ModelManager {
                   data-model-index="${index}" data-i18n-title="common_remove" title="Remove Model">
             <i class="material-icons">delete</i>
           </button>
+          <button type="button" class="model-expand-btn icon-btn secondary"
+                  data-model-index="${index}" data-model-id="${modelId}"
+                  data-i18n-title="options_model_toggle_details" title="Toggle Details"
+                  aria-expanded="${isExpanded}">
+            <i class="material-icons">expand_more</i>
+          </button>
         </div>
       </div>
-      <div class="model-details-column">
+      <div class="model-details">
         <div class="model-form">
           <div class="form-grid">
             <div class="floating-label-field">
@@ -141,6 +167,98 @@ export class ModelManager {
       </div>
     `;
     return div;
+  }
+
+  getModelId(model, index) {
+    if (model && model.id) {
+      return model.id;
+    }
+    return `model-${index}`;
+  }
+
+  ensureExpandedState(model, index) {
+    const modelId = this.getModelId(model, index);
+    if (!this.expandedStates.has(modelId)) {
+      this.expandedStates.set(modelId, true);
+    }
+    return this.expandedStates.get(modelId);
+  }
+
+  setModelExpanded(modelId, expanded) {
+    if (modelId) {
+      this.expandedStates.set(modelId, expanded);
+    }
+  }
+
+  toggleModelDetails(modelId) {
+    if (!modelId) return;
+    const container = this.domElements.modelsContainer;
+    if (!container) return;
+    const modelItem = container.querySelector(`.model-config-item[data-model-id="${modelId}"]`);
+    if (!modelItem) return;
+    const isExpanded = !modelItem.classList.contains('expanded');
+    modelItem.classList.toggle('expanded', isExpanded);
+    const button = modelItem.querySelector('.model-expand-btn');
+    if (button) {
+      button.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+    }
+    this.setModelExpanded(modelId, isExpanded);
+  }
+
+  updateModelSummary(index) {
+    const model = this.models[index];
+    if (!model) return;
+    const container = this.domElements.modelsContainer;
+    if (!container) return;
+    const modelItem = container.querySelector(`.model-config-item[data-index="${index}"]`);
+    if (!modelItem) return;
+
+    const nameEl = modelItem.querySelector('.model-summary-name');
+    if (nameEl) {
+      nameEl.textContent = model.name || i18n.getMessage('options_model_unnamed') || 'Model';
+    }
+
+    const providerEl = modelItem.querySelector('.model-summary-provider');
+    if (providerEl) {
+      providerEl.textContent = this.getProviderLabel(model.provider);
+    }
+
+    const modelLabelEl = modelItem.querySelector('.model-summary-model');
+    if (modelLabelEl) {
+      modelLabelEl.textContent = this.getModelIdentifier(model);
+    }
+  }
+
+  getProviderLabel(provider) {
+    switch (provider) {
+      case 'gemini':
+        return i18n.getMessage('options_model_provider_gemini') || 'Google Gemini';
+      case 'azure_openai':
+        return i18n.getMessage('optionsAzureOpenAIProvider') || 'Azure OpenAI';
+      case 'openai':
+      default:
+        return i18n.getMessage('options_model_provider_openai') || 'OpenAI Compatible';
+    }
+  }
+
+  getModelIdentifier(model) {
+    if (!model) return '—';
+    if (model.provider === 'azure_openai') {
+      return model.deploymentName || '—';
+    }
+    return model.model || '—';
+  }
+
+  escapeHtml(value) {
+    if (value === null || value === undefined) {
+      return '';
+    }
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   // Render model-specific fields
@@ -514,6 +632,9 @@ export class ModelManager {
         if (field === 'name') {
           this.updateDefaultModelSelector();
         }
+        if (field === 'name' || field === 'model' || field === 'deploymentName') {
+          this.updateModelSummary(index);
+        }
         logger.info(`Updated model ${index} field ${field}: ${value}`);
         if (this.changeCallback) {
           this.changeCallback();
@@ -823,6 +944,16 @@ export class ModelManager {
       const target = e.target;
       const modelItem = target.closest('.model-config-item');
       if (!modelItem) return;
+
+      const expandButton = target.classList.contains('model-expand-btn')
+        ? target
+        : target.closest('.model-expand-btn');
+      if (expandButton) {
+        e.preventDefault();
+        const modelId = expandButton.dataset.modelId || modelItem.dataset.modelId;
+        this.toggleModelDetails(modelId);
+        return;
+      }
 
       // Determine model index from the containing item
       const index = parseInt(modelItem.dataset.index, 10);

@@ -13,24 +13,18 @@
 }
 
 .models-container.vertical-layout {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-}
-
-.models-container.vertical-layout .model-config-item {
-  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
 }
 
 .model-config-item {
-  display: flex;
-  flex-direction: column;
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
-  margin-bottom: 0;
-  transition: all var(--transition-normal) ease;
-  padding: 0.75rem;
   box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal) ease;
+  overflow: hidden;
+  border-radius: 8px;
 }
 
 .model-config-item:hover {
@@ -38,70 +32,124 @@
   border-color: var(--border-color-hover);
 }
 
-.model-config-item.disabled .model-details-column {
+.model-config-item.disabled .model-details {
   opacity: 0.5;
   pointer-events: none;
 }
 
-/* When a model is disabled we still want the action controls (toggle/remove)
-   to be clickable so the user can re-enable or remove the entry. The global
-   `.disabled { pointer-events: none }` rule (in base.css) would block clicks
-   for the whole item; override it here for the actions column only. */
-.model-config-item.disabled .model-actions-column {
-  pointer-events: auto; /* allow click events on actions */
+.model-config-item.disabled .model-header-actions {
+  pointer-events: auto;
 }
 
-.model-config-item.disabled .model-actions-column .model-toggle,
-.model-config-item.disabled .model-actions-column .remove-model-btn {
-  pointer-events: auto; /* ensure the inner controls are interactive */
+.model-config-item.disabled .model-header-actions .model-toggle,
+.model-config-item.disabled .model-header-actions .remove-model-btn,
+.model-config-item.disabled .model-header-actions .model-expand-btn {
+  pointer-events: auto;
 }
 
-/* Model card header row with handle and actions */
-.model-card-header {
+.model-item-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.35rem;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
   border-bottom: 1px solid var(--divider-color);
 }
 
-.drag-handle-column {
+.model-header-left {
   display: flex;
   align-items: center;
-  cursor: grab;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
 }
 
-.drag-handle-column .drag-handle {
+.drag-handle {
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  padding: 0.25rem;
+  justify-content: center;
+  padding: 0.35rem;
+  border-radius: 6px;
+  cursor: grab;
   transition: all var(--transition-normal) ease;
 }
 
-.drag-handle-column .drag-handle:hover {
+.drag-handle:hover {
   background-color: var(--hover-color);
   color: var(--primary-color);
 }
 
-.drag-handle-column .drag-handle .material-icons {
+.drag-handle .material-icons {
   font-size: 18px;
 }
 
-/* Model actions column */
-.model-actions-column {
+.model-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.model-summary-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.model-summary-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+.model-summary-divider {
+  opacity: 0.4;
+}
+
+.model-summary-model {
+  max-width: 320px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.model-header-actions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-/* Model details column */
-.model-details-column {
-  flex: 1;
+.model-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-normal) ease;
 }
 
-/* Model form */
+.model-expand-btn .material-icons {
+  transition: transform var(--transition-normal) ease;
+}
+
+.model-config-item.expanded .model-expand-btn .material-icons {
+  transform: rotate(180deg);
+}
+
+.model-details {
+  display: none;
+  padding: 0.75rem 1rem 1rem 1rem;
+}
+
+.model-config-item.expanded .model-details {
+  display: block;
+}
+
 .model-form {
   width: 100%;
 }
