@@ -32,6 +32,7 @@ import * as PageDataManager from './modules/page-data-manager.js';
 import * as EventHandler from './modules/event-handler.js';
 import { ModelSelector } from './modules/model-selector.js';
 import { confirmationOverlay } from './components/confirmation-overlay.js';
+import { messagePreviewOverlay } from './components/message-preview-overlay.js';
 import { confirmationDialog } from '../js/modules/ui/confirmation-dialog.js';
 
 // Create logger
@@ -50,6 +51,7 @@ window.ImageHandler = ImageHandler;
 window.ChatManager = ChatManager;
 window.confirmationDialog = confirmationDialog;
 window.TabManager = TabManager;
+window.messagePreviewOverlay = messagePreviewOverlay;
 
 // Initialize when DOM elements are loaded
 document.addEventListener('DOMContentLoaded', async () => {
@@ -73,6 +75,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Initialize confirmation dialog
   confirmationDialog.init();
+
+  // Initialize message preview overlay
+  messagePreviewOverlay.init();
 
   // Page data loading will be triggered by handleSidebarOpened message from background
   // This ensures proper blacklist checking before loading content

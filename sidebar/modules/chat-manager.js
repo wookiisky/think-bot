@@ -3,6 +3,7 @@
  */
 
 import { i18n } from '../../js/modules/i18n.js';
+import { messagePreviewOverlay } from '../components/message-preview-overlay.js';
 import { createLogger, hasMarkdownElements, showCopyToast } from './utils.js';
 import { editMessage, retryMessage } from '../components/chat-message.js';
 import { displayChatHistory as displayChatHistoryFromModule, getChatHistoryFromDOM } from './chat-history.js';
@@ -694,6 +695,32 @@ const handleStreamEnd = async (chatContainer, fullResponse, onComplete, finishRe
     copyMarkdownButton.onclick = () => copyMessageMarkdown(streamingMessageContainer);
 
     if (isBranch) {
+      // Preview button (first in group)
+      const previewButton = document.createElement('button');
+      previewButton.className = 'btn-base message-action-btn';
+      previewButton.innerHTML = '<i class="material-icons">visibility</i>';
+      previewButton.title = i18n.getMessage('sidebar_chatManager_title_preview') || 'Preview';
+      previewButton.onclick = () => {
+        try {
+          const contentDiv = streamingMessageContainer.querySelector('.message-content');
+          const raw = contentDiv?.getAttribute('data-raw-content') || contentDiv?.textContent || '';
+          let html = '';
+          if (raw && window.marked && typeof window.marked.parse === 'function') {
+            try {
+              html = window.marked.parse(raw);
+            } catch (e) {
+              html = raw.replace(/\n/g, '<br>');
+            }
+          } else {
+            html = contentDiv?.innerHTML || '';
+          }
+          const modelName = streamingMessageContainer.getAttribute('data-model') || 'assistant';
+          messagePreviewOverlay.show({ html, title: modelName });
+          logger.info('Opened message preview via button for branch', streamingMessageContainer.getAttribute('data-branch-id'));
+        } catch (err) {
+          logger.error('Failed to open message preview via button:', err);
+        }
+      };
       // Remove any top-right actions from loading phase
       const existingActions = streamingMessageContainer.querySelector('.branch-actions');
       if (existingActions) existingActions.remove();
@@ -713,8 +740,8 @@ const handleStreamEnd = async (chatContainer, fullResponse, onComplete, finishRe
       deleteButton.setAttribute('data-action', 'delete');
       deleteButton.setAttribute('data-branch-id', streamingMessageContainer.getAttribute('data-branch-id'));
 
-      // Order: top, bottom, copy text, copy MD, create branch, delete branch
-      const buttons = [scrollTopButton, scrollBottomButton, copyTextButton, copyMarkdownButton, branchButton, deleteButton];
+      // Order: preview (topmost), top, bottom, copy text, copy MD, create branch, delete branch
+      const buttons = [previewButton, scrollTopButton, scrollBottomButton, copyTextButton, copyMarkdownButton, branchButton, deleteButton];
       layoutMessageButtons(buttonContainer, buttons, streamingMessageContainer);
       streamingMessageContainer.appendChild(buttonContainer);
     } else {

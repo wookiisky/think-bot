@@ -437,9 +437,37 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
 
             branchDiv.appendChild(actionsDiv);
           } else {
-            // Non-loading: add branch-level floating button group, including create/delete buttons
+            // Non-loading: add branch-level floating button group, including preview/create/delete buttons
             const buttonContainer = document.createElement('div');
             buttonContainer.className = 'message-buttons';
+
+            // Preview button (first in group)
+            const previewButton = document.createElement('button');
+            previewButton.className = 'btn-base message-action-btn';
+            previewButton.innerHTML = '<i class="material-icons">visibility</i>';
+            previewButton.title = i18n.getMessage('sidebar_chatManager_title_preview') || 'Preview';
+            previewButton.onclick = () => {
+              try {
+                const raw = contentDiv.getAttribute('data-raw-content') || contentDiv.textContent || '';
+                let html = '';
+                if (raw && window.marked && typeof window.marked.parse === 'function') {
+                  try {
+                    html = window.marked.parse(raw);
+                  } catch (e) {
+                    html = raw.replace(/\n/g, '<br>');
+                  }
+                } else {
+                  html = contentDiv.innerHTML || '';
+                }
+                const modelName = branchDiv.getAttribute('data-model') || 'assistant';
+                if (window.messagePreviewOverlay && typeof window.messagePreviewOverlay.show === 'function') {
+                  window.messagePreviewOverlay.show({ html, title: modelName });
+                }
+                logger.info('Opened message preview via button for history branch', response.branchId);
+              } catch (err) {
+                logger.error('Failed to open message preview via button (history):', err);
+              }
+            };
 
             // Scroll to top
             const scrollTopButton = document.createElement('button');
@@ -503,8 +531,8 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
             deleteButton.setAttribute('data-action', 'delete');
             deleteButton.setAttribute('data-branch-id', response.branchId);
 
-            // Order: top, bottom, copy text, copy Markdown, create branch, delete branch
-            const buttons = [scrollTopButton, scrollBottomButton, copyTextButton, copyMarkdownButton, branchButton, deleteButton];
+            // Order: preview, top, bottom, copy text, copy Markdown, create branch, delete branch
+            const buttons = [previewButton, scrollTopButton, scrollBottomButton, copyTextButton, copyMarkdownButton, branchButton, deleteButton];
 
             // Use existing layout tools to adapt to floating/responsive
             if (window.ChatManager && window.ChatManager.layoutMessageButtons) {

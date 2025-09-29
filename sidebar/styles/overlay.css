@@ -1,7 +1,8 @@
 /* Universal Confirmation Overlay Styles - Modern Flat Design */
 
 .confirmation-overlay,
-.blacklist-overlay {
+.blacklist-overlay,
+.message-preview-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -16,7 +17,8 @@
 }
 
 .confirmation-overlay.visible,
-.blacklist-overlay.visible {
+.blacklist-overlay.visible,
+.message-preview-overlay.visible {
   opacity: 1;
 }
 
@@ -45,7 +47,8 @@
 }
 
 .confirmation-overlay.visible .overlay-content,
-.blacklist-overlay.visible .overlay-content {
+.blacklist-overlay.visible .overlay-content,
+.message-preview-overlay.visible .overlay-content {
   transform: translateY(0);
 }
 
@@ -65,7 +68,9 @@
   gap: 8px;
 }
 
-.overlay-header h3::before {
+/* Only show warning icon for confirmation/blacklist overlays */
+.confirmation-overlay .overlay-header h3::before,
+.blacklist-overlay .overlay-header h3::before {
   content: '⚠️';
   font-size: 18px;
 }
@@ -173,7 +178,8 @@
 
 /* Dark theme support */
 [data-theme="dark"] .confirmation-overlay,
-[data-theme="dark"] .blacklist-overlay {
+[data-theme="dark"] .blacklist-overlay,
+[data-theme="dark"] .message-preview-overlay {
   --bg-color: #1f1f1f;
   --text-color: #e8eaed;
   --text-secondary: #9aa0a6;
@@ -224,7 +230,8 @@
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   .confirmation-overlay,
-  .blacklist-overlay {
+  .blacklist-overlay,
+  .message-preview-overlay {
     --btn-secondary-bg: #ffffff;
     --btn-secondary-text: #000000;
     --btn-primary-bg: #0000ff;
@@ -238,6 +245,7 @@
 @media (prefers-reduced-motion: reduce) {
   .confirmation-overlay,
   .blacklist-overlay,
+  .message-preview-overlay,
   .overlay-content,
   .overlay-actions button {
     transition: none;
@@ -246,7 +254,39 @@
 
 /* Focus management for accessibility */
 .confirmation-overlay:focus-within .overlay-content,
-.blacklist-overlay:focus-within .overlay-content {
+.blacklist-overlay:focus-within .overlay-content,
+.message-preview-overlay:focus-within .overlay-content {
   outline: 2px solid var(--focus-color, #4285f4);
   outline-offset: 2px;
+}
+
+/* Larger content area for message preview */
+.message-preview-overlay .overlay-content {
+  max-width: 600px; /* reduced by 25% from 800px */
+  width: 69%; /* reduced by 25% from 92% */
+}
+
+.message-preview-overlay .overlay-body {
+  max-height: 85vh; /* Increased height per requirement */
+  overflow: auto;
+  background-color: var(--assistant-msg-bg);
+}
+
+/* Tighter header for preview, centered title, no icon */
+.message-preview-overlay .overlay-header {
+  padding: 10px 12px 8px 12px;
+  background: var(--bg-color);
+}
+
+.message-preview-overlay .overlay-header h3 {
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 0;
+}
+
+.message-preview-overlay .overlay-header h3::before {
+  content: none;
 }

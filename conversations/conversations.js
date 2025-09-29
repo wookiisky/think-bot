@@ -36,6 +36,8 @@ import { PageListManager } from './modules/page-list-manager.js';
 import { createConversationsExportHandler } from '../sidebar/modules/export-utils.js';
 // Import MiniConfirmation component from sidebar
 import { confirmationDialog } from '../js/modules/ui/confirmation-dialog.js';
+// Import message preview overlay from sidebar
+import { messagePreviewOverlay } from '../sidebar/components/message-preview-overlay.js';
 
 // TabManager imported successfully
 
@@ -57,6 +59,7 @@ window.ImageHandler = ImageHandler;
 window.ChatManager = ChatManager;
 window.TabManager = TabManager;
 window.confirmationDialog = confirmationDialog;
+window.messagePreviewOverlay = messagePreviewOverlay;
 
 // Initialize when DOM elements are loaded
 document.addEventListener('DOMContentLoaded', async () => {
@@ -101,6 +104,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Initialize confirmation dialog
     confirmationDialog.init();
+    // Initialize message preview overlay
+    messagePreviewOverlay.init();
     
     // Initialize page list manager with confirmation dialog
     pageListManager = new PageListManager(confirmationDialog);

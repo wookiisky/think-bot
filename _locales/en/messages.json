@@ -650,6 +650,9 @@
   "sidebar_chatManager_title_scrollToTop": {
     "message": "Scroll to Top"
   },
+  "sidebar_chatManager_title_preview": {
+    "message": "Preview"
+  },
   "sidebar_chatManager_title_stopGenerating": {
     "message": "Stop generating response"
   },

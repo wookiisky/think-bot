@@ -511,6 +511,7 @@ const setupMessageButtonsScroll = (chatContainer) => {
       updateButtonPosition(currentHoveredMessage, currentFloatingButtons);
     }
   });
+
 };
 
 /**
