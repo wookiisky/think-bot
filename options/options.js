@@ -23,6 +23,7 @@ class OptionsPage {
     this.hasUnsavedChanges = false;
     this.isAutoSyncing = false;
     this.isInitializing = true; // Add initialization flag to prevent accidental syncEnabled reset during page load
+    this.activeTab = 'basic';
     // Initialize ModelManager with change notification callback
     this.modelManager = new ModelManager(domElements, () => {
       this.markAsChanged();
@@ -55,6 +56,9 @@ class OptionsPage {
     // Set up event listeners
     this.setupEventListeners();
 
+    // Set up tab navigation
+    this.setupTabNavigation();
+
     // Apply initial theme if no config was loaded
     if (!this.domElements.theme.value) {
       this.applyTheme({ basic: { theme: 'system' } });
@@ -69,7 +73,51 @@ class OptionsPage {
     // Check for and display any caught errors
     this.displayCaughtError();
   }
-  
+
+  setupTabNavigation() {
+    this.tabButtons = Array.from(document.querySelectorAll('.tab-button'));
+    this.tabPanels = Array.from(document.querySelectorAll('.tab-panel'));
+
+    if (!this.tabButtons.length || !this.tabPanels.length) {
+      return;
+    }
+
+    this.tabButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const targetTab = button.dataset.tabTarget;
+        if (targetTab) {
+          this.switchTab(targetTab);
+        }
+      });
+    });
+
+    this.switchTab(this.activeTab);
+  }
+
+  switchTab(tabId) {
+    if (!this.tabButtons || !this.tabPanels) {
+      return;
+    }
+
+    const availableTabs = this.tabPanels.map(panel => panel.id.replace('tab-', ''));
+    const targetTab = availableTabs.includes(tabId) ? tabId : (availableTabs[0] || 'basic');
+    const targetPanelId = `tab-${targetTab}`;
+
+    this.tabButtons.forEach((button) => {
+      const isActive = button.dataset.tabTarget === targetTab;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+
+    this.tabPanels.forEach((panel) => {
+      const isActive = panel.id === targetPanelId;
+      panel.classList.toggle('active', isActive);
+      panel.toggleAttribute('hidden', !isActive);
+    });
+
+    this.activeTab = targetTab;
+  }
+
   // Load settings from storage and populate form
   async loadSettings() {
     const config = await UIConfigManager.loadSettings();

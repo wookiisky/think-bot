@@ -45,248 +45,274 @@
     
     <main>
       <form id="settingsForm">
-        <!-- Two Column Layout -->
-        <div class="main-content-wrapper">
-          <!-- Left Sidebar -->
-          <div class="left-sidebar">
-            
-            <!-- Default Model -->
-            <section class="settings-section sidebar-section">
-              <h2 data-i18n="options_basic_settings_title">Basic Settings</h2>
-              <div class="form-group cache-item-group">
-                <label data-i18n="options_cache_label">Local Data:</label>
-                <p><span id="totalCacheDisplay">0B</span></p>
-                <button type="button" id="clearAllCacheBtn" class="secondary-btn small-btn" data-i18n="common_clear">Clear</button>
-              </div>
-              <div class="floating-label-field">
-                <select id="defaultModelSelect" name="defaultModelSelect">
-                  <!-- Options will be populated dynamically -->
-                </select>
-                <label for="defaultModelSelect" class="floating-label" data-i18n="common_model">Model</label>
-              </div>
-            
-              <div class="floating-label-field">
-                <div class="custom-multi-select" id="branchModelSelect" name="branchModelSelect">
-                  <div class="multi-select-container">
-                    <div class="selected-items" id="selected-branch-models">
-                      <span class="no-models-selected"></span>
-                    </div>
-                    <div class="multi-select-dropdown">
-                      <button type="button" class="dropdown-toggle" id="branch-models-toggle">
-                        <i class="material-icons">arrow_drop_down</i>
-                      </button>
-                      <div class="dropdown-options" id="branch-models-dropdown">
-                        <!-- Options will be populated dynamically -->
+        <div class="tabbed-layout">
+          <div class="tab-list" role="tablist" aria-orientation="vertical">
+            <button type="button" class="tab-button active" role="tab" aria-selected="true" data-tab-target="basic">
+              <span data-i18n="options_basic_settings_title">Basic Settings</span>
+            </button>
+            <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab-target="quick-inputs">
+              <span data-i18n="options_quick_input_tabs_title">Quick Input Tabs</span>
+            </button>
+            <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab-target="models">
+              <span data-i18n="options_language_models_title">Language Models</span>
+            </button>
+            <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab-target="cloud-sync">
+              <span data-i18n="options_cloud_sync_title">Cloud Sync</span>
+            </button>
+            <button type="button" class="tab-button" role="tab" aria-selected="false" data-tab-target="blacklist">
+              <span data-i18n="options_blacklist_settings_title">Blacklist Settings</span>
+            </button>
+          </div>
+          <div class="tab-panels">
+            <section id="tab-basic" class="tab-panel active" role="tabpanel">
+              <section class="settings-section">
+                <div class="section-header">
+                  <h2 data-i18n="options_basic_settings_title">Basic Settings</h2>
+                </div>
+                <div class="form-group cache-item-group">
+                  <label data-i18n="options_cache_label">Local Data:</label>
+                  <p><span id="totalCacheDisplay">0B</span></p>
+                  <button type="button" id="clearAllCacheBtn" class="secondary-btn small-btn" data-i18n="common_clear">Clear</button>
+                </div>
+                <div class="floating-label-field">
+                  <select id="defaultModelSelect" name="defaultModelSelect">
+                    <!-- Options will be populated dynamically -->
+                  </select>
+                  <label for="defaultModelSelect" class="floating-label" data-i18n="common_model">Model</label>
+                </div>
+
+                <div class="floating-label-field">
+                  <div class="custom-multi-select" id="branchModelSelect" name="branchModelSelect">
+                    <div class="multi-select-container">
+                      <div class="selected-items" id="selected-branch-models">
+                        <span class="no-models-selected"></span>
+                      </div>
+                      <div class="multi-select-dropdown">
+                        <button type="button" class="dropdown-toggle" id="branch-models-toggle">
+                          <i class="material-icons">arrow_drop_down</i>
+                        </button>
+                        <div class="dropdown-options" id="branch-models-dropdown">
+                          <!-- Options will be populated dynamically -->
+                        </div>
                       </div>
                     </div>
                   </div>
+                  <label for="branchModelSelect" class="floating-label" data-i18n="common_branch_models">Branch Models</label>
                 </div>
-                <label for="branchModelSelect" class="floating-label" data-i18n="common_branch_models">Branch Models</label>
-              </div>
-            
-              <div class="floating-label-field">
-                <select id="theme" name="theme">
-                  <option value="light" data-i18n="options_theme_light">Light</option>
-                  <option value="dark" data-i18n="options_theme_dark">Dark</option>
-                  <option value="system" data-i18n="options_theme_system">System</option>
-                </select>
-                <label for="theme" class="floating-label" data-i18n="options_theme_label">Theme</label>
-              </div>
-            
-              <div class="floating-label-field">
-                <select id="languageSelector" name="language">
-                  <option value="en" data-i18n="options_language_english">English</option>
-                  <option value="zh_CN" data-i18n="options_language_chinese">简体中文</option>
-                  <!-- More languages can be added here -->
-                </select>
-                <label for="languageSelector" class="floating-label" data-i18n="options_language_label">Language</label>
-              </div>
-            
-              <div class="floating-label-field">
-                <textarea id="systemPrompt" name="systemPrompt" rows="3"></textarea>
-                <label for="systemPrompt" class="floating-label" data-i18n="options_system_prompt_label">System Prompt</label>
-              </div>
 
-              <div class="form-group">
-                <label class="toggle-switch-label" data-i18n-title="options_filter_cot_tooltip" title="When enabled, content before </think> tags will be filtered out during streaming output">
-                  <span class="toggle-switch">
-                    <input type="checkbox" id="filterCOT" name="filterCOT">
-                    <span class="slider"></span>
-                  </span>
-                  <span data-i18n="options_filter_cot_label">Filter COT (Chain of Thought) in streaming output</span>
-                </label>
-              </div>
+                <div class="floating-label-field">
+                  <select id="theme" name="theme">
+                    <option value="light" data-i18n="options_theme_light">Light</option>
+                    <option value="dark" data-i18n="options_theme_dark">Dark</option>
+                    <option value="system" data-i18n="options_theme_system">System</option>
+                  </select>
+                  <label for="theme" class="floating-label" data-i18n="options_theme_label">Theme</label>
+                </div>
+
+                <div class="floating-label-field">
+                  <select id="languageSelector" name="language">
+                    <option value="en" data-i18n="options_language_english">English</option>
+                    <option value="zh_CN" data-i18n="options_language_chinese">简体中文</option>
+                    <!-- More languages can be added here -->
+                  </select>
+                  <label for="languageSelector" class="floating-label" data-i18n="options_language_label">Language</label>
+                </div>
+
+                <div class="floating-label-field">
+                  <textarea id="systemPrompt" name="systemPrompt" rows="3"></textarea>
+                  <label for="systemPrompt" class="floating-label" data-i18n="options_system_prompt_label">System Prompt</label>
+                </div>
+
+                <div class="form-group">
+                  <label class="toggle-switch-label" data-i18n-title="options_filter_cot_tooltip" title="When enabled, content before </think> tags will be filtered out during streaming output">
+                    <span class="toggle-switch">
+                      <input type="checkbox" id="filterCOT" name="filterCOT">
+                      <span class="slider"></span>
+                    </span>
+                    <span data-i18n="options_filter_cot_label">Filter COT (Chain of Thought) in streaming output</span>
+                  </label>
+                </div>
+              </section>
+
+              <section class="settings-section">
+                <div class="section-header">
+                  <h2 data-i18n="options_content_extraction_title">Content Extraction</h2>
+                </div>
+
+                <div class="floating-label-field">
+                  <input type="number" id="contentDisplayHeight" name="contentDisplayHeight" min="0" max="600">
+                  <label for="contentDisplayHeight" class="floating-label" data-i18n="options_extracted_content_height_label">Extracted Content Height</label>
+                </div>
+
+                <div class="floating-label-field">
+                  <select id="defaultExtractionMethod" name="defaultExtractionMethod">
+                    <option value="readability" data-i18n="options_extraction_method_readability">Readability.js (Default)</option>
+                    <option value="jina" data-i18n="options_extraction_method_jina">Jina AI</option>
+                  </select>
+                  <label for="defaultExtractionMethod" class="floating-label" data-i18n="options_default_extraction_method_label">Default Extraction Method</label>
+                </div>
+
+                <div class="floating-label-field" id="jinaApiKeyGroup">
+                  <input type="password" id="jinaApiKey" name="jinaApiKey">
+                  <label for="jinaApiKey" class="floating-label" data-i18n="options_jina_api_key_label">Jina AI API Key (Optional)</label>
+                </div>
+
+                <div class="floating-label-field" id="jinaResponseTemplateGroup">
+                  <textarea id="jinaResponseTemplate" name="jinaResponseTemplate" rows="3"></textarea>
+                  <label for="jinaResponseTemplate" class="floating-label" data-i18n="options_jina_response_template_label">Jina AI Response Template</label>
+                  <small data-i18n="options_jina_response_template_description">Template for formatting Jina AI JSON response. Available placeholders: {title}, {url}, {description}, {content}.</small>
+                </div>
+              </section>
             </section>
 
-            <!-- Content Extraction Settings -->
-            <section class="settings-section sidebar-section">
-              <h2 data-i18n="options_content_extraction_title">Content Extraction</h2>
-              
-              <div class="floating-label-field">
-                <input type="number" id="contentDisplayHeight" name="contentDisplayHeight" min="0" max="600">
-                <label for="contentDisplayHeight" class="floating-label" data-i18n="options_extracted_content_height_label">Extracted Content Height</label>
-              </div>
-              
-              <div class="floating-label-field">
-                <select id="defaultExtractionMethod" name="defaultExtractionMethod">
-                  <option value="readability" data-i18n="options_extraction_method_readability">Readability.js (Default)</option>
-                  <option value="jina" data-i18n="options_extraction_method_jina">Jina AI</option>
-                </select>
-                <label for="defaultExtractionMethod" class="floating-label" data-i18n="options_default_extraction_method_label">Default Extraction Method</label>
-              </div>
-              
-              <div class="floating-label-field" id="jinaApiKeyGroup">
-                <input type="password" id="jinaApiKey" name="jinaApiKey">
-                <label for="jinaApiKey" class="floating-label" data-i18n="options_jina_api_key_label">Jina AI API Key (Optional)</label>
-              </div>
-              
-              <div class="floating-label-field" id="jinaResponseTemplateGroup">
-                <textarea id="jinaResponseTemplate" name="jinaResponseTemplate" rows="3"></textarea>
-                <label for="jinaResponseTemplate" class="floating-label" data-i18n="options_jina_response_template_label">Jina AI Response Template</label>
-                <small data-i18n="options_jina_response_template_description">Template for formatting Jina AI JSON response. Available placeholders: {title}, {url}, {description}, {content}.</small>
-              </div>
+            <section id="tab-quick-inputs" class="tab-panel" role="tabpanel" hidden>
+              <section class="settings-section main-section">
+                <div class="section-header">
+                  <h2 data-i18n="options_quick_input_tabs_title">Quick Input Tabs</h2>
+                  <button type="button" id="addQuickInputBtn" class="add-model-btn-inline">
+                    <i class="material-icons">add</i>
+                    <span data-i18n="options_add_quick_input_button">Add Quick Input</span>
+                  </button>
+                </div>
+                <div class="quick-inputs-section">
+                  <div id="quickInputsContainer" class="quick-inputs-container">
+                    <!-- Quick input items will be added here dynamically -->
+                  </div>
+                </div>
+              </section>
             </section>
 
-            <!-- Theme -->
-           
+            <section id="tab-models" class="tab-panel" role="tabpanel" hidden>
+              <section class="settings-section main-section">
+                <div class="section-header">
+                  <h2 data-i18n="options_language_models_title">Language Models</h2>
+                  <button type="button" id="addModelBtn" class="add-model-btn-inline">
+                    <i class="material-icons">add</i>
+                    <span data-i18n="options_add_new_model_button">Add New Model</span>
+                  </button>
+                </div>
+                <div class="models-section">
+                  <div id="modelsContainer" class="models-container vertical-layout">
+                    <!-- Model configurations will be added here dynamically -->
+                  </div>
+                </div>
+              </section>
+            </section>
 
-            <!-- Cloud Sync Settings -->
-            <section class="settings-section sidebar-section">
-              <h2 data-i18n="options_cloud_sync_title">Cloud Sync</h2>
-              <p><small data-i18n="options_cloud_sync_description" data-i18n-html>
-                Sync your config (<strong>INCLUDE api-key</strong>) and data
-              </small>
-            </p>
+            <section id="tab-cloud-sync" class="tab-panel" role="tabpanel" hidden>
+              <section class="settings-section">
+                <div class="section-header">
+                  <h2 data-i18n="options_cloud_sync_title">Cloud Sync</h2>
+                </div>
+                <p><small data-i18n="options_cloud_sync_description" data-i18n-html>
+                  Sync your config (<strong>INCLUDE api-key</strong>) and data
+                </small>
+              </p>
 
-              <!-- Storage Type Selection -->
-              <div class="floating-label-field">
-                <select id="storageType" name="storageType">
-                  <option value="gist" data-i18n="options_storage_type_gist">GitHub Gist</option>
-                  <option value="webdav" data-i18n="options_storage_type_webdav">WebDAV</option>
-                </select>
-                <label for="storageType" class="floating-label" data-i18n="options_storage_type_label">Storage Type</label>
-              </div>
-
-              <!-- Gist Configuration -->
-              <div id="gistConfigGroup" class="sync-config-group" style="display: block;">
+                <!-- Storage Type Selection -->
                 <div class="floating-label-field">
-                  <input type="password" id="gistToken" name="gistToken">
-                  <label for="gistToken" class="floating-label" data-i18n="common_github_token">GitHub Token</label>
-                  <small><a href="https://github.com/settings/tokens" target="_blank" data-i18n="options_github_token_create_link">Create token</a><span data-i18n="options_github_token_permission_note">(Requires Gist permission)</span></small>
+                  <select id="storageType" name="storageType">
+                    <option value="gist" data-i18n="options_storage_type_gist">GitHub Gist</option>
+                    <option value="webdav" data-i18n="options_storage_type_webdav">WebDAV</option>
+                  </select>
+                  <label for="storageType" class="floating-label" data-i18n="options_storage_type_label">Storage Type</label>
                 </div>
 
-                <div class="floating-label-field">
-                  <input type="text" id="gistId" name="gistId">
-                  <label for="gistId" class="floating-label" data-i18n="options_gist_id_label">Secret Gist ID</label>
-                  <small><span data-i18n="options_gist_id_create_link_prefix">Create a </span><a href="https://gist.github.com/" target="_blank" data-i18n="options_gist_id_create_link">secret Gist</a><span data-i18n="options_gist_id_create_link_suffix">(DO NOT create public gist)</span></small>
-                </div>
-              </div>
+                <!-- Gist Configuration -->
+                <div id="gistConfigGroup" class="sync-config-group" style="display: block;">
+                  <div class="floating-label-field">
+                    <input type="password" id="gistToken" name="gistToken">
+                    <label for="gistToken" class="floating-label" data-i18n="common_github_token">GitHub Token</label>
+                    <small><a href="https://github.com/settings/tokens" target="_blank" data-i18n="options_github_token_create_link">Create token</a><span data-i18n="options_github_token_permission_note">(Requires Gist permission)</span></small>
+                  </div>
 
-              <!-- WebDAV Configuration -->
-              <div id="webdavConfigGroup" class="sync-config-group" style="display: none;">
-                <div class="floating-label-field">
-                  <input type="url" id="webdavUrl" name="webdavUrl" placeholder=" ">
-                  <label for="webdavUrl" class="floating-label" data-i18n="options_webdav_url_label">WebDAV URL</label>                  
-                </div>
-
-                <div class="floating-label-field">
-                  <input type="text" id="webdavUsername" name="webdavUsername" placeholder=" ">
-                  <label for="webdavUsername" class="floating-label" data-i18n="options_webdav_username_label">Username</label>
-                </div>
-
-                <div class="floating-label-field">
-                  <input type="password" id="webdavPassword" name="webdavPassword" placeholder=" ">
-                  <label for="webdavPassword" class="floating-label" data-i18n="options_webdav_password_label">Password</label>
-                </div>
-              </div>
-
-              <div id="syncConfigGroup" class="sync-config-group">
-
-                <div class="form-group sync-controls">
-                  <div class="sync-toggle-container">
-                    <label class="toggle-switch-label">
-                      <span class="toggle-switch">
-                        <input type="checkbox" id="syncEnabled" name="syncEnabled">
-                        <span class="slider"></span>
-                      </span>
-                      <span data-i18n="options_sync_on_save_label">Sync when Save</span>
-                    </label>
+                  <div class="floating-label-field">
+                    <input type="text" id="gistId" name="gistId">
+                    <label for="gistId" class="floating-label" data-i18n="options_gist_id_label">Secret Gist ID</label>
+                    <small><span data-i18n="options_gist_id_create_link_prefix">Create a </span><a href="https://gist.github.com/" target="_blank" data-i18n="options_gist_id_create_link">secret Gist</a><span data-i18n="options_gist_id_create_link_suffix">(DO NOT create public gist)</span></small>
                   </div>
                 </div>
 
-                <div class="sync-status" id="syncStatus">
-                  <div class="status-details" id="syncStatusDetails">
-                    <div class="status-text" id="syncStatusText" data-i18n="options_sync_status_not_configured">Not configured</div>
-                    <small id="syncErrorMessage" class="error-message" style="display: none;"></small>
+                <!-- WebDAV Configuration -->
+                <div id="webdavConfigGroup" class="sync-config-group" style="display: none;">
+                  <div class="floating-label-field">
+                    <input type="url" id="webdavUrl" name="webdavUrl" placeholder=" ">
+                    <label for="webdavUrl" class="floating-label" data-i18n="options_webdav_url_label">WebDAV URL</label>
+
                   </div>
+
+                  <div class="floating-label-field">
+                    <input type="text" id="webdavUsername" name="webdavUsername" placeholder=" ">
+                    <label for="webdavUsername" class="floating-label" data-i18n="options_webdav_username_label">Username</label>
+                  </div>
+
+                  <div class="floating-label-field">
+                    <input type="password" id="webdavPassword" name="webdavPassword" placeholder=" ">
+                    <label for="webdavPassword" class="floating-label" data-i18n="options_webdav_password_label">Password</label>
+                  </div>
+
+                  <div class="floating-label-field">
+                    <input type="text" id="webdavDirectory" name="webdavDirectory" placeholder=" ">
+                    <label for="webdavDirectory" class="floating-label" data-i18n="options_webdav_directory_label">Directory (Optional)</label>
+                  </div>
+
                 </div>
 
+                <div id="syncConfigGroup" class="sync-config-group">
 
-              </div>
-            </section>
+                  <div class="form-group sync-controls">
+                    <div class="sync-toggle-container">
+                      <label class="toggle-switch-label">
+                        <span class="toggle-switch">
+                          <input type="checkbox" id="syncEnabled" name="syncEnabled">
+                          <span class="slider"></span>
+                        </span>
+                        <span data-i18n="options_sync_on_save_label">Sync when Save</span>
+                      </label>
+                    </div>
+                  </div>
 
-            <!-- Blacklist Settings -->
-            <section class="settings-section sidebar-section">
-              <h2 data-i18n="options_blacklist_settings_title">Blacklist Settings</h2>
-              <div class="blacklist-description">
-                <p data-i18n="options_blacklist_description">Confirm before run Think Bot</p>
-              </div>
+                  <div class="sync-status" id="syncStatus">
+                    <div class="status-details" id="syncStatusDetails">
+                      <div class="status-text" id="syncStatusText" data-i18n="options_sync_status_not_configured">Not configured</div>
+                      <small id="syncErrorMessage" class="error-message" style="display: none;"></small>
+                    </div>
+                  </div>
 
-              <div class="blacklist-controls">
-                <button type="button" id="addBlacklistBtn" class="secondary-btn small-btn">
-                  <i class="material-icons">add</i>
-                  <span data-i18n="common_add">Add</span>
-                </button>
-                <button type="button" id="resetBlacklistBtn" class="secondary-btn small-btn">
-                  <i class="material-icons">refresh</i>
-                  <span data-i18n="common_reset">Reset</span>
-                </button>
-              </div>
-
-              <div class="blacklist-table-container">
-                <table class="blacklist-table">
-                  <thead>                  
-                  </thead>
-                  <tbody id="blacklistTableBody">
-                    <!-- Dynamic content will be inserted here -->
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          </div>
-
-          <!-- Right Main Content Area -->
-          <div class="right-content">
-            <!-- Quick Input Tabs -->
-            <section class="settings-section main-section">
-              <div class="section-header">
-                <h2 data-i18n="options_quick_input_tabs_title">Quick Input Tabs</h2>
-                <button type="button" id="addQuickInputBtn" class="add-model-btn-inline">
-                  <i class="material-icons">add</i>
-                  <span data-i18n="options_add_quick_input_button">Add Quick Input</span>
-                </button>
-              </div>
-              <div class="quick-inputs-section">
-                <div id="quickInputsContainer" class="quick-inputs-container">
-                  <!-- Quick input items will be added here dynamically -->
                 </div>
-              </div>
+              </section>
             </section>
 
-            <!-- Language Models -->
-            <section class="settings-section main-section">
-              <div class="section-header">
-                <h2 data-i18n="options_language_models_title">Language Models</h2>
-                <button type="button" id="addModelBtn" class="add-model-btn-inline">
-                  <i class="material-icons">add</i>
-                  <span data-i18n="options_add_new_model_button">Add New Model</span>
-                </button>
-              </div>
-              <div class="models-section">
-                <div id="modelsContainer" class="models-container vertical-layout">
-                  <!-- Model configurations will be added here dynamically -->
+            <section id="tab-blacklist" class="tab-panel" role="tabpanel" hidden>
+              <section class="settings-section">
+                <div class="section-header">
+                  <h2 data-i18n="options_blacklist_settings_title">Blacklist Settings</h2>
                 </div>
-              </div>
+                <div class="blacklist-description">
+                  <p data-i18n="options_blacklist_description">Confirm before run Think Bot</p>
+                </div>
+
+                <div class="blacklist-controls">
+                  <button type="button" id="addBlacklistBtn" class="secondary-btn small-btn">
+                    <i class="material-icons">add</i>
+                    <span data-i18n="common_add">Add</span>
+                  </button>
+                  <button type="button" id="resetBlacklistBtn" class="secondary-btn small-btn">
+                    <i class="material-icons">refresh</i>
+                    <span data-i18n="common_reset">Reset</span>
+                  </button>
+                </div>
+
+                <div class="blacklist-table-container">
+                  <table class="blacklist-table">
+                    <thead>
+                    </thead>
+                    <tbody id="blacklistTableBody">
+                      <!-- Dynamic content will be inserted here -->
+                    </tbody>
+                  </table>
+                </div>
+              </section>
             </section>
           </div>
         </div>

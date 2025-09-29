@@ -55,57 +55,75 @@
   font-weight: 500;
 }
 
-/* Two Column Layout */
-.main-content-wrapper {
+/* Tabbed Layout */
+.tabbed-layout {
   display: grid;
-  grid-template-columns: 22% 1fr;
-  grid-gap: 0;
+  grid-template-columns: 220px 1fr;
+  gap: 0;
   align-items: start;
   padding: 0 1rem;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-/* Left Sidebar */
-.left-sidebar {
-  background-color: transparent;
-  padding: 1rem;
+.tab-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 0.75rem 1rem 0;
   border-right: 1px solid var(--divider-color);
-  padding-right: 1.5rem;
-  margin-right: 1.5rem;
+  position: sticky;
+  top: 80px;
 }
 
-.sidebar-section {
-  background: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--divider-color);
-  padding-bottom: 1.5rem;
-}
-
-.sidebar-section:last-child {
-  margin-bottom: 0;
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.sidebar-section h2 {
-  color: var(--primary-color);
-  margin: 0 0 0.6rem 0;
-  font-size: 0.95rem;
+.tab-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
   font-weight: 500;
-  padding-bottom: 0.3rem;
-  border-bottom: 1px solid var(--divider-color);
+  color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--transition-normal) ease, color var(--transition-normal) ease, box-shadow var(--transition-normal) ease;
 }
 
-/* Right Content Area */
-.right-content {
+.tab-button:hover,
+.tab-button:focus {
+  outline: none;
+  background-color: var(--hover-color);
+  color: var(--primary-color);
+}
+
+.tab-button.active {
+  background-color: var(--primary-color-lightest);
+  color: var(--primary-color);
+  box-shadow: inset 0 0 0 1px var(--primary-color-light);
+}
+
+.tab-panels {
+  padding: 1rem 0 1.5rem 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  padding: 0;
+}
+
+.tab-panel {
+  display: none;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.tab-panel.active {
+  display: flex;
+}
+
+.tab-panel[hidden] {
+  display: none !important;
 }
 
 .main-section {
