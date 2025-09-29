@@ -14,6 +14,7 @@ export class ModelManager {
     this.models = [];
     this.changeCallback = changeCallback;
     this.globalEventListenersAdded = false;
+    this.containerEventListenersAdded = false;
     this.expandedStates = new Map();
   }
 
@@ -939,6 +940,16 @@ export class ModelManager {
   // Setup all event listeners for model configurations
   setupModelEventListeners() {
     const container = this.domElements.modelsContainer;
+    if (!container) {
+      try { logger.warn('Models container not found; skip binding listeners'); } catch (_) {}
+      return;
+    }
+
+    // Prevent duplicate bindings across re-renders
+    if (this.containerEventListenersAdded) {
+      try { logger.debug('Container listeners already added; skip re-binding'); } catch (_) {}
+      return;
+    }
 
     container.addEventListener('click', (e) => {
       const target = e.target;
@@ -1084,6 +1095,9 @@ export class ModelManager {
         this.updateToolSelection(index, toolValue, !isSelected);
       }
     });
+
+    this.containerEventListenersAdded = true;
+    try { logger.debug('Bound container event listeners for models container'); } catch (_) {}
 
     // Add global event listeners only once
     if (!this.globalEventListenersAdded) {
