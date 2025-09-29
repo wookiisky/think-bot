@@ -2121,9 +2121,15 @@ const createBranchElement = (branchId, model, status = 'done', content = '') => 
     logger.debug(`Branch element ${branchId} marked as streaming`);
     const loadingContainer = document.createElement('div');
     loadingContainer.className = 'loading-container';
+    // Ensure loading container does not take space during streaming
+    loadingContainer.style.height = '0px';
+    loadingContainer.style.minHeight = '0';
+    loadingContainer.style.margin = '0';
+    loadingContainer.style.padding = '0';
+    loadingContainer.style.overflow = 'hidden';
     // No inner spinner; border loader is handled by CSS on the branch
     contentDiv.appendChild(loadingContainer);
-    logger.debug(`Branch ${branchId} uses border loader (no spinner)`);
+    logger.debug(`Branch ${branchId} uses border loader (no spinner); loading container height set to 0`);
   } else if (status === 'error') {
     branchDiv.classList.add('error-message');
     const errorContainer = document.createElement('div');

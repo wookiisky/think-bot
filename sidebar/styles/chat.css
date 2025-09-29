@@ -1071,11 +1071,16 @@
 }
 
 .message-branch[data-streaming="true"] .loading-container {
+  /* Zero-height during streaming to avoid occupying a row */
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 24px; /* Reduced from 40px for compact streaming UI */
-  gap: 8px;
+  height: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  gap: 0;
 }
 
 .message-branch[data-streaming="true"] .spinner {
