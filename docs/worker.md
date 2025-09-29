@@ -92,7 +92,7 @@
 | `SWITCH_EXTRACTION_METHOD` | 切换内容提取的方法（如 Readability），并立即重新提取内容。 | 侧边栏 | `handleSwitchExtractionMethod`, `storage`, `contentExtractor` |
 | `RE_EXTRACT_CONTENT` | 强制重新从页面提取内容，并更新缓存。 | 侧边栏 | `handleReExtractContent`, `storage`, `contentExtractor` |
 | **LLM 通信** | | | |
-| `SEND_LLM_MESSAGE` | 将用户的消息和上下文发送给配置的大语言模型 (LLM) 服务。 | 侧边栏 | `handleSendLlmMessage`, `llmService`, `loadingStateCache` |
+| `SEND_LLM_MESSAGE` | 将用户的消息和上下文发送给配置的大语言模型 (LLM) 服务。分支请求（携带 `branchId`）会自动裁剪上下文，移除末尾的助手消息，确保最后一条为上一轮用户消息。 | 侧边栏 | `handleSendLlmMessage`, `llmService`, `loadingStateCache` |
 | `CANCEL_LLM_REQUEST` | 取消一个正在进行的 LLM 请求。 | 侧边栏 | `handleCancelLlmRequest`, `loadingStateCache` |
 | `CANCEL_ALL_LLM_REQUESTS` | 取消所有正在进行的 LLM 请求。 | 侧边栏 | `handleCancelAllLlmRequests`, `loadingStateCache` |
 | **数据管理** | | | |

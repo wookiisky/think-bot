@@ -2053,8 +2053,8 @@ const buildBranchContext = (branchContainer) => {
   const allMessages = Array.from(chatContainer.children);
   const branchIndex = allMessages.indexOf(branchContainer);
   
-  // Get all messages from start to before current branch container
-  const contextElements = allMessages.slice(0, branchIndex + 1);
+  // Get all messages from start to before current branch container (exclude current assistant message)
+  const contextElements = allMessages.slice(0, branchIndex);
   const context = [];
   
   contextElements.forEach(element => {

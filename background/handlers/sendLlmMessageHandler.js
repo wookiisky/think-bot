@@ -85,16 +85,85 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
 
     const systemPrompt = systemPromptTemplate.replace('{CONTENT}', extractedPageContent || '');
 
+    // Helper: normalize messages to standard format (flatten assistant branches)
+    /** Normalize incoming messages into standard { role, content } pairs */
+    const normalizeMessagesForLLM = (msgs) => {
+        try {
+            if (!Array.isArray(msgs)) return [];
+            const normalized = [];
+            for (const m of msgs) {
+                if (!m || !m.role) continue;
+                if (m.role === 'user') {
+                    normalized.push({
+                        role: 'user',
+                        content: m.content || '',
+                        imageBase64: m.imageBase64,
+                        timestamp: m.timestamp
+                    });
+                } else if (m.role === 'assistant') {
+                    if (Array.isArray(m.responses)) {
+                        const completed = m.responses.find(r => r && r.status === 'done' && typeof r.content === 'string' && r.content.length > 0);
+                        if (completed) {
+                            normalized.push({
+                                role: 'assistant',
+                                content: completed.content,
+                                model: completed.model || 'unknown',
+                                timestamp: m.timestamp || completed.updatedAt
+                            });
+                        } else {
+                            // Skip non-completed assistant responses in normalization
+                        }
+                    } else if (typeof m.content === 'string') {
+                        normalized.push({
+                            role: 'assistant',
+                            content: m.content,
+                            model: m.model,
+                            timestamp: m.timestamp
+                        });
+                    }
+                }
+            }
+            return normalized;
+        } catch (e) {
+            serviceLogger.warn('SEND_LLM: Failed to normalize messages, using original array', e?.message || 'unknown error');
+            return Array.isArray(msgs) ? msgs : [];
+        }
+    };
+
+    // Helper: for branch requests, trim trailing assistant messages so last is previous user
+    /** Trim trailing non-user messages to ensure last is a user for branch */
+    const trimTrailingForBranch = (msgs) => {
+        if (!Array.isArray(msgs) || msgs.length === 0) return [];
+        let end = msgs.length - 1;
+        let removed = 0;
+        while (end >= 0 && msgs[end] && msgs[end].role !== 'user') {
+            removed++;
+            end--;
+        }
+        if (removed > 0) {
+            serviceLogger.info(`SEND_LLM: Trimmed ${removed} trailing non-user messages for branch to end on user`);
+        }
+        const trimmed = msgs.slice(0, end + 1);
+        if (trimmed.length === 0) {
+            serviceLogger.warn('SEND_LLM: Branch trimming removed all messages; proceeding with empty context');
+        }
+        return trimmed;
+    };
+
+    // Prepare effective messages
+    const normalizedMessages = normalizeMessagesForLLM(messages || []);
+    const effectiveMessages = branchId ? trimTrailingForBranch(normalizedMessages) : normalizedMessages;
+
     try {
         // Save loading state to cache if tabId is provided
         if (currentUrl && tabId) {
             const loadingInfo = {
-                messageCount: messages ? messages.length : 0,
+                messageCount: effectiveMessages ? effectiveMessages.length : 0,
                 hasImage: !!imageBase64,
                 selectedModel: selectedModel?.name || (defaultModel ? defaultModel.name : 'default'),
                 provider: llmConfig.provider,
                 timestamp: Date.now(),
-                lastMessageContent: messages && messages.length > 0 ? messages[messages.length - 1]?.content?.substring(0, 100) : null,
+                lastMessageContent: effectiveMessages && effectiveMessages.length > 0 ? effectiveMessages[effectiveMessages.length - 1]?.content?.substring(0, 100) : null,
                 isRetry: messages && messages.length > 0 && messages[messages.length - 1]?.isRetry === true,
                 branchId: branchId || null
             };
@@ -107,7 +176,7 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
             serviceLogger.info(`SEND_LLM: Loading state saved for tab ${tabId}${branchInfo} with enhanced details`);
         }
         
-        serviceLogger.info(`SEND_LLM: Calling LLM with ${messages.length} messages`);
+        serviceLogger.info(`SEND_LLM: Calling LLM with ${effectiveMessages.length} messages${branchId ? ' (branch context sanitized)' : ''}`);
         
         const streamCallback = (chunk) => {
             if (chunk !== undefined && chunk !== null) {
@@ -449,7 +518,7 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
 
         // Call the LLM service
         llmService.callLLM(
-            messages,
+            effectiveMessages,
             llmConfig,
             systemPrompt,
             imageBase64,
