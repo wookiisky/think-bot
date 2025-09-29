@@ -6,6 +6,10 @@
   --accent-color: var(--primary-color);
   --accent-color-rgb: 59, 130, 246;
   --accent-color-alpha: rgba(var(--accent-color-rgb), 0.1);
+  /* Derived primary tints */
+  --primary-color-light: rgba(59, 130, 246, 0.35);
+  --primary-color-lightest: rgba(59, 130, 246, 0.12);
+  --primary-text-color: #FFFFFF;
   --primary-dark: #3367d6;
   --secondary-color: #fbbc05;
 
@@ -63,6 +67,10 @@
   --accent-color: var(--primary-color);
   --accent-color-rgb: 96, 165, 250;
   --accent-color-alpha: rgba(var(--accent-color-rgb), 0.15);
+  /* Derived primary tints */
+  --primary-color-light: rgba(96, 165, 250, 0.35);
+  --primary-color-lightest: rgba(96, 165, 250, 0.15);
+  --primary-text-color: #FFFFFF;
 
   /* Background Colors */
   --bg-color: #111827;

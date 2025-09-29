@@ -65,6 +65,12 @@
   border-color: var(--border-color-hover);
 }
 
+/* Expanded state - highlight entire configuration with a thin blue border */
+.model-config-item.expanded {
+  background-color: var(--bg-color);
+  border: 1px solid var(--primary-color);
+}
+
  
 
 .model-config-item.disabled .model-details {
