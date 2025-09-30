@@ -87,6 +87,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Initialize model selector
   modelSelector = new ModelSelector();
+  // Expose model selector globally for retry/branch flows
+  // Allows components like chat-message.js to read current selection
+  window.modelSelector = modelSelector;
+  logger.info('ModelSelector instance exposed globally');
   
   // Load tabs with handler
   await TabManager.loadTabs(
