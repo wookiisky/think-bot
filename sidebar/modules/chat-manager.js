@@ -2382,13 +2382,17 @@ const sendBranchLlmRequest = async (context, model, branchId) => {
     const extractedContent = window.StateManager.getStateItem('extractedContent') || '';
     const currentUrl = window.StateManager.getStateItem('currentUrl') || '';
     const extractionMethod = window.StateManager.getStateItem('currentExtractionMethod') || 'readability';
-    const includePageContent = window.StateManager.getStateItem('includePageContent');
+    // Always include page content for branch requests regardless of UI toggle
+    // This aligns with the UX: branching should carry full page context
     const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
     
     // Build system prompt
     let systemPromptWithContent = systemPrompt;
-    if (includePageContent) {
+    if (extractedContent) {
       systemPromptWithContent += '\n\nPage Content:\n' + extractedContent;
+      logger.info('Forced including page content for branch request (ignoring UI toggle)');
+    } else {
+      logger.warn('No extracted page content available to include for branch request');
     }
     try {
       const timePrefix = getCurrentTimePrefix();
