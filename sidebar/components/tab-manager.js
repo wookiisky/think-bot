@@ -18,21 +18,262 @@ let onTabClickHandler = null;
 let isRendering = false; // Flag to prevent concurrent rendering
 let isHandlingTabClick = false; // Flag to prevent concurrent tab click handling
 // Runtime state per tab to avoid repeated GETs
-// { [tabId: string]: { activeBranches: Set<string>, hasAnyContent: boolean } }
+// {
+//   [tabId: string]: {
+//     activeBranches: Set<string>,
+//     hasHistoryLoadingPlaceholder: boolean,
+//     lastAssistantState: {
+//       hasAssistant: boolean,
+//       isLoading: boolean,
+//       hasContent: boolean,
+//       timestamp: number
+//     }
+//   }
+// }
 const tabRuntimeState = {};
 
 function ensureTabRuntime(tabId) {
   if (!tabRuntimeState[tabId]) {
-    tabRuntimeState[tabId] = { activeBranches: new Set(), hasAnyContent: false };
+    tabRuntimeState[tabId] = {
+      activeBranches: new Set(),
+      hasHistoryLoadingPlaceholder: false,
+      lastAssistantState: {
+        hasAssistant: false,
+        isLoading: false,
+        hasContent: false,
+        timestamp: 0
+      }
+    };
   }
   return tabRuntimeState[tabId];
+}
+
+function resetTabRuntime(tabId) {
+  if (tabRuntimeState[tabId]) {
+    tabRuntimeState[tabId].activeBranches.clear();
+    tabRuntimeState[tabId].hasHistoryLoadingPlaceholder = false;
+    tabRuntimeState[tabId].lastAssistantState = {
+      hasAssistant: false,
+      isLoading: false,
+      hasContent: false,
+      timestamp: 0
+    };
+  }
+}
+
+function hasBranchContent(response) {
+  if (!response) return false;
+
+  const checkString = (value) => typeof value === 'string' && value.trim().length > 0;
+
+  if (checkString(response.content)) {
+    return true;
+  }
+
+  if (Array.isArray(response.content)) {
+    const hasContent = response.content.some(item => {
+      if (typeof item === 'string') {
+        return item.trim().length > 0;
+      }
+      if (item && typeof item.text === 'string') {
+        return item.text.trim().length > 0;
+      }
+      if (item && typeof item.content === 'string') {
+        return item.content.trim().length > 0;
+      }
+      return false;
+    });
+    if (hasContent) {
+      return true;
+    }
+  }
+
+  if (Array.isArray(response.messages)) {
+    const hasMessageContent = response.messages.some(msg => typeof msg?.content === 'string' && msg.content.trim().length > 0);
+    if (hasMessageContent) {
+      return true;
+    }
+  }
+
+  if (checkString(response.errorMessage)) {
+    return true;
+  }
+
+  if (checkString(response.rawResponse)) {
+    return true;
+  }
+
+  return false;
+}
+
+function deriveAssistantStateFromMessage(message) {
+  if (!message || message.role !== 'assistant') {
+    return {
+      hasAssistant: false,
+      isLoading: false,
+      hasContent: false,
+      timestamp: message?.timestamp || 0
+    };
+  }
+
+  const timestamp = message.timestamp || Date.now();
+
+  if (Array.isArray(message.responses) && message.responses.length > 0) {
+    const hasLoading = message.responses.some(response => response && response.status === 'loading');
+
+    if (hasLoading) {
+      return {
+        hasAssistant: true,
+        isLoading: true,
+        hasContent: false,
+        timestamp
+      };
+    }
+
+    const terminalStatuses = ['done', 'error', 'timeout'];
+    const hasTerminalContent = message.responses.some(response => {
+      if (!response || !terminalStatuses.includes(response.status)) {
+        return false;
+      }
+
+      if (response.status === 'error' || response.status === 'timeout') {
+        // Error and timeout are treated as having content per requirements
+        return true;
+      }
+
+      return hasBranchContent(response);
+    });
+
+    return {
+      hasAssistant: true,
+      isLoading: false,
+      hasContent: hasTerminalContent,
+      timestamp
+    };
+  }
+
+  if (typeof message.content === 'string') {
+    const hasContent = message.content.trim().length > 0;
+    return {
+      hasAssistant: true,
+      isLoading: false,
+      hasContent,
+      timestamp
+    };
+  }
+
+  return {
+    hasAssistant: true,
+    isLoading: false,
+    hasContent: false,
+    timestamp
+  };
+}
+
+function deriveTabStateFromHistory(chatHistory) {
+  if (!Array.isArray(chatHistory) || chatHistory.length === 0) {
+    return {
+      hasAssistant: false,
+      isLoading: false,
+      hasContent: false,
+      timestamp: 0
+    };
+  }
+
+  for (let index = chatHistory.length - 1; index >= 0; index--) {
+    const message = chatHistory[index];
+    if (!message || message.role !== 'assistant') {
+      continue;
+    }
+
+    return deriveAssistantStateFromMessage(message);
+  }
+
+  return {
+    hasAssistant: false,
+    isLoading: false,
+    hasContent: false,
+    timestamp: 0
+  };
+}
+
+const setTabDerivedState = async (tabId, derivedState, options = {}) => {
+  const normalizedDerivedState = derivedState || {
+    hasAssistant: false,
+    isLoading: false,
+    hasContent: false,
+    timestamp: 0
+  };
+
+  const runtime = ensureTabRuntime(tabId);
+  runtime.activeBranches.clear();
+  runtime.hasHistoryLoadingPlaceholder = normalizedDerivedState.isLoading;
+  runtime.lastAssistantState = { ...normalizedDerivedState };
+
+  return applyTabState(tabId, {
+    isLoading: normalizedDerivedState.isLoading,
+    hasContent: normalizedDerivedState.hasContent
+  }, options);
+};
+
+const applyDerivedStateForTab = async (tabId, chatHistory, options = {}) => {
+  const derivedState = deriveTabStateFromHistory(chatHistory);
+  const changed = await setTabDerivedState(tabId, derivedState, options);
+  return { changed, derivedState };
+};
+
+async function applyTabState(tabId, stateUpdate, options = {}) {
+  const tab = tabs.find(t => t.id === tabId);
+  if (!tab) {
+    logger.warn(`Cannot apply tab state for ${tabId}: tab not found`);
+    return false;
+  }
+
+  const runtime = ensureTabRuntime(tabId);
+  const { skipRender = false } = options;
+
+  let hasStateChanges = false;
+
+  if (Object.prototype.hasOwnProperty.call(stateUpdate, 'isLoading')) {
+    const newLoadingState = !!stateUpdate.isLoading;
+    if (tab.isLoading !== newLoadingState) {
+      hasStateChanges = true;
+      tab.isLoading = newLoadingState;
+    }
+    runtime.lastAssistantState.isLoading = newLoadingState;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(stateUpdate, 'hasContent')) {
+    const newContentState = !!stateUpdate.hasContent;
+    if (tab.hasContent !== newContentState) {
+      hasStateChanges = true;
+      tab.hasContent = newContentState;
+    }
+    runtime.lastAssistantState.hasContent = newContentState;
+  }
+
+  if (!hasStateChanges) {
+    return false;
+  }
+
+  if (!skipRender) {
+    const container = document.querySelector('.tab-container');
+    if (container && !isRendering) {
+      await renderTabs(container, true);
+    }
+  }
+
+  return true;
 }
 
 async function registerBranchStart(tabId, branchId) {
   try {
     const state = ensureTabRuntime(tabId);
     if (branchId) state.activeBranches.add(branchId);
-    await updateTabLoadingState(tabId, true);
+    state.hasHistoryLoadingPlaceholder = false;
+    state.lastAssistantState.hasAssistant = true;
+    state.lastAssistantState.timestamp = Date.now();
+    await applyTabState(tabId, { isLoading: true, hasContent: false });
     logger.info(`Branch started for tab ${tabId}${branchId ? `, branch ${branchId}` : ''}`);
   } catch (e) {
     logger.warn('registerBranchStart failed:', e);
@@ -43,11 +284,12 @@ async function registerBranchDone(tabId, branchId) {
   try {
     const state = ensureTabRuntime(tabId);
     if (branchId) state.activeBranches.delete(branchId);
-    state.hasAnyContent = true;
+    state.hasHistoryLoadingPlaceholder = false;
+    state.lastAssistantState.hasAssistant = true;
+    state.lastAssistantState.timestamp = Date.now();
     const isLoading = state.activeBranches.size > 0;
-    const hasContent = !isLoading && state.hasAnyContent;
-    await updateTabLoadingState(tabId, isLoading);
-    await updateTabContentState(tabId, hasContent);
+    const hasContent = !isLoading;
+    await applyTabState(tabId, { isLoading, hasContent });
     logger.info(`Branch completed for tab ${tabId}${branchId ? `, branch ${branchId}` : ''}`);
   } catch (e) {
     logger.warn('registerBranchDone failed:', e);
@@ -58,21 +300,15 @@ async function registerBranchError(tabId, branchId) {
   try {
     const state = ensureTabRuntime(tabId);
     if (branchId) state.activeBranches.delete(branchId);
-    state.hasAnyContent = true; // error counts as content for badge
+    state.hasHistoryLoadingPlaceholder = false;
+    state.lastAssistantState.hasAssistant = true;
+    state.lastAssistantState.timestamp = Date.now();
     const isLoading = state.activeBranches.size > 0;
-    const hasContent = !isLoading && state.hasAnyContent;
-    await updateTabLoadingState(tabId, isLoading);
-    await updateTabContentState(tabId, hasContent);
+    const hasContent = !isLoading;
+    await applyTabState(tabId, { isLoading, hasContent });
     logger.info(`Branch errored for tab ${tabId}${branchId ? `, branch ${branchId}` : ''}`);
   } catch (e) {
     logger.warn('registerBranchError failed:', e);
-  }
-}
-
-function resetTabRuntime(tabId) {
-  if (tabRuntimeState[tabId]) {
-    tabRuntimeState[tabId].activeBranches.clear();
-    tabRuntimeState[tabId].hasAnyContent = false;
   }
 }
 
@@ -118,6 +354,7 @@ const initTabManager = (container, chatContainer, onTabClick) => {
     isActive: true,
     hasInitialized: true,
     hasContent: false,
+    isLoading: false,
     quickInputId: null
   }];
   
@@ -151,6 +388,7 @@ const loadTabs = async (container, chatContainer, onTabClick) => {
       isActive: true,
       hasInitialized: true,
       hasContent: false,
+      isLoading: false,
       quickInputId: null
     }];
     
@@ -165,6 +403,7 @@ const loadTabs = async (container, chatContainer, onTabClick) => {
         isActive: false,
         hasInitialized: false,
         hasContent: false,
+        isLoading: false,
         quickInputId: tabId
       });
     });
@@ -316,11 +555,24 @@ const updateTabsLoadingStates = async () => {
       logger.info(`Batch loading state request for ${tabs.length} tabs completed in ${requestTime}ms`);
       
       // Update tab loading states based on batch results
+      let renderNeeded = false;
       for (const result of batchResponse.results) {
-        const tab = tabs.find(t => t.id === result.tabId);
-        if (tab) {
-          tab.isLoading = result.loadingState && 
-                         result.loadingState.status === 'loading';
+        const isLoading = !!(result.loadingState && result.loadingState.status === 'loading');
+        const runtime = ensureTabRuntime(result.tabId);
+        runtime.activeBranches.clear();
+        runtime.hasHistoryLoadingPlaceholder = isLoading;
+        const changed = await applyTabState(
+          result.tabId,
+          isLoading ? { isLoading: true, hasContent: false } : { isLoading: false },
+          { skipRender: true }
+        );
+        renderNeeded = renderNeeded || changed;
+      }
+
+      if (renderNeeded) {
+        const container = document.querySelector('.tab-container');
+        if (container && !isRendering) {
+          await renderTabs(container, true);
         }
       }
     } else {
@@ -332,23 +584,43 @@ const updateTabsLoadingStates = async () => {
     
     // Fallback to individual requests
     const fallbackStartTime = Date.now();
+    let renderNeeded = false;
     for (const tab of tabs) {
+      const runtime = ensureTabRuntime(tab.id);
       try {
         const loadingStateResponse = await chrome.runtime.sendMessage({
           type: 'GET_LOADING_STATE',
           url: currentUrl,
           tabId: tab.id
         });
-        
-        // Update tab loading state
-        tab.isLoading = loadingStateResponse && 
-                       loadingStateResponse.loadingState && 
-                       loadingStateResponse.loadingState.status === 'loading';
-                       
+
+        const isLoading = !!(loadingStateResponse &&
+          loadingStateResponse.loadingState &&
+          loadingStateResponse.loadingState.status === 'loading');
+
+        runtime.activeBranches.clear();
+        runtime.hasHistoryLoadingPlaceholder = isLoading;
+
+        const changed = await applyTabState(
+          tab.id,
+          isLoading ? { isLoading: true, hasContent: false } : { isLoading: false },
+          { skipRender: true }
+        );
+        renderNeeded = renderNeeded || changed;
+
       } catch (error) {
-        // If we can't check loading state, assume not loading
-        tab.isLoading = false;
+        runtime.activeBranches.clear();
+        runtime.hasHistoryLoadingPlaceholder = false;
+        const changed = await applyTabState(tab.id, { isLoading: false }, { skipRender: true });
+        renderNeeded = renderNeeded || changed;
         logger.warn(`Error checking loading state for tab ${tab.id}:`, error);
+      }
+    }
+
+    if (renderNeeded) {
+      const container = document.querySelector('.tab-container');
+      if (container && !isRendering) {
+        await renderTabs(container, true);
       }
     }
     
@@ -444,70 +716,34 @@ const updateTabsContentStates = async () => {
   
   // OPTIMIZATION: Process all results in a single loop
   const processStartTime = Date.now();
-  for (const { tab, cacheKey, history } of allHistories) {
+  const stateSummaries = [];
+
+  for (const { tab, history } of allHistories) {
     try {
-      let hasContent = false;
-      let hasLoadingBranch = false;
-
-      for (const msg of history) {
-        if (!msg) continue;
-        if (msg.role === 'assistant') {
-          if (Array.isArray(msg.responses) && msg.responses.length > 0) {
-            for (const r of msg.responses) {
-              if (r && r.status === 'loading') {
-                hasLoadingBranch = true;
-                break;
-              }
-            }
-            if (!hasLoadingBranch) {
-              // No loading branches in this assistant message, consider content present if any response has content or error
-              hasContent = hasContent || msg.responses.some(r => r && (r.status === 'done' || r.status === 'error') && (r.content || r.errorMessage));
-            }
-          } else if (typeof msg.content === 'string' && msg.content.trim().length > 0) {
-            // Legacy single assistant content
-            hasContent = true;
-          }
-        } else if (msg.role === 'user') {
-          // User messages alone don't determine has-content
-          continue;
-        }
-        if (hasLoadingBranch) break;
-      }
-
-      // Per spec: if any branch is loading, treat tab as loading (handled elsewhere), and do not mark has-content
-      const newHasContent = !hasLoadingBranch && hasContent;
-      
-      // Track if any tab state changed
-      if (tab.hasContent !== newHasContent) {
-        hasStateChanges = true;
-      }
-      
-      tab.hasContent = newHasContent;
-
-      // Only log tabs with content for cleaner output
-      if (tab.hasContent) {
-        logger.debug(`Tab ${tab.id}: hasContent=true, messages=${history.length}`);
-      }
-
+      const { changed, derivedState } = await applyDerivedStateForTab(tab.id, history, { skipRender: true });
+      hasStateChanges = hasStateChanges || changed;
+      stateSummaries.push(`${tab.id}:${derivedState.isLoading ? 'loading' : (derivedState.hasContent ? 'content' : 'empty')}`);
     } catch (error) {
-      // If we can't check content state, assume no content
-      if (tab.hasContent !== false) {
-        hasStateChanges = true;
-      }
-      tab.hasContent = false;
-      logger.error(`Error processing content state for tab ${tab.id}:`, error);
+      logger.error(`Error applying derived state for tab ${tab.id}:`, error);
+      const fallbackChanged = await setTabDerivedState(tab.id, {
+        hasAssistant: false,
+        isLoading: false,
+        hasContent: false,
+        timestamp: Date.now()
+      }, { skipRender: true });
+      hasStateChanges = hasStateChanges || fallbackChanged;
+      stateSummaries.push(`${tab.id}:error`);
     }
   }
-  
+
   const processTime = Date.now() - processStartTime;
   logger.info(`Processed ${tabs.length} tab content states in ${processTime}ms`);
-  
-  // Re-render tabs if any state changed
+
   if (hasStateChanges) {
     const container = document.querySelector('.tab-container');
     if (container && !isRendering) {
       const renderStartTime = Date.now();
-      logger.info('Content states changed, re-rendering tabs. States:', tabs.map(t => `${t.id}:${t.hasContent}`));
+      logger.info('Content states changed, re-rendering tabs. States:', stateSummaries);
       await renderTabs(container, true); // Skip loading state update to prevent recursion
       const renderTime = Date.now() - renderStartTime;
       logger.info(`Tabs re-rendered after content state changes in ${renderTime}ms`);
@@ -527,24 +763,23 @@ const updateTabsContentStates = async () => {
  * @param {string} tabId - Tab ID to update
  * @param {boolean} hasContent - Content state
  */
-const updateTabContentState = async (tabId, hasContent) => {
+const updateTabContentState = async (tabId, hasContent, options = {}) => {
   const tab = tabs.find(t => t.id === tabId);
-  if (tab && tab.hasContent !== hasContent) {
-    const previousContentState = tab.hasContent;
-    tab.hasContent = hasContent;
-    
-    // Re-render tabs to update visual state
-    const container = document.querySelector('.tab-container');
-    if (container && !isRendering) {
-      await renderTabs(container, true); // Skip loading state update to prevent recursion
-    }
-    
-    logger.info(`Updated content state for tab ${tabId}: ${previousContentState} -> ${hasContent}`);
-  } else if (tab) {
-    logger.debug(`Content state for tab ${tabId} unchanged: ${hasContent}`);
-  } else {
+  if (!tab) {
     logger.warn(`Cannot update content state for tab ${tabId}: tab not found`);
+    return false;
   }
+
+  const previousContentState = tab.hasContent;
+  const changed = await applyTabState(tabId, { hasContent }, options);
+
+  if (changed) {
+    logger.info(`Updated content state for tab ${tabId}: ${previousContentState} -> ${hasContent}`);
+  } else {
+    logger.debug(`Content state for tab ${tabId} unchanged: ${hasContent}`);
+  }
+
+  return changed;
 };
 
 /**
@@ -552,24 +787,23 @@ const updateTabContentState = async (tabId, hasContent) => {
  * @param {string} tabId - Tab ID to update
  * @param {boolean} isLoading - Loading state
  */
-const updateTabLoadingState = async (tabId, isLoading) => {
+const updateTabLoadingState = async (tabId, isLoading, options = {}) => {
   const tab = tabs.find(t => t.id === tabId);
-  if (tab && tab.isLoading !== isLoading) {
-    const previousLoadingState = tab.isLoading;
-    tab.isLoading = isLoading;
-    
-    // Re-render tabs to update visual state, but skip loading state update to prevent recursion
-    const container = document.querySelector('.tab-container');
-    if (container && !isRendering) {
-      await renderTabs(container, true); // Skip loading state update to prevent recursion
-    }
-    
-    logger.info(`Updated loading state for tab ${tabId}: ${previousLoadingState} -> ${isLoading} (active tab: ${activeTabId})`);
-  } else if (tab) {
-    logger.debug(`Loading state for tab ${tabId} unchanged: ${isLoading} (active tab: ${activeTabId})`);
-  } else {
+  if (!tab) {
     logger.warn(`Cannot update loading state for tab ${tabId}: tab not found (active tab: ${activeTabId})`);
+    return false;
   }
+
+  const previousLoadingState = tab.isLoading;
+  const changed = await applyTabState(tabId, { isLoading }, options);
+
+  if (changed) {
+    logger.info(`Updated loading state for tab ${tabId}: ${previousLoadingState} -> ${isLoading} (active tab: ${activeTabId})`);
+  } else {
+    logger.debug(`Loading state for tab ${tabId} unchanged: ${isLoading} (active tab: ${activeTabId})`);
+  }
+
+  return changed;
 };
 
 /**
@@ -926,7 +1160,9 @@ const loadTabChatHistory = async (tabId, preloadedHistory = null) => {
       if (activeTab && activeTab.id === tabId && window.ChatManager && window.ChatManager.updateInputAreaState) {
         window.ChatManager.updateInputAreaState(activeTab.isLoading);
       }
-      
+
+      await setTabDerivedState(tabId, deriveTabStateFromHistory(chatHistory));
+
       // Return the chat history for caller to use
       return chatHistory;
     } else {
@@ -934,10 +1170,17 @@ const loadTabChatHistory = async (tabId, preloadedHistory = null) => {
       if (chatContainer) {
         chatContainer.innerHTML = '';
       }
-      
+
       // Check for cached loading state even if no chat history
       await checkAndRestoreLoadingState(currentUrl, tabId, chatContainer);
-      
+
+      await setTabDerivedState(tabId, {
+        hasAssistant: false,
+        isLoading: false,
+        hasContent: false,
+        timestamp: Date.now()
+      });
+
       logger.info(`No chat history found for tab ${tabId}.`);
       return [];
     }
@@ -1044,16 +1287,12 @@ const checkAndRestoreLoadingState = async (currentUrl, tabId, chatContainer) => 
         }
         
         // Update tab visual state
-        const tab = tabs.find(t => t.id === tabId);
-        if (tab) {
-          tab.isLoading = true;
-          
-          // Re-render tabs to show loading state
-          const container = document.querySelector('.tab-container');
-          if (container && !isRendering) {
-            await renderTabs(container, true); // Skip loading state update to prevent recursion
-          }
-        }
+        const runtime = ensureTabRuntime(tabId);
+        runtime.activeBranches.clear();
+        runtime.hasHistoryLoadingPlaceholder = true;
+        runtime.lastAssistantState.hasAssistant = true;
+        runtime.lastAssistantState.timestamp = Date.now();
+        await applyTabState(tabId, { isLoading: true, hasContent: false });
       }
     } else {
       logger.debug(`No cached loading state found for tab ${tabId}`);
@@ -1103,29 +1342,33 @@ const saveCurrentTabChatHistory = async (chatHistory) => {
     
     const cacheKey = `${currentUrl}#${activeTabId}`;
     logger.info(`Attempting to save chat history for tab ${activeTabId} with ${filteredChatHistory.length} messages to key: ${cacheKey}`);
-    
+
     const response = await chrome.runtime.sendMessage({
       type: 'SAVE_CHAT_HISTORY',
       url: cacheKey,
       chatHistory: filteredChatHistory
     });
-    
+
     logger.info(`Received response for tab ${activeTabId} save operation:`, response);
-    
+
+    const derivedState = deriveTabStateFromHistory(filteredChatHistory);
+
+    const applyDerivedState = async () => {
+      try {
+        await setTabDerivedState(activeTabId, derivedState);
+      } catch (stateError) {
+        logger.warn('Failed to apply derived tab state after save:', stateError);
+      }
+    };
+
     if (response && response.type === 'CHAT_HISTORY_SAVED') {
       logger.info(`Successfully saved chat history for tab ${activeTabId}: ${chatHistory.length} messages`);
-      
-      // Update tab content state after successful save
-      await updateTabContentState(activeTabId, chatHistory.length > 0);
-      
+      await applyDerivedState();
       return true;
     } else if (response && response.success === true) {
       // Handle case where backend reports success but with different response format
       logger.info(`Chat history saved successfully for tab ${activeTabId} (alternative success format): ${chatHistory.length} messages`);
-      
-      // Update tab content state after successful save
-      await updateTabContentState(activeTabId, chatHistory.length > 0);
-      
+      await applyDerivedState();
       return true;
     } else {
       // Improved error logging with detailed response information
@@ -1136,8 +1379,9 @@ const saveCurrentTabChatHistory = async (chatHistory) => {
         keys: Object.keys(response),
         fullResponse: JSON.stringify(response)
       } : 'null response';
-      
+
       logger.error(`Failed to save tab chat history for ${activeTabId}. Response details:`, responseInfo);
+      await applyDerivedState();
       return false;
     }
   } catch (error) {
@@ -1149,8 +1393,14 @@ const saveCurrentTabChatHistory = async (chatHistory) => {
       activeTabId: activeTabId,
       chatHistoryLength: Array.isArray(chatHistory) ? chatHistory.length : 'invalid'
     };
-    
+
     logger.error('Exception while saving tab chat history:', errorInfo);
+    try {
+      const derivedState = deriveTabStateFromHistory(Array.isArray(chatHistory) ? chatHistory : []);
+      await setTabDerivedState(activeTabId, derivedState);
+    } catch (stateError) {
+      logger.warn('Failed to apply derived tab state after error:', stateError);
+    }
     return false;
   }
 };
@@ -1326,18 +1576,20 @@ const resetTabInitializationStates = () => {
  * This forces all tabs to show as not loading, useful when switching pages
  */
 const resetTabsLoadingStates = async () => {
-  let hasChanges = false;
+  let renderNeeded = false;
 
-  tabs.forEach(tab => {
-    if (tab.isLoading) {
-      tab.isLoading = false;
-      hasChanges = true;
+  for (const tab of tabs) {
+    const runtime = ensureTabRuntime(tab.id);
+    runtime.activeBranches.clear();
+    runtime.hasHistoryLoadingPlaceholder = false;
+    const changed = await applyTabState(tab.id, { isLoading: false }, { skipRender: true });
+    renderNeeded = renderNeeded || changed;
+    if (changed) {
       logger.debug(`Reset loading state for tab ${tab.id}`);
     }
-  });
+  }
 
-  if (hasChanges) {
-    // Re-render tabs to update visual state
+  if (renderNeeded) {
     const container = document.querySelector('.tab-container');
     if (container && !isRendering) {
       await renderTabs(container, true); // Skip loading state update to prevent recursion
