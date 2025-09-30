@@ -276,12 +276,14 @@ const appendMessageToUI = (chatContainer, role, content, imageBase64 = null, isS
       }, 100);
     };
     
-    const buttons = [scrollTopButton, copyTextButton, copyMarkdownButton, scrollBottomButton];
+    // New order: keep scroll buttons first, move copy buttons to the bottom
+    const buttons = [scrollTopButton, scrollBottomButton, copyTextButton, copyMarkdownButton];
     const buttonGroups = [
       [scrollTopButton],
-      [copyTextButton, copyMarkdownButton],
-      [scrollBottomButton]
+      [scrollBottomButton],
+      [copyTextButton, copyMarkdownButton]
     ];
+    logger.debug('Applied assistant message hover button order: top, bottom, copyText, copyMarkdown');
     
     // Dynamic button layout
     layoutMessageButtons(buttonContainer, buttons, messageDiv, buttonGroups);
@@ -722,18 +724,25 @@ const handleStreamEnd = async (chatContainer, fullResponse, onComplete, finishRe
       deleteButton.setAttribute('data-action', 'delete');
       deleteButton.setAttribute('data-branch-id', streamingMessageContainer.getAttribute('data-branch-id'));
 
-      // Order: preview (topmost), top, bottom, copy text, copy MD, create branch, delete branch
-      const buttons = [previewButton, scrollTopButton, scrollBottomButton, copyTextButton, copyMarkdownButton, branchButton, deleteButton];
-      layoutMessageButtons(buttonContainer, buttons, streamingMessageContainer);
+      // New order: preview (topmost), branch (second), scroll buttons, delete, then copy buttons at the very bottom
+      const buttons = [previewButton, branchButton, scrollTopButton, scrollBottomButton, deleteButton, copyTextButton, copyMarkdownButton];
+      const buttonGroups = [
+        [previewButton, branchButton],
+        [scrollTopButton, scrollBottomButton, deleteButton],
+        [copyTextButton, copyMarkdownButton]
+      ];
+      logger.debug('Applied branch message hover button order: preview, branch, top, bottom, delete, copyText, copyMarkdown');
+      layoutMessageButtons(buttonContainer, buttons, streamingMessageContainer, buttonGroups);
       streamingMessageContainer.appendChild(buttonContainer);
     } else {
-      // Assistant message (non-branch) default set
-      const buttons = [scrollTopButton, copyTextButton, copyMarkdownButton, scrollBottomButton];
+      // Assistant message (non-branch) default set with copy buttons at the bottom
+      const buttons = [scrollTopButton, scrollBottomButton, copyTextButton, copyMarkdownButton];
       const buttonGroups = [
         [scrollTopButton],
-        [copyTextButton, copyMarkdownButton],
-        [scrollBottomButton]
+        [scrollBottomButton],
+        [copyTextButton, copyMarkdownButton]
       ];
+      logger.debug('Applied assistant (post-stream) hover button order: top, bottom, copyText, copyMarkdown');
       layoutMessageButtons(buttonContainer, buttons, streamingMessageContainer, buttonGroups);
       streamingMessageContainer.appendChild(buttonContainer);
     }

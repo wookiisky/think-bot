@@ -512,12 +512,18 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
             deleteButton.setAttribute('data-action', 'delete');
             deleteButton.setAttribute('data-branch-id', response.branchId);
 
-            // Order: preview, top, bottom, copy text, copy Markdown, create branch, delete branch
-            const buttons = [previewButton, scrollTopButton, scrollBottomButton, copyTextButton, copyMarkdownButton, branchButton, deleteButton];
+            // New order: preview (topmost), branch (second), scroll buttons, delete, then copy buttons at the very bottom
+            const buttons = [previewButton, branchButton, scrollTopButton, scrollBottomButton, deleteButton, copyTextButton, copyMarkdownButton];
+            const buttonGroups = [
+              [previewButton, branchButton],
+              [scrollTopButton, scrollBottomButton, deleteButton],
+              [copyTextButton, copyMarkdownButton]
+            ];
 
             // Use existing layout tools to adapt to floating/responsive
             if (window.ChatManager && window.ChatManager.layoutMessageButtons) {
-              window.ChatManager.layoutMessageButtons(buttonContainer, buttons, branchDiv);
+              window.ChatManager.layoutMessageButtons(buttonContainer, buttons, branchDiv, buttonGroups);
+              logger.debug('Applied history branch hover button order for conversations and sidebar replay');
             } else {
               buttons.forEach(btn => buttonContainer.appendChild(btn));
             }
