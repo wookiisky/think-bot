@@ -12,6 +12,7 @@
 
 import { i18n } from '../../js/modules/i18n.js';
 import { createLogger, hasMarkdownElements } from '../modules/utils.js';
+import { createBranchHeader } from '../modules/branch-preview.js';
 import { getChatHistoryFromDOM, editMessageInDOM, deleteMessagesAfter } from '../modules/chat-history.js';
 
 const logger = createLogger('ChatMessage');
@@ -305,10 +306,10 @@ const retryMessage = (messageElement, retryCallback) => {
         logger.debug(`Retry branch ${retryBranchId} uses border loader (no spinner)`);
         
         // Add model label to top of branch
-        const modelLabel = document.createElement('div');
-        modelLabel.className = 'branch-model-label';
-        modelLabel.textContent = (selectedModelForLabel && selectedModelForLabel.name) || 'unknown';
-        branchDiv.appendChild(modelLabel);
+        const { header: branchHeader } = createBranchHeader(
+          (selectedModelForLabel && selectedModelForLabel.name) || 'unknown'
+        );
+        branchDiv.appendChild(branchHeader);
         
         branchDiv.appendChild(contentDiv);
         const actionsDiv = document.createElement('div');

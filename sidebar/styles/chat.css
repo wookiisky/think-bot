@@ -535,7 +535,7 @@
 /* Branch column container */
 .message-branches {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 6px;
   width: 100%;
   overflow-x: hidden; /* Changed from auto to hidden for grid layout */
@@ -600,8 +600,8 @@
 
 /* When 3 or more branches, fix branch width to ensure horizontal scrolling */
 .message-branches.many-branches .message-branch {
-  min-width: 400px;
-  max-width: 400px;
+  min-width: 350px;
+  max-width: 350px;
   flex-shrink: 0;
 }
 
@@ -684,6 +684,15 @@
 }
 
 /* Branch model label */
+.branch-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  align-self: center;
+  margin: 0 auto 6px;
+}
+
 .branch-model-label {
   font-size: 0.75em;
   color: var(--text-muted);
@@ -692,13 +701,39 @@
   border-radius: 4px;
   font-weight: 500;
   border: 1px solid var(--border-light);
-  position: sticky;
-  top: 0;
-  z-index: 10;
   text-align: center;
-  align-self: center;
   width: fit-content;
   margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  line-height: 1.2;
+  padding: 0 6px;
+}
+
+.branch-preview-trigger {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 2px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.branch-preview-trigger .material-icons {
+  font-size: 18px;
+}
+
+.branch-preview-trigger:hover,
+.branch-preview-trigger:focus-visible {
+  color: var(--primary-color);
+  background-color: var(--bg-secondary);
+  outline: none;
 }
 
 /* Branch status styles */
@@ -1026,20 +1061,15 @@
   gap: 8px;
 }
 
-.message-branch[data-streaming="true"] .branch-model-label {
+.message-branch[data-streaming="true"] .branch-header {
   position: sticky;
   top: 0;
   z-index: 10;
-  text-align: center;
-  align-self: center;
-  width: fit-content;
-  margin: 0 auto 8px auto;
-  display: flex;
-  align-items: center;
-  height: 22px;
-  line-height: 22px;
-  padding: 0 6px;
-  border-radius: 4px;
+  margin: 0 auto 8px;
+}
+
+.message-branch[data-streaming="true"] .branch-model-label {
+  margin: 0;
 }
 
 .message-branch[data-streaming="true"] .message-content {

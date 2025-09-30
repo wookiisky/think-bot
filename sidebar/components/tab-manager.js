@@ -5,6 +5,7 @@
 
 import { i18n } from '../../js/modules/i18n.js';
 import { createLogger } from '../modules/utils.js';
+import { createBranchHeader } from '../modules/branch-preview.js';
 
 const logger = createLogger('TabManager');
 
@@ -1023,10 +1024,8 @@ const checkAndRestoreLoadingState = async (currentUrl, tabId, chatContainer) => 
               logger.debug(`Tab ${tabId} restore uses border loader (no spinner) for branch ${branchId}`);
               
               // Create model label
-              const modelLabel = document.createElement('div');
-              modelLabel.className = 'branch-model-label';
-              modelLabel.textContent = 'restored';
-              branchDiv.appendChild(modelLabel);
+              const { header: branchHeader } = createBranchHeader('restored');
+              branchDiv.appendChild(branchHeader);
               
               // Assemble the structure
               branchDiv.appendChild(contentDiv);

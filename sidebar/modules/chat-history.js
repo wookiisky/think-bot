@@ -4,6 +4,7 @@
  */
 
 import { createLogger, hasMarkdownElements } from './utils.js';
+import { createBranchHeader, ensureBranchPreviewTrigger, openBranchPreview } from './branch-preview.js';
 import { i18n } from '../../js/modules/i18n.js';
 
 const logger = createLogger('ChatHistory');
@@ -397,18 +398,17 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
             }
           }
           
-          // Add model label to top of branch
-          const modelLabel = document.createElement('div');
-          modelLabel.className = 'branch-model-label';
-          
+          // Add branch header and populate model label asynchronously
+          const { header: branchHeader, label: modelLabel } = createBranchHeader(response.model || 'unknown');
+
           // Use display name instead of raw model ID
           getModelDisplayName(response.model).then(displayName => {
             modelLabel.textContent = displayName;
           }).catch(() => {
             modelLabel.textContent = response.model || 'unknown';
           });
-          
-          branchDiv.appendChild(modelLabel);
+
+          branchDiv.appendChild(branchHeader);
 
           branchDiv.appendChild(contentDiv);
 
@@ -446,28 +446,9 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
             previewButton.className = 'btn-base message-action-btn';
             previewButton.innerHTML = '<i class="material-icons">visibility</i>';
             previewButton.title = i18n.getMessage('sidebar_chatManager_title_preview') || 'Preview';
-            previewButton.onclick = () => {
-              try {
-                const raw = contentDiv.getAttribute('data-raw-content') || contentDiv.textContent || '';
-                let html = '';
-                if (raw && window.marked && typeof window.marked.parse === 'function') {
-                  try {
-                    html = window.marked.parse(raw);
-                  } catch (e) {
-                    html = raw.replace(/\n/g, '<br>');
-                  }
-                } else {
-                  html = contentDiv.innerHTML || '';
-                }
-                const modelName = branchDiv.getAttribute('data-model') || 'assistant';
-                if (window.messagePreviewOverlay && typeof window.messagePreviewOverlay.show === 'function') {
-                  window.messagePreviewOverlay.show({ html, title: modelName });
-                }
-                logger.info('Opened message preview via button for history branch', response.branchId);
-              } catch (err) {
-                logger.error('Failed to open message preview via button (history):', err);
-              }
-            };
+            const handlePreviewClick = () => openBranchPreview(branchDiv);
+            previewButton.onclick = handlePreviewClick;
+            ensureBranchPreviewTrigger(branchDiv, handlePreviewClick);
 
             // Scroll to top
             const scrollTopButton = document.createElement('button');
