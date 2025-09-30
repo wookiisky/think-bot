@@ -502,7 +502,7 @@ export class ModelManager {
     this.updateDefaultModelSelector();
     logger.info('Added new model');
     if (this.changeCallback) {
-      this.changeCallback();
+      this.changeCallback('order');
     }
   }
 
@@ -538,9 +538,9 @@ export class ModelManager {
     
     const sourceModelName = sourceModel.name || i18n.getMessage('options_model_unnamed') || 'Unnamed Model';
     logger.info(`Copied model "${sourceModelName}" with new ID: ${copiedModel.id}`);
-    
+
     if (this.changeCallback) {
-      this.changeCallback();
+      this.changeCallback('order');
     }
   }
 
@@ -567,7 +567,7 @@ export class ModelManager {
         this.updateDefaultModelSelector();
         logger.info(`Soft deleted model "${modelName}" at index ${index}`);
         if (this.changeCallback) {
-          this.changeCallback();
+          this.changeCallback('order');
         }
       }
     });
@@ -1139,8 +1139,11 @@ export class ModelManager {
         this.renderModels();
 
         // Notify that changes have been made
+        if (window.optionsPage?.touchModelOrderLastModified) {
+          window.optionsPage.touchModelOrderLastModified();
+        }
         if (this.changeCallback) {
-          this.changeCallback();
+          this.changeCallback('order');
         }
       },
     });

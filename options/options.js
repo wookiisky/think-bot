@@ -24,8 +24,13 @@ class OptionsPage {
     this.isAutoSyncing = false;
     this.isInitializing = true; // Add initialization flag to prevent accidental syncEnabled reset during page load
     this.activeTab = 'basic';
+    this.quickInputsOrderLastModified = 0;
+    this.modelOrderLastModified = 0;
     // Initialize ModelManager with change notification callback
-    this.modelManager = new ModelManager(domElements, () => {
+    this.modelManager = new ModelManager(domElements, (changeType) => {
+      if (changeType === 'order') {
+        this.touchModelOrderLastModified();
+      }
       this.markAsChanged();
       this.updateBranchModelSelector(); // Update branch model selector when models change
     });
@@ -122,14 +127,21 @@ class OptionsPage {
   async loadSettings() {
     const config = await UIConfigManager.loadSettings();
     if (config) {
-    // Initialize model manager first to populate model selector options
-    this.modelManager.init(config, () => this.markAsChanged());
+      // Initialize model manager first to populate model selector options
+      this.modelManager.init(config, (changeType) => {
+        if (changeType === 'order') {
+          this.touchModelOrderLastModified();
+        }
+        this.markAsChanged();
+      });
 
-    // Then populate form with loaded config (including default model selection)
-    FormHandler.populateForm(config, this.domElements);
-    
-    // Initialize branch model selector
-    this.initializeBranchModelSelector(config);
+      // Then populate form with loaded config (including default model selection)
+      FormHandler.populateForm(config, this.domElements);
+
+      // Initialize branch model selector
+      this.initializeBranchModelSelector(config);
+
+      this.initializeOrderTimestamps(config);
 
       // Apply theme based on loaded configuration
       this.applyTheme(config);
@@ -170,6 +182,40 @@ class OptionsPage {
   markAsChanged() {
     this.hasUnsavedChanges = true;
     this.updateSaveButtonState();
+  }
+
+  initializeOrderTimestamps(config) {
+    const quickInputs = config.quickInputs || [];
+    const models = config.llm_models?.models || [];
+
+    this.quickInputsOrderLastModified = config.quickInputsOrderLastModified || this.deriveLatestTimestamp(quickInputs);
+    this.modelOrderLastModified = config.llm_models?.orderLastModified || this.deriveLatestTimestamp(models);
+  }
+
+  deriveLatestTimestamp(items) {
+    if (!Array.isArray(items) || items.length === 0) {
+      return 0;
+    }
+    return items.reduce((latest, item) => {
+      const timestamp = item?.lastModified || 0;
+      return timestamp > latest ? timestamp : latest;
+    }, 0);
+  }
+
+  getQuickInputsOrderLastModified() {
+    return this.quickInputsOrderLastModified || 0;
+  }
+
+  touchQuickInputsOrderLastModified() {
+    this.quickInputsOrderLastModified = Date.now();
+  }
+
+  getModelOrderLastModified() {
+    return this.modelOrderLastModified || 0;
+  }
+
+  touchModelOrderLastModified() {
+    this.modelOrderLastModified = Date.now();
   }
   
   // Update save button visual state
@@ -407,7 +453,10 @@ class OptionsPage {
     });
     
     // Set up quick inputs event listeners
-    QuickInputsManager.setupEventListeners(this.domElements, () => {
+    QuickInputsManager.setupEventListeners(this.domElements, (changeType) => {
+      if (changeType === 'order') {
+        this.touchQuickInputsOrderLastModified();
+      }
       this.markAsChanged();
     });
 

@@ -230,9 +230,12 @@ export class QuickInputsManager {
       animation: 150, // ms, animation speed moving items when sorting
       handle: '.drag-handle', // Drag handle selector within list items
       onEnd: () => {
+        if (window.optionsPage?.touchQuickInputsOrderLastModified) {
+          window.optionsPage.touchQuickInputsOrderLastModified();
+        }
         // Trigger change callback to mark as unsaved
         if (this.changeCallback) {
-          this.changeCallback();
+          this.changeCallback('order');
         }
       }
     });
@@ -329,7 +332,7 @@ export class QuickInputsManager {
     }
     
     if (this.changeCallback) {
-      this.changeCallback();
+      this.changeCallback('content');
     }
   }
 
@@ -377,8 +380,11 @@ export class QuickInputsManager {
     // Add quick input button
     domElements.addQuickInputBtn.addEventListener('click', () => {
       this.addQuickInput(domElements);
+      if (window.optionsPage?.touchQuickInputsOrderLastModified) {
+        window.optionsPage.touchQuickInputsOrderLastModified();
+      }
       if (this.changeCallback) {
-        this.changeCallback();
+        this.changeCallback('order');
       }
     });
     
@@ -401,8 +407,11 @@ export class QuickInputsManager {
             onConfirm: () => {
               console.log(`Removing quick input: ${displayText}`);
               this.removeQuickInput(item);
+              if (window.optionsPage?.touchQuickInputsOrderLastModified) {
+                window.optionsPage.touchQuickInputsOrderLastModified();
+              }
               if (this.changeCallback) {
-                this.changeCallback();
+                this.changeCallback('order');
               }
             }
           });
@@ -462,9 +471,9 @@ export class QuickInputsManager {
         e.target.classList.contains('auto-trigger-checkbox')
       ) {
         if (this.changeCallback) {
-          this.changeCallback();
+          this.changeCallback('content');
         }
       }
     });
   }
-} 
+}

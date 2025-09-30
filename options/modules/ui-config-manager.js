@@ -105,11 +105,14 @@ export class UIConfigManager {
     // Delegate quick inputs extraction to QuickInputsManager to handle soft deletes
     const quickInputs = QuickInputsManager.getQuickInputs(domElements);
 
+    const optionsPage = window.optionsPage;
     const config = {
       llm_models: {
-        models: modelManager.getAllModels() // Get all models including soft-deleted ones for proper sync
+        models: modelManager.getAllModels(), // Get all models including soft-deleted ones for proper sync
+        orderLastModified: optionsPage?.getModelOrderLastModified?.() || 0
       },
       quickInputs: quickInputs,
+      quickInputsOrderLastModified: optionsPage?.getQuickInputsOrderLastModified?.() || 0,
       basic: {
         defaultExtractionMethod: domElements.defaultExtractionMethod.value,
         jinaApiKey: domElements.jinaApiKey.value,
