@@ -553,16 +553,37 @@ dataSerializer.mergeConfigData = function(localConfig, remoteConfig) {
     Object.keys(remoteConfig).forEach(key => {
       if (key === 'quickInputs') {
         // Special handling for quickInputs - merge by individual items
-        mergedConfig.quickInputs = this.mergeQuickInputs(localConfig.quickInputs, remoteConfig.quickInputs);
+        const quickInputMerge = this.mergeQuickInputs(
+          localConfig.quickInputs,
+          remoteConfig.quickInputs,
+          localConfig.quickInputsOrderLastModified || 0,
+          remoteConfig.quickInputsOrderLastModified || 0
+        );
+        mergedConfig.quickInputs = quickInputMerge.items;
+        mergedConfig.quickInputsOrderLastModified = quickInputMerge.orderTimestamp;
       } else if (key === 'llm_models') {
         // Special handling for new format LLM configuration - merge models by individual items
-        mergedConfig.llm_models = this.mergeLlmConfig(localConfig.llm_models, remoteConfig.llm_models);
+        mergedConfig.llm_models = this.mergeLlmConfig(
+          localConfig.llm_models,
+          remoteConfig.llm_models,
+          localConfig.llm_models?.orderLastModified || 0,
+          remoteConfig.llm_models?.orderLastModified || 0
+        );
       } else if (key === 'llm') {
         // Special handling for old format LLM configuration - merge models by individual items
-        mergedConfig.llm = this.mergeLlmConfig(localConfig.llm, remoteConfig.llm);
+        mergedConfig.llm = this.mergeLlmConfig(
+          localConfig.llm,
+          remoteConfig.llm,
+          localConfig.llm?.orderLastModified || 0,
+          remoteConfig.llm?.orderLastModified || 0
+        );
       } else if (key === 'basic') {
         // Special handling for basic configuration - merge based on timestamp
         mergedConfig.basic = this.mergeBasicConfig(localConfig.basic, remoteConfig.basic);
+      } else if (key === 'quickInputsOrderLastModified') {
+        const existingTimestamp = mergedConfig.quickInputsOrderLastModified || 0;
+        const remoteTimestamp = remoteConfig.quickInputsOrderLastModified || 0;
+        mergedConfig.quickInputsOrderLastModified = Math.max(existingTimestamp, remoteTimestamp);
       } else {
         // For other config fields, use remote config (latest sync)
         mergedConfig[key] = remoteConfig[key];
@@ -590,10 +611,20 @@ dataSerializer.getQuickInputsListTimestamp = function(quickInputs) {
   }, 0);
 };
 
+dataSerializer.getModelListTimestamp = function(models) {
+  if (!Array.isArray(models) || models.length === 0) {
+    return 0;
+  }
+  return models.reduce((latest, model) => {
+    const timestamp = model?.lastModified || 0;
+    return timestamp > latest ? timestamp : latest;
+  }, 0);
+};
+
 /**
  * Merge quickInputs arrays with soft-delete support.
  */
-dataSerializer.mergeQuickInputs = function(localQuickInputs = [], remoteQuickInputs = []) {
+dataSerializer.mergeQuickInputs = function(localQuickInputs = [], remoteQuickInputs = [], localOrderTimestamp = 0, remoteOrderTimestamp = 0) {
   try {
     serializerLogger.info('Starting quickInputs merge with soft-delete logic.');
 
@@ -663,10 +694,27 @@ dataSerializer.mergeQuickInputs = function(localQuickInputs = [], remoteQuickInp
     }
 
     // Determine the order from the list with the most recent overall change.
-    const localListTimestamp = this.getQuickInputsListTimestamp(localQuickInputs);
-    const remoteListTimestamp = this.getQuickInputsListTimestamp(remoteQuickInputs);
-    const baseOrderList = localListTimestamp >= remoteListTimestamp ? localQuickInputs : remoteQuickInputs;
-    
+    const localOrderValid = Number.isFinite(localOrderTimestamp) && localOrderTimestamp > 0;
+    const remoteOrderValid = Number.isFinite(remoteOrderTimestamp) && remoteOrderTimestamp > 0;
+
+    let baseOrderList;
+    let resolvedOrderTimestamp = 0;
+
+    if (localOrderValid || remoteOrderValid) {
+      if (!remoteOrderValid || (localOrderValid && localOrderTimestamp >= remoteOrderTimestamp)) {
+        baseOrderList = localQuickInputs;
+        resolvedOrderTimestamp = localOrderTimestamp || remoteOrderTimestamp || 0;
+      } else {
+        baseOrderList = remoteQuickInputs;
+        resolvedOrderTimestamp = remoteOrderTimestamp;
+      }
+    } else {
+      const localListTimestamp = this.getQuickInputsListTimestamp(localQuickInputs);
+      const remoteListTimestamp = this.getQuickInputsListTimestamp(remoteQuickInputs);
+      baseOrderList = localListTimestamp >= remoteListTimestamp ? localQuickInputs : remoteQuickInputs;
+      resolvedOrderTimestamp = Math.max(localListTimestamp, remoteListTimestamp);
+    }
+
     const orderedMergedList = [];
     const processedIds = new Set();
 
@@ -685,13 +733,19 @@ dataSerializer.mergeQuickInputs = function(localQuickInputs = [], remoteQuickInp
       }
     }
     
-    serializerLogger.info(`Merged quickInputs: ${orderedMergedList.length} items.`);
-    return orderedMergedList;
+    serializerLogger.info(`Merged quickInputs: ${orderedMergedList.length} items (order timestamp: ${resolvedOrderTimestamp}).`);
+    return {
+      items: orderedMergedList,
+      orderTimestamp: resolvedOrderTimestamp
+    };
 
   } catch (error) {
     serializerLogger.error('Error merging quickInputs:', error.message);
     // Fallback to a simple union to avoid data loss in case of unexpected errors.
-    return [...(localQuickInputs || []), ...(remoteQuickInputs || [])];
+    return {
+      items: [...(localQuickInputs || []), ...(remoteQuickInputs || [])],
+      orderTimestamp: Math.max(localOrderTimestamp || 0, remoteOrderTimestamp || 0)
+    };
   }
 };
 
@@ -770,7 +824,7 @@ dataSerializer.legacyMergeQuickInputs = function(localQuickInputs, remoteQuickIn
 /**
  * Merge LLM configuration with intelligent model merging based on timestamps
  */
-dataSerializer.mergeLlmConfig = function(localLlm, remoteLlm) {
+dataSerializer.mergeLlmConfig = function(localLlm, remoteLlm, localOrderTimestamp = 0, remoteOrderTimestamp = 0) {
   try {
     serializerLogger.info('Starting LLM config merge based on lastModified timestamps');
 
@@ -780,12 +834,20 @@ dataSerializer.mergeLlmConfig = function(localLlm, remoteLlm) {
 
     if (!localLlm) {
       serializerLogger.info('Using remote LLM config (no local config available)');
-      return remoteLlm;
+      const remoteResult = remoteLlm ? { ...remoteLlm } : {};
+      if (!remoteResult.orderLastModified && remoteOrderTimestamp) {
+        remoteResult.orderLastModified = remoteOrderTimestamp;
+      }
+      return remoteResult;
     }
 
     if (!remoteLlm) {
       serializerLogger.info('Using local LLM config (no remote config available)');
-      return localLlm;
+      const localResult = localLlm ? { ...localLlm } : {};
+      if (!localResult.orderLastModified && localOrderTimestamp) {
+        localResult.orderLastModified = localOrderTimestamp;
+      }
+      return localResult;
     }
 
     // Start with local LLM config as base
@@ -799,14 +861,29 @@ dataSerializer.mergeLlmConfig = function(localLlm, remoteLlm) {
 
     // Merge models array based on individual model timestamps
     if (remoteLlm.models || localLlm.models) {
-      mergedLlm.models = this.mergeLlmModels(localLlm.models, remoteLlm.models);
+      const modelMerge = this.mergeLlmModels(
+        localLlm.models,
+        remoteLlm.models,
+        localOrderTimestamp,
+        remoteOrderTimestamp
+      );
+      mergedLlm.models = modelMerge.items;
+      mergedLlm.orderLastModified = modelMerge.orderTimestamp;
+    }
+
+    if (!mergedLlm.orderLastModified) {
+      mergedLlm.orderLastModified = Math.max(localOrderTimestamp || 0, remoteOrderTimestamp || 0);
     }
 
     serializerLogger.info('LLM config merge completed');
     return mergedLlm;
   } catch (error) {
     serializerLogger.error('Error merging LLM config:', error.message);
-    return localLlm || remoteLlm || {};
+    const fallback = localLlm || remoteLlm || {};
+    if (fallback && !fallback.orderLastModified) {
+      fallback.orderLastModified = Math.max(localOrderTimestamp || 0, remoteOrderTimestamp || 0);
+    }
+    return fallback;
   }
 };
 
@@ -851,27 +928,39 @@ dataSerializer.mergeBasicConfig = function(localBasic, remoteBasic) {
 /**
  * Merge LLM models arrays based on individual model timestamps with soft-delete support
  */
-dataSerializer.mergeLlmModels = function(localModels, remoteModels) {
+dataSerializer.mergeLlmModels = function(localModels, remoteModels, localOrderTimestamp = 0, remoteOrderTimestamp = 0) {
   try {
     serializerLogger.info('Starting LLM models merge with soft-delete support based on lastModified timestamps');
 
     if (!localModels && !remoteModels) {
-      return [];
+      return {
+        items: [],
+        orderTimestamp: Math.max(localOrderTimestamp || 0, remoteOrderTimestamp || 0)
+      };
     }
 
     if (!localModels) {
       serializerLogger.info('Using remote models (no local models available)');
-      return remoteModels;
+      return {
+        items: remoteModels || [],
+        orderTimestamp: remoteOrderTimestamp || localOrderTimestamp || this.getModelListTimestamp(remoteModels)
+      };
     }
 
     if (!remoteModels) {
       serializerLogger.info('Using local models (no remote models available)');
-      return localModels;
+      return {
+        items: localModels || [],
+        orderTimestamp: localOrderTimestamp || remoteOrderTimestamp || this.getModelListTimestamp(localModels)
+      };
     }
 
     // Create maps for efficient lookup
     const localMap = new Map();
     const remoteMap = new Map();
+
+    const localModelsArray = Array.isArray(localModels) ? localModels : [];
+    const remoteModelsArray = Array.isArray(remoteModels) ? remoteModels : [];
 
     localModels.forEach(model => {
       if (model.id) {
@@ -885,8 +974,7 @@ dataSerializer.mergeLlmModels = function(localModels, remoteModels) {
       }
     });
 
-    const mergedModels = [];
-    const processedIds = new Set();
+    const mergedMap = new Map();
 
     // Get all unique model IDs from both local and remote
     const allModelIds = new Set([...localMap.keys(), ...remoteMap.keys()]);
@@ -906,59 +994,114 @@ dataSerializer.mergeLlmModels = function(localModels, remoteModels) {
         if (localIsDeleted && remoteIsDeleted) {
           // Both are deleted, keep the newer deletion record
           const newerModel = localTimestamp >= remoteTimestamp ? localModel : remoteModel;
-          mergedModels.push(newerModel);
+          mergedMap.set(id, newerModel);
           serializerLogger.debug(`Both local and remote model ${id} are deleted, using newer deletion record`);
         } else if (localIsDeleted && !remoteIsDeleted) {
           // Local is deleted, remote has data
           if (localTimestamp > remoteTimestamp) {
             // Deletion is newer, keep deletion
-            mergedModels.push(localModel);
+            mergedMap.set(id, localModel);
             serializerLogger.debug(`Local deletion of ${id} is newer than remote data, keeping deletion`);
           } else {
             // Remote data is newer, keep it
-            mergedModels.push(remoteModel);
+            mergedMap.set(id, remoteModel);
             serializerLogger.debug(`Remote data for ${id} is newer than local deletion, keeping data`);
           }
         } else if (!localIsDeleted && remoteIsDeleted) {
           // Remote is deleted, local has data
           if (remoteTimestamp > localTimestamp) {
             // Deletion is newer, keep deletion
-            mergedModels.push(remoteModel);
+            mergedMap.set(id, remoteModel);
             serializerLogger.debug(`Remote deletion of ${id} is newer than local data, keeping deletion`);
           } else {
             // Local data is newer, keep it
-            mergedModels.push(localModel);
+            mergedMap.set(id, localModel);
             serializerLogger.debug(`Local data for ${id} is newer than remote deletion, keeping data`);
           }
         } else {
           // Neither is deleted, normal timestamp comparison
           if (localTimestamp >= remoteTimestamp) {
-            mergedModels.push(localModel);
+            mergedMap.set(id, localModel);
             serializerLogger.debug(`Using local model: ${id} (local: ${new Date(localTimestamp).toISOString()}, remote: ${new Date(remoteTimestamp).toISOString()})`);
           } else {
-            mergedModels.push(remoteModel);
+            mergedMap.set(id, remoteModel);
             serializerLogger.debug(`Using remote model: ${id} (local: ${new Date(localTimestamp).toISOString()}, remote: ${new Date(remoteTimestamp).toISOString()})`);
           }
         }
-        processedIds.add(id);
       } else if (localModel && !remoteModel) {
         // Only local exists
-        mergedModels.push(localModel);
+        mergedMap.set(id, localModel);
         serializerLogger.debug(`Adding local-only model: ${id} (deleted: ${localModel.isDeleted || false})`);
-        processedIds.add(id);
       } else if (!localModel && remoteModel) {
         // Only remote exists
-        mergedModels.push(remoteModel);
+        mergedMap.set(id, remoteModel);
         serializerLogger.debug(`Adding remote-only model: ${id} (deleted: ${remoteModel.isDeleted || false})`);
-        processedIds.add(id);
       }
     }
 
-    serializerLogger.info(`Merged LLM models: ${mergedModels.length} items (local: ${localModels.length}, remote: ${remoteModels.length})`);
-    return mergedModels;
+    const localOrderValid = Number.isFinite(localOrderTimestamp) && localOrderTimestamp > 0;
+    const remoteOrderValid = Number.isFinite(remoteOrderTimestamp) && remoteOrderTimestamp > 0;
+
+    let baseOrderList;
+    let resolvedOrderTimestamp = 0;
+
+    if (localOrderValid || remoteOrderValid) {
+      if (!remoteOrderValid || (localOrderValid && localOrderTimestamp >= remoteOrderTimestamp)) {
+        baseOrderList = localModelsArray;
+        resolvedOrderTimestamp = localOrderTimestamp || remoteOrderTimestamp || 0;
+      } else {
+        baseOrderList = remoteModelsArray;
+        resolvedOrderTimestamp = remoteOrderTimestamp;
+      }
+    } else {
+      const localListTimestamp = this.getModelListTimestamp(localModelsArray);
+      const remoteListTimestamp = this.getModelListTimestamp(remoteModelsArray);
+      baseOrderList = localListTimestamp >= remoteListTimestamp ? localModelsArray : remoteModelsArray;
+      resolvedOrderTimestamp = Math.max(localListTimestamp, remoteListTimestamp);
+    }
+
+    const orderedMerged = [];
+    const processedIds = new Set();
+
+    const addModelsInOrder = (models) => {
+      if (!Array.isArray(models)) {
+        return;
+      }
+      models.forEach(model => {
+        const id = model?.id;
+        if (!id || processedIds.has(id)) {
+          return;
+        }
+        if (mergedMap.has(id)) {
+          orderedMerged.push(mergedMap.get(id));
+          processedIds.add(id);
+        }
+      });
+    };
+
+    addModelsInOrder(baseOrderList);
+
+    const secondaryList = baseOrderList === localModelsArray ? remoteModelsArray : localModelsArray;
+    addModelsInOrder(secondaryList);
+
+    mergedMap.forEach((model, id) => {
+      if (!processedIds.has(id)) {
+        orderedMerged.push(model);
+        processedIds.add(id);
+      }
+    });
+
+    serializerLogger.info(`Merged LLM models: ${orderedMerged.length} items (local: ${localModelsArray.length}, remote: ${remoteModelsArray.length}), order timestamp: ${resolvedOrderTimestamp}`);
+    return {
+      items: orderedMerged,
+      orderTimestamp: resolvedOrderTimestamp
+    };
   } catch (error) {
     serializerLogger.error('Error merging LLM models:', error.message);
-    return localModels || remoteModels || [];
+    return {
+      items: localModels || remoteModels || [],
+      orderTimestamp: Math.max(localOrderTimestamp || 0, remoteOrderTimestamp || 0)
+    };
   }
 };
 

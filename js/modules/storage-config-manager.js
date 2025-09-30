@@ -18,6 +18,31 @@ const QUICK_INPUTS_INDEX_KEY = CONFIG_KEYS.QUICK_INPUTS_INDEX;
 const QUICK_INPUT_PREFIX = CONFIG_KEYS.QUICK_INPUT_PREFIX;
 const SYSTEM_PROMPT_KEY = CONFIG_KEYS.SYSTEM_PROMPT;
 
+function arraysEqual(arrayA = [], arrayB = []) {
+  if (!Array.isArray(arrayA) || !Array.isArray(arrayB)) {
+    return arrayA === arrayB;
+  }
+  if (arrayA.length !== arrayB.length) {
+    return false;
+  }
+  for (let i = 0; i < arrayA.length; i += 1) {
+    if (arrayA[i] !== arrayB[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function getLatestTimestampFromList(items = []) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return 0;
+  }
+  return items.reduce((latest, item) => {
+    const timestamp = item?.lastModified || 0;
+    return timestamp > latest ? timestamp : latest;
+  }, 0);
+}
+
 // Get default configuration based on browser language
 storageConfigManager.getDefaultConfig = async function() {
   try {
@@ -55,6 +80,7 @@ storageConfigManager.getDefaultConfig = async function() {
     // Return hardcoded default values as fallback
     return {
       llm_models: {
+        orderLastModified: 1735372800000,
         models: [
           {
             id: 'gemini-pro',
@@ -96,6 +122,7 @@ storageConfigManager.getDefaultConfig = async function() {
           lastModified: 1735372800000
         }
       ],
+      quickInputsOrderLastModified: 1735372800000,
       basic: {
         defaultExtractionMethod: 'readability',
         jinaApiKey: '',
@@ -104,6 +131,7 @@ storageConfigManager.getDefaultConfig = async function() {
         contentDisplayHeight: 100,
         theme: 'system',
         defaultModelId: 'gemini-pro',
+        branchModelIds: [],
         language: 'en',
         lastModified: 1735372800000
       }
@@ -458,6 +486,16 @@ storageConfigManager.getConfig = async function() {
         }
       }
 
+      mergedConfig.quickInputsOrderLastModified = storedMainConfig.quickInputsOrderLastModified ||
+        mergedConfig.quickInputsOrderLastModified ||
+        getLatestTimestampFromList(mergedConfig.quickInputs);
+
+      if (!mergedConfig.llm_models.orderLastModified) {
+        mergedConfig.llm_models.orderLastModified = storedMainConfig.llm_models?.orderLastModified ||
+          storedMainConfig.llm?.orderLastModified ||
+          getLatestTimestampFromList(mergedConfig.llm_models?.models);
+      }
+
       // Add system prompt (from separate storage or basic config)
       let systemPrompt = mergedConfig.basic.systemPrompt || storageConfigManager.getDefaultSystemPrompt();
 
@@ -568,7 +606,8 @@ storageConfigManager.saveConfig = async function(newConfig, isUserModification =
 
       mainConfig = {
         llm_models: processedConfig.llm_models,
-        basic: basicWithoutSystemPrompt
+        basic: basicWithoutSystemPrompt,
+        quickInputsOrderLastModified: processedConfig.quickInputsOrderLastModified || 0
       };
 
       quickInputs = processedConfig.quickInputs || storageConfigManager.getDefaultQuickInputs();
@@ -581,7 +620,10 @@ storageConfigManager.saveConfig = async function(newConfig, isUserModification =
 
       mainConfig = {
         llm_models: {
-          models: oldLlmConfig.models || []
+          models: oldLlmConfig.models || [],
+          orderLastModified: processedConfig.llm_models?.orderLastModified ||
+                              processedConfig.llm?.orderLastModified ||
+                              getLatestTimestampFromList(oldLlmConfig.models)
         },
         basic: {
           defaultExtractionMethod: processedConfig.defaultExtractionMethod || 'readability',
@@ -592,7 +634,9 @@ storageConfigManager.saveConfig = async function(newConfig, isUserModification =
           theme: processedConfig.theme || 'system',
           defaultModelId: oldLlmConfig.defaultModelId || 'gemini-pro',
           lastModified: Date.now()
-        }
+        },
+        quickInputsOrderLastModified: processedConfig.quickInputsOrderLastModified ||
+                                      getLatestTimestampFromList(processedConfig.quickInputs)
       };
 
       quickInputs = processedConfig.quickInputs || storageConfigManager.getDefaultQuickInputs();
@@ -759,9 +803,10 @@ storageConfigManager.calculateConfigTimestamps = function(newConfig, existingCon
         }
 
         // Compare all fields to determine if item was actually modified
+        const branchModelsChanged = !arraysEqual(existingItem.branchModelIds || [], newItem.branchModelIds || []);
         const fieldsChanged = ['displayText', 'sendText', 'autoTrigger'].some(field =>
           existingItem[field] !== newItem[field]
-        );
+        ) || branchModelsChanged;
 
         if (fieldsChanged) {
           newItem.lastModified = currentTime;
@@ -778,6 +823,23 @@ storageConfigManager.calculateConfigTimestamps = function(newConfig, existingCon
     });
   }
 
+  const newQuickInputOrder = (processedConfig.quickInputs || []).map(item => item.id).filter(Boolean);
+  const existingQuickInputOrder = (existingConfig.quickInputs || []).map(item => item.id).filter(Boolean);
+  const quickInputOrderChanged = newQuickInputOrder.length !== existingQuickInputOrder.length ||
+    newQuickInputOrder.some((id, index) => id !== existingQuickInputOrder[index]);
+
+  const existingQuickInputOrderTimestamp = existingConfig.quickInputsOrderLastModified ||
+    getLatestTimestampFromList(existingConfig.quickInputs);
+
+  if (quickInputOrderChanged) {
+    processedConfig.quickInputsOrderLastModified = currentTime;
+    storageConfigLogger.debug('Updated timestamp for quick input order change');
+  } else if (existingQuickInputOrderTimestamp) {
+    processedConfig.quickInputsOrderLastModified = existingQuickInputOrderTimestamp;
+  } else if (!processedConfig.quickInputsOrderLastModified) {
+    processedConfig.quickInputsOrderLastModified = currentTime;
+  }
+
   // Process LLM Models (support both old and new format)
   const llmModels = processedConfig.llm_models?.models || processedConfig.llm?.models;
   const existingLlmModels = existingConfig.llm_models?.models || existingConfig.llm?.models;
@@ -788,9 +850,11 @@ storageConfigManager.calculateConfigTimestamps = function(newConfig, existingCon
 
       if (existingModel) {
         // Compare all fields to determine if model was actually modified
-        const fieldsChanged = ['name', 'provider', 'apiKey', 'baseUrl', 'model', 'maxTokens', 'temperature', 'enabled'].some(field =>
+        const simpleFieldsChanged = ['name', 'provider', 'apiKey', 'baseUrl', 'model', 'maxTokens', 'temperature', 'enabled', 'endpoint', 'deploymentName', 'apiVersion', 'thinkingBudget'].some(field =>
           existingModel[field] !== newModel[field]
         );
+        const toolsChanged = !arraysEqual(existingModel.tools || [], newModel.tools || []);
+        const fieldsChanged = simpleFieldsChanged || toolsChanged;
 
         if (fieldsChanged) {
           newModel.lastModified = currentTime;
@@ -807,6 +871,34 @@ storageConfigManager.calculateConfigTimestamps = function(newConfig, existingCon
     });
   }
 
+  const newModelOrder = (llmModels || []).map(model => model?.id).filter(Boolean);
+  const existingModelOrder = (existingLlmModels || []).map(model => model?.id).filter(Boolean);
+  const modelOrderChanged = newModelOrder.length !== existingModelOrder.length ||
+    newModelOrder.some((id, index) => id !== existingModelOrder[index]);
+
+  const existingModelOrderTimestamp = existingConfig.llm_models?.orderLastModified ||
+    existingConfig.llm?.orderLastModified ||
+    getLatestTimestampFromList(existingLlmModels);
+
+  if (processedConfig.llm_models) {
+    if (modelOrderChanged) {
+      processedConfig.llm_models.orderLastModified = currentTime;
+      storageConfigLogger.debug('Updated timestamp for LLM model order change');
+    } else if (existingModelOrderTimestamp) {
+      processedConfig.llm_models.orderLastModified = existingModelOrderTimestamp;
+    } else if (!processedConfig.llm_models.orderLastModified) {
+      processedConfig.llm_models.orderLastModified = currentTime;
+    }
+  } else if (processedConfig.llm) {
+    if (modelOrderChanged) {
+      processedConfig.llm.orderLastModified = currentTime;
+    } else if (existingModelOrderTimestamp) {
+      processedConfig.llm.orderLastModified = existingModelOrderTimestamp;
+    } else if (!processedConfig.llm.orderLastModified) {
+      processedConfig.llm.orderLastModified = currentTime;
+    }
+  }
+
   // Process Basic Configuration
   if (processedConfig.basic) {
     const existingBasic = existingConfig.basic;
@@ -814,9 +906,10 @@ storageConfigManager.calculateConfigTimestamps = function(newConfig, existingCon
     if (existingBasic) {
       // Compare basic config fields to determine if anything was modified
       const basicFields = ['defaultExtractionMethod', 'jinaApiKey', 'jinaResponseTemplate', 'systemPrompt', 'contentDisplayHeight', 'theme', 'defaultModelId', 'language', 'filterCOT'];
+      const branchModelsChanged = !arraysEqual(existingBasic.branchModelIds || [], processedConfig.basic.branchModelIds || []);
       const fieldsChanged = basicFields.some(field =>
         existingBasic[field] !== processedConfig.basic[field]
-      );
+      ) || branchModelsChanged;
 
       if (fieldsChanged) {
         processedConfig.basic.lastModified = currentTime;
@@ -849,6 +942,11 @@ storageConfigManager.addTimestampsToNewConfig = function(config) {
     });
   }
 
+  if (!processedConfig.quickInputsOrderLastModified) {
+    const derivedQuickInputTimestamp = getLatestTimestampFromList(processedConfig.quickInputs);
+    processedConfig.quickInputsOrderLastModified = derivedQuickInputTimestamp || currentTime;
+  }
+
   // Add timestamps to LLM Models (support both old and new format)
   const llmModels = processedConfig.llm_models?.models || processedConfig.llm?.models;
   if (llmModels && Array.isArray(llmModels)) {
@@ -857,6 +955,18 @@ storageConfigManager.addTimestampsToNewConfig = function(config) {
         model.lastModified = currentTime;
       }
     });
+  }
+
+  if (processedConfig.llm_models) {
+    if (!processedConfig.llm_models.orderLastModified) {
+      const derivedModelTimestamp = getLatestTimestampFromList(processedConfig.llm_models.models);
+      processedConfig.llm_models.orderLastModified = derivedModelTimestamp || currentTime;
+    }
+  } else if (processedConfig.llm) {
+    if (!processedConfig.llm.orderLastModified) {
+      const derivedModelTimestamp = getLatestTimestampFromList(processedConfig.llm.models);
+      processedConfig.llm.orderLastModified = derivedModelTimestamp || currentTime;
+    }
   }
 
   // Add timestamp to Basic Configuration
