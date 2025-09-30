@@ -109,4 +109,16 @@ export {
   escapeHtml,
   showCopyToast,
   hasMarkdownElements
-}; 
+};
+
+/** Build current time prefix for system prompt */
+export const getCurrentTimePrefix = () => {
+  const now = new Date();
+  const yyyy = String(now.getFullYear());
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const HH = String(now.getHours()).padStart(2, '0');
+  const MM = String(now.getMinutes()).padStart(2, '0');
+  const SS = String(now.getSeconds()).padStart(2, '0');
+  return `当前时间是 ${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
+};

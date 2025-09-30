@@ -4,7 +4,7 @@
 
 import { i18n } from '../../js/modules/i18n.js';
 import { createBranchHeader, ensureBranchPreviewTrigger, openBranchPreview } from './branch-preview.js';
-import { createLogger, hasMarkdownElements, showCopyToast } from './utils.js';
+import { createLogger, hasMarkdownElements, showCopyToast, getCurrentTimePrefix } from './utils.js';
 import { editMessage, retryMessage } from '../components/chat-message.js';
 import { displayChatHistory as displayChatHistoryFromModule, getChatHistoryFromDOM } from './chat-history.js';
 
@@ -1230,6 +1230,13 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
   // Support both old and new config formats
   const basicConfig = config.basic || config;
   systemPromptTemplateForPayload = basicConfig.systemPrompt;
+  try {
+    const timePrefix = getCurrentTimePrefix();
+    systemPromptTemplateForPayload = `${timePrefix}\n${systemPromptTemplateForPayload}`;
+    logger.debug(`Prepended time to system prompt: ${timePrefix}`);
+  } catch (e) {
+    logger.warn('Failed to prepend time to system prompt:', e);
+  }
 
   if (window.StateManager.getStateItem('includePageContent')) {
     systemPromptTemplateForPayload = systemPromptTemplateForPayload + '\n\nPage Content:\n' + pageContentForPayload; 
@@ -1616,6 +1623,13 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
   // Support both old and new config formats
   const basicConfig = config.basic || config;
   systemPromptTemplateForPayload = basicConfig.systemPrompt;
+  try {
+    const timePrefix = getCurrentTimePrefix();
+    systemPromptTemplateForPayload = `${timePrefix}\n${systemPromptTemplateForPayload}`;
+    logger.debug(`Prepended time to system prompt (quick input): ${timePrefix}`);
+  } catch (e) {
+    logger.warn('Failed to prepend time to system prompt (quick input):', e);
+  }
 
   if (state.includePageContent) {
     logger.info('Including page content in quick input message');
@@ -2375,6 +2389,13 @@ const sendBranchLlmRequest = async (context, model, branchId) => {
     let systemPromptWithContent = systemPrompt;
     if (includePageContent) {
       systemPromptWithContent += '\n\nPage Content:\n' + extractedContent;
+    }
+    try {
+      const timePrefix = getCurrentTimePrefix();
+      systemPromptWithContent = `${timePrefix}\n${systemPromptWithContent}`;
+      logger.debug(`Prepended time to system prompt (branch): ${timePrefix}`);
+    } catch (e) {
+      logger.warn('Failed to prepend time to system prompt (branch):', e);
     }
     
     // Use MessageHandler to send message, ensure correct payload format

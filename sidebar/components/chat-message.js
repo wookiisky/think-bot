@@ -11,7 +11,7 @@
  */
 
 import { i18n } from '../../js/modules/i18n.js';
-import { createLogger, hasMarkdownElements } from '../modules/utils.js';
+import { createLogger, hasMarkdownElements, getCurrentTimePrefix } from '../modules/utils.js';
 import { createBranchHeader } from '../modules/branch-preview.js';
 import { getChatHistoryFromDOM, editMessageInDOM, deleteMessagesAfter } from '../modules/chat-history.js';
 
@@ -269,6 +269,13 @@ const retryMessage = (messageElement, retryCallback) => {
       let systemPromptWithContent = systemPrompt;
       if (includePageContent) {
         systemPromptWithContent += '\n\nPage Content:\n' + extractedContent;
+      }
+      try {
+        const timePrefix = getCurrentTimePrefix();
+        systemPromptWithContent = `${timePrefix}\n${systemPromptWithContent}`;
+        logger.debug(`Prepended time to system prompt (retry): ${timePrefix}`);
+      } catch (e) {
+        logger.warn('Failed to prepend time to system prompt (retry):', e);
       }
       // Branch style retry: create new branch loading and pass branchId
       const chatEl = chatContainer;
