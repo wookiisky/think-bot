@@ -4,6 +4,7 @@
  */
 
 import { createLogger, isRestrictedPage } from './utils.js';
+import { createBranchHeader } from './branch-preview.js';
 import * as StateManager from './state-manager.js';
 import * as UIManager from './ui-manager.js';
 import * as MessageHandler from './message-handler.js';
@@ -306,10 +307,8 @@ const directLoadingStateCheck = async (currentUrl, tabId) => {
           logger.debug(`Reconnection restore uses border loader (no spinner) for branch ${branchId}`);
           
           // Create model label
-          const modelLabel = document.createElement('div');
-          modelLabel.className = 'branch-model-label';
-          modelLabel.textContent = 'reconnecting';
-          branchDiv.appendChild(modelLabel);
+          const { header: branchHeader } = createBranchHeader('reconnecting');
+          branchDiv.appendChild(branchHeader);
           
           // Assemble the structure
           branchDiv.appendChild(contentDiv);
