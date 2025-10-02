@@ -392,7 +392,7 @@
 
 .page-info-header .page-title {
   margin: 0 0 6px 0;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-color);
   white-space: nowrap;
@@ -421,7 +421,7 @@
 
 .page-info-header .page-title.edit-mode .title-input {
   width: 100%;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-color);
   background-color: var(--input-background, var(--background-color));
@@ -446,10 +446,11 @@
 }
 
 .page-url-container {
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .page-url {
+  font-size: 10px;
   color: var(--accent-color);
   text-decoration: none;
   white-space: nowrap;
