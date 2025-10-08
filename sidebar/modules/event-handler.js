@@ -89,7 +89,21 @@ const setupEventListeners = (elements, modelSelector, onTabAction) => {
     }
 
     // Clear conversation regardless of cancellation success
-    ChatManager.clearConversationAndContext(elements.chatContainer);
+    await ChatManager.clearConversationAndContext(elements.chatContainer);
+
+    // Ensure input area is writable and sendable after clearing
+    try {
+      if (typeof ChatManager.updateInputAreaState === 'function') {
+        ChatManager.updateInputAreaState(false);
+        logger.info('Input area re-enabled after clearing conversation');
+      }
+      // Focus user input for immediate typing
+      if (elements.userInput) {
+        elements.userInput.focus();
+      }
+    } catch (e) {
+      logger.warn('Failed to re-enable input area after clearing:', e);
+    }
   });
   
   // Extraction method buttons

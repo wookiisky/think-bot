@@ -517,6 +517,19 @@ function setupEssentialEventListeners(elements, modelSelector) {
           logger.error('Error resetting TabManager loading state:', error);
         }
 
+        // Ensure input area is writable and sendable after clearing
+        try {
+          if (ChatManager && typeof ChatManager.updateInputAreaState === 'function') {
+            ChatManager.updateInputAreaState(false);
+            logger.info('Input area re-enabled after clearing conversation (conversations page)');
+          }
+          if (elements.userInput) {
+            elements.userInput.focus();
+          }
+        } catch (e) {
+          logger.warn('Failed to re-enable input area after clearing on conversations page:', e);
+        }
+
       } catch (error) {
         logger.error('Error clearing conversation:', error);
       }

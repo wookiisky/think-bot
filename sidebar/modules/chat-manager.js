@@ -40,22 +40,74 @@ const cancelLlmRequest = async (tabId) => {
   try {
     const currentUrl = window.StateManager.getStateItem('currentUrl');
     if (currentUrl && tabId) {
-      // Send cancel request to background script
-      await chrome.runtime.sendMessage({
-        type: 'CANCEL_LLM_REQUEST',
-        url: currentUrl,
-        tabId: tabId
-      });
-      
-      // Clear loading state
-      await chrome.runtime.sendMessage({
-        type: 'CLEAR_LOADING_STATE',
-        url: currentUrl,
-        tabId: tabId
-      });
-      
-      logger.info(`LLM request cancelled for tab ${tabId}`);
-      return true;
+      let cancelledAny = false;
+
+      // Cancel main request for the tab
+      try {
+        await chrome.runtime.sendMessage({
+          type: 'CANCEL_LLM_REQUEST',
+          url: currentUrl,
+          tabId: tabId
+        });
+        cancelledAny = true;
+      } catch (e) {
+        logger.debug('No main LLM request to cancel or cancel failed:', e?.message || e);
+      }
+
+      // Also clear the main loading state key proactively
+      try {
+        await chrome.runtime.sendMessage({
+          type: 'CLEAR_LOADING_STATE',
+          url: currentUrl,
+          tabId: tabId
+        });
+      } catch (e) {
+        logger.debug('CLEAR_LOADING_STATE (main) failed:', e?.message || e);
+      }
+
+      // Cancel any visible branch streams for this tab (covers restored/reconnecting loaders)
+      try {
+        const chatContainer = document.getElementById('chatContainer');
+        if (chatContainer) {
+          const branchEls = chatContainer.querySelectorAll('[data-branch-id]');
+          const uniqueBranchIds = new Set();
+          branchEls.forEach(el => {
+            const bid = el.getAttribute('data-branch-id');
+            if (bid) uniqueBranchIds.add(bid);
+          });
+
+          for (const branchId of uniqueBranchIds) {
+            try {
+              await chrome.runtime.sendMessage({
+                type: 'CANCEL_LLM_REQUEST',
+                url: currentUrl,
+                tabId: tabId,
+                branchId
+              });
+              cancelledAny = true;
+            } catch (e) {
+              logger.debug(`Branch cancel failed for ${branchId}:`, e?.message || e);
+            }
+
+            // Clear branch loading state key to avoid aggregate restore
+            try {
+              await chrome.runtime.sendMessage({
+                type: 'CLEAR_LOADING_STATE',
+                url: currentUrl,
+                tabId: `${tabId}:${branchId}`
+              });
+            } catch (e) {
+              logger.debug(`CLEAR_LOADING_STATE (branch ${branchId}) failed:`, e?.message || e);
+            }
+          }
+          logger.info(`Processed branch cancellation for ${uniqueBranchIds.size} branches on tab ${tabId}`);
+        }
+      } catch (scanErr) {
+        logger.warn('Error scanning/cancelling branch streams:', scanErr);
+      }
+
+      logger.info(`LLM request cancellation attempted for tab ${tabId} (anyCancelled=${cancelledAny})`);
+      return cancelledAny;
     }
   } catch (error) {
     logger.error('Error cancelling LLM request:', error);
@@ -1757,13 +1809,13 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
  * @returns {Promise<void>}
  */
 const clearConversationAndContext = async (chatContainer) => {
-  // Clear UI
+  // Clear UI first to remove messages, loaders and any 'restored' placeholders
   window.ChatHistory.clearChatHistory(chatContainer);
 
   // Get current tab ID before clearing
   const currentTabId = window.TabManager ? window.TabManager.getActiveTabId() : 'chat';
 
-  // Clear from storage for current tab
+  // Clear chat history from storage for current tab
   if (window.TabManager && window.TabManager.clearTabChatHistory) {
     await window.TabManager.clearTabChatHistory();
   } else {
@@ -1777,7 +1829,17 @@ const clearConversationAndContext = async (chatContainer) => {
     logger.info(`Reset initialization state for current tab: ${currentTabId}`);
   }
 
-  // Clear loading state cache for current tab
+  // Explicitly reset TabManager runtime for current tab to drop any active branches/restored flags
+  try {
+    if (window.TabManager && window.TabManager.resetTabRuntime) {
+      window.TabManager.resetTabRuntime(currentTabId);
+      logger.info('TabManager runtime state reset for current tab');
+    }
+  } catch (error) {
+    logger.warn('Error resetting TabManager runtime state:', error);
+  }
+
+  // Clear loading state cache for current tab (prevents re-restoring "restored" loaders)
   try {
     const currentUrl = window.StateManager.getStateItem('currentUrl');
 
@@ -1788,22 +1850,37 @@ const clearConversationAndContext = async (chatContainer) => {
         tabId: currentTabId
       });
       logger.info('Loading state cleared for current tab');
+
+      // Also clear all loading states for this URL to remove any branch keys (tabId:branchId)
+      try {
+        await chrome.runtime.sendMessage({
+          type: 'CLEAR_ALL_LOADING_STATES_FOR_URL',
+          url: currentUrl
+        });
+        logger.info('All loading states for current URL cleared');
+      } catch (e) {
+        logger.warn('Failed to clear all loading states for URL:', e);
+      }
     }
   } catch (error) {
     logger.error('Error clearing loading state:', error);
   }
 
-  // Force reset TabManager loading state for current tab
+  // Force reset TabManager visual states for current tab
   try {
     if (window.TabManager && window.TabManager.updateTabLoadingState) {
       await window.TabManager.updateTabLoadingState(currentTabId, false);
       logger.info('TabManager loading state reset for current tab');
     }
+    if (window.TabManager && window.TabManager.updateTabContentState) {
+      await window.TabManager.updateTabContentState(currentTabId, false);
+      logger.info('TabManager content state reset for current tab');
+    }
   } catch (error) {
-    logger.error('Error resetting TabManager loading state:', error);
+    logger.error('Error resetting TabManager visual states:', error);
   }
 
-  logger.info('Conversation cleared for current tab');
+  logger.info('Conversation and tab state fully cleared for current tab');
 };
 
 /**
