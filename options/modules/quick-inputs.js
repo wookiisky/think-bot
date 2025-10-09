@@ -29,6 +29,134 @@ export class QuickInputsManager {
     // Combine timestamp with UUID for better traceability
     return `qi_${timestamp}_${uuid}`;
   }
+
+  // Ensure fields have unique identifiers for accessibility
+  static applyUniqueFieldIds(item) {
+    if (!item) return;
+    const idInput = item.querySelector('.quick-input-id');
+    const uniqueId = idInput ? idInput.value : null;
+    if (!uniqueId) return;
+
+    const displayInput = item.querySelector('.quick-input-display');
+    const displayLabel = item.querySelector('.quick-input-display-label');
+    if (displayInput && displayLabel) {
+      const displayId = `quick-input-display-${uniqueId}`;
+      displayInput.id = displayId;
+      displayLabel.setAttribute('for', displayId);
+    }
+
+    const sendInput = item.querySelector('.quick-input-send');
+    const sendLabel = item.querySelector('.quick-input-send-label');
+    if (sendInput && sendLabel) {
+      const sendId = `quick-input-message-${uniqueId}`;
+      sendInput.id = sendId;
+      sendLabel.setAttribute('for', sendId);
+    }
+
+    const branchSelect = item.querySelector('.quick-input-branch-models');
+    const branchLabel = item.querySelector('.quick-input-branch-label');
+    if (branchSelect && branchLabel) {
+      const branchId = `quick-input-branch-${uniqueId}`;
+      branchSelect.id = branchId;
+      branchLabel.setAttribute('for', branchId);
+    }
+  }
+
+  // Determine localized placeholder text for empty previews
+  static getPreviewEmptyLabel(previewEl) {
+    if (!previewEl) {
+      return 'Message';
+    }
+    if (previewEl.dataset.emptyLabel) {
+      return previewEl.dataset.emptyLabel;
+    }
+    const key = previewEl.dataset.i18nEmpty;
+    if (typeof i18n !== 'undefined' && key) {
+      const localized = i18n.getMessage(key);
+      if (localized) {
+        previewEl.dataset.emptyLabel = localized;
+        return localized;
+      }
+    }
+    previewEl.dataset.emptyLabel = 'Message';
+    return previewEl.dataset.emptyLabel;
+  }
+
+  // Build a trimmed single-line preview for the message body
+  static getMessagePreviewText(message) {
+    if (!message) {
+      return '';
+    }
+    const normalized = message.replace(/\s+/g, ' ').trim();
+    if (!normalized) {
+      return '';
+    }
+    const limit = 120;
+    if (normalized.length > limit) {
+      return `${normalized.slice(0, limit - 3)}...`;
+    }
+    return normalized;
+  }
+
+  // Refresh preview content for a quick input item
+  static updateQuickInputPreview(item) {
+    if (!item) return;
+    const previewEl = item.querySelector('.quick-input-message-preview');
+    if (!previewEl) return;
+    const textarea = item.querySelector('.quick-input-send');
+    const message = textarea ? textarea.value : '';
+    const previewText = this.getMessagePreviewText(message);
+    const emptyLabel = this.getPreviewEmptyLabel(previewEl);
+    previewEl.dataset.emptyLabel = emptyLabel;
+
+    if (previewText) {
+      previewEl.textContent = previewText;
+      previewEl.classList.remove('empty');
+    } else {
+      previewEl.textContent = '';
+      previewEl.classList.add('empty');
+    }
+  }
+
+  // Refresh header name display based on input value
+  static updateQuickInputNameDisplay(item) {
+    if (!item) return;
+    const nameDisplay = item.querySelector('.quick-input-name-display');
+    const input = item.querySelector('.quick-input-display');
+    if (!nameDisplay || !input) return;
+    const fallback = this.getPreviewEmptyLabel(nameDisplay);
+    const value = input.value.trim();
+
+    if (value) {
+      nameDisplay.textContent = value;
+      nameDisplay.classList.remove('empty');
+    } else {
+      nameDisplay.textContent = '';
+      nameDisplay.classList.add('empty');
+      nameDisplay.dataset.emptyLabel = fallback;
+    }
+  }
+
+  // Toggle expanded state for list rows
+  static toggleQuickInputDetails(item, expanded = null) {
+    if (!item) return;
+    const shouldExpand = expanded === null ? !item.classList.contains('expanded') : !!expanded;
+    item.classList.toggle('expanded', shouldExpand);
+    const header = item.querySelector('.quick-input-item-header');
+    if (header) {
+      header.setAttribute('aria-expanded', shouldExpand ? 'true' : 'false');
+    }
+
+    const idInput = item.querySelector('.quick-input-id');
+    const quickInputId = idInput ? idInput.value : 'unknown';
+    try {
+      console.info(`Toggle quick input details -> id: ${quickInputId}, state: ${shouldExpand ? 'expanded' : 'collapsed'}`);
+    } catch (_) {}
+
+    if (window.floatingLabelManager) {
+      window.floatingLabelManager.refresh();
+    }
+  }
   
   // Add a new quick input
   static addQuickInput(domElements, displayText = '', sendText = '', id = null) {
@@ -48,9 +176,9 @@ export class QuickInputsManager {
     const hiddenIdInput = document.createElement('input');
     hiddenIdInput.type = 'hidden';
     hiddenIdInput.className = 'quick-input-id';
-    hiddenIdInput.value = id || this.generateRandomId();
+    const uniqueId = id || this.generateRandomId();
+    hiddenIdInput.value = uniqueId;
     template.querySelector('.quick-input-item').appendChild(hiddenIdInput);
-    
     
     // Add to container
     domElements.quickInputsContainer.appendChild(template);
@@ -58,14 +186,23 @@ export class QuickInputsManager {
     // Populate branch models for the newly added item
     const newItem = domElements.quickInputsContainer.querySelector('.quick-input-item:last-child');
     const modelManager = window.optionsPage?.modelManager;
-    if (newItem && modelManager) {
-      const allModels = modelManager.getAllModels();
-      this.populateQuickInputBranchModels(newItem, allModels, []);
+    if (newItem) {
+      this.applyUniqueFieldIds(newItem);
+      this.updateQuickInputPreview(newItem);
+      this.updateQuickInputNameDisplay(newItem);
+      if (modelManager) {
+        const allModels = modelManager.getAllModels();
+        this.populateQuickInputBranchModels(newItem, allModels, []);
+      }
     }
     
     // Apply i18n translations to the newly added elements
     if (typeof i18n !== 'undefined' && i18n.applyToDOM) {
       i18n.applyToDOM();
+    }
+
+    if (window.floatingLabelManager) {
+      window.floatingLabelManager.refresh();
     }
   }
   
@@ -190,13 +327,15 @@ export class QuickInputsManager {
       // Set auto-trigger state immediately after adding the input
       this.setAutoTriggerState(id, input.autoTrigger || false, domElements);
 
-      // Set branch model selection
-      if (input.branchModelIds && input.branchModelIds.length > 0 && modelManager) {
-        const item = domElements.quickInputsContainer.querySelector(`.quick-input-item:last-child`);
-        if (item) {
+      const item = domElements.quickInputsContainer.querySelector('.quick-input-item:last-child');
+      if (item) {
+        if (input.branchModelIds && input.branchModelIds.length > 0 && modelManager) {
           const allModels = modelManager.getAllModels();
           this.populateQuickInputBranchModels(item, allModels, input.branchModelIds);
         }
+        this.applyUniqueFieldIds(item);
+        this.updateQuickInputPreview(item);
+        this.updateQuickInputNameDisplay(item);
       }
     });
 
@@ -212,12 +351,19 @@ export class QuickInputsManager {
       items.forEach(item => {
         const currentIds = this.getQuickInputBranchModelIds(item);
         this.populateQuickInputBranchModels(item, allModels, currentIds);
+        this.applyUniqueFieldIds(item);
+        this.updateQuickInputPreview(item);
+        this.updateQuickInputNameDisplay(item);
       });
     }
 
     // Apply i18n translations to newly created DOM elements
     if (typeof i18n !== 'undefined' && i18n.applyToDOM) {
       i18n.applyToDOM();
+    }
+
+    if (window.floatingLabelManager) {
+      window.floatingLabelManager.refresh();
     }
   }
   
@@ -419,7 +565,7 @@ export class QuickInputsManager {
       }
     });
 
-    // Branch model dropdown events
+    // Branch model dropdown and expansion events
     domElements.quickInputsContainer.addEventListener('click', e => {
       const item = e.target.closest('.quick-input-item');
       if (!item) return;
@@ -428,11 +574,13 @@ export class QuickInputsManager {
       if (e.target.closest('.quick-input-branch-models-toggle')) {
         e.preventDefault();
         this.toggleQuickInputBranchModelDropdown(item);
+        return;
       }
       // Click on selected items area to toggle dropdown
       else if (e.target.closest('.quick-input-selected-branch-models') && !e.target.closest('.model-remove-icon')) {
         e.preventDefault();
         this.toggleQuickInputBranchModelDropdown(item);
+        return;
       }
       // Handle option selection
       else if (e.target.closest('.quick-input-branch-models-dropdown .option-item')) {
@@ -440,6 +588,7 @@ export class QuickInputsManager {
         const optionItem = e.target.closest('.option-item');
         const modelId = optionItem.dataset.value;
         this.toggleQuickInputBranchModelSelection(item, modelId);
+        return;
       }
       // Handle selected model removal
       else if (e.target.closest('.quick-input-selected-branch-models .model-remove-icon')) {
@@ -447,6 +596,38 @@ export class QuickInputsManager {
         const removeIcon = e.target.closest('.model-remove-icon');
         const modelId = removeIcon.dataset.modelId;
         this.toggleQuickInputBranchModelSelection(item, modelId);
+        return;
+      }
+
+      if (e.target.closest('.auto-trigger-checkbox')) {
+        return;
+      }
+
+      if (e.target.closest('.remove-quick-input-btn')) {
+        return;
+      }
+
+      const header = e.target.closest('.quick-input-item-header');
+      if (header) {
+        const interactive = e.target.closest('button, input, textarea, label, .custom-multi-select, .dropdown-options, .drag-handle');
+        if (interactive) {
+          return;
+        }
+        e.preventDefault();
+        this.toggleQuickInputDetails(item);
+      }
+    });
+
+    domElements.quickInputsContainer.addEventListener('keydown', e => {
+      if (!e.target.classList.contains('quick-input-item-header')) {
+        return;
+      }
+      const item = e.target.closest('.quick-input-item');
+      if (!item) return;
+
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.toggleQuickInputDetails(item);
       }
     });
 
@@ -465,6 +646,15 @@ export class QuickInputsManager {
     
     // Add event listeners for input fields to trigger change callback
     domElements.quickInputsContainer.addEventListener('input', e => {
+      if (e.target.classList.contains('quick-input-send')) {
+        const item = e.target.closest('.quick-input-item');
+        this.updateQuickInputPreview(item);
+      }
+      if (e.target.classList.contains('quick-input-display')) {
+        const item = e.target.closest('.quick-input-item');
+        this.updateQuickInputNameDisplay(item);
+      }
+
       if (
         e.target.classList.contains('quick-input-display') ||
         e.target.classList.contains('quick-input-send') ||

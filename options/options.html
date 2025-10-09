@@ -175,8 +175,18 @@
                   </button>
                 </div>
                 <div class="quick-inputs-section">
-                  <div id="quickInputsContainer" class="quick-inputs-container">
-                    <!-- Quick input items will be added here dynamically -->
+                  <div class="quick-inputs-table">
+                    <div class="quick-inputs-table-header">
+                      <div class="qi-col qi-col-drag"></div>
+                      <div class="qi-col qi-col-name" data-i18n="options_quick_input_button_text_label">Button Text</div>
+                      <div class="qi-col qi-col-message" data-i18n="options_quick_input_message_label">Message</div>
+                      <div class="qi-col qi-col-branch" data-i18n="common_branch_models">Branch Models</div>
+                      <div class="qi-col qi-col-auto" data-i18n="options_quick_input_auto_trigger_title">Auto Trigger</div>
+                      <div class="qi-col qi-col-actions"></div>
+                    </div>
+                    <div id="quickInputsContainer" class="quick-inputs-container table-body">
+                      <!-- Quick input items will be added here dynamically -->
+                    </div>
                   </div>
                 </div>
               </section>
@@ -328,53 +338,58 @@
   <!-- Quick Input Template (hidden) -->
   <template id="quickInputTemplate">
     <div class="quick-input-item">
-      <div class="quick-input-form">
-        <!-- Header Control Row -->
-        <div class="quick-input-header">
-          <div class="quick-input-header-left">
-            <div class="drag-handle">
-              <i class="material-icons">drag_indicator</i>
-            </div>
-            <div class="floating-label-field">
-              <input type="text" class="quick-input-display">
-              <label class="floating-label" data-i18n="options_quick_input_button_text_label">Button Text</label>
-            </div>
-          </div>
-          <div class="quick-input-header-right">
-            <label class="toggle-switch" data-i18n-title="options_quick_input_auto_trigger_title" title="Auto-trigger when sidebar opens">
-              <input type="checkbox" class="auto-trigger-checkbox">
-              <span class="slider"></span>
-            </label>
-            <button type="button" class="remove-quick-input-btn icon-btn danger" data-i18n-title="common_remove" title="Remove Quick Input">
-              <i class="material-icons">delete</i>
-            </button>
+      <div class="quick-input-item-header" role="button" tabindex="0" aria-expanded="false">
+        <div class="qi-col qi-col-drag">
+          <div class="drag-handle">
+            <i class="material-icons">drag_indicator</i>
           </div>
         </div>
-        
-        <!-- Send Text -->
-        <div class="floating-label-field">
-          <textarea class="quick-input-send" rows="5"></textarea>
-          <label class="floating-label" data-i18n="options_quick_input_message_label">Message</label>
+        <div class="qi-col qi-col-name">
+          <span class="quick-input-name-display empty" data-i18n-empty="options_quick_input_default_name"></span>
         </div>
-        
-        <!-- Branch Models Selection -->
-        <div class="floating-label-field">
-          <div class="custom-multi-select quick-input-branch-models" id="quick-input-branch-models">
-            <div class="multi-select-container">
-              <div class="selected-items quick-input-selected-branch-models">
-                <span class="no-models-selected"></span>
-              </div>
-              <div class="multi-select-dropdown">
-                <button type="button" class="dropdown-toggle quick-input-branch-models-toggle">
-                  <i class="material-icons">arrow_drop_down</i>
-                </button>
-                <div class="dropdown-options quick-input-branch-models-dropdown">
-                  <!-- Options will be populated dynamically -->
+        <div class="qi-col qi-col-message">
+          <div class="quick-input-message-preview" data-i18n-empty="options_quick_input_message_label"></div>
+        </div>
+        <div class="qi-col qi-col-branch">
+          <div class="quick-input-branch-field">
+            <label class="quick-input-branch-label sr-only" data-i18n="common_branch_models">Branch Models</label>
+            <div class="custom-multi-select quick-input-branch-models quick-input-branch-select">
+              <div class="multi-select-container">
+                <div class="selected-items quick-input-selected-branch-models">
+                  <span class="no-models-selected"></span>
+                </div>
+                <div class="multi-select-dropdown">
+                  <button type="button" class="dropdown-toggle quick-input-branch-models-toggle">
+                    <i class="material-icons">arrow_drop_down</i>
+                  </button>
+                  <div class="dropdown-options quick-input-branch-models-dropdown">
+                    <!-- Options will be populated dynamically -->
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <label for="quick-input-branch-models" class="floating-label" data-i18n="common_branch_models">Branch Models</label>
+        </div>
+        <div class="qi-col qi-col-auto">
+          <label class="toggle-switch" data-i18n-title="options_quick_input_auto_trigger_title" title="Auto-trigger when sidebar opens">
+            <input type="checkbox" class="auto-trigger-checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="qi-col qi-col-actions">
+          <button type="button" class="remove-quick-input-btn icon-btn danger" data-i18n-title="common_remove" title="Remove Quick Input">
+            <i class="material-icons">delete</i>
+          </button>
+        </div>
+      </div>
+      <div class="quick-input-item-body">
+        <div class="floating-label-field quick-input-display-field">
+          <input type="text" class="quick-input-display" placeholder=" ">
+          <label class="floating-label quick-input-display-label" data-i18n="options_quick_input_button_text_label">Button Text</label>
+        </div>
+        <div class="floating-label-field">
+          <textarea class="quick-input-send" rows="10" placeholder=" "></textarea>
+          <label class="floating-label quick-input-send-label" data-i18n="options_quick_input_message_label">Message</label>
         </div>
       </div>
     </div>

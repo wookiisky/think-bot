@@ -1,233 +1,318 @@
+:root {
+  --quick-input-grid-default: 28px minmax(0, 0.65fr) minmax(0, 2.1fr) minmax(300px, 2fr) auto auto;
+  --quick-input-grid-medium: 28px minmax(0, 0.75fr) minmax(0, 2.05fr) minmax(300px, 2fr) auto auto;
+}
+
 /* Quick Inputs Styles */
 
-.quick-inputs-container {
+.quick-inputs-section {
+  margin-top: 0.5rem;
+}
+
+.quick-inputs-table {
+  border: 1px solid var(--border-color);
+  background: var(--bg-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.quick-inputs-table-header {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
+  grid-template-columns: var(--quick-input-grid-default);
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  background: var(--light-gray);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.quick-inputs-table-header .qi-col {
+  min-width: 0;
+}
+
+.quick-inputs-container {
+  display: block;
 }
 
 .quick-input-item {
-  background-color: var(--bg-color);
-  border: 1px solid var(--border-color);
-  padding: 0.75rem;
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-normal) ease;
+  border-bottom: 1px solid var(--divider-color);
+  transition: background-color var(--transition-normal) ease;
+}
+
+.quick-input-item:last-child {
+  border-bottom: none;
 }
 
 .quick-input-item:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-color-hover);
+  background-color: var(--hover-color);
 }
 
-.quick-input-item .form-group {
-  margin-bottom: 0;
+.quick-input-item.expanded {
+  background-color: var(--bg-color);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  z-index: 1;
 }
 
-.quick-input-header {
-  display: flex;
-  justify-content: space-between;
+.quick-input-item-header {
+  display: grid;
+  grid-template-columns: var(--quick-input-grid-default);
   align-items: center;
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid var(--divider-color);
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
 }
 
-.quick-input-header-left {
+.quick-input-item-header:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: -2px;
+}
+
+.quick-input-item-body {
+  display: none;
+  padding: 0.6rem;
+  border-top: 1px solid var(--divider-color);
+  background-color: var(--bg-color);
+}
+
+.quick-input-item.expanded .quick-input-item-body {
+  display: block;
+}
+
+.qi-col {
+  min-width: 0;
   display: flex;
   align-items: center;
-  flex-grow: 1;
-  gap: 0.4rem;
-  margin-right: 1rem;
 }
 
-.quick-input-header-right {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Special styles for floating label in quick input header */
-.quick-input-header-left .floating-label-field {
+.quick-input-name-display {
   flex: 1;
   min-width: 0;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quick-input-name-display.empty {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.quick-input-name-display.empty::before {
+  content: attr(data-empty-label);
+}
+
+.qi-col-message {
+  gap: 0.35rem;
+}
+
+.quick-input-message-preview {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quick-input-message-preview.empty::before {
+  content: attr(data-empty-label);
+  font-style: italic;
+}
+
+.quick-input-item .floating-label-field {
+  width: 100%;
   margin-bottom: 0;
+}
+
+.quick-input-item .floating-label-field input,
+.quick-input-item .floating-label-field textarea {
+  width: 100%;
+}
+
+.quick-input-branch-field {
+  width: 100%;
   position: relative;
 }
 
-.quick-input-header-left .floating-label-field .floating-label {
-  position: absolute;
-  top: 50%;
-  left: 0.5rem;
-  transform: translateY(-50%);
-  background-color: var(--bg-color);
-  color: var(--text-secondary);
-  font-size: 0.75rem;
-  font-weight: 500;
-  pointer-events: none;
-  transition: all 0.2s ease;
-  z-index: 1;
-  padding: 0 0.25rem;
+.quick-input-branch-select {
+  min-height: 28px;
+  padding: 0;
 }
 
-.quick-input-header-left .floating-label-field input:focus ~ .floating-label,
-.quick-input-header-left .floating-label-field input:not(:placeholder-shown) ~ .floating-label,
-.quick-input-header-left .floating-label-field.has-value .floating-label {
-  top: 0;
-  left: 0.3rem;
-  transform: translateY(-50%);
-  font-size: 0.6rem;
-  color: var(--primary-color);
-  background-color: var(--bg-color);
-}
-
-.quick-input-display {
-  flex: 1;
-  min-width: 0;
-  border: 1px solid var(--border-color);
-  padding: 0.35rem 0.5rem;
-  font-size: 0.8rem;
-  height: 32px;
-  width: 100%;
-}
-
-.quick-input-display:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
-}
-
-.quick-input-header .drag-handle {
-  cursor: grab;
-  color: var(--text-secondary);
-  display: flex;
+.quick-input-branch-select .multi-select-container {
+  padding: 0.25rem 0.35rem 0.2rem 0.35rem;
+  gap: 0.2rem;
   align-items: center;
-  padding: 0.25rem;
 }
 
-.quick-input-header .drag-handle:hover {
-  background-color: var(--hover-color);
-  color: var(--primary-color);
+.quick-input-branch-select .selected-items {
+  gap: 0.1rem 0.1rem;
+  min-height: 0.9rem;
 }
 
-.quick-input-header .drag-handle:active {
-  cursor: grabbing;
+.quick-input-branch-select .selected-model-item {
+  margin-right: 0.15rem;
+  margin-bottom: 0.15rem;
+  padding: 0.08rem 0.25rem;
+  font-size: 0.68rem;
 }
 
-.quick-input-header .drag-handle .material-icons {
-  font-size: 18px;
+.quick-input-branch-select .dropdown-toggle {
+  width: 18px;
+  height: 18px;
 }
 
-.quick-input-send {
-  width: 100%;
-  border: 1px solid var(--border-color);
-  padding: 0.4rem 0.5rem;
-  font-size: 0.75rem;
-  font-family: inherit;
-  resize: vertical;
-  min-height: 70px;
-  line-height: 1.4;
+.quick-input-branch-select .dropdown-toggle .material-icons {
+  font-size: 14px;
 }
 
-.quick-input-send:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  background-color: var(--input-background);
-  box-shadow: 0 0 0 2px var(--accent-color-alpha);
+.quick-input-branch-select .no-models-selected {
+  padding: 0;
+  font-size: 0.7rem;
 }
 
-/* Quick Inputs Responsive */
-@media (min-width: 1201px) {
-  .quick-inputs-container {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 1200px) and (min-width: 901px) {
-  .quick-inputs-container {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 900px) and (min-width: 601px) {
-  .quick-inputs-container {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 600px) {
-  .quick-inputs-container {
-    grid-template-columns: 1fr;
-  }
-
-  .quick-input-header {
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .quick-input-header-left {
-    flex: 1;
-    min-width: 200px;
-    display: flex;
-    align-items: center;
-  }
-
-  .quick-input-header-right {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.5rem;
-  }
-}
-
-/* Branch Models Multi-Select for Quick Inputs */
 .quick-input-item .custom-multi-select {
+  width: 100%;
   position: relative;
 }
 
 .quick-input-item .dropdown-options {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 2px);
   left: 0;
   right: 0;
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
-  border-radius: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-md);
   z-index: 1001;
   max-height: 280px;
   overflow-y: auto;
   display: none;
-  scrollbar-width: thin;
 }
 
 .quick-input-item .dropdown-options.open {
   display: block;
 }
 
-/* Compact option items for quick input branch models */
 .quick-input-item .option-item {
-  padding: 0.25rem 0.4rem;
+  padding: 0.3rem 0.5rem;
 }
 
 .quick-input-item .option-item .option-text {
   font-size: 0.75rem;
-  line-height: 1.1;
 }
 
-/* Compact scrollbar for quick input dropdown */
-.quick-input-item .dropdown-options::-webkit-scrollbar {
-  width: 6px;
+.selected-model-item {
+  display: inline-flex;
+  align-items: center;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  padding: 0.125rem 0.3rem;
+  border-radius: 0;
+  font-size: 0.72rem;
+  margin-right: 0.25rem;
+  margin-bottom: 0.25rem;
+  gap: 0.25rem;
 }
 
-.quick-input-item .dropdown-options::-webkit-scrollbar-track {
-  background: var(--bg-color);
+.selected-model-item .model-remove-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 0.65rem;
 }
 
-.quick-input-item .dropdown-options::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 3px;
+.selected-model-item .model-remove-icon:hover {
+  color: var(--error-color);
 }
 
-.quick-input-item .dropdown-options::-webkit-scrollbar-thumb:hover {
-  background: var(--border-color-hover);
+.qi-col-auto {
+  justify-content: center;
+}
+
+.qi-col-actions {
+  justify-content: flex-end;
+}
+
+.quick-input-display-field {
+  margin-bottom: 0.6rem;
+}
+
+.drag-handle {
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem;
+  border-radius: 6px;
+  cursor: grab;
+  transition: all var(--transition-normal) ease;
+}
+
+.drag-handle:hover {
+  background-color: var(--hover-color);
+  color: var(--primary-color);
+}
+
+.drag-handle .material-icons {
+  font-size: 18px;
+}
+
+.custom-multi-select.dropdown-open .dropdown-options {
+  display: block;
+}
+
+@media (max-width: 1024px) {
+  .quick-inputs-table-header,
+  .quick-input-item-header {
+    grid-template-columns: var(--quick-input-grid-medium);
+  }
+}
+
+@media (max-width: 768px) {
+  .quick-inputs-table-header {
+    display: none;
+  }
+
+  .quick-input-item-header {
+    grid-template-columns: 28px 1fr auto;
+    grid-template-areas:
+      "drag name actions"
+      "drag message actions"
+      "drag branch actions"
+      "drag auto actions";
+    align-items: stretch;
+    row-gap: 0.35rem;
+  }
+
+  .qi-col-drag { grid-area: drag; align-self: start; }
+  .qi-col-name { grid-area: name; }
+  .qi-col-message { grid-area: message; }
+  .qi-col-branch { grid-area: branch; }
+  .qi-col-auto { grid-area: auto; justify-content: flex-start; }
+  .qi-col-actions { grid-area: actions; justify-content: flex-end; align-self: start; }
+
+  .quick-input-message-preview {
+    white-space: normal;
+  }
 }
