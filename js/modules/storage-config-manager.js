@@ -80,7 +80,7 @@ storageConfigManager.getDefaultConfig = async function() {
     // Return hardcoded default values as fallback
     return {
       llm_models: {
-        orderLastModified: 1735372800000,
+        orderLastModified: 0,
         models: [
           {
             id: 'gemini-pro',
@@ -92,7 +92,7 @@ storageConfigManager.getDefaultConfig = async function() {
             maxTokens: 8192,
             temperature: 0.7,
             enabled: true,
-            lastModified: 1735372800000
+            lastModified: 0
           },
           {
             id: 'openai-gpt35',
@@ -104,7 +104,7 @@ storageConfigManager.getDefaultConfig = async function() {
             maxTokens: 4000,
             temperature: 0.7,
             enabled: true,
-            lastModified: 1735372800000
+            lastModified: 0
           }
         ]
       },
@@ -113,16 +113,16 @@ storageConfigManager.getDefaultConfig = async function() {
           id: 'qi_default_summary_fallback',
           displayText: 'Summarize',
           sendText: 'Provide a concise summary of the following article:\n\n{CONTENT}',
-          lastModified: 1735372800000
+          lastModified: 0
         },
         {
           id: 'qi_default_keypoints_fallback',
           displayText: 'Extract Key Points',
           sendText: 'Extract key points from this content:\n{CONTENT}',
-          lastModified: 1735372800000
+          lastModified: 0
         }
       ],
-      quickInputsOrderLastModified: 1735372800000,
+      quickInputsOrderLastModified: 0,
       basic: {
         defaultExtractionMethod: 'readability',
         jinaApiKey: '',
@@ -133,7 +133,7 @@ storageConfigManager.getDefaultConfig = async function() {
         defaultModelId: 'gemini-pro',
         branchModelIds: [],
         language: 'en',
-        lastModified: 1735372800000
+        lastModified: 0
       }
     };
   }
@@ -151,13 +151,13 @@ storageConfigManager.getDefaultQuickInputs = function() {
       id: 'qi_default_summary_fallback',
       displayText: 'Summarize',
       sendText: 'Provide a concise summary of the following article:\n\n{CONTENT}',
-      lastModified: 1735372800000
+      lastModified: 0
     },
     {
       id: 'qi_default_keypoints_fallback',
       displayText: 'Extract Key Points',
       sendText: 'Extract key points from this content:\n{CONTENT}',
-      lastModified: 1735372800000
+      lastModified: 0
     }
   ];
 }
