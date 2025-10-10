@@ -313,6 +313,40 @@ textarea:disabled {
   box-shadow: 0 0 0 2px var(--accent-color-alpha), inset 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
+.floating-label-field.password-field input {
+  padding-right: 2.25rem;
+}
+
+.password-visibility-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  padding: 0.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-radius: 0.25rem;
+}
+
+.password-visibility-toggle:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-color-alpha);
+}
+
+.password-visibility-toggle:hover {
+  color: var(--text-color);
+}
+
+.password-visibility-toggle .material-icons {
+  font-size: 18px;
+  line-height: 1;
+}
+
 .floating-label-field input:hover,
 .floating-label-field textarea:hover,
 .floating-label-field select:hover {
