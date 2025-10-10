@@ -143,7 +143,7 @@ export class UIConfigManager {
       // Get blacklist and sync configurations via message passing
       const [blacklistResponse, syncResponse] = await Promise.all([
         chrome.runtime.sendMessage({ type: 'GET_BLACKLIST_PATTERNS' }).catch(() => ({ patterns: [] })),
-        chrome.runtime.sendMessage({ type: 'GET_SYNC_CONFIG' }).catch(() => ({}))
+        chrome.runtime.sendMessage({ type: 'GET_SYNC_CONFIG', includeSensitive: true }).catch(() => ({}))
       ]);
 
       // Add blacklist configuration

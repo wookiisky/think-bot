@@ -675,7 +675,10 @@ async function handleGetSyncConfig(data, serviceLogger) {
       };
     }
 
-    const config = await syncConfig.getExportableConfig();
+    const includeSensitive = Boolean(data && data.includeSensitive);
+    const config = includeSensitive
+      ? await syncConfig.getFullConfigForExport()
+      : await syncConfig.getExportableConfig();
 
     return {
       type: 'SYNC_CONFIG_LOADED',

@@ -341,8 +341,19 @@ syncConfig.getExportableConfig = async function() {
     autoSync: config.autoSync,
     lastSyncTime: config.lastSyncTime,
     deviceId: config.deviceId
-    // Exclude gistToken and gistId for security
+    // Exclude credentials by default for safety
   };
+};
+
+/**
+ * Get full sync configuration including sensitive credentials.
+ * This should only be used in trusted contexts (e.g., manual exports
+ * initiated by the user from the options page).
+ */
+syncConfig.getFullConfigForExport = async function() {
+  const config = await this.getSyncConfig();
+  // Return a shallow copy to avoid accidental mutations by callers
+  return { ...config };
 };
 
 // Initialize sync configuration when module loads
