@@ -122,4 +122,4 @@
 | `RESET_BLACKLIST_TO_DEFAULTS` | 将黑名单规则重置为默认列表。 | 选项页 | `handleResetBlacklistToDefaults` |
 | **数据同步** | | | |
 | `TEST_SYNC_CONNECTION` | 测试与 GitHub Gist 的连接是否正常。 | 选项页 | `handleTestSyncConnection` |
-| `GET_SYNC_CONFIG` | 获取用于导出的同步配置。 | 选项页 | `handleGetSyncConfig` |
+| `GET_SYNC_CONFIG` | 获取用于导出的同步配置，可通过 `includeSensitive` 参数请求包含凭据的完整配置（仅限受信任页面使用）。 | 选项页 | `handleGetSyncConfig` |
