@@ -271,9 +271,12 @@ export class ModelManager {
                  data-model-index="${index}" data-field="baseUrl" placeholder=" ">
           <label for="model-base-url-${index}" class="floating-label" data-i18n="options_model_base_url_label">Base URL</label>
         </div>
-        <div class="floating-label-field">
+        <div class="floating-label-field password-field">
           <input type="password" class="model-api-key" id="model-api-key-${index}" value="${model.apiKey || ''}"
                  data-model-index="${index}" data-field="apiKey" placeholder=" ">
+          <button type="button" class="password-visibility-toggle" data-target="model-api-key-${index}" aria-label="Show API Key" aria-pressed="false">
+            <i class="material-icons" aria-hidden="true">visibility_off</i>
+          </button>
           <label for="model-api-key-${index}" class="floating-label" data-i18n="options_model_api_key_label">API Key</label>
         </div>
         <div class="floating-label-field">
@@ -289,9 +292,12 @@ export class ModelManager {
                  data-model-index="${index}" data-field="baseUrl" placeholder=" ">
           <label for="model-base-url-${index}" class="floating-label" data-i18n="options_model_base_url_label">Base URL</label>
         </div>
-        <div class="floating-label-field">
+        <div class="floating-label-field password-field">
           <input type="password" class="model-api-key" id="model-api-key-${index}" value="${model.apiKey || ''}"
                  data-model-index="${index}" data-field="apiKey" placeholder=" ">
+          <button type="button" class="password-visibility-toggle" data-target="model-api-key-${index}" aria-label="Show API Key" aria-pressed="false">
+            <i class="material-icons" aria-hidden="true">visibility_off</i>
+          </button>
           <label for="model-api-key-${index}" class="floating-label" data-i18n="options_model_api_key_label">API Key</label>
         </div>
         <div class="floating-label-field">
@@ -335,9 +341,12 @@ export class ModelManager {
                  data-model-index="${index}" data-field="endpoint" placeholder=" ">
           <label for="model-azure-endpoint-${index}" class="floating-label" data-i18n="options_model_azure_endpoint_label">Endpoint</label>
         </div>
-        <div class="floating-label-field">
+        <div class="floating-label-field password-field">
           <input type="password" class="model-api-key" id="model-api-key-${index}" value="${model.apiKey || ''}"
                  data-model-index="${index}" data-field="apiKey" placeholder=" ">
+          <button type="button" class="password-visibility-toggle" data-target="model-api-key-${index}" aria-label="Show API Key" aria-pressed="false">
+            <i class="material-icons" aria-hidden="true">visibility_off</i>
+          </button>
           <label for="model-api-key-${index}" class="floating-label" data-i18n="options_model_api_key_label">API Key</label>
         </div>
         <div class="floating-label-field">
@@ -987,6 +996,33 @@ export class ModelManager {
 
       // Determine model index from the containing item
       const index = parseInt(modelItem.dataset.index, 10);
+
+      // Password visibility toggle handling
+      const visibilityToggle = target.classList.contains('password-visibility-toggle')
+        ? target
+        : target.closest('.password-visibility-toggle');
+      if (visibilityToggle) {
+        e.preventDefault();
+        e.stopPropagation();
+        const targetId = visibilityToggle.dataset.target;
+        if (targetId) {
+          const escapedId = (typeof CSS !== 'undefined' && CSS.escape)
+            ? CSS.escape(targetId)
+            : targetId.replace(/"/g, '\\"');
+          const input = container.querySelector(`#${escapedId}`);
+          if (input) {
+            const shouldShow = input.type === 'password';
+            input.type = shouldShow ? 'text' : 'password';
+            const icon = visibilityToggle.querySelector('.material-icons');
+            if (icon) {
+              icon.textContent = shouldShow ? 'visibility' : 'visibility_off';
+            }
+            visibilityToggle.setAttribute('aria-label', shouldShow ? 'Hide API Key' : 'Show API Key');
+            visibilityToggle.setAttribute('aria-pressed', String(shouldShow));
+          }
+        }
+        return;
+      }
 
       // Copy button handling
       if (target.classList.contains('copy-model-btn') || target.closest('.copy-model-btn')) {
