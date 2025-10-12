@@ -1,6 +1,7 @@
 :root {
-  --quick-input-grid-default: 28px minmax(0, 0.65fr) minmax(0, 2.1fr) minmax(300px, 2fr) auto auto;
-  --quick-input-grid-medium: 28px minmax(0, 0.75fr) minmax(0, 2.05fr) minmax(300px, 2fr) auto auto;
+  /* Increase branch column min width by 80px for better alignment */
+  --quick-input-grid-default: 28px minmax(0, 0.65fr) minmax(0, 2.1fr) minmax(380px, 2fr) auto auto;
+  --quick-input-grid-medium: 28px minmax(0, 0.75fr) minmax(0, 2.05fr) minmax(380px, 2fr) auto auto;
 }
 
 /* Quick Inputs Styles */
@@ -42,6 +43,11 @@
 
 .quick-inputs-table-header .qi-col {
   min-width: 0;
+}
+
+/* Align branch header label with content padding inside rows */
+.quick-inputs-table-header .qi-col-branch {
+  padding-left: 0.35rem;
 }
 
 .quick-inputs-container {

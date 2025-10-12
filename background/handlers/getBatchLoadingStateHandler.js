@@ -17,11 +17,58 @@ async function handleGetBatchLoadingState(data, serviceLogger, loadingStateCache
   try {
     const startTime = Date.now();
     serviceLogger.info(`GET_BATCH_LOADING_STATE: Fetching loading states for ${tabIds.length} tabs`);
+
+    const normalize = (value) => {
+      if (!value || typeof value !== 'string') {
+        return '';
+      }
+      return value.trim().toLowerCase();
+    };
+    const normalizedUrl = normalize(url);
+
+    // Preload active loading states once so we can aggregate branch loaders per tab
+    let activeStates = [];
+    try {
+      activeStates = await loadingStateCache.getActiveLoadingStates();
+    } catch (activeError) {
+      serviceLogger.warn('GET_BATCH_LOADING_STATE: Failed to load active branch states, continuing with direct lookups', activeError.message);
+      activeStates = [];
+    }
     
     // Process all tab IDs in parallel for better performance
     const loadingStatePromises = tabIds.map(async (tabId) => {
       try {
-        const loadingState = await loadingStateCache.getLoadingState(url, tabId);
+        let loadingState = await loadingStateCache.getLoadingState(url, tabId);
+
+        // If no direct state or not actively loading, attempt to aggregate branch loading states
+        if (!loadingState || loadingState.status !== 'loading') {
+          const matchingStates = (activeStates || []).filter((state) => {
+            if (!state) {
+              return false;
+            }
+            const sameUrl = normalize(state.url) === normalizedUrl;
+            if (!sameUrl) {
+              return false;
+            }
+            if (state.tabId === tabId) {
+              return true;
+            }
+            return typeof state.tabId === 'string' && state.tabId.startsWith(`${tabId}:`);
+          });
+
+          if (matchingStates.length > 0) {
+            loadingState = matchingStates.reduce((latest, current) => {
+              if (!latest) {
+                return current;
+              }
+              return current.timestamp > latest.timestamp ? current : latest;
+            }, null);
+            serviceLogger.info(`GET_BATCH_LOADING_STATE: Aggregated branch loading state for tab ${tabId}`, {
+              totalMatches: matchingStates.length,
+              aggregatedTabId: loadingState?.tabId
+            });
+          }
+        }
         
         return {
           tabId: tabId,
