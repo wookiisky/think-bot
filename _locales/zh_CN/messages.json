@@ -110,6 +110,9 @@
   "export_default_title": {
     "message": "对话"
   },
+  "export_empty_conversation": {
+    "message": "没有可导出的对话。"
+  },
   "export_unknown_role": {
     "message": "未知"
   },
