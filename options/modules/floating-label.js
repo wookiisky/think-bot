@@ -76,11 +76,9 @@ class FloatingLabelManager {
         const hasSelectedTools = selectedItems && !noToolsSelected && selectedItems.children.length > 0;
         
         if (hasSelectedTools) {
-            field.classList.add('has-value');
-            console.log('FloatingLabel: Added has-value to custom multi-select field');
+            field.classList.add('has-value');            
         } else {
-            field.classList.remove('has-value');
-            console.log('FloatingLabel: Removed has-value from custom multi-select field');
+            field.classList.remove('has-value');            
         }
     }
 

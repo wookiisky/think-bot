@@ -210,6 +210,7 @@ export class QuickInputsManager {
   static removeQuickInput(item) {
     // Mark as deleted for data collection and hide from view
     item.dataset.deleted = 'true';
+    item.dataset.deletedTimestamp = Date.now().toString(); // Store deletion timestamp for sync merging
     item.style.display = 'none';
   }
   
@@ -227,13 +228,14 @@ export class QuickInputsManager {
       const isDeleted = item.dataset.deleted === 'true';
       const id = idInput ? idInput.value : this.generateRandomId();
 
-      // For deleted items, we only need the ID and the deleted flag.
+      // For deleted items, we only need the ID, the deleted flag, and the deletion timestamp.
       // For active items, they must have display and send text.
       if (isDeleted) {
+        const deletedTimestamp = item.dataset.deletedTimestamp ? parseInt(item.dataset.deletedTimestamp, 10) : Date.now();
         quickInputs.push({
           id,
-          isDeleted: true
-          // other fields are irrelevant
+          isDeleted: true,
+          lastModified: deletedTimestamp // Critical: include timestamp for proper sync merging
         });
       } else if (displayText && sendText) {
         const autoTriggerEnabled = autoTriggerCheckbox ? autoTriggerCheckbox.checked : false;
@@ -308,6 +310,8 @@ export class QuickInputsManager {
   
   // Render quick inputs from config (preserving existing IDs and handling soft deletes)
   static renderQuickInputs(quickInputs, domElements, modelManager = null) {
+    console.log(`DEBUG: Received ${quickInputs?.length || 0} quick inputs to render`);
+    
     // Clear existing quick inputs
     domElements.quickInputsContainer.innerHTML = '';
 
@@ -316,10 +320,11 @@ export class QuickInputsManager {
     quickInputs.forEach(input => {
       // Skip rendering for items marked as deleted
       if (input.isDeleted) {
+        console.log(`DEBUG: Skipping deleted item: ${input.id}`);
         return;
       }
       
-      activeInputsCount++;
+      activeInputsCount++;      
       // Ensure ID exists for backward compatibility
       const id = input.id || this.generateRandomId();
       this.addQuickInput(domElements, input.displayText, input.sendText, id);
@@ -341,6 +346,7 @@ export class QuickInputsManager {
 
     // Add an empty one if no active inputs exist
     if (activeInputsCount === 0) {
+      console.log('DEBUG: No active inputs, adding empty one');
       this.addQuickInput(domElements);
     }
 
@@ -356,6 +362,9 @@ export class QuickInputsManager {
         this.updateQuickInputNameDisplay(item);
       });
     }
+
+    console.log(`DEBUG: Rendered ${activeInputsCount} active quick inputs`);
+    console.log('=== DEBUG: renderQuickInputs END ===');
 
     // Apply i18n translations to newly created DOM elements
     if (typeof i18n !== 'undefined' && i18n.applyToDOM) {

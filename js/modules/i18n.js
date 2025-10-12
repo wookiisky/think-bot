@@ -273,9 +273,8 @@ const i18n = {
         if (key) {
           elem.textContent = this.getMessage(key);
         }
-      });
+      });      
       
-      console.log('Applied translations to DOM');
     } catch (error) {
       console.error('Error applying translations to DOM:', error);
     }

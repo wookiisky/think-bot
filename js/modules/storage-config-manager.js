@@ -329,32 +329,104 @@ storageConfigManager.loadQuickInputsIndex = async function() {
 // Load all quick inputs
 storageConfigManager.loadAllQuickInputs = async function() {
   try {
-    const quickInputIds = await storageConfigManager.loadQuickInputsIndex();
+    const indexResult = await chrome.storage.local.get(QUICK_INPUTS_INDEX_KEY);
+    const hasIndex = Object.prototype.hasOwnProperty.call(indexResult, QUICK_INPUTS_INDEX_KEY);
+    const quickInputIds = hasIndex
+      ? Array.isArray(indexResult[QUICK_INPUTS_INDEX_KEY])
+        ? indexResult[QUICK_INPUTS_INDEX_KEY]
+        : []
+      : [];
+
+    if (!hasIndex) {
+      storageConfigLogger.warn('No index found, returning default quick inputs');
+      return storageConfigManager.getDefaultQuickInputs();
+    }
 
     if (quickInputIds.length === 0) {
-      return storageConfigManager.getDefaultQuickInputs();
+      storageConfigLogger.info('Quick inputs index present but empty; returning cleared quick input list');
+      return [];
     }
 
     // Load all quick inputs in parallel
     const quickInputPromises = quickInputIds.map(id => storageConfigManager.loadQuickInput(id));
     const quickInputs = await Promise.all(quickInputPromises);
 
-    // Filter out null values (deleted or corrupted items)
-    const validQuickInputs = quickInputs.filter(qi => qi !== null);
+    // Filter out null values and soft-deleted items for UI display
+    const validQuickInputs = quickInputs.filter(qi => qi !== null && qi.isDeleted !== true);
 
-    // If some items were filtered out, update the index
-    if (validQuickInputs.length !== quickInputIds.length) {
-      const validIds = validQuickInputs.map(qi => qi.id);
-      await storageConfigManager.saveQuickInputsIndex(validIds);
-      storageConfigLogger.info(`Cleaned up quick inputs index, removed ${quickInputIds.length - validQuickInputs.length} invalid items`);
+    // Only clean up null/corrupted items from index, keep soft-deleted items for sync
+    const nullItemIds = [];
+    quickInputs.forEach((qi, idx) => {
+      if (qi === null) {
+        nullItemIds.push(quickInputIds[idx]);
+      }
+    });
+    
+    if (nullItemIds.length > 0) {
+      const cleanedIds = quickInputIds.filter(id => !nullItemIds.includes(id));
+      await storageConfigManager.saveQuickInputsIndex(cleanedIds);
+      storageConfigLogger.info(`Cleaned up quick inputs index, removed ${nullItemIds.length} null/corrupted items`);
     }
 
     return validQuickInputs;
   } catch (error) {
     storageConfigLogger.error('Error loading all quick inputs:', error.message);
-    return storageConfigManager.getDefaultQuickInputs();
+    // Return empty array instead of defaults to avoid unexpectedly restoring deleted items
+    return [];
   }
-}
+};
+
+// Get models including soft-deleted items (for sync)
+storageConfigManager.getModelsIncludingDeleted = async function() {
+  try {
+    const mainResult = await chrome.storage.local.get(MAIN_CONFIG_KEY);
+    
+    if (!mainResult[MAIN_CONFIG_KEY]) {
+      storageConfigLogger.warn('No main config found for sync');
+      return { models: [], orderLastModified: 0 };
+    }
+
+    const storedMainConfig = mainResult[MAIN_CONFIG_KEY];
+    const llmModelsConfig = storedMainConfig.llm_models || storedMainConfig.llm || { models: [], orderLastModified: 0 };
+    
+    storageConfigLogger.info(`Loaded ${llmModelsConfig.models?.length || 0} models for sync (including deleted)`);
+
+    return llmModelsConfig;
+  } catch (error) {
+    storageConfigLogger.error('Error getting models for sync:', error.message);
+    return { models: [], orderLastModified: 0 };
+  }
+};
+
+// Load all quick inputs including soft-deleted items (for sync)
+storageConfigManager.loadAllQuickInputsIncludingDeleted = async function() {
+  try {
+    const indexResult = await chrome.storage.local.get(QUICK_INPUTS_INDEX_KEY);
+    const hasIndex = Object.prototype.hasOwnProperty.call(indexResult, QUICK_INPUTS_INDEX_KEY);
+    const quickInputIds = hasIndex
+      ? Array.isArray(indexResult[QUICK_INPUTS_INDEX_KEY])
+        ? indexResult[QUICK_INPUTS_INDEX_KEY]
+        : []
+      : [];
+
+    if (!hasIndex || quickInputIds.length === 0) {
+      storageConfigLogger.info('No quick inputs to sync');
+      return [];
+    }
+
+    // Load all quick inputs in parallel (including deleted ones)
+    const quickInputPromises = quickInputIds.map(id => storageConfigManager.loadQuickInput(id));
+    const quickInputs = await Promise.all(quickInputPromises);
+
+    // Only filter out null values, keep soft-deleted items for sync
+    const allQuickInputs = quickInputs.filter(qi => qi !== null);
+
+    return allQuickInputs;
+  } catch (error) {
+    storageConfigLogger.error('Error loading all quick inputs for sync:', error.message);
+    return [];
+  }
+};
 
 // Save all quick inputs (completely replace existing ones)
 storageConfigManager.saveAllQuickInputs = async function(quickInputs, forceTimestampUpdate = false) {
@@ -552,11 +624,19 @@ storageConfigManager.getConfig = async function() {
           await storageConfigManager.saveConfig(mergedConfig, false);
           storageConfigLogger.info('Updated existing config with missing fields including timestamps');
         }
+
+        // Filter out soft-deleted models before returning config
+        const originalModelCount = mergedConfig.llm_models.models.length;
+        mergedConfig.llm_models.models = mergedConfig.llm_models.models.filter(model => model.isDeleted !== true);
+        if (mergedConfig.llm_models.models.length < originalModelCount) {
+          storageConfigLogger.info(`Filtered out ${originalModelCount - mergedConfig.llm_models.models.length} soft-deleted models from config`);
+        }
       }
 
       return mergedConfig;
     } else {
       // No config found, initialize and return default
+      storageConfigLogger.info('No stored config found, initializing with default');
       const defaultConfig = await storageConfigManager.getDefaultConfig();
 
       // Add blacklist and sync configurations to default config
@@ -568,7 +648,7 @@ storageConfigManager.getConfig = async function() {
       return defaultConfig;
     }
   } catch (error) {
-    storageConfigLogger.error('Get configuration error:', error.message);
+    storageConfigLogger.error('Get configuration error:', error.message, error);
     const defaultConfig = await storageConfigManager.getDefaultConfig();
 
     // Add empty blacklist and sync configurations for error case
@@ -588,7 +668,6 @@ storageConfigManager.saveConfig = async function(newConfig, isUserModification =
       try {
         const existingConfig = await storageConfigManager.getConfig();
         processedConfig = storageConfigManager.calculateConfigTimestamps(newConfig, existingConfig);
-        storageConfigLogger.debug('Calculated timestamps for modified configuration items');
       } catch (error) {
         storageConfigLogger.warn('Could not load existing config for timestamp comparison, using new timestamps:', error.message);
         // Fallback: add timestamps to new items
@@ -849,6 +928,14 @@ storageConfigManager.calculateConfigTimestamps = function(newConfig, existingCon
       const existingModel = existingLlmModels?.find(model => model.id === newModel.id);
 
       if (existingModel) {
+        // If the model is marked for deletion in the new config
+        if (newModel.isDeleted) {
+          // Update timestamp for deletion
+          newModel.lastModified = currentTime;
+          storageConfigLogger.info(`Marked model for deletion with updated timestamp: ${newModel.id} (${newModel.name})`);
+          return; // Continue to next model
+        }
+
         // Compare all fields to determine if model was actually modified
         const simpleFieldsChanged = ['name', 'provider', 'apiKey', 'baseUrl', 'model', 'maxTokens', 'temperature', 'enabled', 'endpoint', 'deploymentName', 'apiVersion', 'thinkingBudget'].some(field =>
           existingModel[field] !== newModel[field]

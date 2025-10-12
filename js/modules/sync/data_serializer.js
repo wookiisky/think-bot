@@ -70,6 +70,14 @@ dataSerializer.collectLocalData = async function() {
     // Get configuration data
     const config = await configManager.getConfig();
     
+    // Get quick inputs including soft-deleted items for sync (special handling)
+    const quickInputsForSync = await configManager.loadAllQuickInputsIncludingDeleted();
+    serializerLogger.info(`Collected ${quickInputsForSync.length} quick inputs for sync (including deleted)`);
+    
+    // Get models including soft-deleted items for sync (special handling)
+    const modelsForSync = await configManager.getModelsIncludingDeleted();
+    serializerLogger.info(`Collected ${modelsForSync.models?.length || 0} models for sync (including deleted)`);
+    
     // Get all cached page data
     const pageCache = await this.collectPageCache();
     
@@ -89,9 +97,9 @@ dataSerializer.collectLocalData = async function() {
         totalSize: 0 // Will be calculated after serialization
       },
       config: {
-        // Support both old and new config formats
-        llm_models: config.llm_models || config.llm,
-        quickInputs: config.quickInputs,
+        // Support both old and new config formats - use special sync versions to include deleted items
+        llm_models: modelsForSync, // Use special sync version with deleted items
+        quickInputs: quickInputsForSync, // Use special sync version with deleted items
         basic: config.basic || {
           defaultExtractionMethod: config.defaultExtractionMethod,
           jinaApiKey: config.jinaApiKey,
@@ -650,10 +658,24 @@ dataSerializer.mergeQuickInputs = function(localQuickInputs = [], remoteQuickInp
     // Merge items based on timestamps and deletion status
     for (const [id, { local, remote }] of allItems.entries()) {
       if (local && remote) {
-        const localTimestamp = local.lastModified || 0;
-        const remoteTimestamp = remote.lastModified || 0;
+        let localTimestamp = local.lastModified || 0;
+        let remoteTimestamp = remote.lastModified || 0;
         const localIsDeleted = local.isDeleted === true;
         const remoteIsDeleted = remote.isDeleted === true;
+
+        // Removed debug log for performance
+
+        // Defensive: If a deletion marker is missing timestamp, use current time and log warning
+        if (localIsDeleted && localTimestamp === 0) {
+          serializerLogger.warn(`Local deletion of quickInput ${id} is missing lastModified timestamp, using current time as fallback`);
+          localTimestamp = Date.now();
+          local.lastModified = localTimestamp;
+        }
+        if (remoteIsDeleted && remoteTimestamp === 0) {
+          serializerLogger.warn(`Remote deletion of quickInput ${id} is missing lastModified timestamp, using current time as fallback`);
+          remoteTimestamp = Date.now();
+          remote.lastModified = remoteTimestamp;
+        }
 
         if (localIsDeleted && remoteIsDeleted) {
           // Both are deleted, keep the newer deletion record
@@ -694,26 +716,37 @@ dataSerializer.mergeQuickInputs = function(localQuickInputs = [], remoteQuickInp
     }
 
     // Determine the order from the list with the most recent overall change.
+    const localList = Array.isArray(localQuickInputs) ? localQuickInputs : [];
+    const remoteList = Array.isArray(remoteQuickInputs) ? remoteQuickInputs : [];
     const localOrderValid = Number.isFinite(localOrderTimestamp) && localOrderTimestamp > 0;
     const remoteOrderValid = Number.isFinite(remoteOrderTimestamp) && remoteOrderTimestamp > 0;
 
-    let baseOrderList;
+    let baseOrderList = localList.length > 0 ? localList : remoteList;
     let resolvedOrderTimestamp = 0;
 
-    if (localOrderValid || remoteOrderValid) {
-      if (!remoteOrderValid || (localOrderValid && localOrderTimestamp >= remoteOrderTimestamp)) {
-        baseOrderList = localQuickInputs;
-        resolvedOrderTimestamp = localOrderTimestamp || remoteOrderTimestamp || 0;
-      } else {
-        baseOrderList = remoteQuickInputs;
-        resolvedOrderTimestamp = remoteOrderTimestamp;
+    if (baseOrderList === localList) {
+      resolvedOrderTimestamp = localOrderValid
+        ? localOrderTimestamp
+        : this.getQuickInputsListTimestamp(localList);
+
+      // Preserve remote timestamp for metadata comparison
+      if (remoteOrderValid) {
+        resolvedOrderTimestamp = Math.max(resolvedOrderTimestamp, remoteOrderTimestamp);
+      } else if (remoteList.length > 0) {
+        resolvedOrderTimestamp = Math.max(
+          resolvedOrderTimestamp,
+          this.getQuickInputsListTimestamp(remoteList)
+        );
       }
     } else {
-      const localListTimestamp = this.getQuickInputsListTimestamp(localQuickInputs);
-      const remoteListTimestamp = this.getQuickInputsListTimestamp(remoteQuickInputs);
-      baseOrderList = localListTimestamp >= remoteListTimestamp ? localQuickInputs : remoteQuickInputs;
-      resolvedOrderTimestamp = Math.max(localListTimestamp, remoteListTimestamp);
+      // No local ordering information, fall back to remote
+      resolvedOrderTimestamp = remoteOrderValid
+        ? remoteOrderTimestamp
+        : this.getQuickInputsListTimestamp(remoteList);
     }
+
+    // Ensure timestamp is non-negative
+    resolvedOrderTimestamp = resolvedOrderTimestamp || 0;
 
     const orderedMergedList = [];
     const processedIds = new Set();
@@ -733,7 +766,7 @@ dataSerializer.mergeQuickInputs = function(localQuickInputs = [], remoteQuickInp
       }
     }
     
-    serializerLogger.info(`Merged quickInputs: ${orderedMergedList.length} items (order timestamp: ${resolvedOrderTimestamp}).`);
+    serializerLogger.info(`Merged quickInputs: ${orderedMergedList.length} items (order timestamp: ${resolvedOrderTimestamp}), order based on ${baseOrderList === localList ? 'local' : 'remote'} preference.`);
     return {
       items: orderedMergedList,
       orderTimestamp: resolvedOrderTimestamp
@@ -986,37 +1019,51 @@ dataSerializer.mergeLlmModels = function(localModels, remoteModels, localOrderTi
 
       if (localModel && remoteModel) {
         // Both exist, compare timestamps and handle soft delete conflicts
-        const localTimestamp = localModel.lastModified || 0;
-        const remoteTimestamp = remoteModel.lastModified || 0;
+        let localTimestamp = localModel.lastModified || 0;
+        let remoteTimestamp = remoteModel.lastModified || 0;
         const localIsDeleted = localModel.isDeleted === true;
         const remoteIsDeleted = remoteModel.isDeleted === true;
+
+        serializerLogger.info(`DEBUG: Merging model ${id} (${localModel.name || remoteModel.name}): local={isDeleted:${localIsDeleted}, timestamp:${localTimestamp}, date:${new Date(localTimestamp).toISOString()}}, remote={isDeleted:${remoteIsDeleted}, timestamp:${remoteTimestamp}, date:${new Date(remoteTimestamp).toISOString()}}`);
+
+        // Defensive: If a deletion marker is missing timestamp, use current time and log warning
+        if (localIsDeleted && localTimestamp === 0) {
+          serializerLogger.warn(`Local deletion of model ${id} is missing lastModified timestamp, using current time as fallback`);
+          localTimestamp = Date.now();
+          localModel.lastModified = localTimestamp;
+        }
+        if (remoteIsDeleted && remoteTimestamp === 0) {
+          serializerLogger.warn(`Remote deletion of model ${id} is missing lastModified timestamp, using current time as fallback`);
+          remoteTimestamp = Date.now();
+          remoteModel.lastModified = remoteTimestamp;
+        }
 
         if (localIsDeleted && remoteIsDeleted) {
           // Both are deleted, keep the newer deletion record
           const newerModel = localTimestamp >= remoteTimestamp ? localModel : remoteModel;
           mergedMap.set(id, newerModel);
-          serializerLogger.debug(`Both local and remote model ${id} are deleted, using newer deletion record`);
+          serializerLogger.info(`Both local and remote model ${id} are deleted, using newer deletion record`);
         } else if (localIsDeleted && !remoteIsDeleted) {
           // Local is deleted, remote has data
           if (localTimestamp > remoteTimestamp) {
             // Deletion is newer, keep deletion
             mergedMap.set(id, localModel);
-            serializerLogger.debug(`Local deletion of ${id} is newer than remote data, keeping deletion`);
+            serializerLogger.info(`✓ Local deletion of ${id} is newer than remote data, keeping deletion`);
           } else {
             // Remote data is newer, keep it
             mergedMap.set(id, remoteModel);
-            serializerLogger.debug(`Remote data for ${id} is newer than local deletion, keeping data`);
+            serializerLogger.info(`✗ Remote data for ${id} is newer than local deletion, CANCELLING deletion`);
           }
         } else if (!localIsDeleted && remoteIsDeleted) {
           // Remote is deleted, local has data
           if (remoteTimestamp > localTimestamp) {
             // Deletion is newer, keep deletion
             mergedMap.set(id, remoteModel);
-            serializerLogger.debug(`Remote deletion of ${id} is newer than local data, keeping deletion`);
+            serializerLogger.info(`✓ Remote deletion of ${id} is newer than local data, keeping deletion`);
           } else {
             // Local data is newer, keep it
             mergedMap.set(id, localModel);
-            serializerLogger.debug(`Local data for ${id} is newer than remote deletion, keeping data`);
+            serializerLogger.info(`✗ Local data for ${id} is newer than remote deletion, CANCELLING deletion`);
           }
         } else {
           // Neither is deleted, normal timestamp comparison
@@ -1031,34 +1078,40 @@ dataSerializer.mergeLlmModels = function(localModels, remoteModels, localOrderTi
       } else if (localModel && !remoteModel) {
         // Only local exists
         mergedMap.set(id, localModel);
-        serializerLogger.debug(`Adding local-only model: ${id} (deleted: ${localModel.isDeleted || false})`);
+        serializerLogger.info(`Adding local-only model: ${id} (${localModel.name}, deleted: ${localModel.isDeleted || false})`);
       } else if (!localModel && remoteModel) {
         // Only remote exists
         mergedMap.set(id, remoteModel);
-        serializerLogger.debug(`Adding remote-only model: ${id} (deleted: ${remoteModel.isDeleted || false})`);
+        serializerLogger.info(`Adding remote-only model: ${id} (${remoteModel.name}, deleted: ${remoteModel.isDeleted || false})`);
       }
     }
 
     const localOrderValid = Number.isFinite(localOrderTimestamp) && localOrderTimestamp > 0;
     const remoteOrderValid = Number.isFinite(remoteOrderTimestamp) && remoteOrderTimestamp > 0;
 
-    let baseOrderList;
+    let baseOrderList = localModelsArray.length > 0 ? localModelsArray : remoteModelsArray;
     let resolvedOrderTimestamp = 0;
 
-    if (localOrderValid || remoteOrderValid) {
-      if (!remoteOrderValid || (localOrderValid && localOrderTimestamp >= remoteOrderTimestamp)) {
-        baseOrderList = localModelsArray;
-        resolvedOrderTimestamp = localOrderTimestamp || remoteOrderTimestamp || 0;
-      } else {
-        baseOrderList = remoteModelsArray;
-        resolvedOrderTimestamp = remoteOrderTimestamp;
+    if (baseOrderList === localModelsArray) {
+      resolvedOrderTimestamp = localOrderValid
+        ? localOrderTimestamp
+        : this.getModelListTimestamp(localModelsArray);
+
+      if (remoteOrderValid) {
+        resolvedOrderTimestamp = Math.max(resolvedOrderTimestamp, remoteOrderTimestamp);
+      } else if (remoteModelsArray.length > 0) {
+        resolvedOrderTimestamp = Math.max(
+          resolvedOrderTimestamp,
+          this.getModelListTimestamp(remoteModelsArray)
+        );
       }
     } else {
-      const localListTimestamp = this.getModelListTimestamp(localModelsArray);
-      const remoteListTimestamp = this.getModelListTimestamp(remoteModelsArray);
-      baseOrderList = localListTimestamp >= remoteListTimestamp ? localModelsArray : remoteModelsArray;
-      resolvedOrderTimestamp = Math.max(localListTimestamp, remoteListTimestamp);
+      resolvedOrderTimestamp = remoteOrderValid
+        ? remoteOrderTimestamp
+        : this.getModelListTimestamp(remoteModelsArray);
     }
+
+    resolvedOrderTimestamp = resolvedOrderTimestamp || 0;
 
     const orderedMerged = [];
     const processedIds = new Set();
@@ -1091,7 +1144,7 @@ dataSerializer.mergeLlmModels = function(localModels, remoteModels, localOrderTi
       }
     });
 
-    serializerLogger.info(`Merged LLM models: ${orderedMerged.length} items (local: ${localModelsArray.length}, remote: ${remoteModelsArray.length}), order timestamp: ${resolvedOrderTimestamp}`);
+    serializerLogger.info(`Merged LLM models: ${orderedMerged.length} items (local: ${localModelsArray.length}, remote: ${remoteModelsArray.length}), order timestamp: ${resolvedOrderTimestamp}, order based on ${baseOrderList === localModelsArray ? 'local' : 'remote'} preference`);
     return {
       items: orderedMerged,
       orderTimestamp: resolvedOrderTimestamp
@@ -1322,47 +1375,64 @@ dataSerializer.cleanupDeletedItemsAfterMerge = function(mergedData) {
     
     // Clean up deleted quick inputs
     if (mergedData.config && mergedData.config.quickInputs) {
-      const originalCount = mergedData.config.quickInputs.length;
-      mergedData.config.quickInputs = mergedData.config.quickInputs.filter(item => {
-        if (item.isDeleted === true) {
+      const sanitizedQuickInputs = mergedData.config.quickInputs.map(item => {
+        if (item && item.isDeleted === true) {
           deletedQuickInputsCount++;
-          serializerLogger.debug(`Removing deleted quickInput from upload: ${item.id}`);
-          return false;
+          const minimalRecord = {
+            id: item.id,
+            isDeleted: true,
+            lastModified: item.lastModified || 0
+          };
+          if (Array.isArray(item.branchModelIds) && item.branchModelIds.length > 0) {
+            minimalRecord.branchModelIds = item.branchModelIds;
+          }
+          serializerLogger.debug(`Preserving deleted quickInput marker for upload: ${item.id}`);
+          return minimalRecord;
         }
-        return true;
+        return item;
       });
-      serializerLogger.info(`Filtered quickInputs: removed ${deletedQuickInputsCount} deleted items (${originalCount} → ${mergedData.config.quickInputs.length})`);
+      mergedData.config.quickInputs = sanitizedQuickInputs;
     }
     
     // Clean up deleted models from both old and new format
     if (mergedData.config && mergedData.config.llm_models && mergedData.config.llm_models.models) {
-      const originalCount = mergedData.config.llm_models.models.length;
-      mergedData.config.llm_models.models = mergedData.config.llm_models.models.filter(model => {
-        if (model.isDeleted === true) {
+      const sanitizedModels = mergedData.config.llm_models.models.map(model => {
+        if (model && model.isDeleted === true) {
           deletedModelsCount++;
-          serializerLogger.debug(`Removing deleted model from upload: ${model.id} (${model.name || 'Unnamed'})`);
-          return false;
+          const minimalModel = {
+            id: model.id,
+            isDeleted: true,
+            lastModified: model.lastModified || 0,
+            provider: model.provider || null
+          };
+          serializerLogger.info(`Preserving deleted model marker for upload: ${model.id} (${model.name || 'Unnamed'})`);
+          return minimalModel;
         }
-        return true;
+        return model;
       });
-      serializerLogger.info(`Filtered LLM models: removed ${deletedModelsCount} deleted items (${originalCount} → ${mergedData.config.llm_models.models.length})`);
+      mergedData.config.llm_models.models = sanitizedModels;
     }
     
     // Handle old format LLM config if exists
     if (mergedData.config && mergedData.config.llm && mergedData.config.llm.models) {
-      const originalCount = mergedData.config.llm.models.length;
-      mergedData.config.llm.models = mergedData.config.llm.models.filter(model => {
-        if (model.isDeleted === true) {
+      const sanitizedLegacyModels = mergedData.config.llm.models.map(model => {
+        if (model && model.isDeleted === true) {
           deletedModelsCount++;
-          serializerLogger.debug(`Removing deleted model from old format upload: ${model.id} (${model.name || 'Unnamed'})`);
-          return false;
+          const minimalModel = {
+            id: model.id,
+            isDeleted: true,
+            lastModified: model.lastModified || 0,
+            provider: model.provider || null
+          };
+          serializerLogger.debug(`Preserving deleted legacy model marker for upload: ${model.id} (${model.name || 'Unnamed'})`);
+          return minimalModel;
         }
-        return true;
+        return model;
       });
-      serializerLogger.info(`Filtered old format LLM models: removed ${deletedModelsCount} deleted items (${originalCount} → ${mergedData.config.llm.models.length})`);
+      mergedData.config.llm.models = sanitizedLegacyModels;
     }
     
-    serializerLogger.info(`Cleanup completed: removed ${deletedQuickInputsCount} quickInputs and ${deletedModelsCount} models`);
+    serializerLogger.info(`Cleanup completed: preserved ${deletedQuickInputsCount} deleted quickInputs and ${deletedModelsCount} deleted models for cross-device propagation`);
     return mergedData;
   } catch (error) {
     serializerLogger.error('Error cleaning up deleted items after merge:', error.message);

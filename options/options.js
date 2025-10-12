@@ -326,8 +326,9 @@ class OptionsPage {
             if (syncResult.success) {
               this.updateSyncStatus('success', i18n.getMessage('options_js_sync_completed_successfully'));
               
-              // Clean up soft-deleted models after successful sync
+              // Clean up soft-deleted models and quick inputs after successful sync
               this.modelManager.cleanupDeletedModels();
+              await storageConfigManager.cleanupDeletedQuickInputs();
               
               if (syncBtn) {
                 syncBtn.classList.remove('saving');
@@ -806,8 +807,9 @@ class OptionsPage {
             // Perform sync operation
             const syncResult = await syncManager.fullSync();
             if (syncResult.success) {
-              // Clean up soft-deleted models after successful initial sync
+              // Clean up soft-deleted models and quick inputs after successful initial sync
               this.modelManager.cleanupDeletedModels();
+              await storageConfigManager.cleanupDeletedQuickInputs();
               
               // Reload sync status to get the updated lastSyncTime from syncConfig
               try {
@@ -940,8 +942,9 @@ class OptionsPage {
         this.updateSyncStatus('success', i18n.getMessage('options_js_sync_completed_successfully'));
         logger.info('Auto-sync after save completed successfully');
 
-        // Clean up soft-deleted models after successful sync
+        // Clean up soft-deleted models and quick inputs after successful sync
         this.modelManager.cleanupDeletedModels();
+        await storageConfigManager.cleanupDeletedQuickInputs();
 
         // Update save button to show sync success
         if (saveBtn) {
