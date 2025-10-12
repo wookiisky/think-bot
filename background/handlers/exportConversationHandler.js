@@ -6,10 +6,18 @@
 // which is imported in service-worker.js
 
 // Main handler function
-async function handleExportConversation(request, sender, sendResponse) {
-  const { urlWithPossibleFragment, chatHistory, quickInputTabName } = request;
+async function handleExportConversation(request, serviceLogger) {
+  const logger = serviceLogger || console;
+  const { urlWithPossibleFragment, chatHistory, quickInputTabName } = request || {};
 
   try {
+    if (!chatHistory || !Array.isArray(chatHistory) || chatHistory.length === 0) {
+      return {
+        success: false,
+        error: chrome.i18n.getMessage('export_empty_conversation') || 'No conversation available to export'
+      };
+    }
+
     // 1. Get base URL and page title
     const baseUrl = urlWithPossibleFragment ? urlWithPossibleFragment.split('#')[0] : null;
     let pageTitle = chrome.i18n.getMessage('export_default_title');
@@ -77,14 +85,14 @@ async function handleExportConversation(request, sender, sendResponse) {
       }
     });
 
-    // 6. Send response with data to be downloaded
-    sendResponse({
+    // 6. Return response with data to be downloaded
+    return {
       success: true,
       filename,
       markdownContent
-    });
+    };
   } catch (error) {
-    console.error('Error exporting conversation:', error);
-    sendResponse({ success: false, error: error.message });
+    logger.error('Error exporting conversation:', error);
+    return { success: false, error: error.message };
   }
 }

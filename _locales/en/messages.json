@@ -110,6 +110,9 @@
   "export_default_title": {
     "message": "Conversation"
   },
+  "export_empty_conversation": {
+    "message": "No conversation available to export."
+  },
   "export_unknown_role": {
     "message": "Unknown"
   },
