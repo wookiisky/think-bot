@@ -653,6 +653,9 @@
   "sidebar_chatManager_title_preview": {
     "message": "Preview"
   },
+  "sidebar_preview_resizeHandle_label": {
+    "message": "Drag to resize"
+  },
   "sidebar_chatManager_title_stopGenerating": {
     "message": "Stop generating response"
   },

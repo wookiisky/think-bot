@@ -653,6 +653,9 @@
   "sidebar_chatManager_title_preview": {
     "message": "预览"
   },
+  "sidebar_preview_resizeHandle_label": {
+    "message": "拖动以调整大小"
+  },
   "sidebar_chatManager_title_stopGenerating": {
     "message": "停止生成响应"
   },
