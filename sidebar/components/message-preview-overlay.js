@@ -9,7 +9,7 @@ const logger = createLogger('MessagePreviewOverlay');
 
 const MIN_WIDTH = 320;
 const MIN_HEIGHT = 240;
-const MAX_WIDTH_PX = 900;
+const MAX_WIDTH_RATIO = 0.95;
 const MAX_HEIGHT_PX = 900;
 const KEYBOARD_STEP = 24;
 
@@ -412,8 +412,8 @@ class MessagePreviewOverlay {
   }
 
   clampWidth(width) {
-    const maxWidth = Math.min(window.innerWidth * 0.95, MAX_WIDTH_PX);
-    return Math.min(Math.max(width, MIN_WIDTH), Math.max(MIN_WIDTH, maxWidth));
+    const viewportLimit = Math.max(MIN_WIDTH, window.innerWidth * MAX_WIDTH_RATIO);
+    return Math.min(Math.max(width, MIN_WIDTH), viewportLimit);
   }
 
   clampHeight(height) {

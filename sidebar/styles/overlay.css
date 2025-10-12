@@ -262,8 +262,8 @@
 
 /* Larger content area for message preview */
 .message-preview-overlay .overlay-content {
-  max-width: 600px; /* reduced by 25% from 800px */
-  width: 69%; /* reduced by 25% from 92% */
+  max-width: 95vw; /* allow preview to grow with viewport */
+  width: 69%;
   min-width: 320px;
   min-height: 240px;
   display: flex;
