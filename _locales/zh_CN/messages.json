@@ -92,6 +92,12 @@
   "conversations_js_no_cached_content": {
     "message": "此页面没有缓存内容。请先访问该页面以提取内容。"
   },
+  "conversations_copy_extracted_content_success": {
+    "message": "提取内容已复制到剪贴板"
+  },
+  "conversations_copy_extracted_content_failed": {
+    "message": "复制提取内容失败"
+  },
   "conversations_page_title": {
     "message": "洞察助手 - 对话"
   },

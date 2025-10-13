@@ -3,7 +3,7 @@
  * Provides reusable export functions to eliminate code duplication
  */
 
-import { createLogger } from './utils.js';
+import { createLogger, getCurrentTimePrefix } from './utils.js';
 
 const logger = createLogger('ExportUtils');
 
@@ -36,6 +36,43 @@ const handleExportClick = async (options) => {
     // Get extracted content
     const extractedContent = getExtractedContent();
 
+    let systemPrompt = '';
+    try {
+      if (window.StateManager && typeof window.StateManager.getConfig === 'function') {
+        const config = await window.StateManager.getConfig();
+        if (config) {
+          const basicConfig = config.basic || config;
+          systemPrompt = basicConfig.systemPrompt || '';
+
+          if (systemPrompt) {
+            try {
+              const timePrefix = getCurrentTimePrefix();
+              if (timePrefix) {
+                systemPrompt = `${timePrefix}\n${systemPrompt}`;
+              }
+            } catch (timeError) {
+              logger.warn('Error generating time prefix for export system prompt:', timeError);
+            }
+
+            try {
+              const includePageContent = window.StateManager.getStateItem('includePageContent');
+              if (includePageContent) {
+                const contentForPrompt = extractedContent || window.StateManager.getStateItem('extractedContent') || '';
+                if (contentForPrompt) {
+                  systemPrompt += `\n\nPage Content:\n${contentForPrompt}`;
+                }
+              }
+            } catch (stateError) {
+              logger.warn('Error appending page content to system prompt for export:', stateError);
+            }
+          }
+        }
+      }
+    } catch (promptError) {
+      logger.warn('Error preparing system prompt for export:', promptError);
+      systemPrompt = '';
+    }
+
     // Get current URL and include tab info if available
     let exportUrl = getCurrentUrl();
     if (getActiveTabId && typeof getActiveTabId === 'function') {
@@ -49,7 +86,8 @@ const handleExportClick = async (options) => {
     await window.ChatManager.exportConversation(
       exportUrl,
       extractedContent,
-      chatHistory
+      chatHistory,
+      systemPrompt
     );
 
     logger.info('Conversation export initiated successfully');

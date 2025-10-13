@@ -13,6 +13,33 @@
   color: var(--text-color);
 }
 
+.conversations-container .content-section {
+  position: relative;
+}
+
+.conversations-container .content-section .content-container {
+  padding-top: 36px;
+}
+
+.copy-extracted-button {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 20;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  background-color: var(--background-color);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.copy-extracted-button:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+}
+
+.copy-extracted-button:disabled {
+  box-shadow: none;
+  transform: none;
+}
+
 /* Left Column: Page List */
 .page-list-section {
   flex-shrink: 0;

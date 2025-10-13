@@ -19,7 +19,7 @@ window.addEventListener('error', function(event) {
 
 // Import all modules (reusing sidebar modules)
 import { i18n } from '../js/modules/i18n.js';
-import { createLogger, isRestrictedPage } from '../sidebar/modules/utils.js';
+import { createLogger, isRestrictedPage, showCopyToast } from '../sidebar/modules/utils.js';
 import * as StateManager from '../sidebar/modules/state-manager.js';
 import * as UIManager from '../sidebar/modules/ui-manager.js';
 import * as MessageHandler from '../sidebar/modules/message-handler.js';
@@ -30,6 +30,7 @@ import * as TabManager from '../sidebar/components/tab-manager.js';
 import * as ChatHistory from '../sidebar/modules/chat-history.js';
 import * as EventHandler from '../sidebar/modules/event-handler.js';
 import { ModelSelector } from '../sidebar/modules/model-selector.js';
+import * as ContentExtractor from '../sidebar/modules/content-extractor.js';
 
 // Import conversations-specific modules
 import { PageListManager } from './modules/page-list-manager.js';
@@ -74,6 +75,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     // Initialize UI element references
     const elements = initConversationsElements();
+
+    if (elements.copyContentBtn) {
+      elements.copyContentBtn.setAttribute('aria-label', i18n.getMessage('sidebar_title_copyExtractedContent'));
+    }
+
+    updateCopyContentButtonState(StateManager.getStateItem('extractedContent'));
     
     // Initialize horizontal resizer for page list
     initHorizontalResize(document.getElementById('dragHandle'), document.getElementById('pageListSection'));
@@ -206,6 +213,7 @@ function initConversationsElements() {
     loadingIndicator: document.getElementById('loadingIndicator'),
     contentError: document.getElementById('contentError'),
     resizeHandle: document.getElementById('resizeHandle'),
+    copyContentBtn: document.getElementById('copyExtractedContentBtn'),
     
     tabContainer: document.getElementById('tabContainer'),
     
@@ -437,6 +445,10 @@ function setupEssentialEventListeners(elements, modelSelector) {
       const handler = createConversationsExportHandler(elements.chatContainer, currentUrl);
       handler();
     });
+  }
+
+  if (elements.copyContentBtn) {
+    elements.copyContentBtn.addEventListener('click', handleCopyExtractedContentClick);
   }
   
   // Clear conversation button
@@ -703,6 +715,8 @@ async function loadPageConversation(url) {
       elements.extractedContent.innerHTML = '';
       elements.contentError.classList.remove('hidden');
               elements.contentError.textContent = i18n.getMessage('conversations_js_cannot_extract');
+      StateManager.updateStateItem('extractedContent', '');
+      updateCopyContentButtonState(false);
       
       // Clear chat container for restricted pages
       elements.chatContainer.innerHTML = '';
@@ -947,6 +961,7 @@ async function handleConversationsPageDataLoaded(pageInfo) {
     if (elements.contentError) {
       elements.contentError.classList.add('hidden');
     }
+    updateCopyContentButtonState(pageInfo.content);
     logger.info('Content displayed successfully, length:', pageInfo.content.length);
   } else {
     StateManager.updateStateItem('extractedContent', '');
@@ -957,6 +972,7 @@ async function handleConversationsPageDataLoaded(pageInfo) {
       elements.contentError.classList.remove('hidden');
               elements.contentError.textContent = i18n.getMessage('conversations_js_no_cached_content');
     }
+    updateCopyContentButtonState(false);
     logger.warn('No content extracted for current page. Data received:', pageInfo);
   }
 
@@ -1022,6 +1038,7 @@ async function handlePageDelete(url) {
       if (elements.extractedContent) {
         elements.extractedContent.innerHTML = '';
       }
+      updateCopyContentButtonState(false);
       
       // Switch to welcome screen
       elements.welcomeScreen.classList.remove('hidden');
@@ -1125,6 +1142,7 @@ function showLoadingState() {
   elements.extractedContent.innerHTML = '';
   elements.loadingIndicator.classList.remove('hidden');
   elements.contentError.classList.add('hidden');
+  updateCopyContentButtonState(false);
 }
 
 /**
@@ -1136,6 +1154,47 @@ function showErrorState(errorMessage) {
   elements.loadingIndicator.classList.add('hidden');
   elements.contentError.classList.remove('hidden');
   elements.contentError.textContent = errorMessage;
+  updateCopyContentButtonState(false);
+}
+
+async function handleCopyExtractedContentClick() {
+  const elements = window.conversationsElements;
+  if (!elements?.copyContentBtn || elements.copyContentBtn.disabled) {
+    return;
+  }
+
+  try {
+    const content = StateManager.getStateItem('extractedContent');
+    const success = await ContentExtractor.copyExtractedContent(content);
+    if (success) {
+      showCopyToast(i18n.getMessage('conversations_copy_extracted_content_success'));
+    } else {
+      showCopyToast(i18n.getMessage('conversations_copy_extracted_content_failed'));
+    }
+  } catch (error) {
+    logger.error('Error copying extracted content:', error);
+    showCopyToast(i18n.getMessage('conversations_copy_extracted_content_failed'));
+  }
+}
+
+function updateCopyContentButtonState(hasContent) {
+  const elements = window.conversationsElements;
+  if (!elements?.copyContentBtn) {
+    return;
+  }
+
+  let isEnabled;
+  if (typeof hasContent === 'string') {
+    isEnabled = hasContent.trim().length > 0;
+  } else if (typeof hasContent === 'boolean') {
+    isEnabled = hasContent;
+  } else {
+    const content = StateManager.getStateItem('extractedContent');
+    isEnabled = typeof content === 'string' ? content.trim().length > 0 : Boolean(content);
+  }
+
+  elements.copyContentBtn.disabled = !isEnabled;
+  elements.copyContentBtn.setAttribute('aria-disabled', isEnabled ? 'false' : 'true');
 }
 
 /**

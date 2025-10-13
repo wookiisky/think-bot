@@ -60,7 +60,14 @@
       <!-- Main Content Area (hidden initially) -->
       <div class="main-content-area hidden" id="mainContentArea">
         <!-- Content extraction area (read-only) -->
-        <div class="content-section" id="contentSection">      
+        <div class="content-section" id="contentSection">
+          <button
+            id="copyExtractedContentBtn"
+            class="button-icon copy-extracted-button"
+            data-i18n-title="sidebar_title_copyExtractedContent"
+          >
+            <i class="material-icons">content_copy</i>
+          </button>
           <div class="content-container">
             <div id="extractedContent" class="extracted-content readonly"></div>
             <div id="loadingIndicator" class="loading-indicator hidden">
