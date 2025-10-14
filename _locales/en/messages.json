@@ -92,6 +92,12 @@
   "conversations_js_no_cached_content": {
     "message": "No cached content available for this page. Visit the page first to extract content."
   },
+  "conversations_copy_extracted_content_success": {
+    "message": "Extracted content copied to clipboard"
+  },
+  "conversations_copy_extracted_content_failed": {
+    "message": "Failed to copy extracted content"
+  },
   "conversations_page_title": {
     "message": "Think Bot - Conversations"
   },

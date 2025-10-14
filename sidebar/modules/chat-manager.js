@@ -1027,7 +1027,7 @@ const displayChatHistory = (chatContainer, history) => {
  * @param {string} extractedContent - Extracted content
  * @param {Array} chatHistory - Chat history
  */
-const exportConversation = async (urlWithPossibleFragment, extractedContent, chatHistory) => {
+const exportConversation = async (urlWithPossibleFragment, extractedContent, chatHistory, systemPrompt = '') => {
   if (!chatHistory || !Array.isArray(chatHistory) || chatHistory.length === 0) {
     logger.warn('Invalid or empty chat history provided for export');
     return;
@@ -1046,7 +1046,8 @@ const exportConversation = async (urlWithPossibleFragment, extractedContent, cha
       type: 'EXPORT_CONVERSATION',
       urlWithPossibleFragment,
       chatHistory,
-      quickInputTabName
+      quickInputTabName,
+      systemPrompt
     });
 
     if (response && response.success) {

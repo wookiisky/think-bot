@@ -8,7 +8,7 @@
 // Main handler function
 async function handleExportConversation(request, serviceLogger) {
   const logger = serviceLogger || console;
-  const { urlWithPossibleFragment, chatHistory, quickInputTabName } = request || {};
+  const { urlWithPossibleFragment, chatHistory, quickInputTabName, systemPrompt } = request || {};
 
   try {
     if (!chatHistory || !Array.isArray(chatHistory) || chatHistory.length === 0) {
@@ -46,7 +46,14 @@ async function handleExportConversation(request, serviceLogger) {
     const filename = `${sanitizedPageTitle}--${sanitizedTabName}--${timestamp}.md`;
 
     // 5. Generate markdown content
-    let markdownContent = `# ${pageTitle}\n\nURL: ${baseUrl}\n\n`;
+    const normalizedBaseUrl = baseUrl || '';
+    let markdownContent = '';
+
+    if (systemPrompt) {
+      markdownContent += `## --------system--------\n${systemPrompt}\n\n`;
+    }
+
+    markdownContent += `# ${pageTitle}\n\nURL: ${normalizedBaseUrl}\n\n`;
     
     chatHistory.forEach(message => {
       if (message.role === 'user') {
