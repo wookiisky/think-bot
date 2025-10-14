@@ -1,5 +1,33 @@
 // background/handlers/sendLlmMessageHandler.js
 
+/**
+ * Filter LLM response to ensure clean text output
+ * @param {*} response - Response to filter
+ * @param {Object} logger - Logger instance
+ * @returns {string} - Cleaned text response
+ */
+function filterLlmResponse(response, logger) {
+    let cleaned = response;
+    
+    // Ensure response is a string
+    if (typeof response !== 'string') {
+        if (logger) {
+            logger.warn('Non-string response received, converting', { type: typeof response });
+        }
+        cleaned = String(response || '');
+    }
+    
+    // Remove any [object Object] that might have slipped through
+    if (cleaned.includes('[object Object]')) {
+        if (logger) {
+            logger.warn('Found [object Object] in response, filtering');
+        }
+        cleaned = cleaned.replace(/\[object Object\]/g, '');
+    }
+    
+    return cleaned;
+}
+
 async function handleSendLlmMessage(data, serviceLogger, configManager, storage, llmService, loadingStateCache, safeSendMessage) {
     const { messages, systemPromptTemplate, extractedPageContent, imageBase64, currentUrl, selectedModel, tabId, branchId, model } = data.payload;
 
@@ -181,9 +209,18 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
         const streamCallback = (chunk) => {
             if (chunk !== undefined && chunk !== null) {
                 try {
+                    // Filter chunk to ensure clean text
+                    const filteredChunk = filterLlmResponse(chunk, serviceLogger);
+                    
+                    // Skip if chunk is empty or [object Object] after filtering
+                    if (!filteredChunk || filteredChunk === '[object Object]') {
+                        serviceLogger.debug('SEND_LLM: Filtered out invalid chunk');
+                        return;
+                    }
+                    
                     safeSendMessage({ 
                         type: 'LLM_STREAM_CHUNK', 
-                        chunk: chunk,
+                        chunk: filteredChunk,
                         tabId: tabId,
                         url: currentUrl,
                         branchId: branchId || null
@@ -195,7 +232,10 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
         };
 
         const doneCallback = async (fullResponse, finishReason = null) => {
-            const responseLength = fullResponse?.length || 0;
+            // Filter fullResponse to ensure it's clean text
+            const cleanedResponse = filterLlmResponse(fullResponse, serviceLogger);
+            
+            const responseLength = cleanedResponse?.length || 0;
             const branchInfo = branchId ? ` for branch ${branchId}` : '';
             serviceLogger.info(`SEND_LLM: Stream finished - response length: ${responseLength}${branchInfo}`);
             
@@ -207,7 +247,7 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
             try {
                 safeSendMessage({ 
                     type: 'LLM_STREAM_END', 
-                    fullResponse,
+                    fullResponse: cleanedResponse,
                     finishReason,
                     isAbnormalFinish,
                     tabId: tabId,
@@ -236,7 +276,7 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                                 const r = msg.responses[j];
                                 if (r && r.branchId === branchId) {
                                     r.status = 'done';
-                                    r.content = fullResponse || '';
+                                    r.content = cleanedResponse || '';
                                     r.errorMessage = null;
                                     r.model = r.model || (defaultModel ? (defaultModel.model || defaultModel.name) : 'unknown');
                                     r.updatedAt = nowTs;
@@ -259,7 +299,7 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                                 {
                                     branchId: branchId,
                                     model: (defaultModel && (defaultModel.model || defaultModel.name)) || 'unknown',
-                                    content: fullResponse || '',
+                                    content: cleanedResponse || '',
                                     status: 'done',
                                     errorMessage: null,
                                     updatedAt: nowTs
@@ -284,16 +324,16 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                 // Update loading state to completed, then broadcast to content scripts and sidebar
                 if (currentUrl && tabId) {
                     const cacheKey = branchId ? `${tabId}:${branchId}` : tabId;
-                    await loadingStateCache.completeLoadingState(currentUrl, cacheKey, fullResponse);
+                    await loadingStateCache.completeLoadingState(currentUrl, cacheKey, cleanedResponse);
                     // notify content scripts on the page
-                    broadcastLoadingStateUpdate(currentUrl, tabId, 'completed', fullResponse, null, finishReason, branchId);
+                    broadcastLoadingStateUpdate(currentUrl, tabId, 'completed', cleanedResponse, null, finishReason, branchId);
                     // notify extension pages (sidebar) directly
                     safeSendMessage({
                         type: 'LOADING_STATE_UPDATE',
                         url: currentUrl,
                         tabId: tabId,
                         status: 'completed',
-                        result: fullResponse,
+                        result: cleanedResponse,
                         error: null,
                         finishReason: finishReason,
                         branchId: branchId || null,
@@ -313,7 +353,7 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                         const assistantModel = (defaultModel && (defaultModel.model || defaultModel.name)) || 'unknown';
                         const updatedMessages = [
                             ...messages,
-                            { role: 'assistant', content: fullResponse, model: assistantModel }
+                            { role: 'assistant', content: cleanedResponse, model: assistantModel }
                         ];
                         await storage.saveChatHistory(tabSpecificUrl, updatedMessages);
                         serviceLogger.info(`SEND_LLM: Chat history saved with ${updatedMessages.length} messages`);

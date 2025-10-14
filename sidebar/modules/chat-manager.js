@@ -459,6 +459,17 @@ const handleStreamChunk = async (chatContainer, chunk, tabId, url, branchId) => 
     return;
   }
   
+  // Filter out non-string chunks and [object Object]
+  if (typeof chunk !== 'string') {
+    logger.warn('Received non-string chunk, skipping', { type: typeof chunk });
+    return;
+  }
+  
+  if (chunk === '[object Object]') {
+    logger.debug('Filtered out [object Object] chunk');
+    return;
+  }
+  
   // Look for the specific branch element
   const streamingMessageContainer = chatContainer.querySelector(`[data-branch-id="${branchId}"][data-streaming="true"]`);
   logger.debug(`Looking for branch streaming container with branchId: ${branchId}, found: ${!!streamingMessageContainer}`);
@@ -545,6 +556,22 @@ const handleStreamChunk = async (chatContainer, chunk, tabId, url, branchId) => 
  * @param {string} branchId - Required branch ID for branch streaming
  */
 const handleStreamEnd = async (chatContainer, fullResponse, onComplete, finishReason = null, isAbnormalFinish = false, tabId = null, url = null, branchId) => {
+  // Filter fullResponse to ensure clean text
+  let cleanedResponse = fullResponse;
+  if (typeof fullResponse !== 'string') {
+    logger.warn('handleStreamEnd: Non-string fullResponse received, converting', { type: typeof fullResponse });
+    cleanedResponse = String(fullResponse || '');
+  }
+  
+  // Remove any [object Object] that might have slipped through
+  if (cleanedResponse.includes('[object Object]')) {
+    logger.warn('handleStreamEnd: Found [object Object] in fullResponse, filtering');
+    cleanedResponse = cleanedResponse.replace(/\[object Object\]/g, '');
+  }
+  
+  // Use cleaned response for all subsequent operations
+  fullResponse = cleanedResponse;
+  
   logger.info(`handleStreamEnd called - branchId: ${branchId}, responseLength: ${fullResponse?.length || 0}`);
   
   // All messages must now use branch streaming - branchId is required
@@ -572,7 +599,16 @@ const handleStreamEnd = async (chatContainer, fullResponse, onComplete, finishRe
   }
 
   // Compare fullResponse with buffer to detect potential truncation
-  const currentBuffer = streamingMessageContainer.dataset.markdownBuffer || '';
+  let currentBuffer = streamingMessageContainer.dataset.markdownBuffer || '';
+  
+  // Filter currentBuffer as well to ensure consistency
+  if (currentBuffer.includes('[object Object]')) {
+    logger.warn('handleStreamEnd: Found [object Object] in currentBuffer, filtering');
+    currentBuffer = currentBuffer.replace(/\[object Object\]/g, '');
+    // Update the buffer with filtered content
+    streamingMessageContainer.dataset.markdownBuffer = currentBuffer;
+  }
+  
   const bufferLength = currentBuffer.length;
   const responseLength = fullResponse?.length || 0;
   

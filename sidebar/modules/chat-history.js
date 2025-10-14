@@ -90,6 +90,12 @@ const getChatHistoryFromDOM = (chatContainer) => {
           } else {
             content = contentEl ? contentEl.getAttribute('data-raw-content') || contentEl.textContent : '';
           }
+          
+          // Filter out [object Object] from content before saving
+          if (typeof content === 'string' && content.includes('[object Object]')) {
+            logger.warn('Found [object Object] in DOM content, filtering before saving');
+            content = content.replace(/\[object Object\]/g, '');
+          }
 
           responses.push({
             branchId: branchId || `br-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -335,6 +341,17 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
         message.responses.forEach((response, index) => {
           if (!response) return;
           
+          // Filter response content to remove [object Object] from stored history
+          let cleanContent = response.content || '';
+          if (typeof cleanContent !== 'string') {
+            logger.warn('Non-string content in stored response, converting', { type: typeof cleanContent });
+            cleanContent = String(cleanContent);
+          }
+          if (cleanContent.includes('[object Object]')) {
+            logger.warn('Found [object Object] in stored response content, filtering');
+            cleanContent = cleanContent.replace(/\[object Object\]/g, '');
+          }
+          
           const branchDiv = document.createElement('div');
           branchDiv.className = 'message-branch';
           branchDiv.setAttribute('data-branch-id', response.branchId);
@@ -348,7 +365,7 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
           // Branch content
           const contentDiv = document.createElement('div');
           contentDiv.className = 'message-content';
-          contentDiv.setAttribute('data-raw-content', response.content || '');
+          contentDiv.setAttribute('data-raw-content', cleanContent);
           
           // Render content based on branch status
           if (response.status === 'loading') {
@@ -377,13 +394,13 @@ const displayChatHistory = (chatContainer, history, appendMessageToUIFunc) => {
               border-left: 4px solid var(--error-color);
               border-radius: 4px;
             `;
-            errorContent.textContent = response.errorMessage || response.content || '';
+            errorContent.textContent = response.errorMessage || cleanContent;
             
             errorContainer.appendChild(errorContent);
             contentDiv.appendChild(errorContainer);
           } else {
-            // Completed state - content is already filtered during save if COT filtering is enabled
-            const displayContent = response.content || '';
+            // Completed state - use cleaned content
+            const displayContent = cleanContent;
             
             if (hasMarkdownElements(displayContent)) {
               try {
