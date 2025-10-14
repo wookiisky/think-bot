@@ -44,7 +44,16 @@
     <div class="content-chat-section">
       <!-- Page Info Header (hidden initially) -->
       <div class="page-info-header hidden" id="pageInfoHeader">
-        <h1 id="pageTitle" class="page-title"></h1>
+        <div class="page-header-row">
+          <h1 id="pageTitle" class="page-title"></h1>
+          <button
+            id="copyExtractedContentBtn"
+            class="button-icon copy-extracted-button"
+            data-i18n-title="sidebar_title_copyExtractedContent"
+          >
+            <i class="material-icons">content_copy</i>
+          </button>
+        </div>
         <div class="page-url-container">
           <a id="pageUrl" class="page-url" href="#" target="_blank" rel="noopener noreferrer"></a>
         </div>
@@ -61,13 +70,6 @@
       <div class="main-content-area hidden" id="mainContentArea">
         <!-- Content extraction area (read-only) -->
         <div class="content-section" id="contentSection">
-          <button
-            id="copyExtractedContentBtn"
-            class="button-icon copy-extracted-button"
-            data-i18n-title="sidebar_title_copyExtractedContent"
-          >
-            <i class="material-icons">content_copy</i>
-          </button>
           <div class="content-container">
             <div id="extractedContent" class="extracted-content readonly"></div>
             <div id="loadingIndicator" class="loading-indicator hidden">

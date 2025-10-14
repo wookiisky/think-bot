@@ -145,7 +145,7 @@
 
 .quick-input-item .floating-label-field {
   width: 100%;
-  margin-bottom: 0;
+  margin-bottom: 10px;
 }
 
 .quick-input-item .floating-label-field input,
