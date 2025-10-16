@@ -21,6 +21,20 @@
   align-items: center;
 }
 
+.manual-sync-action .secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  height: 26px;
+}
+
+.manual-sync-action .secondary-btn .material-icons {
+  font-size: 14px;
+  margin: 0;
+}
+
 /* Ensure perfect vertical alignment for sync toggle */
 .sync-toggle-container .toggle-switch-label {
   display: flex;
