@@ -1394,7 +1394,7 @@ function setupMessageListeners() {
         logger.debug(`Loading state content processing ignored - URL mismatch (${url} vs ${currentUrl}) or tab mismatch (${tabId} vs ${activeTabId}), but tab loading state updated`);
       }
     }
-  });
+  }, { respondToSidebarPing: false });
 }
 
 /**

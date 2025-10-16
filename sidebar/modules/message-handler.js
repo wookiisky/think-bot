@@ -154,7 +154,8 @@ const sendLlmMessage = async (payload) => {
  * Message event listener setup
  * @param {Object} handlers - Message handler functions object
  */
-const setupMessageListeners = (handlers) => {
+const setupMessageListeners = (handlers, options = {}) => {
+  const { respondToSidebarPing = true } = options;
   // Remove any existing listeners first to prevent duplicates
   if (chrome.runtime && chrome.runtime.onMessage) {
     chrome.runtime.onMessage.removeListener(handleMessage);
@@ -239,8 +240,12 @@ const setupMessageListeners = (handlers) => {
           break;
 
         case 'PING_SIDEBAR':
-          // Respond to pings from the service worker to confirm the sidebar is open
-          sendResponse({ type: 'PONG_SIDEBAR' });
+          // Respond to pings from the service worker only when this context should be treated as the sidebar
+          if (respondToSidebarPing) {
+            sendResponse({ type: 'PONG_SIDEBAR' });
+          } else {
+            logger.debug('Ignoring PING_SIDEBAR because respondToSidebarPing is disabled for this context');
+          }
           break;
       }
     } catch (error) {
