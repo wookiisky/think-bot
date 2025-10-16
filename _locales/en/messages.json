@@ -290,6 +290,9 @@
   "options_save_and_sync": {
     "message": "Save & Sync"
   },
+  "options_manual_sync_button": {
+    "message": "Sync Now"
+  },
   "options_extracted_content_height_label": {
     "message": "Content Area Height"
   },

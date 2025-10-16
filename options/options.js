@@ -22,6 +22,7 @@ class OptionsPage {
     this.domGroups = domGroups;
     this.hasUnsavedChanges = false;
     this.isAutoSyncing = false;
+    this.isManualSyncing = false;
     this.isInitializing = true; // Add initialization flag to prevent accidental syncEnabled reset during page load
     this.activeTab = 'basic';
     this.quickInputsOrderLastModified = 0;
@@ -389,7 +390,109 @@ class OptionsPage {
       }
     }
   }
-  
+
+  async manualSync() {
+    if (this.isManualSyncing || this.isAutoSyncing) {
+      logger.info('Sync already in progress, skipping manual sync trigger.');
+      return;
+    }
+
+    if (typeof syncManager === 'undefined') {
+      logger.warn('Sync manager not available, cannot perform manual sync.');
+      this.updateSyncStatus('error', i18n.getMessage('options_sync_status_not_configured'));
+      if (this.domElements.syncErrorMessage) {
+        this.domElements.syncErrorMessage.textContent = i18n.getMessage('options_js_sync_bg_script_error');
+        this.domElements.syncErrorMessage.style.display = 'block';
+      }
+      return;
+    }
+
+    const syncBtn = this.domElements.manualSyncBtn;
+    const syncBtnText = syncBtn ? syncBtn.querySelector('span') : null;
+    const resetButtonState = () => {
+      if (syncBtn) {
+        syncBtn.disabled = false;
+        syncBtn.classList.remove('error');
+      }
+      if (syncBtnText) {
+        syncBtnText.textContent = i18n.getMessage('options_manual_sync_button') || 'Sync Now';
+      }
+    };
+
+    this.isManualSyncing = true;
+
+    if (syncBtn) {
+      syncBtn.disabled = true;
+      syncBtn.classList.remove('error');
+    }
+    if (syncBtnText) {
+      syncBtnText.textContent = i18n.getMessage('common_syncing');
+    }
+
+    if (this.domElements.syncErrorMessage) {
+      this.domElements.syncErrorMessage.textContent = '';
+      this.domElements.syncErrorMessage.style.display = 'none';
+    }
+
+    this.updateSyncStatus('syncing', i18n.getMessage('common_syncing'));
+
+    try {
+      const syncResult = await syncManager.fullSync();
+      if (syncResult.success) {
+        this.updateSyncStatus('success', i18n.getMessage('options_js_sync_completed_successfully'));
+        this.modelManager.cleanupDeletedModels();
+        await storageConfigManager.cleanupDeletedQuickInputs();
+        if (syncBtnText) {
+          syncBtnText.textContent = i18n.getMessage('options_js_sync_synced');
+        }
+        if (this.domElements.syncErrorMessage) {
+          this.domElements.syncErrorMessage.textContent = '';
+          this.domElements.syncErrorMessage.style.display = 'none';
+        }
+      } else {
+        const errorMessage = syncResult.error || i18n.getMessage('options_js_sync_operation_failed');
+        this.updateSyncStatus('error', errorMessage);
+        if (this.domElements.syncErrorMessage) {
+          this.domElements.syncErrorMessage.textContent = errorMessage;
+          this.domElements.syncErrorMessage.style.display = 'block';
+        }
+        if (syncBtn) {
+          syncBtn.classList.add('error');
+        }
+        if (syncBtnText) {
+          syncBtnText.textContent = i18n.getMessage('options_js_sync_error');
+        }
+      }
+    } catch (error) {
+      logger.error('Manual sync failed:', error);
+      const fallbackMessage = error?.message || i18n.getMessage('options_js_sync_operation_failed');
+      this.updateSyncStatus('error', fallbackMessage);
+      if (this.domElements.syncErrorMessage) {
+        this.domElements.syncErrorMessage.textContent = fallbackMessage;
+        this.domElements.syncErrorMessage.style.display = 'block';
+      }
+      if (syncBtn) {
+        syncBtn.classList.add('error');
+      }
+      if (syncBtnText) {
+        syncBtnText.textContent = i18n.getMessage('options_js_sync_error');
+      }
+    } finally {
+      try {
+        const status = await syncManager.getSyncStatus();
+        this.displaySyncStatus(status);
+      } catch (statusError) {
+        logger.warn('Could not refresh sync status after manual sync:', statusError);
+      }
+
+      setTimeout(() => {
+        resetButtonState();
+      }, 3000);
+
+      this.isManualSyncing = false;
+    }
+  }
+
   // Show error state on save button
   showSaveError(saveBtn, error = null) {
     saveBtn.classList.remove('saving', 'saved');
@@ -445,9 +548,15 @@ class OptionsPage {
         await this.saveAndSync();
       });
     }
-    
+
+    if (this.domElements.manualSyncBtn) {
+      this.domElements.manualSyncBtn.addEventListener('click', async () => {
+        await this.manualSync();
+      });
+    }
+
     // Model manager will handle its own event listeners and change notifications
-    
+
     // Reset settings button
     this.domElements.resetBtn.addEventListener('click', () => {
       UIConfigManager.resetSettings();
