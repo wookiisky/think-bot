@@ -52,7 +52,8 @@ export const domElements = {
   resetBtn: document.getElementById('resetBtn'),
   saveBtn: document.getElementById('saveBtn'),
   // New: Save and Sync button exposed for scripting
-  saveAndSyncBtn: document.getElementById('saveAndSyncBtn')
+  saveAndSyncBtn: document.getElementById('saveAndSyncBtn'),
+  manualSyncBtn: document.getElementById('manualSyncBtn')
 };
 
 // DOM element groups for easier management

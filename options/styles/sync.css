@@ -16,6 +16,11 @@
   align-items: center;
 }
 
+.manual-sync-action {
+  display: flex;
+  align-items: center;
+}
+
 /* Ensure perfect vertical alignment for sync toggle */
 .sync-toggle-container .toggle-switch-label {
   display: flex;
