@@ -65,36 +65,102 @@ var BaseProvider = (function() {
     // Simplified API utilities
     const ApiUtils = {
         // Basic fetch with minimal error handling
-        async simpleFetch(url, options, providerName, abortController = null) {
-            const startTime = Date.now();
-            try {
-                const fetchOptions = abortController ?
-                    { ...options, signal: abortController.signal } :
-                    options;
-
-                const response = await fetch(url, fetchOptions);
-                const duration = Date.now() - startTime;
-
-                baseProviderLogger.info(`[${providerName}] API response`, {
-                    status: response.status,
-                    duration
-                });
-
-                return response;
-            } catch (error) {
-                const duration = Date.now() - startTime;
-
-                if (error.name === 'AbortError') {
-                    baseProviderLogger.info(`[${providerName}] Request aborted`, { duration });
-                    throw new Error('Request was cancelled by user');
+        async simpleFetch(url, options, providerName, abortController = null, retryOptions = {}) {
+            const { maxRetries = 1, retryDelayMs = 300 } = retryOptions;
+            const totalAttempts = Math.max(1, maxRetries + 1);
+            const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+            const urlDetails = (() => {
+                try {
+                    const parsed = new URL(url);
+                    return {
+                        host: parsed.host,
+                        pathname: parsed.pathname
+                    };
+                } catch (error) {
+                    return {
+                        host: 'unknown',
+                        pathname: 'unknown'
+                    };
                 }
+            })();
 
-                baseProviderLogger.error(`[${providerName}] Request failed`, {
-                    error: error.message,
-                    duration
-                });
-                throw error;
+            let lastError = null;
+
+            for (let attemptIndex = 0; attemptIndex < totalAttempts; attemptIndex++) {
+                const attempt = attemptIndex + 1;
+                const startTime = Date.now();
+                try {
+                    const fetchOptions = abortController && abortController.signal ?
+                        { ...options, signal: abortController.signal } :
+                        options;
+
+                    const response = await fetch(url, fetchOptions);
+                    const duration = Date.now() - startTime;
+
+                    const responseLog = {
+                        status: response.status,
+                        duration,
+                        attempt,
+                        totalAttempts,
+                        url,
+                        host: urlDetails.host
+                    };
+
+                    baseProviderLogger.info(`[${providerName}] API response`, responseLog);
+
+                    const shouldRetryResponse = response.status >= 500 && attempt < totalAttempts;
+                    if (shouldRetryResponse) {
+                        baseProviderLogger.warn(`[${providerName}] Retrying after server response`, {
+                            ...responseLog,
+                            pathname: urlDetails.pathname
+                        });
+                        await wait(retryDelayMs);
+                        continue;
+                    }
+
+                    return response;
+                } catch (error) {
+                    const duration = Date.now() - startTime;
+                    const errorInfo = {
+                        message: error.message,
+                        name: error.name,
+                        type: error.type || error.constructor?.name,
+                        stack: error.stack ? error.stack.split('\n')[0] : undefined,
+                        attempt,
+                        totalAttempts,
+                        url,
+                        host: urlDetails.host,
+                        pathname: urlDetails.pathname,
+                        duration
+                    };
+
+                    if (error.name === 'AbortError') {
+                        baseProviderLogger.info(`[${providerName}] Request aborted`, errorInfo);
+                        throw new Error('Request was cancelled by user');
+                    }
+
+                    baseProviderLogger.error(`[${providerName}] Request failed`, errorInfo);
+
+                    lastError = error;
+
+                    const isNetworkError = error.name === 'TypeError' || error instanceof TypeError;
+                    const shouldRetryError = attempt < totalAttempts && isNetworkError;
+
+                    if (shouldRetryError) {
+                        await wait(retryDelayMs);
+                        continue;
+                    }
+
+                    break;
+                }
             }
+
+            if (lastError) {
+                lastError.attempts = totalAttempts;
+                throw lastError;
+            }
+
+            throw new Error(`${providerName} request failed without specific error`);
         },
         
         // Return raw response data without conversion
