@@ -552,6 +552,12 @@
   "options_quick_input_tabs_title": {
     "message": "标签页"
   },
+  "options_quick_input_tabs_description": {
+    "message": "点击标签页会自动发送配置的消息内容给大模型。也可以配置打开侧边栏时自动发送。"
+  },
+  "options_quick_input_tabs_description2": {
+    "message": "页面提取的markdown会附在系统提示词最后，格式：# Page Content \n {提取的页面markdown内容}"
+  },
   "options_reset_defaults_button": {
     "message": "重置为默认值"
   },

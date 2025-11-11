@@ -551,6 +551,12 @@
   "options_quick_input_tabs_title": {
     "message": "Quick Input Tabs"
   },
+  "options_quick_input_tabs_description": {
+    "message": "When the sidebar is open, clicking the tab will send the configured message content to LLM. You can also open auto-trigger, which will automatically send messages when the sidebar is opened."
+  },
+  "options_quick_input_tabs_description2": {
+    "message": "The extracted page content markdown will be appended to the system prompt at the end, format: # Page Content \n {extracted markdown content}"
+  },
   "options_reset_defaults_button": {
     "message": "Reset to Defaults"
   },
