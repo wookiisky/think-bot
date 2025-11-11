@@ -195,7 +195,7 @@
     "message": "模式已成功删除。"
   },
   "options_blacklist_description": {
-    "message": "黑名单网址，标签页自动发送前确认"
+    "message": "匹配黑名单的网址，打开侧边栏时，标签页自动发送前需要确认" 
   },
   "options_blacklist_edit_dialog_title": {
     "message": "编辑黑名单模式"
@@ -297,11 +297,9 @@
     "message": "内容区域高度"
   },
   "options_filter_cot_label": {
-    "message": "过滤COT"
+    "message": "过滤COT ( 开启后，流式输出会过滤掉<think>标签和标签之间的内容 )"
   },
-  "options_filter_cot_tooltip": {
-    "message": "启用时，流式输出会过滤掉</think>标签之前的内容"
-  },
+ 
   "options_extraction_method_jina": {
     "message": "Jina AI"
   },
@@ -495,13 +493,16 @@
     "message": "Endpoint"
   },
   "options_model_base_url_label": {
-    "message": "服务 URL"
+    "message": "URL"
+  },
+  "options_model_base_url_tooltip": {
+    "message": "URL 结尾为 /v1: 附加 /chat/completions\nURL 结尾为 #: 使用原样\n其他: 附加 /v1/chat/completions"
   },
   "options_model_display_name_label": {
     "message": "显示名称"
   },
   "options_model_max_tokens_label": {
-    "message": "最大 token 数"
+    "message": "最大输出 token"
   },
   "options_model_no_models_configured": {
     "message": "未配置模型"
@@ -511,6 +512,9 @@
   },
   "options_model_provider_label": {
     "message": "服务提供商"
+  },
+  "options_model_provider_tooltip": {
+    "message": "OpenAI 兼容: OpenAI API 兼容模型\nGoogle Gemini: Google Gemini API 兼容模型\nAzure OpenAI: Azure OpenAI API 兼容模型"
   },
   "options_model_provider_openai": {
     "message": "OpenAI 兼容"
@@ -559,6 +563,9 @@
   },
   "options_system_prompt_label": {
     "message": "系统提示词"
+  },
+  "options_system_prompt_tooltip": {
+    "message": "标签页请求时的系统提示词"
   },
   "options_theme_dark": {
     "message": "深色"
@@ -818,8 +825,14 @@
   "common_model": {
     "message": "默认模型"
   },
+  "common_model_id": {
+    "message": "模型 ID"
+  },
   "common_branch_models": {
-    "message": "分支模型"
+    "message": "并行调用模型"
+  },
+  "common_branch_models_tooltip": {
+    "message": "调用默认模型的同时也会调用这些模型"
   },
   "common_github_token": {
     "message": "GitHub 令牌"

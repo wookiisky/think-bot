@@ -25,7 +25,8 @@
   border: 1px solid var(--border-color);
   background: var(--bg-color);
   border-radius: 0;
-  overflow: hidden;
+  /* Allow tooltips inside rows to overflow beyond table bounds */
+  overflow: visible;
   box-shadow: var(--shadow-sm);
 }
 
@@ -56,6 +57,7 @@
   border: none;
   border-bottom: 1px solid var(--divider-color);
   transition: background-color var(--transition-normal) ease;
+  /* Default hidden to keep compact rows tidy; overridden when expanded */
   overflow: hidden;
   border-radius: 0;
 }
@@ -69,12 +71,28 @@
 .model-config-item.expanded {
   background-color: var(--bg-color);
   border: 1px solid var(--primary-color);
+  /* Ensure floating label tooltips can render outside the item box */
+  overflow: visible;
 }
 
  
 
+/* Keep disabled models non-editable but allow hover events for tooltips */
+.model-config-item.disabled { pointer-events: auto; }
+
 .model-config-item.disabled .model-details {
   opacity: 0.5;
+}
+
+/* Block interactions on form controls while still allowing label hover */
+.model-config-item.disabled .model-details input,
+.model-config-item.disabled .model-details textarea,
+.model-config-item.disabled .model-details select,
+.model-config-item.disabled .model-details button,
+.model-config-item.disabled .model-details .custom-multi-select,
+.model-config-item.disabled .model-details .dropdown-toggle,
+.model-config-item.disabled .model-details .selected-tool-item,
+.model-config-item.disabled .model-details .tool-remove-icon {
   pointer-events: none;
 }
 

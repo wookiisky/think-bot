@@ -70,6 +70,8 @@ export class ModelManager {
     // Refresh floating labels to handle custom multi-select components
     if (window.floatingLabelManager) {
       window.floatingLabelManager.refresh();
+      // Ensure tooltips are updated after i18n translations
+      window.floatingLabelManager.updateAllTooltips();
     }
   }
 
@@ -143,7 +145,7 @@ export class ModelManager {
                 <option value="gemini" ${model.provider === 'gemini' ? 'selected' : ''} data-i18n="options_model_provider_gemini">Google Gemini</option>
                 <option value="azure_openai" ${model.provider === 'azure_openai' ? 'selected' : ''} data-i18n="optionsAzureOpenAIProvider">Azure OpenAI</option>
               </select>
-              <label for="model-provider-${index}" class="floating-label" data-i18n="options_model_provider_label">Provider</label>
+              <label for="model-provider-${index}" class="floating-label" data-tooltip-i18n="options_model_provider_tooltip" data-i18n="options_model_provider_label">Provider</label>
             </div>
             ${this.renderModelSpecificFields(model, index)}
             <div class="floating-label-field">
@@ -204,6 +206,19 @@ export class ModelManager {
     try {
       logger.info(`Toggle model details -> id: ${modelId}, state: ${isExpanded ? 'expanded' : 'collapsed'}`);
     } catch (_) {}
+
+    // Ensure floating label tooltips are updated after toggling visibility
+    try {
+      if (window.floatingLabelManager && typeof window.floatingLabelManager.updateAllTooltips === 'function') {
+        window.floatingLabelManager.updateAllTooltips();
+        logger.debug('Updated tooltips after toggling model details');
+      } else if (typeof i18n !== 'undefined' && typeof i18n.applyToDOM === 'function') {
+        i18n.applyToDOM();
+        logger.debug('Applied i18n to DOM after toggling model details');
+      }
+    } catch (e) {
+      try { logger.warn('Failed to refresh tooltips after toggle', e); } catch (_) {}
+    }
   }
 
   updateModelSummary(index) {
@@ -269,7 +284,7 @@ export class ModelManager {
         <div class="floating-label-field">
           <input type="text" class="model-base-url" id="model-base-url-${index}" value="${model.baseUrl || 'https://api.openai.com'}"
                  data-model-index="${index}" data-field="baseUrl" placeholder=" ">
-          <label for="model-base-url-${index}" class="floating-label" data-i18n="options_model_base_url_label">Base URL</label>
+          <label for="model-base-url-${index}" class="floating-label" data-i18n="options_model_base_url_label" data-tooltip-i18n="options_model_base_url_tooltip">Base URL</label>
         </div>
         <div class="floating-label-field password-field">
           <input type="password" class="model-api-key" id="model-api-key-${index}" value="${model.apiKey || ''}"
@@ -282,7 +297,7 @@ export class ModelManager {
         <div class="floating-label-field">
           <input type="text" class="model-model" id="model-model-${index}" value="${model.model || 'gpt-3.5-turbo'}"
                  data-model-index="${index}" data-field="model" placeholder=" ">
-          <label for="model-model-${index}" class="floating-label" data-i18n="common_model">Model</label>
+          <label for="model-model-${index}" class="floating-label" data-i18n="common_model_id">Model</label>
         </div>
       `;
     } else if (model.provider === 'gemini') {
@@ -290,7 +305,7 @@ export class ModelManager {
         <div class="floating-label-field">
           <input type="text" class="model-base-url" id="model-base-url-${index}" value="${model.baseUrl || 'https://generativelanguage.googleapis.com'}"
                  data-model-index="${index}" data-field="baseUrl" placeholder=" ">
-          <label for="model-base-url-${index}" class="floating-label" data-i18n="options_model_base_url_label">Base URL</label>
+          <label for="model-base-url-${index}" class="floating-label"  data-tooltip-i18n="options_model_base_url_tooltip">Base URL</label>
         </div>
         <div class="floating-label-field password-field">
           <input type="password" class="model-api-key" id="model-api-key-${index}" value="${model.apiKey || ''}"
@@ -303,7 +318,7 @@ export class ModelManager {
         <div class="floating-label-field">
           <input type="text" class="model-model" id="model-model-${index}" value="${model.model || 'gemini-pro'}"
                  data-model-index="${index}" data-field="model" placeholder=" ">
-          <label for="model-model-${index}" class="floating-label" data-i18n="common_model">Model</label>
+          <label for="model-model-${index}" class="floating-label" data-i18n="common_model_id">Model</label>
         </div>
         <div class="floating-label-field">
           <div class="custom-multi-select" id="model-tools-${index}" data-model-index="${index}" data-field="tools">

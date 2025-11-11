@@ -273,7 +273,22 @@ const i18n = {
         if (key) {
           elem.textContent = this.getMessage(key);
         }
-      });      
+      });
+
+      // Handle tooltip attributes (for floating labels and other elements)
+      document.querySelectorAll('[data-tooltip-i18n]').forEach(elem => {
+        const key = elem.getAttribute('data-tooltip-i18n');
+        if (key) {
+          const translatedText = this.getMessage(key);
+          // Only set tooltip if translation exists and is not the same as the key
+          if (translatedText && translatedText !== key) {
+            elem.setAttribute('data-tooltip', translatedText);
+            console.log(`Set tooltip for key "${key}": "${translatedText}"`);
+          } else {
+            console.warn(`No translation found for tooltip key: ${key}`);
+          }
+        }
+      });
       
     } catch (error) {
       console.error('Error applying translations to DOM:', error);

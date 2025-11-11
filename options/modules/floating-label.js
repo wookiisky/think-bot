@@ -37,6 +37,12 @@ class FloatingLabelManager {
         
         if (!label) return;
         
+        // Handle tooltip i18n if available
+        this.processTooltipI18n(label);
+        // Ensure field has helper class if tooltip is present
+        const hasTooltip = !!label.getAttribute('data-tooltip') && label.getAttribute('data-tooltip') !== '';
+        field.classList.toggle('has-tooltip', hasTooltip);
+        
         // Handle standard inputs and custom multi-select
         if (input) {
             // Check if input has value and apply appropriate class
@@ -205,6 +211,26 @@ class FloatingLabelManager {
             childList: true,
             subtree: true
         });
+
+        // Listen for language changes to update tooltips
+        window.addEventListener('languageChanged', () => {
+            this.updateAllTooltips();
+        });
+    }
+
+    /**
+     * Update all tooltip translations after language change
+     */
+    updateAllTooltips() {
+        document.querySelectorAll('.floating-label[data-tooltip-i18n]').forEach(label => {
+            this.processTooltipI18n(label);
+            // Ensure field-level class is synced based on current attribute
+            const field = label.closest('.floating-label-field');
+            if (field) {
+                const hasTooltip = !!label.getAttribute('data-tooltip') && label.getAttribute('data-tooltip') !== '';
+                field.classList.toggle('has-tooltip', hasTooltip);
+            }
+        });
     }
 
     /**
@@ -240,6 +266,33 @@ class FloatingLabelManager {
         // Floating labels work without placeholder attributes
 
         return true;
+    }
+
+    /**
+     * Process tooltip i18n for a label element
+     * @param {HTMLElement} label - The label element to process
+     */
+    processTooltipI18n(label) {
+        const tooltipKey = label.getAttribute('data-tooltip-i18n');
+        if (tooltipKey && window.i18n) {
+            const translatedText = window.i18n.getMessage(tooltipKey);
+            // Only set tooltip if translation exists and is not the same as the key
+            if (translatedText && translatedText !== tooltipKey) {
+                label.setAttribute('data-tooltip', translatedText);
+                console.log(`[FloatingLabel] Set tooltip for key "${tooltipKey}": "${translatedText}"`);
+                // Mark parent field so CSS can style hover state without :has()
+                const field = label.closest('.floating-label-field');
+                if (field) {
+                    field.classList.add('has-tooltip');
+                }
+            } else {
+                console.warn(`[FloatingLabel] No translation found for tooltip key: ${tooltipKey}`);
+                const field = label.closest('.floating-label-field');
+                if (field) {
+                    field.classList.remove('has-tooltip');
+                }
+            }
+        }
     }
 
     /**

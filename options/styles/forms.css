@@ -469,3 +469,81 @@ textarea:disabled {
 .quick-input-form .floating-label-field {
   margin-bottom: 0;
 }
+
+/* Tooltip for floating label
+ * Use data-tooltip-i18n with i18n key, JavaScript will convert it to data-tooltip with translated text
+ * Example: <label data-tooltip-i18n="options_model_base_url_tooltip">Base URL</label>
+ */
+.floating-label-field .floating-label[data-tooltip]:not([data-tooltip=""]) {
+  pointer-events: auto;
+  cursor: help;
+}
+
+.floating-label-field .floating-label[data-tooltip]:not([data-tooltip=""])::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 4px);
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 400;
+  white-space: pre-wrap;
+  text-align: left;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0s;
+  z-index: 9000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  max-width: 600px;
+  width: max-content;
+}
+
+.floating-label-field .floating-label[data-tooltip]:not([data-tooltip=""])::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 2px);
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0s;
+  z-index: 9000;
+}
+
+.floating-label-field .floating-label[data-tooltip]:not([data-tooltip=""]):hover::after,
+.floating-label-field .floating-label[data-tooltip]:not([data-tooltip=""]):hover::before {
+  opacity: 1;
+}
+
+/* Show tooltip when hovering anywhere within the field, not just the label */
+.floating-label-field:hover .floating-label[data-tooltip]:not([data-tooltip=""])::after,
+.floating-label-field:hover .floating-label[data-tooltip]:not([data-tooltip=""])::before {
+  opacity: 1;
+}
+
+/* Also support focus within the field to reveal tooltip for accessibility */
+.floating-label-field:focus-within .floating-label[data-tooltip]:not([data-tooltip=""])::after,
+.floating-label-field:focus-within .floating-label[data-tooltip]:not([data-tooltip=""])::before {
+  opacity: 1;
+}
+
+/* Indicate help cursor when field contains a tooltip-enabled label */
+/* Help cursor without relying on :has() (older engines) */
+.floating-label-field.has-tooltip:hover {
+  cursor: help;
+}
+
+/* Ensure input controls also show help cursor when hovering this field */
+.floating-label-field.has-tooltip:hover input,
+.floating-label-field.has-tooltip:hover textarea,
+.floating-label-field.has-tooltip:hover select {
+  cursor: help;
+}
+
+/* Remove the duplicate rule that was causing one character per line */

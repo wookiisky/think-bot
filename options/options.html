@@ -97,7 +97,7 @@
                       </div>
                     </div>
                   </div>
-                  <label for="branchModelSelect" class="floating-label" data-i18n="common_branch_models">Branch Models</label>
+                  <label for="branchModelSelect" class="floating-label" data-tooltip-i18n="common_branch_models_tooltip" data-i18n="common_branch_models">Branch Models</label>
                 </div>
 
                 <div class="floating-label-field">
@@ -120,16 +120,16 @@
 
                 <div class="floating-label-field">
                   <textarea id="systemPrompt" name="systemPrompt" rows="3"></textarea>
-                  <label for="systemPrompt" class="floating-label" data-i18n="options_system_prompt_label">System Prompt</label>
+                  <label for="systemPrompt" class="floating-label" data-tooltip-i18n="options_system_prompt_tooltip" data-i18n="options_system_prompt_label">System Prompt</label>
                 </div>
 
                 <div class="form-group">
-                  <label class="toggle-switch-label" data-i18n-title="options_filter_cot_tooltip" title="When enabled, content before </think> tags will be filtered out during streaming output">
+                  
                     <span class="toggle-switch">
                       <input type="checkbox" id="filterCOT" name="filterCOT">
                       <span class="slider"></span>
                     </span>
-                    <span data-i18n="options_filter_cot_label">Filter COT (Chain of Thought) in streaming output</span>
+                    <span  data-i18n="options_filter_cot_label">Filter COT (Chain of Thought) in streaming output</span>
                   </label>
                 </div>
               </section>

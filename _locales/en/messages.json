@@ -297,11 +297,8 @@
     "message": "Content Area Height"
   },
   "options_filter_cot_label": {
-    "message": "Filter COT"
-  },
-  "options_filter_cot_tooltip": {
-    "message": "When enabled, content before </think> tags will be filtered out during streaming output"
-  },
+    "message": "Filter COT (when enabled, content between <think> tag will be filtered out)"
+  },  
   "options_extraction_method_jina": {
     "message": "Jina AI"
   },
@@ -497,11 +494,14 @@
   "options_model_base_url_label": {
     "message": "Base URL"
   },
+  "options_model_base_url_tooltip": {
+    "message": "URL end with /v1: append /chat/completions\nURL end with #: use as is\nother: append /v1/chat/completions"
+  },
   "options_model_display_name_label": {
     "message": "Display Name"
   },
   "options_model_max_tokens_label": {
-    "message": "Max Tokens"
+    "message": "Max output token"
   },
   "options_model_no_models_configured": {
     "message": "No models configured"
@@ -511,6 +511,9 @@
   },
   "options_model_provider_label": {
     "message": "Provider"
+  },
+  "options_model_provider_tooltip": {
+    "message": "OpenAI Compatible: OpenAI API compatible models\nGoogle Gemini: Google Gemini API compatible models\nAzure OpenAI: Azure OpenAI API compatible models"
   },
   "options_model_provider_openai": {
     "message": "OpenAI Compatible"
@@ -559,6 +562,9 @@
   },
   "options_system_prompt_label": {
     "message": "System Prompt"
+  },
+  "options_system_prompt_tooltip": {
+    "message": "System prompt for each qucik tab request"
   },
   "options_theme_dark": {
     "message": "Dark"
@@ -818,8 +824,14 @@
   "common_model": {
     "message": "Model"
   },
+  "common_model_id": {
+    "message": "Model ID"
+  },
   "common_branch_models": {
     "message": "Branch Models"
+  },
+  "common_branch_models_tooltip": {
+    "message": "These models will be called in parallel with the default model"
   },
   "common_github_token": {
     "message": "GitHub Token"

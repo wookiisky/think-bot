@@ -35,7 +35,13 @@ var openaiProvider = (function() {
     // Build API URL
     function buildApiUrl(baseUrl) {
         const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-        return `${cleanBaseUrl}/v1/chat/completions`;
+        if (cleanBaseUrl.endsWith('/v1')) {
+            return `${cleanBaseUrl}/chat/completions`;
+        }else if (cleanBaseUrl.endsWith('#')) {
+            return `${cleanBaseUrl}`;
+        }else{
+            return `${cleanBaseUrl}/v1/chat/completions`;
+        }        
     }
 
 
