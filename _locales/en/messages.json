@@ -803,6 +803,9 @@
   "sidebar_title_openConfigPage": {
     "message": "Open Options page"
   },
+  "sidebar_title_openGithub": {
+    "message": "Visit GitHub repository"
+  },
   "sidebar_title_retryExtraction": {
     "message": "Retry extraction"
   },
@@ -1024,5 +1027,35 @@
   },
   "sidebar_tabManager_text_processing": {
     "message": "Processing..."
+  },
+  "options_import_cloud_config_button": {
+    "message": "Import Cloud Config"
+  },
+  "options_cloud_import_dialog_title": {
+    "message": "Import Cloud Config"
+  },
+  "options_cloud_import_url_label": {
+    "message": "Config URL"
+  },
+  "options_cloud_import_fetch_button": {
+    "message": "Fetch Config"
+  },
+  "options_cloud_import_table_message": {
+    "message": "Message Preview"
+  },
+  "options_cloud_import_copy_button": {
+    "message": "Copy"
+  },
+  "options_cloud_import_copy_success": {
+    "message": "Copied to local config"
+  },
+  "options_cloud_import_error_fetch": {
+    "message": "Failed to fetch config"
+  },
+  "options_cloud_import_error_parse": {
+    "message": "Invalid config format"
+  },
+  "options_cloud_import_error_invalid": {
+    "message": "Invalid config data"
   }
 }

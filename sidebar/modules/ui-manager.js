@@ -38,7 +38,8 @@ const initElements = () => {
     buttonGroup: document.getElementById('inputActions'),
     clearPageDataBtn: document.getElementById('clearPageDataBtn'),
     openOptionsBtn: document.getElementById('openOptionsBtn'),
-    openChatBtn: document.getElementById('openChatBtn')
+    openChatBtn: document.getElementById('openChatBtn'),
+    openGithubBtn: document.getElementById('openGithubBtn')
   };
   
   // Check for critical missing elements and log detailed information

@@ -252,6 +252,16 @@
   font-size: 14px;
 }
 
+/* Orange variant for cloud import button */
+.add-model-btn-orange {
+  background-color: #ff9800;
+}
+
+.add-model-btn-orange:hover:not(:disabled) {
+  background-color: #f57c00;
+  box-shadow: 0 2px 6px rgba(255, 152, 0, 0.2);
+}
+
 /* Header Save Button */
 .header-actions #saveBtn {
   order: -1;

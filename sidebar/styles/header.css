@@ -104,6 +104,16 @@
   color: #9e9e9e;
 }
 
+/* GitHub icon styles */
+.github-icon {
+  display: block;
+  transition: color 0.2s ease;
+}
+
+.page-btn:hover .github-icon {
+  color: var(--primary-color);
+}
+
 /* Quick inputs section */
 .quick-inputs {
   display: flex;

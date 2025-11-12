@@ -171,6 +171,7 @@ const setupEventListeners = (elements, modelSelector, onTabAction) => {
   });
   elements.openOptionsBtn.addEventListener('click', openOptionsPage);
   elements.openChatBtn.addEventListener('click', openChatPage);
+  elements.openGithubBtn.addEventListener('click', openGithubPage);
   
   // Initialize content resize processing
   ResizeHandler.initContentResize(
@@ -690,6 +691,23 @@ const openChatPage = async () => {
   }
 };
 
+/**
+ * Open GitHub repository page
+ */
+const openGithubPage = async () => {
+  logger.info('Opening GitHub repository page');
+
+  try {
+    await chrome.tabs.create({
+      url: 'https://github.com/wookiisky/think-bot'
+    });
+
+    logger.info('Successfully opened GitHub repository page');
+  } catch (error) {
+    logger.error('Error opening GitHub repository page:', error);
+  }
+};
+
 export {
   setupEventListeners,
   switchExtractionMethod,
@@ -699,5 +717,6 @@ export {
   setupMessageButtonsScroll,
   clearAllPageData,
   openOptionsPage,
-  openChatPage
+  openChatPage,
+  openGithubPage
 };

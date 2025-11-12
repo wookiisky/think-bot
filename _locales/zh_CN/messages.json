@@ -804,6 +804,9 @@
   "sidebar_title_openConfigPage": {
     "message": "打开配置页面"
   },
+  "sidebar_title_openGithub": {
+    "message": "访问 GitHub 仓库"
+  },
   "sidebar_title_retryExtraction": {
     "message": "重试提取"
   },
@@ -1025,5 +1028,35 @@
   },
   "sidebar_tabManager_text_processing": {
     "message": "处理中..."
+  },
+  "options_import_cloud_config_button": {
+    "message": "导入云端配置"
+  },
+  "options_cloud_import_dialog_title": {
+    "message": "导入云端配置"
+  },
+  "options_cloud_import_url_label": {
+    "message": "配置URL"
+  },
+  "options_cloud_import_fetch_button": {
+    "message": "获取配置"
+  },
+  "options_cloud_import_table_message": {
+    "message": "消息预览"
+  },
+  "options_cloud_import_copy_button": {
+    "message": "复制"
+  },
+  "options_cloud_import_copy_success": {
+    "message": "已复制到本地配置"
+  },
+  "options_cloud_import_error_fetch": {
+    "message": "获取配置失败"
+  },
+  "options_cloud_import_error_parse": {
+    "message": "配置格式错误"
+  },
+  "options_cloud_import_error_invalid": {
+    "message": "配置数据无效"
   }
 }

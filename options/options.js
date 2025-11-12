@@ -10,6 +10,7 @@ import { ModelManager } from './modules/model-manager.js';
 import { blacklistConfig } from './modules/blacklist-config.js';
 import { i18n } from '../js/modules/i18n.js';
 import { confirmationDialog } from '../js/modules/ui/confirmation-dialog.js';
+import { cloudImportDialog } from './modules/cloud-import-dialog.js';
 
 // Import logger module
 const logger = window.logger ? window.logger.createModuleLogger('Options') : console;
@@ -570,6 +571,11 @@ class OptionsPage {
       this.markAsChanged();
     });
 
+    // Import cloud config button
+    this.domElements.importCloudConfigBtn.addEventListener('click', () => {
+      this.handleCloudImport();
+    });
+
     // Clear All Cache button
     this.domElements.clearAllCacheBtn.addEventListener('click', () => {
       this.clearAllCache();
@@ -775,6 +781,12 @@ class OptionsPage {
       logger.error('Error importing configuration', error);
       alert(i18n.getMessage('options_js_import_error'));
     }
+  }
+
+  // Handle cloud config import
+  handleCloudImport() {
+    logger.info('Opening cloud import dialog');
+    cloudImportDialog.show();
   }
 
   // Setup sync-related event listeners

@@ -46,6 +46,7 @@ export const domElements = {
 
   // Action buttons
   addQuickInputBtn: document.getElementById('addQuickInputBtn'),
+  importCloudConfigBtn: document.getElementById('importCloudConfigBtn'),
   exportConfigBtn: document.getElementById('exportConfigBtn'),
   importConfigBtn: document.getElementById('importConfigBtn'),
   importConfigFile: document.getElementById('importConfigFile'),
