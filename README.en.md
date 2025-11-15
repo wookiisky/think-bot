@@ -3,58 +3,30 @@
 # Think Bot
 
 ## Introduction
+This browser extension is a tool that combines web content extraction + preset prompts + LLM API calls + reading/conversation features. It was iteratively developed as part of my cognitive enhancement workflow, aiming to reduce various friction points encountered during deep reading. The goal is to create a handy and useful tool that embodies my philosophy on cognitive improvement.
 
-Chrome extension:
-- A handy tool for conversing with web pages, summary, etc.
-- Emphasizes making the AI think a little more
-- Prompts designed with 'Role' rather than workflow
+The initial idea was simply a web content extraction and controllable-prompt web page summary plugin. Since it was created during the early days of vibe coding, the entire development process and framework lacked design (e.g., no modern frontend development frameworks were used). Later, as more and more features were added, quick refactoring attempts failed and completely gave way to the need for new features, ultimately resulting in a functional product with less-than-ideal code quality.
 
-It was initially created for summarizing web pages then evolved to handle tasks like abbreviation, inspiration, and critical analysis, becoming a key tool for me to enhance my cognition with AI.
-
-Note: 
-- **Only declarative writing, unfettered by the pursuit of exhaustive correctness, is truly valuable.**
-
-- **Do not let AI think for you.**
-
-
-### Vibe Coding
-
-The entire project was built through Vibe Coding. It started as a way to quickly get a tool that could summarize web pages, but gradually grew into a large and complex project. There were attempts to refactor it, but they were only partially successful. Subsequent refactoring gave way to continuous new feature development. 
-It is functional but not really well designed. Now that the features are mostly stable, a new version is being developed from scratch (Also with vibe coding).
+Now the idea of refactoring is gradually fading: first, the focus has shifted to thinking about further issues in the cognitive enhancement process; second, AI browsers in the future may include these features; third, when vibe coding becomes even better, refactoring will be a much more efficient endeavor.
 
 ## Core Features
+- Sidebar invocation with automatic web content extraction and automatic multi-model, multi-perspective analysis
+- Historical page management and search
+- Detail features for convenient reading and conversation
+- Controllability of prompts
 
-### 📄 Page Conversation
-- Extracts page content using Readability, adds it to the large model's context, and allows you to converse with it.
-
-### ⚡ Quick Inputs
-- Pre-set prompts that can be sent automatically when the extension is opened.
-- Built-in professional prompts like "Abbreviate", "Counter-intuitive", etc.
-
-### 💾 Conversation Management
-- Automatic saving of conversation history.
-- Supports exporting conversation records.
-- Caching of page states.
-- Data synchronization feature (WebDAV, Gist).
-
-## Tools
-
-### Content Extractors
-- readability
-- jina
-
-### Data Sync
-- webdav
-- GitHub Gist
-
-### Large Language Models
-- OpenAI compatible
-- Gemini (recommended)
-- Azure OpenAI
+Note: You need to configure LLM API yourself
 
 ## Installation Instructions
 
-1. **Clone or download the project**
+### Chrome Web Store
+- https://chromewebstore.google.com/detail/think-bot/fnicniodcfoggafbmigcbdnjdcmfhpob
+
+- Search for "Think Bot"
+
+### Local Installation
+
+1. **Clone or download the project**  
 
 2. **Load the extension in Chrome**
    - Open Chrome browser
@@ -63,7 +35,7 @@ It is functional but not really well designed. Now that the features are mostly 
    - Click "Load unpacked"
    - Select the project's root directory
 
-3. **Configure API Key**
+3. **Configure LLM API Key**
    - Click the extension icon to open the sidebar
    - Go to the settings page
    - Configure the required LLM model API key
