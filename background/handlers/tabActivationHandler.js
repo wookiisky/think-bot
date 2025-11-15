@@ -8,17 +8,7 @@ async function handleTabActivated(activeInfo, serviceLogger, isRestrictedPage, s
     serviceLogger.info(`TAB_ACTIVATED: Processing tab ${tabId}`);
 
     try {
-        // Phase 1: Attempt to disable the side panel for the newly activated tab.
-        try {
-            await chrome.sidePanel.setOptions({
-                tabId: tabId,
-                enabled: false
-            });
-        } catch (error) {
-            serviceLogger.warn(`TAB_ACTIVATED: Error disabling side panel for tab ${tabId}:`, error.message);
-        }
-
-        // Phase 2: Get tab details.
+        // Phase 1: Get tab details.
         let tab;
         try {
             tab = await chrome.tabs.get(tabId);
@@ -35,21 +25,20 @@ async function handleTabActivated(activeInfo, serviceLogger, isRestrictedPage, s
         const currentUrl = tab.url;
         serviceLogger.info(`TAB_ACTIVATED: Processing tab ${tabId} - ${currentUrl}`);
 
-        // Phase 3: Conditionally re-enable the side panel after a short delay.
-        setTimeout(async () => {
-            try {
-                if (!isRestrictedPage(currentUrl)) {
-                    await chrome.sidePanel.setOptions({
-                        tabId: tabId,
-                        enabled: true
-                    });
-                }
-            } catch (error) {
-                serviceLogger.warn(`TAB_ACTIVATED: Error re-enabling side panel for tab ${tabId}:`, error.message);
-            }
-        }, 100);
+        // Phase 2: Set side panel state based on page type
+        // Enable for normal pages, disable for restricted pages
+        try {
+            const shouldEnable = currentUrl && !isRestrictedPage(currentUrl);
+            await chrome.sidePanel.setOptions({
+                tabId: tabId,
+                enabled: shouldEnable
+            });
+            serviceLogger.info(`TAB_ACTIVATED: Side panel ${shouldEnable ? 'enabled' : 'disabled'} for tab ${tabId}`);
+        } catch (error) {
+            serviceLogger.warn(`TAB_ACTIVATED: Error setting side panel state for tab ${tabId}:`, error.message);
+        }
 
-        // Phase 4: Notify the sidebar about the tab change if URL is available.
+        // Phase 3: Notify the sidebar about the tab change if URL is available.
         if (currentUrl) {
             safeSendMessage({
                 type: 'TAB_CHANGED',

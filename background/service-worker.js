@@ -161,6 +161,19 @@ chrome.action.onClicked.addListener(async (tab) => {
     // Open side panel immediately to preserve user gesture context
     try {
       if (tab && tab.windowId) {
+        // Ensure side panel is enabled before attempting to open
+        // This prevents race condition when tab switching disables it temporarily
+        // Use non-awaited promise to avoid losing user gesture context
+        chrome.sidePanel.setOptions({
+          tabId: tab.id,
+          enabled: true
+        }).then(() => {
+          serviceLogger.info('Side panel enabled for tab:', tab.id);
+        }).catch((enableError) => {
+          serviceLogger.warn('Error enabling side panel before opening:', enableError);
+        });
+
+        // Must call open() synchronously in user gesture context (no await before this)
         await chrome.sidePanel.open({ windowId: tab.windowId });
         serviceLogger.info('Successfully opened side panel');
 
