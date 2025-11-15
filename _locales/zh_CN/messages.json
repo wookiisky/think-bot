@@ -1,6 +1,6 @@
 {
   "appName": {
-    "message": "洞察助手"
+    "message": "认知助手"
   },
   "appDesc": {
     "message": "AI认知助手，深度思考伙伴"
@@ -99,7 +99,7 @@
     "message": "复制提取内容失败"
   },
   "conversations_page_title": {
-    "message": "洞察助手 - 对话"
+    "message": "认知助手 - 对话"
   },
   "conversations_search_placeholder": {
     "message": "搜索页面..."
@@ -997,7 +997,7 @@
     "message": "用户停止了响应"
   },
   "export_default_tab_name": {
-    "message": "洞察助手对话"
+    "message": "认知助手对话"
   },
   "page_list_manager_tooltip_extracted": {
     "message": "于$DATE$提取",
