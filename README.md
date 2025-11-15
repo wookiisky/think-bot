@@ -5,7 +5,10 @@
 ## 项目简介
 这个浏览器扩展是一个网页内容提取+预设提示词+大模型调用+阅读/对话的工具。是我在构建认知提升流程中迭代开发的，目标是减少深度阅读遇到的各种摩擦，目标是一个顺手好用的工具，也是我的在认知提升方面理念的体现。
 
-介绍文章：https://mp.weixin.qq.com/s/ASHxC4NQBBBrqB8zNK_dHA
+介绍文章：
+- [我的 AI 认知提升系统：筛选处理、AI 拓展、写作内化
+](https://mp.weixin.qq.com/s/ASHxC4NQBBBrqB8zNK_dHA)
+- [我的 AI 认知提升系统2：认知助手、框架和使用原则](https://mp.weixin.qq.com/s/lEBbcDZnts6Qh81LDR5iPQ)
 
 ## 关于代码
 
