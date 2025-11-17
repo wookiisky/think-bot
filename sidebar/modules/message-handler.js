@@ -239,6 +239,17 @@ const setupMessageListeners = (handlers, options = {}) => {
           }
           break;
 
+        case 'CLOSE_SIDEBAR':
+          // Close the side panel programmatically on tab switch
+          try {
+            logger.info('Received CLOSE_SIDEBAR message, closing side panel');
+            // window.close() will close the side panel page
+            window.close();
+          } catch (e) {
+            logger.warn('Failed to close side panel via window.close():', e?.message || e);
+          }
+          break;
+
         case 'PING_SIDEBAR':
           // Respond to pings from the service worker only when this context should be treated as the sidebar
           if (respondToSidebarPing) {

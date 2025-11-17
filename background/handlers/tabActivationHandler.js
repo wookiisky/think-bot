@@ -8,17 +8,7 @@ async function handleTabActivated(activeInfo, serviceLogger, isRestrictedPage, s
     serviceLogger.info(`TAB_ACTIVATED: Processing tab ${tabId}`);
 
     try {
-        // Phase 1: Attempt to disable the side panel for the newly activated tab.
-        try {
-            await chrome.sidePanel.setOptions({
-                tabId: tabId,
-                enabled: false
-            });
-        } catch (error) {
-            serviceLogger.warn(`TAB_ACTIVATED: Error disabling side panel for tab ${tabId}:`, error.message);
-        }
-
-        // Phase 2: Get tab details.
+        // Get tab details first
         let tab;
         try {
             tab = await chrome.tabs.get(tabId);
@@ -33,23 +23,14 @@ async function handleTabActivated(activeInfo, serviceLogger, isRestrictedPage, s
         }
 
         const currentUrl = tab.url;
-        serviceLogger.info(`TAB_ACTIVATED: Processing tab ${tabId} - ${currentUrl}`);
+        serviceLogger.info(`TAB_ACTIVATED: Active tab ${tabId} - ${currentUrl}`);
 
-        // Phase 3: Conditionally re-enable the side panel after a short delay.
-        setTimeout(async () => {
-            try {
-                if (!isRestrictedPage(currentUrl)) {
-                    await chrome.sidePanel.setOptions({
-                        tabId: tabId,
-                        enabled: true
-                    });
-                }
-            } catch (error) {
-                serviceLogger.warn(`TAB_ACTIVATED: Error re-enabling side panel for tab ${tabId}:`, error.message);
-            }
-        }, 100);
+        // Close side panel when switching tabs to meet UX requirement
+        // If the sidebar is not open, message will be ignored by safeSendMessage
+        safeSendMessage({ type: 'CLOSE_SIDEBAR' });
+        serviceLogger.info('TAB_ACTIVATED: Sent CLOSE_SIDEBAR to side panel');
 
-        // Phase 4: Notify the sidebar about the tab change if URL is available.
+        // Notify the sidebar about the tab change if URL is available (for state sync when reopened)
         if (currentUrl) {
             safeSendMessage({
                 type: 'TAB_CHANGED',
@@ -58,6 +39,9 @@ async function handleTabActivated(activeInfo, serviceLogger, isRestrictedPage, s
         } else {
             serviceLogger.info(`TAB_ACTIVATED: Tab ${tabId} has undefined URL`);
         }
+
+        // Remove sidePanel enable/disable toggle to avoid race with manual open
+        // Opening is handled via action click with restricted page checks
 
     } catch (error) {
         serviceLogger.error(`TAB_ACTIVATED: Critical error for tab ${tabId}:`, error.message);

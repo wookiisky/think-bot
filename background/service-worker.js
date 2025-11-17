@@ -131,42 +131,40 @@ setInterval(async () => {
 }, CACHE_CLEANUP_INTERVAL_MS);
 
 // Handle extension icon clicks
-chrome.action.onClicked.addListener(async (tab) => {
+chrome.action.onClicked.addListener((tab) => {
   serviceLogger.info('Extension icon clicked, tab URL:', tab?.url);
 
   if (tab && tab.url && isRestrictedPage(tab.url)) {
     serviceLogger.info('Clicked on restricted page, opening conversations page');
-    try {
-      await chrome.tabs.create({
-        url: chrome.runtime.getURL('conversations/conversations.html')
-      });
+    chrome.tabs.create({
+      url: chrome.runtime.getURL('conversations/conversations.html')
+    }).then(() => {
       serviceLogger.info('Successfully opened conversations page');
-    } catch (error) {
+    }).catch((error) => {
       serviceLogger.error('Error opening conversations page:', error);
       // Fallback to notification if conversations page fails to open
-      try {
-        await chrome.notifications.create({
-          type: 'basic',
-          iconUrl: chrome.runtime.getURL('icons/icon48.png'),
-          title: 'Think Bot',
-          message: 'Think Bot cannot work on Chrome internal pages. Please navigate to a regular webpage to use the extension.'
-        });
-      } catch (fallbackError) {
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: chrome.runtime.getURL('icons/icon48.png'),
+        title: 'Think Bot',
+        message: 'Think Bot cannot work on Chrome internal pages. Please navigate to a regular webpage to use the extension.'
+      }).catch((fallbackError) => {
         serviceLogger.error('Error creating fallback notification:', fallbackError);
-      }
-    }
+      });
+    });
   } else {
     serviceLogger.info('Clicked on normal page, trying to open side panel');
 
-    // Open side panel immediately to preserve user gesture context
-    try {
-      if (tab && tab.windowId) {
-        await chrome.sidePanel.open({ windowId: tab.windowId });
-        serviceLogger.info('Successfully opened side panel');
+    if (tab && tab.windowId) {
+      // Fire-and-forget enable (do not await to preserve user gesture)
+      chrome.sidePanel.setOptions({ tabId: tab.id, enabled: true })
+        .then(() => serviceLogger.info('Ensured side panel is enabled for current tab'))
+        .catch((enableErr) => serviceLogger.warn('Error enabling side panel for current tab:', enableErr?.message || enableErr));
 
+      // Call open immediately in the same user gesture
+      chrome.sidePanel.open({ windowId: tab.windowId }).then(() => {
+        serviceLogger.info('Successfully opened side panel');
         // Send tab info to sidebar for blacklist checking
-        // The sidebar will handle blacklist checking and display confirmation if needed
-        // Increase delay to ensure sidebar is fully loaded
         setTimeout(() => {
           serviceLogger.info('Sending SIDEBAR_OPENED message to sidebar');
           safeSendMessage({
@@ -174,15 +172,10 @@ chrome.action.onClicked.addListener(async (tab) => {
             url: tab.url,
             tabId: tab.id
           }, serviceLogger);
-        }, 500);
-      }
-    } catch (error) {
-      serviceLogger.error('Error opening side panel:', error);
-      try {
-        // const behavior = await chrome.sidePanel.getPanelBehavior(); // Logging behavior might be too verbose or error-prone
-      } catch (behaviorError) {
-        serviceLogger.error('Error getting panel behavior:', behaviorError);
-      }
+        }, 300);
+      }).catch((error) => {
+        serviceLogger.error('Error opening side panel:', error);
+      });
     }
   }
 });
@@ -292,6 +285,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         case 'SIDEBAR_READY': {
           // Sidebar is ready to receive messages
           serviceLogger.info('Sidebar confirmed ready to receive messages');
+          try {
+            const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (activeTab && activeTab.url && !isRestrictedPage(activeTab.url)) {
+              // Inform sidebar about the current tab to trigger blacklist checks and data load
+              safeSendMessage({
+                type: 'SIDEBAR_OPENED',
+                url: activeTab.url,
+                tabId: activeTab.id
+              }, serviceLogger);
+              serviceLogger.info('Dispatched SIDEBAR_OPENED in response to SIDEBAR_READY');
+            }
+          } catch (e) {
+            serviceLogger.warn('Failed to dispatch SIDEBAR_OPENED after SIDEBAR_READY:', e?.message || e);
+          }
           return { type: 'SIDEBAR_READY_CONFIRMED' };
         }
         default: {
