@@ -155,7 +155,10 @@ const sendLlmMessage = async (payload) => {
  * @param {Object} handlers - Message handler functions object
  */
 const setupMessageListeners = (handlers, options = {}) => {
-  const { respondToSidebarPing = true } = options;
+  const {
+    respondToSidebarPing = true,
+    closeOnSidebarCloseMessage = true
+  } = options;
   // Remove any existing listeners first to prevent duplicates
   if (chrome.runtime && chrome.runtime.onMessage) {
     chrome.runtime.onMessage.removeListener(handleMessage);
@@ -240,13 +243,17 @@ const setupMessageListeners = (handlers, options = {}) => {
           break;
 
         case 'CLOSE_SIDEBAR':
-          // Close the side panel programmatically on tab switch
-          try {
-            logger.info('Received CLOSE_SIDEBAR message, closing side panel');
-            // window.close() will close the side panel page
-            window.close();
-          } catch (e) {
-            logger.warn('Failed to close side panel via window.close():', e?.message || e);
+          if (closeOnSidebarCloseMessage) {
+            // Close the side panel programmatically on tab switch
+            try {
+              logger.info('Received CLOSE_SIDEBAR message, closing side panel');
+              // window.close() will close the side panel page
+              window.close();
+            } catch (e) {
+              logger.warn('Failed to close side panel via window.close():', e?.message || e);
+            }
+          } else {
+            logger.info('Received CLOSE_SIDEBAR message, but closeOnSidebarCloseMessage=false (no action)');
           }
           break;
 
