@@ -821,6 +821,10 @@ const createModelDropdown = (button, branchId) => {
   const dropdown = document.createElement('div');
   dropdown.className = 'model-dropdown';
   dropdown.setAttribute('data-anchor-branch-id', branchId);
+
+  // Capture the button position immediately in case the loading-state UI swaps
+  // out the branch action buttons before the async model list resolves
+  const anchorRect = button.getBoundingClientRect();
   
   // Get available model list
   getAvailableModels().then(models => {
@@ -852,7 +856,8 @@ const createModelDropdown = (button, branchId) => {
     
     // Calculate and set position (below button, avoid overflow)
     const positionDropdown = () => {
-      const buttonRect = button.getBoundingClientRect();
+      const liveRect = button.isConnected ? button.getBoundingClientRect() : null;
+      const buttonRect = (liveRect && liveRect.width && liveRect.height) ? liveRect : anchorRect;
       const dropdownRect = dropdown.getBoundingClientRect();
       const viewportPadding = 8;
       const offset = 4;
