@@ -801,6 +801,9 @@
   "sidebar_title_openChatPage": {
     "message": "打开对话页面"
   },
+  "context_menu_conversations_title": {
+    "message": "对话管理"
+  },
   "sidebar_title_openConfigPage": {
     "message": "打开配置页面"
   },

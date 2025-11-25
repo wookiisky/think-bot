@@ -64,9 +64,16 @@ chrome.runtime.onInstalled.addListener(async () => {
   serviceLogger.info('Think Bot extension installed or updated');
 
   // Create context menu for the action icon
+  const contextMenuTitleKey = 'context_menu_conversations_title';
+  const contextMenuTitle =
+    chrome.i18n.getMessage(contextMenuTitleKey) || 'Conversations';
+  serviceLogger.info('Creating context menu for action icon', {
+    title: contextMenuTitle,
+    language: chrome.i18n.getUILanguage()
+  });
   chrome.contextMenus.create({
     id: "open-conversations",
-    title: "Conversations",
+    title: contextMenuTitle,
     contexts: ["action"]
   });
   
