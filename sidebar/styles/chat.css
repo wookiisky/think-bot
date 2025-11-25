@@ -1126,7 +1126,6 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  /* Keep loading-state controls above the sticky model label */
   z-index: 12;
 }
 

@@ -800,6 +800,9 @@
   "sidebar_title_openChatPage": {
     "message": "Open Conversations page"
   },
+  "context_menu_conversations_title": {
+    "message": "Conversations"
+  },
   "sidebar_title_openConfigPage": {
     "message": "Open Options page"
   },
