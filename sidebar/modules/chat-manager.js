@@ -1336,7 +1336,6 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
   const localBranchId = (typeof crypto !== 'undefined' && crypto.randomUUID)
     ? `br-${crypto.randomUUID()}`
     : `br-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-
   let assistantBranchElement = null;
   try {
     // Select current model for label display
@@ -1409,6 +1408,16 @@ const sendUserMessage = async (userText, imageBase64, chatContainer, userInput, 
     branchContainer.appendChild(branchesDiv);
     chatContainer.appendChild(branchContainer);
     chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    // Ensure branch action events are attached for newly created loading branch UI
+    try {
+      if (window.ChatHistory && window.ChatHistory.addBranchEventListeners) {
+        window.ChatHistory.addBranchEventListeners(chatContainer);
+        logger.info('Branch event listeners attached after creating loading branch UI for user message');
+      }
+    } catch (listenerError) {
+      logger.warn('Failed to attach branch event listeners for user message branch UI:', listenerError);
+    }
 
     assistantBranchElement = branchDiv;
   } catch (uiError) {
@@ -1653,6 +1662,16 @@ const handleQuickInputClick = async (displayText, sendTextTemplate, chatContaine
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
     assistantLoadingMessage = branchDiv; // Streaming element reference
+
+    // Ensure branch action events are attached for quick input loading branch UI
+    try {
+      if (window.ChatHistory && window.ChatHistory.addBranchEventListeners) {
+        window.ChatHistory.addBranchEventListeners(chatContainer);
+        logger.info('Branch event listeners attached after creating loading branch UI for quick input');
+      }
+    } catch (listenerError) {
+      logger.warn('Failed to attach branch event listeners for quick input branch UI:', listenerError);
+    }
 
     // Ensure tab enters loading state immediately for quick input branch
     try {
