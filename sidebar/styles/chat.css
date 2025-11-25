@@ -1126,6 +1126,8 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  /* Keep loading-state controls above the sticky model label */
+  z-index: 12;
 }
 
 /* Override general branch action button size for loading state - consistent with base style */
