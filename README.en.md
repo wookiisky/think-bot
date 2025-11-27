@@ -41,6 +41,9 @@ Note: You need to configure LLM API yourself
    - Go to the settings page
    - Configure the required LLM model API key
 
+## Quick Start
+[Quick Start](quick_start.en.md)
+
 ## License
 
 This project is licensed under the MIT License. 
