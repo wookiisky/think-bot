@@ -60,8 +60,28 @@ const serviceLogger = logger ? logger.createModuleLogger('ServiceWorker') : cons
 // They are available globally within the service worker scope.
 
 // Set up event listeners when extension is installed or updated
-chrome.runtime.onInstalled.addListener(async () => {
-  serviceLogger.info('Think Bot extension installed or updated');
+chrome.runtime.onInstalled.addListener(async (details) => {
+  const browserLanguage = chrome.i18n.getUILanguage();
+  serviceLogger.info('Think Bot extension installed or updated', {
+    reason: details.reason,
+    language: browserLanguage
+  });
+
+  // Open quick start guide on first install
+  if (details.reason === 'install') {
+    try {
+      // Determine which quick start guide to open based on browser language
+      const isChineseLang = browserLanguage.startsWith('zh');
+      const quickStartUrl = isChineseLang
+        ? 'https://github.com/wookiisky/think-bot/blob/main/quick_start.md'
+        : 'https://github.com/wookiisky/think-bot/blob/main/quick_start.en.md';
+      
+      await chrome.tabs.create({ url: quickStartUrl });
+      serviceLogger.info('Opened quick start guide on first install', { url: quickStartUrl });
+    } catch (error) {
+      serviceLogger.error('Failed to open quick start guide:', error);
+    }
+  }
 
   // Create context menu for the action icon
   const contextMenuTitleKey = 'context_menu_conversations_title';
@@ -69,7 +89,7 @@ chrome.runtime.onInstalled.addListener(async () => {
     chrome.i18n.getMessage(contextMenuTitleKey) || 'Conversations';
   serviceLogger.info('Creating context menu for action icon', {
     title: contextMenuTitle,
-    language: chrome.i18n.getUILanguage()
+    language: browserLanguage
   });
   chrome.contextMenus.create({
     id: "open-conversations",

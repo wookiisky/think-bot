@@ -242,7 +242,7 @@ var geminiProvider = (function() {
 
         // Basic API key validation
         if (!apiKey) {
-            const error = new Error('Gemini API key is required');
+            const error = new Error(chrome.i18n.getMessage('error_api_key_not_configured'));
             errorCallback(error);
             return;
         }

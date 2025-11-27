@@ -1060,5 +1060,8 @@
   },
   "options_cloud_import_error_invalid": {
     "message": "Invalid config data"
+  },
+  "error_api_key_not_configured": {
+    "message": "API key is not configured, please go to extension option page and check llm api config"
   }
 }

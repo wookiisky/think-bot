@@ -1061,5 +1061,8 @@
   },
   "options_cloud_import_error_invalid": {
     "message": "配置数据无效"
+  },
+  "error_api_key_not_configured": {
+    "message": "未配置API密钥，请前往扩展设置页面检查大模型API配置"
   }
 }

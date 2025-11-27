@@ -67,7 +67,7 @@ var openaiProvider = (function() {
 
         // Basic API key validation
         if (!apiKey) {
-            const error = new Error('OpenAI API key is required');
+            const error = new Error(chrome.i18n.getMessage('error_api_key_not_configured'));
             errorCallback(error);
             return;
         }

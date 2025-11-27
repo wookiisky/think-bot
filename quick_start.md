@@ -1,11 +1,15 @@
+[中文](quick_start.md) | [English](quick_start.en.md)
 # 快速上手教程
 
 ## 配置大模型
 在扩展设置页面，选择『语言模型』，点击右上角『添加新模型』按钮创建新的大模型配置。
 然后需要获取大模型的API信息，现在大多平台都有免费使用的额度。
 
-### 国外（需要可以访问国外的网络）
-#### 谷歌的Gemini（推荐）
+### 免费大模型API
+https://github.com/cheahjs/free-llm-api-resources
+
+### 国外（大多数需要可以访问国外的网络）
+#### 谷歌的Gemini
 获取API key
 1. 访问 [https://aistudio.google.com/api-keys](https://aistudio.google.com/api-keys),登录账号
 2. 点击"Create API key"按钮
@@ -16,7 +20,7 @@
 0. 服务提供商选择Gemini
 1. Base URL配置：https://generativelanguage.googleapis.com
 2. 模型id：   
-- gemini-2.5-pro: 强大，但速度慢
+- gemini-2.5-pro: 强大，但速度慢（**推荐**）
 - gemini-flash-latest：比上一个快，效果不如pro
 - gemini-3-pro-preview：需要是付费账户
 
@@ -39,6 +43,26 @@
 - gpt-5.1: 最新模型
 
 价格参考：[https://openai.com/zh-Hans-CN/api/pricing/](https://openai.com/zh-Hans-CN/api/pricing/)
+
+#### OpenRouter
+
+获取 API key：
+
+1. 访问 [https://openrouter.ai](https://openrouter.ai) 并注册登录账号。
+2. 进入账户设置页面，在 **API Keys** 部分创建新的 API Key。
+3. 复制生成的密钥并妥善保存。
+4. 新用户有免费模型和额度。
+
+配置：
+0. 服务提供商选择"OpenAI兼容"
+1. Base URL 配置：`https://openrouter.ai/api`
+2. 模型id：根据实际id选择
+
+说明：
+- OpenRouter 是一个 AI 模型聚合平台，可以通过统一 API 访问多个不同厂商的模型
+- 支持的模型列表：[https://openrouter.ai/models](https://openrouter.ai/models)
+
+价格参考：[https://openrouter.ai/docs/pricing](https://openrouter.ai/docs/pricing)
 
 ### 国内
 
@@ -101,3 +125,33 @@
 价格 / 模型列表参考：
 
 价格：[https://help.aliyun.com/zh/model-studio/models](https://help.aliyun.com/zh/model-studio/models) 
+
+#### 豆包（字节跳动）
+
+获取 API key：
+
+1. 访问火山引擎「豆包大模型」平台：[https://console.volcengine.com/ark](https://console.volcengine.com/ark) 并注册登录。
+2. 创建推理接入点（Endpoint），选择需要使用的模型。
+3. 在「API Key 管理」页面创建新的 API Key。
+4. 新用户通常会赠送一定的免费额度。
+
+配置：
+0. 服务提供商选择"OpenAI兼容"
+1. Base URL 配置：`https://ark.cn-beijing.volces.com/api/v3/chat/completions#`
+2. 模型 id：需要使用你创建的推理接入点的 Endpoint ID 或者模型id
+
+常用模型（示例）：
+- doubao-seed-1-6-251015：性能强大的旗舰模型
+
+价格与额度参考：
+
+- 模型与计费说明：[https://www.volcengine.com/docs/82379/1099320](https://www.volcengine.com/docs/82379/1099320)
+- API 文档：[https://www.volcengine.com/docs/82379/1263482](https://www.volcengine.com/docs/82379/1263482)
+
+## 对话管理页面
+
+有以下几种方式打开对话管理页面：
+1. 右键单击扩展栏的按钮，选择“对话管理”
+2. 左键点击扩展栏的按钮打开扩展栏后，扩展栏右上角“对话管理”按钮
+3. 在扩展管理等chrome内部页面，左键点击扩展栏的按钮，不会打开侧边栏，而是会直接打开对话管理页面。
+

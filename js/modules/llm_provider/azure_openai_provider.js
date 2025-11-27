@@ -62,7 +62,7 @@ var azureOpenaiProvider = (function() {
 
         // Basic validation
         if (!apiKey) {
-            const error = new Error('Azure OpenAI API key is required');
+            const error = new Error(chrome.i18n.getMessage('error_api_key_not_configured'));
             errorCallback(error);
             return;
         }
