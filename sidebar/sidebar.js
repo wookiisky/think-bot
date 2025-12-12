@@ -42,6 +42,8 @@ const logger = createLogger('Sidebar');
 let modelSelector = null;
 let currentRequestTabId = null; // Track current request
 let currentStreamId = null; // Track current stream
+let lastSidebarOpenContext = { url: null, tabId: null }; // Deduplicate sidebar opened events
+let isHandlingSidebarOpen = false;
 
 // Global utility functions for other modules
 window.StateManager = StateManager;
@@ -712,6 +714,21 @@ async function applyTheme(config) {
 async function handleSidebarOpened(message) {
   try {
     const { url, tabId } = message;
+
+    if (isHandlingSidebarOpen) {
+      logger.info('Sidebar open handling already in progress, skipping duplicate message');
+      return;
+    }
+
+    const isDuplicate = lastSidebarOpenContext.url === url && lastSidebarOpenContext.tabId === tabId;
+    if (isDuplicate) {
+      logger.info('Duplicate SIDEBAR_OPENED message detected for current tab, ignoring to prevent double auto triggers');
+      return;
+    }
+
+    isHandlingSidebarOpen = true;
+    lastSidebarOpenContext = { url, tabId };
+
     logger.info('Received SIDEBAR_OPENED message for URL:', url);
 
     // Reset config cache to get latest settings
@@ -723,6 +740,8 @@ async function handleSidebarOpened(message) {
     logger.error('Error handling sidebar opened:', error);
     // If there's an error, continue with normal flow
     PageDataManager.loadCurrentPageData();
+  } finally {
+    isHandlingSidebarOpen = false;
   }
 }
 
