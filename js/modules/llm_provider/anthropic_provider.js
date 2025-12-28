@@ -393,6 +393,10 @@ var anthropicProvider = (function () {
             if (sanitizedSystemPrompt && !mergeSystemPrompt) {
                 requestBody.system = sanitizedSystemPrompt;
             }
+            requestBody.thinking = {
+                type: "enabled",
+                budget_tokens: 10240
+            }
 
             const requestBodyString = JSON.stringify(requestBody);
 
