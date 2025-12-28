@@ -112,7 +112,7 @@
   },
   "conversations_welcome_subtitle3": {
     "message": "阅读，思考"
-  },  
+  },
   "export_default_title": {
     "message": "对话"
   },
@@ -195,7 +195,7 @@
     "message": "模式已成功删除。"
   },
   "options_blacklist_description": {
-    "message": "匹配黑名单的网址，打开侧边栏时，标签页自动发送前需要确认" 
+    "message": "匹配黑名单的网址，打开侧边栏时，标签页自动发送前需要确认"
   },
   "options_blacklist_edit_dialog_title": {
     "message": "编辑黑名单模式"
@@ -299,7 +299,6 @@
   "options_filter_cot_label": {
     "message": "过滤COT ( 开启后，流式输出会过滤掉<think>标签和标签之间的内容 )"
   },
- 
   "options_extraction_method_jina": {
     "message": "Jina AI"
   },
@@ -514,10 +513,13 @@
     "message": "服务提供商"
   },
   "options_model_provider_tooltip": {
-    "message": "OpenAI 兼容: OpenAI API 兼容模型\nGoogle Gemini: Google Gemini API 兼容模型\nAzure OpenAI: Azure OpenAI API 兼容模型"
+    "message": "OpenAI 兼容: OpenAI API 兼容模型\nGoogle Gemini: Google Gemini API 兼容模型\nAzure OpenAI: Azure OpenAI API 兼容模型\nAnthropic Claude: Anthropic Claude API 模型"
   },
   "options_model_provider_openai": {
     "message": "OpenAI 兼容"
+  },
+  "options_model_provider_anthropic": {
+    "message": "Anthropic Claude"
   },
   "options_model_temperature_label": {
     "message": "温度"
@@ -533,6 +535,12 @@
   },
   "options_model_thinking_budget_label": {
     "message": "Thinking Budget"
+  },
+  "options_model_anthropic_merge_system_prompt_label": {
+    "message": "合并系统提示词"
+  },
+  "options_model_anthropic_merge_system_prompt_tooltip": {
+    "message": "启用后,system prompt将插入到第一条user消息前,不传递system参数。适用于不支持system参数的代理或中间件。"
   },
   "options_model_unnamed": {
     "message": "未命名模型"

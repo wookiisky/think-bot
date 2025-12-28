@@ -8,7 +8,7 @@
  */
 function filterLlmResponse(response, logger) {
     let cleaned = response;
-    
+
     // Ensure response is a string
     if (typeof response !== 'string') {
         if (logger) {
@@ -16,7 +16,7 @@ function filterLlmResponse(response, logger) {
         }
         cleaned = String(response || '');
     }
-    
+
     // Remove any [object Object] that might have slipped through
     if (cleaned.includes('[object Object]')) {
         if (logger) {
@@ -24,7 +24,7 @@ function filterLlmResponse(response, logger) {
         }
         cleaned = cleaned.replace(/\[object Object\]/g, '');
     }
-    
+
     return cleaned;
 }
 
@@ -32,7 +32,7 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
     const { messages, systemPromptTemplate, extractedPageContent, imageBase64, currentUrl, selectedModel, tabId, branchId, model } = data.payload;
 
     const config = await configManager.getConfig();
-    
+
     // Use selected model or fall back to default (support both old and new config formats)
     let llmConfig;
     const llmModelsConfig = config.llm_models || config.llm;
@@ -40,28 +40,28 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
 
     if (llmModelsConfig?.models && llmModelsConfig.models.length > 0) {
         let targetModel = null;
-        
+
         // For branch requests, use the specified model
         if (branchId && model) {
             serviceLogger.debug(`SEND_LLM: Looking for branch model with ID: ${model.id || model.name}`);
-            
+
             // First try to match by model ID directly
-            targetModel = llmModelsConfig.models.find(m => 
+            targetModel = llmModelsConfig.models.find(m =>
                 m.enabled && m.id === model.id
             );
-            
+
             // If not found, try legacy format matching (provider:modelName)
             if (!targetModel && model.id && model.id.includes(':')) {
                 const [provider, modelName] = model.id.split(':');
                 serviceLogger.debug(`SEND_LLM: Trying legacy format matching - provider: ${provider}, model: ${modelName}`);
-                
-                targetModel = llmModelsConfig.models.find(m => 
-                    m.enabled && 
-                    m.provider === provider && 
+
+                targetModel = llmModelsConfig.models.find(m =>
+                    m.enabled &&
+                    m.provider === provider &&
                     (m.model === modelName || m.name === modelName)
                 );
             }
-            
+
             if (!targetModel) {
                 serviceLogger.warn(`SEND_LLM: Branch model ${model.id || model.name} not found in config, using default`);
                 serviceLogger.debug(`SEND_LLM: Available models: ${llmModelsConfig.models.filter(m => m.enabled).map(m => m.id).join(', ')}`);
@@ -69,7 +69,7 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                 serviceLogger.debug(`SEND_LLM: Found matching model: ${targetModel.id} (${targetModel.name})`);
             }
         }
-        
+
         // Fall back to normal model selection if branch model not found
         if (!targetModel) {
             // Get defaultModelId from basic config (new location) or fallback to llm config (old location)
@@ -77,9 +77,9 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
             const defaultModelId = basicConfig.defaultModelId || llmModelsConfig.defaultModelId;
             const modelId = selectedModel?.id || defaultModelId;
             targetModel = llmModelsConfig.models.find(m => m.id === modelId && m.enabled) ||
-                         llmModelsConfig.models.find(m => m.enabled);
+                llmModelsConfig.models.find(m => m.enabled);
         }
-        
+
         defaultModel = targetModel;
         serviceLogger.debug(`SEND_LLM: defaultModel assigned, value: ${defaultModel ? 'defined' : 'undefined'}`);
 
@@ -90,17 +90,22 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                 maxTokens: defaultModel.maxTokens || 2048,
                 temperature: defaultModel.temperature || 0.7
             };
-            
+
             // Add provider-specific fields
             if (defaultModel.provider === 'azure_openai') {
                 llmConfig.endpoint = defaultModel.endpoint;
                 llmConfig.deploymentName = defaultModel.deploymentName;
                 llmConfig.apiVersion = defaultModel.apiVersion;
-            } else if (defaultModel.provider === 'openai' || defaultModel.provider === 'gemini') {
+            } else if (defaultModel.provider === 'openai' || defaultModel.provider === 'gemini' || defaultModel.provider === 'anthropic') {
                 llmConfig.baseUrl = defaultModel.baseUrl;
                 llmConfig.model = defaultModel.model;
+
+                // Add Anthropic-specific merge system prompt setting
+                if (defaultModel.provider === 'anthropic' && defaultModel.mergeSystemPrompt !== undefined) {
+                    llmConfig.mergeSystemPrompt = defaultModel.mergeSystemPrompt;
+                }
             }
-            
+
             const branchInfo = branchId ? ` for branch ${branchId}` : '';
             serviceLogger.info(`SEND_LLM: Using model ${defaultModel.name} (${defaultModel.provider})${branchInfo}`);
         } else {
@@ -195,31 +200,31 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                 isRetry: messages && messages.length > 0 && messages[messages.length - 1]?.isRetry === true,
                 branchId: branchId || null
             };
-            
+
             // For branch requests, use branchId in the cache key
             const cacheKey = branchId ? `${tabId}:${branchId}` : tabId;
             await loadingStateCache.saveLoadingState(currentUrl, cacheKey, loadingInfo);
-            
+
             const branchInfo = branchId ? ` and branch ${branchId}` : '';
             serviceLogger.info(`SEND_LLM: Loading state saved for tab ${tabId}${branchInfo} with enhanced details`);
         }
-        
+
         serviceLogger.info(`SEND_LLM: Calling LLM with ${effectiveMessages.length} messages${branchId ? ' (branch context sanitized)' : ''}`);
-        
+
         const streamCallback = (chunk) => {
             if (chunk !== undefined && chunk !== null) {
                 try {
                     // Filter chunk to ensure clean text
                     const filteredChunk = filterLlmResponse(chunk, serviceLogger);
-                    
+
                     // Skip if chunk is empty or [object Object] after filtering
                     if (!filteredChunk || filteredChunk === '[object Object]') {
                         serviceLogger.debug('SEND_LLM: Filtered out invalid chunk');
                         return;
                     }
-                    
-                    safeSendMessage({ 
-                        type: 'LLM_STREAM_CHUNK', 
+
+                    safeSendMessage({
+                        type: 'LLM_STREAM_CHUNK',
                         chunk: filteredChunk,
                         tabId: tabId,
                         url: currentUrl,
@@ -234,19 +239,19 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
         const doneCallback = async (fullResponse, finishReason = null) => {
             // Filter fullResponse to ensure it's clean text
             const cleanedResponse = filterLlmResponse(fullResponse, serviceLogger);
-            
+
             const responseLength = cleanedResponse?.length || 0;
             const branchInfo = branchId ? ` for branch ${branchId}` : '';
             serviceLogger.info(`SEND_LLM: Stream finished - response length: ${responseLength}${branchInfo}`);
-            
-            const isAbnormalFinish = finishReason && 
-                finishReason !== 'stop' && 
-                finishReason !== 'STOP' && 
+
+            const isAbnormalFinish = finishReason &&
+                finishReason !== 'stop' &&
+                finishReason !== 'STOP' &&
                 finishReason !== 'end_turn';
-            
+
             try {
-                safeSendMessage({ 
-                    type: 'LLM_STREAM_END', 
+                safeSendMessage({
+                    type: 'LLM_STREAM_END',
                     fullResponse: cleanedResponse,
                     finishReason,
                     isAbnormalFinish,
@@ -377,14 +382,14 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                 errorData: null,
                 status: null
             };
-            
+
             // Check if this is a RawError with raw response data  
             if (err.name === 'RawError') {
                 errorDetails.rawResponse = err.rawResponse;
                 errorDetails.errorData = err.errorData;
                 errorDetails.status = err.status;
             }
-            
+
             // Log error details for debugging
             serviceLogger.info('SEND_LLM: Processing error details', {
                 hasRawResponse: !!errorDetails.rawResponse,
@@ -393,10 +398,10 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                 errorType: errorDetails.type,
                 status: errorDetails.status
             });
-            
+
             // Create error message for storage and transmission
             let errorMessage = null;
-            
+
             // Priority 1: Use errorData if available (already parsed JSON)
             if (errorDetails.errorData && typeof errorDetails.errorData === 'object' && Object.keys(errorDetails.errorData).length > 0) {
                 errorMessage = JSON.stringify(errorDetails.errorData, null, 2);
@@ -411,7 +416,7 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                     const parsedResponse = typeof errorDetails.rawResponse === 'string'
                         ? JSON.parse(errorDetails.rawResponse)
                         : errorDetails.rawResponse;
-                    
+
                     // Check if parsed response has meaningful content
                     if (parsedResponse && typeof parsedResponse === 'object' && Object.keys(parsedResponse).length > 0) {
                         // If it's a meaningful object, use it as error message directly
@@ -422,8 +427,8 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                         });
                     } else {
                         // If it's empty or meaningless, use the raw response as string
-                        errorMessage = typeof errorDetails.rawResponse === 'string' 
-                            ? errorDetails.rawResponse 
+                        errorMessage = typeof errorDetails.rawResponse === 'string'
+                            ? errorDetails.rawResponse
                             : JSON.stringify(errorDetails.rawResponse);
                         serviceLogger.info('SEND_LLM: Using rawResponse as string', {
                             errorMessage: errorMessage.substring(0, 200)
@@ -431,8 +436,8 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                     }
                 } catch (parseError) {
                     // If parsing fails, use raw response as string
-                    errorMessage = typeof errorDetails.rawResponse === 'string' 
-                        ? errorDetails.rawResponse 
+                    errorMessage = typeof errorDetails.rawResponse === 'string'
+                        ? errorDetails.rawResponse
                         : String(errorDetails.rawResponse);
                     serviceLogger.info('SEND_LLM: Failed to parse rawResponse, using as string', {
                         parseError: parseError.message,
@@ -440,7 +445,7 @@ async function handleSendLlmMessage(data, serviceLogger, configManager, storage,
                     });
                 }
             }
-            
+
             // Priority 3: If we still don't have a meaningful error message, use fallback
             if (!errorMessage || errorMessage.trim() === '' || errorMessage === '{}' || errorMessage === 'null' || errorMessage === 'undefined') {
                 if (errorDetails.message === 'Request was cancelled by user') {

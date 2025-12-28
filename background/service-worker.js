@@ -18,6 +18,7 @@ importScripts('../js/modules/llm_provider/base_provider.js');
 importScripts('../js/modules/llm_provider/gemini_provider.js');
 importScripts('../js/modules/llm_provider/openai_provider.js');
 importScripts('../js/modules/llm_provider/azure_openai_provider.js');
+importScripts('../js/modules/llm_provider/anthropic_provider.js');
 importScripts('../js/modules/llm_service.js');
 // importScripts('../js/modules/jina_ai_service.js'); // Removed as it does not exist
 
@@ -75,7 +76,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       const quickStartUrl = isChineseLang
         ? 'https://github.com/wookiisky/think-bot/blob/main/quick_start.md'
         : 'https://github.com/wookiisky/think-bot/blob/main/quick_start.en.md';
-      
+
       await chrome.tabs.create({ url: quickStartUrl });
       serviceLogger.info('Opened quick start guide on first install', { url: quickStartUrl });
     } catch (error) {
@@ -96,7 +97,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     title: contextMenuTitle,
     contexts: ["action"]
   });
-  
+
   // Initialize config if needed
   await storageConfigManager.initializeIfNeeded();
   await storageConfigManager.checkStorageUsage();
@@ -223,14 +224,14 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const handleMessage = async () => {
     serviceLogger.info('Service worker received message:', message.type);
-    
+
     try {
       const { type, ...data } = message;
-      
+
       switch (type) {
         case 'GET_PAGE_INFO': {
-            return await handleGetPageInfo(data, serviceLogger, storageConfigManager, storage, contentExtractor,
-                (tabId, msg, callback) => safeSendTabMessage(tabId, msg, serviceLogger, callback));
+          return await handleGetPageInfo(data, serviceLogger, storageConfigManager, storage, contentExtractor,
+            (tabId, msg, callback) => safeSendTabMessage(tabId, msg, serviceLogger, callback));
         }
         case 'GET_CACHED_PAGE_DATA': {
           return await handleGetCachedPageData(data, serviceLogger, storageConfigManager, storage);
@@ -338,7 +339,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return { type: 'MESSAGE_HANDLING_ERROR', error: error.message };
     }
   };
-  
+
   // Execute the message handler and send response
   handleMessage().then(result => {
     if (result && typeof sendResponse === 'function') {
@@ -348,7 +349,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     serviceLogger.error('Unhandled error in handleMessage promise:', error);
     sendResponse({ type: 'ERROR', error: error.message || 'Critical unhandled error in service worker' });
   });
-  
+
   return true; // Keep the message channel open for asynchronous response
 });
 
@@ -358,7 +359,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function handleTestSyncConnection(data, logger) {
   try {
     const { storageType = 'gist' } = data;
-    
+
     if (storageType === 'gist') {
       return await handleTestGistConnection(data, logger);
     } else if (storageType === 'webdav') {
@@ -512,7 +513,7 @@ async function handleTestWebdavConnection(data, logger) {
     try {
       // Step 1: Test basic WebDAV connectivity with base URL
       logger.info('Step 1: Testing base WebDAV URL', { url: baseUrl.replace(/\/\/[^@]+@/, '//***@') });
-      
+
       const baseResponse = await fetch(baseUrl, {
         method: 'PROPFIND',
         headers: {
@@ -531,7 +532,7 @@ async function handleTestWebdavConnection(data, logger) {
       });
 
       const baseIsSuccess = baseResponse.ok || baseResponse.status === 207; // 207 Multi-Status is also OK for WebDAV
-      
+
       if (!baseIsSuccess) {
         let responseText = '';
         try {
@@ -558,7 +559,7 @@ async function handleTestWebdavConnection(data, logger) {
 
       // Step 2: Test thinkbot directory
       logger.info('Step 2: Testing thinkbot directory', { url: thinkbotUrl.replace(/\/\/[^@]+@/, '//***@') });
-      
+
       const thinkbotResponse = await fetch(thinkbotUrl, {
         method: 'PROPFIND',
         headers: {
@@ -576,10 +577,10 @@ async function handleTestWebdavConnection(data, logger) {
       });
 
       const thinkbotIsSuccess = thinkbotResponse.ok || thinkbotResponse.status === 207;
-      
+
       if (thinkbotIsSuccess) {
         logger.info('Thinkbot directory exists and is accessible');
-        
+
         return {
           type: 'TEST_SYNC_CONNECTION_RESULT',
           success: true,
@@ -594,7 +595,7 @@ async function handleTestWebdavConnection(data, logger) {
       } else if (thinkbotResponse.status === 404) {
         // Step 3: Try to create thinkbot directory
         logger.info('Step 3: Thinkbot directory not found, attempting to create it');
-        
+
         const createResponse = await fetch(thinkbotUrl, {
           method: 'MKCOL',
           headers: {
@@ -610,7 +611,7 @@ async function handleTestWebdavConnection(data, logger) {
 
         if (createResponse.ok || createResponse.status === 201) {
           logger.info('Thinkbot directory created successfully');
-          
+
           return {
             type: 'TEST_SYNC_CONNECTION_RESULT',
             success: true,
@@ -669,7 +670,7 @@ async function handleTestWebdavConnection(data, logger) {
         name: webdavError.name,
         stack: webdavError.stack
       });
-      
+
       return {
         type: 'TEST_SYNC_CONNECTION_RESULT',
         success: false,
@@ -683,7 +684,7 @@ async function handleTestWebdavConnection(data, logger) {
       name: error.name,
       stack: error.stack
     });
-    
+
     return {
       type: 'TEST_SYNC_CONNECTION_RESULT',
       success: false,

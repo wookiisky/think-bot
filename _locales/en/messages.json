@@ -1,7 +1,7 @@
 {
   "appName": {
     "message": "Think Bot"
-  },  
+  },
   "appDesc": {
     "message": "AI Cognitive Copilot, Deep Thinking Assistant."
   },
@@ -298,7 +298,7 @@
   },
   "options_filter_cot_label": {
     "message": "Filter COT (when enabled, content between <think> tag will be filtered out)"
-  },  
+  },
   "options_extraction_method_jina": {
     "message": "Jina AI"
   },
@@ -513,10 +513,13 @@
     "message": "Provider"
   },
   "options_model_provider_tooltip": {
-    "message": "OpenAI Compatible: OpenAI API compatible models\nGoogle Gemini: Google Gemini API compatible models\nAzure OpenAI: Azure OpenAI API compatible models"
+    "message": "OpenAI Compatible: OpenAI API compatible models\nGoogle Gemini: Google Gemini API compatible models\nAzure OpenAI: Azure OpenAI API compatible models\nAnthropic Claude: Anthropic Claude API models"
   },
   "options_model_provider_openai": {
     "message": "OpenAI Compatible"
+  },
+  "options_model_provider_anthropic": {
+    "message": "Anthropic Claude"
   },
   "options_model_temperature_label": {
     "message": "Temperature"
@@ -532,6 +535,12 @@
   },
   "options_model_thinking_budget_label": {
     "message": "Thinking Budget"
+  },
+  "options_model_anthropic_merge_system_prompt_label": {
+    "message": "Merge System Prompt"
+  },
+  "options_model_anthropic_merge_system_prompt_tooltip": {
+    "message": "When enabled, system prompt will be inserted before the first user message, without passing the system parameter. Useful for proxies or middleware that don't support the system parameter."
   },
   "options_model_unnamed": {
     "message": "Unnamed Model"

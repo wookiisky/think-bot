@@ -3,8 +3,8 @@
 
 const baseProviderLogger = logger.createModuleLogger('BaseProvider');
 
-var BaseProvider = (function() {
-    
+var BaseProvider = (function () {
+
     // Simple error class for raw response data
     class RawError extends Error {
         constructor(message, rawResponse = null, status = null) {
@@ -16,7 +16,7 @@ var BaseProvider = (function() {
             this.timestamp = Date.now();
         }
     }
-    
+
     // Basic parameter utilities
     const ParameterUtils = {
         normalizeTemperature(value) {
@@ -24,20 +24,20 @@ var BaseProvider = (function() {
             const temp = parseFloat(value);
             return !isNaN(temp) ? temp : value;
         },
-        
+
         normalizeTokens(value) {
             if (value === undefined || value === null) return value;
             const tokens = parseInt(value, 10);
             return !isNaN(tokens) ? tokens : value;
         },
-        
+
         normalizeCount(value) {
             if (value === undefined || value === null) return value;
             const count = parseInt(value, 10);
             return !isNaN(count) ? count : value;
         }
     };
-    
+
     // Stream processing utilities
     const StreamUtils = {
         createStreamMonitor() {
@@ -47,7 +47,7 @@ var BaseProvider = (function() {
                 MAX_EMPTY_READS: 50
             };
         },
-        
+
         updateMonitor(monitor, chunkSize = 0) {
             if (chunkSize > 0) {
                 monitor.consecutiveEmptyReads = 0;
@@ -56,12 +56,12 @@ var BaseProvider = (function() {
             }
             return monitor;
         },
-        
+
         shouldAbortStream(monitor) {
             return monitor.consecutiveEmptyReads >= monitor.MAX_EMPTY_READS;
         }
     };
-    
+
     // Simplified API utilities
     const ApiUtils = {
         // Basic fetch with minimal error handling
@@ -93,6 +93,11 @@ var BaseProvider = (function() {
                     const fetchOptions = abortController && abortController.signal ?
                         { ...options, signal: abortController.signal } :
                         options;
+
+                    // 调试日志 - 检查传给fetch的body
+                    if (fetchOptions.body) {
+                        baseProviderLogger.info(`[${providerName}] Fetch body debug:`, fetchOptions.body);
+                    }
 
                     const response = await fetch(url, fetchOptions);
                     const duration = Date.now() - startTime;
@@ -162,7 +167,7 @@ var BaseProvider = (function() {
 
             throw new Error(`${providerName} request failed without specific error`);
         },
-        
+
         // Return raw response data without conversion
         async getRawResponse(response) {
             try {
@@ -177,18 +182,18 @@ var BaseProvider = (function() {
                 throw new Error(`Failed to read response: ${error.message}`);
             }
         },
-        
+
         // Handle error response with raw data
         async handleRawError(response, providerName) {
             const rawResponse = await this.getRawResponse(response);
-            
+
             baseProviderLogger.error(`[${providerName}] API error`, {
                 status: response.status,
                 statusText: response.statusText,
-                response: typeof rawResponse === 'string' ? 
+                response: typeof rawResponse === 'string' ?
                     rawResponse.substring(0, 500) : rawResponse
             });
-            
+
             // Return raw response directly
             throw new RawError(
                 `${providerName} API error (${response.status})`,
@@ -197,7 +202,7 @@ var BaseProvider = (function() {
             );
         }
     };
-    
+
     // Simplified OpenAI-compatible utilities
     const OpenAIUtils = {
         // Build OpenAI messages with basic image support
@@ -315,7 +320,7 @@ var BaseProvider = (function() {
                                     try {
                                         const fixedData = '[' + data.replace(/}{/g, '},{') + ']';
                                         const parsedArray = JSON.parse(fixedData);
-                                        
+
                                         for (const parsedData of parsedArray) {
                                             if (parsedData.choices?.[0]?.delta?.content) {
                                                 const textChunk = parsedData.choices[0].delta.content;
@@ -333,14 +338,14 @@ var BaseProvider = (function() {
                         }
                     }
                 }
-                
+
                 // Stream ended without [DONE]
                 if (fullResponse.length > 0) {
                     doneCallback(fullResponse, finishReason);
                 } else {
                     throw new Error('Stream ended without receiving any content');
                 }
-                
+
             } catch (error) {
                 if (error.message === 'Request was cancelled by user') {
                     logger.info('[Stream] Request cancelled by user');

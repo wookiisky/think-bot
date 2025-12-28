@@ -8,7 +8,7 @@ var llmService = {};
 const llmLogger = logger.createModuleLogger('LLMService');
 
 // Available provider names for validation
-const AVAILABLE_PROVIDERS = ['gemini', 'openai', 'azure_openai'];
+const AVAILABLE_PROVIDERS = ['gemini', 'openai', 'azure_openai', 'anthropic'];
 
 /**
  * Get global object safely across different JavaScript environments
@@ -16,9 +16,9 @@ const AVAILABLE_PROVIDERS = ['gemini', 'openai', 'azure_openai'];
  * @returns {*} - Global object or null
  */
 function getGlobalObject(name) {
-  return (typeof global !== 'undefined' ? global[name] : null) || 
-         (typeof window !== 'undefined' ? window[name] : null) ||
-         (typeof self !== 'undefined' ? self[name] : null);
+  return (typeof global !== 'undefined' ? global[name] : null) ||
+    (typeof window !== 'undefined' ? window[name] : null) ||
+    (typeof self !== 'undefined' ? self[name] : null);
 }
 
 /**
@@ -35,27 +35,28 @@ function validateProvider(provider) {
     });
     return error;
   }
-  
+
   const providerMapping = {
     'gemini': { object: 'geminiProvider', file: 'gemini_provider.js' },
     'openai': { object: 'openaiProvider', file: 'openai_provider.js' },
-    'azure_openai': { object: 'azureOpenaiProvider', file: 'azure_openai_provider.js' }
+    'azure_openai': { object: 'azureOpenaiProvider', file: 'azure_openai_provider.js' },
+    'anthropic': { object: 'anthropicProvider', file: 'anthropic_provider.js' }
   };
-  
+
   const providerInfo = providerMapping[provider];
   const providerObject = getGlobalObject(providerInfo.object);
-  
+
   if (typeof providerObject === 'undefined' || typeof providerObject.execute !== 'function') {
     const error = new Error(`${provider.charAt(0).toUpperCase() + provider.slice(1)} provider not loaded correctly. Ensure js/modules/llm_provider/${providerInfo.file} is included.`);
-    llmLogger.error('Provider not loaded correctly', { 
-      provider, 
+    llmLogger.error('Provider not loaded correctly', {
+      provider,
       expectedObject: providerInfo.object,
       objectExists: typeof providerObject !== 'undefined',
       executeExists: typeof providerObject?.execute === 'function'
     });
     return error;
   }
-  
+
   return null;
 }
 
@@ -68,9 +69,10 @@ function getProviderExecutor(provider) {
   const providerMapping = {
     'gemini': () => getGlobalObject('geminiProvider'),
     'openai': () => getGlobalObject('openaiProvider'),
-    'azure_openai': () => getGlobalObject('azureOpenaiProvider')
+    'azure_openai': () => getGlobalObject('azureOpenaiProvider'),
+    'anthropic': () => getGlobalObject('anthropicProvider')
   };
-  
+
   return providerMapping[provider]();
 }
 
@@ -87,7 +89,7 @@ function getProviderExecutor(provider) {
  * @param {string} url - Optional URL for loading state checks
  * @param {string} tabId - Optional tab ID for loading state checks
  */
-llmService.callLLM = async function(
+llmService.callLLM = async function (
   messages,
   llmConfig,
   systemPrompt,
@@ -100,16 +102,16 @@ llmService.callLLM = async function(
   tabId = null
 ) {
   // Log the call (without sensitive data)
-  llmLogger.info('Starting LLM API call', { 
-    provider: llmConfig.provider, 
-    model: llmConfig.model, 
+  llmLogger.info('Starting LLM API call', {
+    provider: llmConfig.provider,
+    model: llmConfig.model,
     messageCount: messages?.length || 0,
     hasSystemPrompt: !!systemPrompt,
     hasImage: !!imageBase64,
     isStreaming: !!(streamCallback && doneCallback),
     configKeys: Object.keys(llmConfig || {}).filter(key => key !== 'apiKey') // Log config structure without sensitive data
   });
-  
+
   try {
     // Validate provider availability
     const providerError = validateProvider(llmConfig.provider);
@@ -117,7 +119,7 @@ llmService.callLLM = async function(
       errorCallback(providerError);
       return;
     }
-    
+
     // Get provider executor and delegate to it
     const providerExecutor = getProviderExecutor(llmConfig.provider);
 
@@ -134,7 +136,7 @@ llmService.callLLM = async function(
       url,
       tabId
     );
-    
+
   } catch (error) {
     // Check if this is a user cancellation - log as info instead of error
     if (error.message === 'Request was cancelled by user') {

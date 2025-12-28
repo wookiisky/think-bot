@@ -58,10 +58,10 @@ export class ModelManager {
 
     // Setup event listeners for the newly created elements
     this.setupModelEventListeners();
-    
+
     // Setup the inline add button event listener
     this.setupAddButtonListener();
-    
+
     // Apply i18n translations to newly created DOM elements
     if (typeof i18n !== 'undefined' && i18n.applyToDOM) {
       i18n.applyToDOM();
@@ -144,16 +144,19 @@ export class ModelManager {
                 <option value="openai" ${model.provider === 'openai' ? 'selected' : ''} data-i18n="options_model_provider_openai">OpenAI Compatible</option>
                 <option value="gemini" ${model.provider === 'gemini' ? 'selected' : ''} data-i18n="options_model_provider_gemini">Google Gemini</option>
                 <option value="azure_openai" ${model.provider === 'azure_openai' ? 'selected' : ''} data-i18n="optionsAzureOpenAIProvider">Azure OpenAI</option>
+                <option value="anthropic" ${model.provider === 'anthropic' ? 'selected' : ''} data-i18n="options_model_provider_anthropic">Anthropic Claude</option>
               </select>
               <label for="model-provider-${index}" class="floating-label" data-tooltip-i18n="options_model_provider_tooltip" data-i18n="options_model_provider_label">Provider</label>
             </div>
             ${this.renderModelSpecificFields(model, index)}
+            ${model.provider !== 'anthropic' ? `
             <div class="floating-label-field">
               <input type="number" class="model-max-tokens" id="model-max-tokens-${index}" value="${model.maxTokens || 2048}"
                      data-model-index="${index}" data-field="maxTokens"
                      placeholder=" " min="1" max="100000">
               <label for="model-max-tokens-${index}" class="floating-label" data-i18n="options_model_max_tokens_label">Max Tokens</label>
             </div>
+            ` : ''}
             <div class="floating-label-field">
               <input type="number" class="model-temperature" id="model-temperature-${index}" value="${model.temperature || 0.7}"
                      data-model-index="${index}" data-field="temperature"
@@ -164,7 +167,7 @@ export class ModelManager {
         </div>
       </div>
     `;
-    try { logger.debug(`Rendered model item ${modelId} with unified form-grid`); } catch (_) {}
+    try { logger.debug(`Rendered model item ${modelId} with unified form-grid`); } catch (_) { }
     return div;
   }
 
@@ -205,7 +208,7 @@ export class ModelManager {
     this.setModelExpanded(modelId, isExpanded);
     try {
       logger.info(`Toggle model details -> id: ${modelId}, state: ${isExpanded ? 'expanded' : 'collapsed'}`);
-    } catch (_) {}
+    } catch (_) { }
 
     // Ensure floating label tooltips are updated after toggling visibility
     try {
@@ -217,7 +220,7 @@ export class ModelManager {
         logger.debug('Applied i18n to DOM after toggling model details');
       }
     } catch (e) {
-      try { logger.warn('Failed to refresh tooltips after toggle', e); } catch (_) {}
+      try { logger.warn('Failed to refresh tooltips after toggle', e); } catch (_) { }
     }
   }
 
@@ -251,6 +254,8 @@ export class ModelManager {
         return i18n.getMessage('options_model_provider_gemini') || 'Google Gemini';
       case 'azure_openai':
         return i18n.getMessage('optionsAzureOpenAIProvider') || 'Azure OpenAI';
+      case 'anthropic':
+        return i18n.getMessage('options_model_provider_anthropic') || 'Anthropic Claude';
       case 'openai':
       default:
         return i18n.getMessage('options_model_provider_openai') || 'OpenAI Compatible';
@@ -375,6 +380,35 @@ export class ModelManager {
           <label for="model-azure-api-version-${index}" class="floating-label" data-i18n="options_model_azure_api_version_label">API Version</label>
         </div>
       `;
+    } else if (model.provider === 'anthropic') {
+      return `
+        <div class="floating-label-field">
+          <input type="text" class="model-base-url" id="model-base-url-${index}" value="${model.baseUrl || 'https://api.anthropic.com'}"
+                 data-model-index="${index}" data-field="baseUrl" placeholder=" ">
+          <label for="model-base-url-${index}" class="floating-label" data-i18n="options_model_base_url_label">Base URL</label>
+        </div>
+        <div class="floating-label-field password-field">
+          <input type="password" class="model-api-key" id="model-api-key-${index}" value="${model.apiKey || ''}"
+                 data-model-index="${index}" data-field="apiKey" placeholder=" ">
+          <button type="button" class="password-visibility-toggle" data-target="model-api-key-${index}" aria-label="Show API Key" aria-pressed="false">
+            <i class="material-icons" aria-hidden="true">visibility_off</i>
+          </button>
+          <label for="model-api-key-${index}" class="floating-label" data-i18n="options_model_api_key_label">API Key</label>
+        </div>
+        <div class="floating-label-field">
+          <input type="text" class="model-model" id="model-model-${index}" value="${model.model || 'claude-sonnet-4-20250514'}"
+                 data-model-index="${index}" data-field="model" placeholder=" ">
+          <label for="model-model-${index}" class="floating-label" data-i18n="common_model_id">Model</label>
+        </div>
+        <div class="floating-label-field">
+          <label class="toggle-switch" data-tooltip-i18n="options_model_anthropic_merge_system_prompt_tooltip">
+            <input type="checkbox" class="model-merge-system-prompt" id="model-merge-system-prompt-${index}" ${model.mergeSystemPrompt ? 'checked' : ''}
+                   data-model-index="${index}" data-field="mergeSystemPrompt">
+            <span class="slider"></span>
+          </label>
+          <label for="model-merge-system-prompt-${index}" class="floating-label" data-i18n="options_model_anthropic_merge_system_prompt_label">Merge System Prompt</label>
+        </div>
+      `;
     }
     return '';
   }
@@ -432,7 +466,7 @@ export class ModelManager {
     const selectedItemsContainer = document.getElementById(`selected-items-${index}`);
     if (selectedItemsContainer) {
       selectedItemsContainer.innerHTML = this.renderSelectedTools(model.tools, index);
-      
+
       // Update floating label state for the custom multi-select
       const multiSelectField = selectedItemsContainer.closest('.floating-label-field');
       if (multiSelectField && window.floatingLabelManager) {
@@ -452,7 +486,7 @@ export class ModelManager {
   // Toggle dropdown visibility
   toggleDropdown(dropdown) {
     if (!dropdown) return;
-    
+
     // Close all other dropdowns first
     const allDropdowns = document.querySelectorAll('.dropdown-options');
     const allToggleButtons = document.querySelectorAll('.dropdown-toggle');
@@ -471,13 +505,13 @@ export class ModelManager {
 
     // Toggle current dropdown
     dropdown.classList.toggle('open');
-    
+
     // Toggle button state
     const button = dropdown.parentNode.querySelector('.dropdown-toggle');
     if (button) {
       button.classList.toggle('open', dropdown.classList.contains('open'));
     }
-    
+
     // Toggle multi-select state
     const multiSelect = dropdown.closest('.custom-multi-select');
     if (multiSelect) {
@@ -500,7 +534,7 @@ export class ModelManager {
   addNewModel() {
     // Generate UUID-based model ID with timestamp
     const timestamp = Date.now().toString(36);
-    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
       const r = Math.random() * 16 | 0;
       const v = c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
@@ -540,7 +574,7 @@ export class ModelManager {
 
     // Generate UUID-based model ID with timestamp
     const timestamp = Date.now().toString(36);
-    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
       const r = Math.random() * 16 | 0;
       const v = c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
@@ -559,7 +593,7 @@ export class ModelManager {
     this.models.splice(index + 1, 0, copiedModel);
     this.renderModels();
     this.updateDefaultModelSelector();
-    
+
     const sourceModelName = sourceModel.name || i18n.getMessage('options_model_unnamed') || 'Unnamed Model';
     logger.info(`Copied model "${sourceModelName}" with new ID: ${copiedModel.id}`);
 
@@ -579,8 +613,8 @@ export class ModelManager {
 
     confirmationDialog.confirmDelete({
       target: deleteBtn,
-      message: i18n.getMessage('common_confirm_delete_message') || 
-               'Are you sure you want to delete this item?',
+      message: i18n.getMessage('common_confirm_delete_message') ||
+        'Are you sure you want to delete this item?',
       confirmText: i18n.getMessage('common_delete') || 'Delete',
       cancelText: i18n.getMessage('common_cancel') || 'Cancel',
       onConfirm: () => {
@@ -616,7 +650,7 @@ export class ModelManager {
   updateModelField(index, field, value) {
     if (this.models[index]) {
       let originalValue = value;
-      
+
       // Special handling for Azure OpenAI endpoint: extract domain from full URL
       if (field === 'endpoint' && this.models[index].provider === 'azure_openai' && value) {
         // Check if this is a complete Azure OpenAI API URL and parse it
@@ -634,12 +668,12 @@ export class ModelManager {
           // Otherwise, keep URL as is
         }
       }
-      
+
       // Special handling for OpenAI compatible baseUrl: remove /v1 suffix from openrouter.ai URLs
       if (field === 'baseUrl' && this.models[index].provider === 'openai' && value) {
         value = this.normalizeOpenAIBaseUrl(value);
       }
-      
+
       // Only update timestamp if the value actually changed
       const oldValue = this.models[index][field];
       if (oldValue !== value) {
@@ -673,27 +707,27 @@ export class ModelManager {
     try {
       // Remove any leading/trailing whitespace and @ symbol
       url = url.trim().replace(/^@/, '');
-      
+
       // Check if this looks like a complete Azure OpenAI API URL
       const azureOpenAIPattern = /^https:\/\/([^\/]+)\/openai\/deployments\/([^\/]+)\/chat\/completions\?api-version=([^&\s]+)/;
       const match = url.match(azureOpenAIPattern);
-      
+
       if (match) {
         const [, hostname, deploymentName, apiVersion] = match;
         const endpoint = `https://${hostname}`;
-        
+
         logger.info(`Parsed Azure OpenAI URL: ${url}`);
         logger.info(`  -> endpoint: ${endpoint}`);
         logger.info(`  -> deploymentName: ${deploymentName}`);
         logger.info(`  -> apiVersion: ${apiVersion}`);
-        
+
         return {
           endpoint,
           deploymentName,
           apiVersion
         };
       }
-      
+
       return null;
     } catch (error) {
       logger.warn('Failed to parse Azure OpenAI URL:', error);
@@ -704,46 +738,46 @@ export class ModelManager {
   // Update multiple Azure OpenAI fields from parsed URL
   updateMultipleAzureFields(index, parsedData) {
     if (!this.models[index]) return;
-    
+
     const { endpoint, deploymentName, apiVersion } = parsedData;
     let hasChanges = false;
-    
+
     // Update endpoint
     if (this.models[index].endpoint !== endpoint) {
       this.models[index].endpoint = endpoint;
       hasChanges = true;
     }
-    
+
     // Update deployment name
     if (this.models[index].deploymentName !== deploymentName) {
       this.models[index].deploymentName = deploymentName;
       hasChanges = true;
     }
-    
+
     // Update API version
     if (this.models[index].apiVersion !== apiVersion) {
       this.models[index].apiVersion = apiVersion;
       hasChanges = true;
     }
-    
+
     if (hasChanges) {
       // Update timestamp for sync merging
       this.models[index].lastModified = Date.now();
-      
+
       // Update all input fields in the UI
       const endpointInput = document.querySelector(`[data-model-index="${index}"][data-field="endpoint"]`);
       const deploymentInput = document.querySelector(`[data-model-index="${index}"][data-field="deploymentName"]`);
       const apiVersionInput = document.querySelector(`[data-model-index="${index}"][data-field="apiVersion"]`);
-      
+
       if (endpointInput) endpointInput.value = endpoint;
       if (deploymentInput) deploymentInput.value = deploymentName;
       if (apiVersionInput) apiVersionInput.value = apiVersion;
-      
+
       logger.info(`Updated multiple Azure OpenAI fields for model ${index}`);
       logger.info(`  endpoint: ${endpoint}`);
       logger.info(`  deploymentName: ${deploymentName}`);
       logger.info(`  apiVersion: ${apiVersion}`);
-      
+
       if (this.changeCallback) {
         this.changeCallback();
       }
@@ -755,7 +789,7 @@ export class ModelManager {
     try {
       // Remove any leading/trailing whitespace
       url = url.trim();
-      
+
       // Extract hostname from URL or treat as hostname if no protocol
       let hostname;
       if (url.startsWith('http://') || url.startsWith('https://')) {
@@ -764,7 +798,7 @@ export class ModelManager {
         // If no protocol, treat as hostname directly
         hostname = url.split('/')[0];
       }
-      
+
       // Check if hostname matches pattern: xxx.openai.azure.com
       const azurePattern = /^[^.]+\.openai\.azure\.com$/;
       return azurePattern.test(hostname);
@@ -780,24 +814,24 @@ export class ModelManager {
     try {
       // Remove any leading/trailing whitespace
       url = url.trim();
-      
+
       // If it's already just a domain (no path), return as is
       if (!url.includes('/') || url.match(/^https?:\/\/[^\/]+$/)) {
         return url;
       }
-      
+
       // Parse the URL to extract protocol and hostname
       const urlObj = new URL(url);
       const extractedDomain = `${urlObj.protocol}//${urlObj.hostname}`;
-      
+
       // Log the domain extraction for user feedback
       logger.info(`Azure OpenAI endpoint domain extracted: ${url} -> ${extractedDomain}`);
-      
+
       return extractedDomain;
     } catch (error) {
       // If URL parsing fails, try to extract domain manually
       logger.warn('Failed to parse URL, attempting manual extraction:', error);
-      
+
       // Manual extraction for common cases
       const match = url.match(/^(https?:\/\/[^\/]+)/);
       if (match) {
@@ -805,7 +839,7 @@ export class ModelManager {
         logger.info(`Azure OpenAI endpoint domain extracted (manual): ${url} -> ${extractedDomain}`);
         return extractedDomain;
       }
-      
+
       // If all else fails, return the original value
       logger.warn('Could not extract domain from URL, returning original value:', url);
       return url;
@@ -817,14 +851,14 @@ export class ModelManager {
     try {
       // Remove any leading/trailing whitespace and @ symbol
       url = url.trim().replace(/^@/, '');
-      
+
       // Check if URL contains openrouter.ai and ends with /v1
       if (url.includes('openrouter.ai') && url.endsWith('/v1')) {
         const normalizedUrl = url.replace(/\/v1$/, '');
         logger.info(`OpenRouter URL normalized: ${url} -> ${normalizedUrl}`);
         return normalizedUrl;
       }
-      
+
       // For other URLs, return as is
       return url;
     } catch (error) {
@@ -858,9 +892,18 @@ export class ModelManager {
         this.models[index].endpoint = this.models[index].endpoint || '';
         this.models[index].deploymentName = this.models[index].deploymentName || '';
         this.models[index].apiVersion = this.models[index].apiVersion || '2025-01-01-preview';
+      } else if (provider === 'anthropic') {
+        // For Anthropic, ensure baseUrl and model are set
+        this.models[index].baseUrl = this.models[index].baseUrl || 'https://api.anthropic.com';
+        this.models[index].model = this.models[index].model || 'claude-sonnet-4-20250514';
+        // Clear maxTokens as Anthropic doesn't use it
+        delete this.models[index].maxTokens;
       }
 
-      this.models[index].maxTokens = this.models[index].maxTokens || 2048;
+      // Set default maxTokens and temperature for non-Anthropic providers
+      if (provider !== 'anthropic') {
+        this.models[index].maxTokens = this.models[index].maxTokens || 2048;
+      }
       this.models[index].temperature = this.models[index].temperature !== undefined ? this.models[index].temperature : 0.7;
 
       this.renderModels();
@@ -876,7 +919,7 @@ export class ModelManager {
     if (!model.name || !model.apiKey) {
       return false;
     }
-    if (model.provider === 'openai' || model.provider === 'gemini') {
+    if (model.provider === 'openai' || model.provider === 'gemini' || model.provider === 'anthropic') {
       return !!(model.model && model.baseUrl);
     }
     if (model.provider === 'azure_openai') {
@@ -884,7 +927,7 @@ export class ModelManager {
     }
     return false;
   }
-  
+
   // Get all models that are enabled and have complete configurations (excluding deleted ones)
   getCompleteModels() {
     return this.models.filter(model => !model.isDeleted && model.enabled && this.isModelComplete(model));
@@ -905,7 +948,7 @@ export class ModelManager {
     const originalLength = this.models.length;
     this.models = this.models.filter(model => !model.isDeleted);
     const cleanedCount = originalLength - this.models.length;
-    
+
     if (cleanedCount > 0) {
       logger.info(`Cleaned up ${cleanedCount} soft-deleted models`);
       this.renderModels();
@@ -924,8 +967,8 @@ export class ModelManager {
     // Get current value from config or DOM to preserve selection
     // Priority: config.basic.defaultModelId > current DOM value
     const configDefaultModelId = this.config?.basic?.defaultModelId ||
-                                 this.config?.llm_models?.defaultModelId ||
-                                 this.config?.llm?.defaultModelId;
+      this.config?.llm_models?.defaultModelId ||
+      this.config?.llm?.defaultModelId;
     const currentValue = configDefaultModelId || select.value;
 
     // Clear existing options
@@ -965,13 +1008,13 @@ export class ModelManager {
   setupModelEventListeners() {
     const container = this.domElements.modelsContainer;
     if (!container) {
-      try { logger.warn('Models container not found; skip binding listeners'); } catch (_) {}
+      try { logger.warn('Models container not found; skip binding listeners'); } catch (_) { }
       return;
     }
 
     // Prevent duplicate bindings across re-renders
     if (this.containerEventListenersAdded) {
-      try { logger.debug('Container listeners already added; skip re-binding'); } catch (_) {}
+      try { logger.debug('Container listeners already added; skip re-binding'); } catch (_) { }
       return;
     }
 
@@ -1071,15 +1114,15 @@ export class ModelManager {
       const target = e.target;
       const modelItem = target.closest('.model-config-item');
       if (!modelItem) return;
-      
+
       const index = parseInt(modelItem.dataset.index, 10);
       const field = target.dataset.field;
       let value = target.value;
-      
+
       if (target.type === 'number') {
         value = parseFloat(value);
       }
-      
+
       if (field) {
         this.updateModelField(index, field, value);
       }
@@ -1103,6 +1146,16 @@ export class ModelManager {
         if (!modelItem) return;
         const index = parseInt(toggle.dataset.modelIndex || modelItem.dataset.index, 10);
         this.toggleModel(index, toggle.checked);
+        return;
+      }
+
+      // Merge system prompt checkbox change
+      if (e.target.classList.contains('model-merge-system-prompt')) {
+        const checkbox = e.target;
+        const modelItem = checkbox.closest('.model-config-item');
+        if (!modelItem) return;
+        const index = parseInt(checkbox.dataset.modelIndex || modelItem.dataset.index, 10);
+        this.updateModelField(index, 'mergeSystemPrompt', checkbox.checked);
         return;
       }
     });
@@ -1136,19 +1189,19 @@ export class ModelManager {
         const optionItem = e.target.closest('.option-item');
         const index = parseInt(optionItem.dataset.index, 10);
         const toolValue = optionItem.dataset.value;
-        
+
         // Get current tool state
         const model = this.models[index];
         const currentTools = model.tools || [];
         const isSelected = currentTools.includes(toolValue);
-        
+
         // Toggle selection
         this.updateToolSelection(index, toolValue, !isSelected);
       }
     });
 
     this.containerEventListenersAdded = true;
-    try { logger.debug('Bound container event listeners for models container'); } catch (_) {}
+    try { logger.debug('Bound container event listeners for models container'); } catch (_) { }
 
     // Add global event listeners only once
     if (!this.globalEventListenersAdded) {
@@ -1199,12 +1252,12 @@ export class ModelManager {
       },
     });
   }
-  
+
   // Get all model configurations
   getModels() {
     return this.models;
   }
-  
+
   // Get the ID of the default model
   getDefaultModelId() {
     return this.domElements.defaultModelSelect.value;
